@@ -93,5 +93,3 @@ Proprietary — All rights reserved. SkinTeethNerd Studios © 2026
 
 *“Every stitch matters.”*
 ```
-
----
