@@ -16,14 +16,14 @@ Core fantasy: *"I could do that better than Off-White, Supreme, or Gucci."*
 
 - **Dual Paths** — Designer (Atelier + physics) or Mogul (Ledger + markets) with full cross-path synergy
 - **Live Social Economy** — Global feed, partnerships, Maisons (guilds), followers, rival drama, and player reporting
-- **Deep Simulation** — Seasonal trends, celebrity endorsements, equity/IPO system, supply chain, talent management, regulations
+- **Deep Simulation** — Seasonal trends, celebrity endorsements, equity/IPO system, supply chain, talent management, regulations, Digital Product Passports
 - **Premium Craftsmanship** — Real-time cloth physics (GLSL Verlet), AR try-on, 3D world map, mini-games, and cinematic onboarding
 - **Retention & Virality** — Luxe mentor, daily streaks, seasonal/holiday events, stock ticker, and viral flex mechanics
 - **Fair Monetization** — Non-P2W IAP via Google Play Billing & Apple StoreKit (cosmetics, Season Pass, convenience)
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Flutter (Dart) + Riverpod + go_router
+- **Frontend**: Flutter (Dart) + Riverpod + go_router + Impeller
 - **Backend**: Supabase (PostgreSQL + Edge Functions) + Firebase Auth + App Check
 - **Monetization**: `in_app_purchase` package (Google Play Billing + Apple StoreKit)
 - **Graphics**: Custom GLSL shaders, 3D model viewer
@@ -43,31 +43,28 @@ flutter pub get
 flutter run
 ```
 
-> **Note**: The project is currently in **Phase 0** (fixing 174 broken imports and creating core domain models). Full runnable build expected by end of Phase 1.
-
 ## 📁 Project Structure
 
 ```
 lib/
 ├── core/                 # Theme, router, services, providers
-├── features/             # 27 feature modules (atelier, ledger, feed, equity, etc.)
+├── features/             # 27+ feature modules (atelier, ledger, feed, equity, etc.)
 ├── presentation/         # Widgets, screens, overlays
 ├── shaders/              # GLSL (liquid_chrome, vantablack, shatter)
 └── main.dart
 ```
 
-## 📍 Current Status (2026-05-05)
+## 📍 Current Status (2026-05-06)
 
-- ✅ Core architecture wired (Firebase, Supabase, Riverpod, App Check, AdMob)
-- 🟡 27 feature directories scaffolded
-- 🔴 174 broken imports (Phase 0 in progress)
-- 🔴 Major systems (Atelier physics, 3D Map, Equity, Mini-games) not yet implemented
+- ✅ Core architecture and rules defined (GDD v4 + PROJECT_RULES.md)
+- 🟡 Project is in early development phase
+- 🔴 Major systems still need to be implemented
 
 Full status: See `PROJECT_STATUS.md`
 
 ## 🗺️ Roadmap
 
-**Phase 0** — Fix broken imports + core models (current)  
+**Phase 0** — Core models, providers, and broken imports fix  
 **Phase 1** — Runnable on-device build + Onboarding + HQ Dashboard  
 **Phase 2** — Designer Path (Atelier + Physics + AR)  
 **Phase 3** — Mogul Path (Ledger + Equity + Trading)  
@@ -75,13 +72,13 @@ Full status: See `PROJECT_STATUS.md`
 
 ## 📜 Official Documents
 
-- [Game Design Document (GDD v3)](THE_STYLISTE_GDD_v3.md) — Single source of truth
+- [Game Design Document (GDD v4)](THE_STYLISTE_GDD_v4.md) — Single source of truth
 - [Project Rules](PROJECT_RULES.md)
 - [Verification Protocol](VERIFICATION_PROTOCOL.md)
 
 ## 🤝 Contributing
 
-This is currently a solo/architect-led project. Once Phase 1 is stable, contribution guidelines will be added.
+This is currently a solo/architect-led project. Contribution guidelines will be added once Phase 1 is stable.
 
 ## 📄 License
 
@@ -93,3 +90,5 @@ Proprietary — All rights reserved. SkinTeethNerd Studios © 2026
 
 *“Every stitch matters.”*
 ```
+
+---

@@ -1,0 +1,88 @@
+name: the_styliste
+description: "Portrait-first mobile hybrid idle + tycoon fashion empire simulator."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # --- State Management ---
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # --- Navigation ---
+  go_router: ^14.2.0
+
+  # --- Backend: Supabase ---
+  supabase_flutter: ^2.5.0
+
+  # --- Backend: Firebase ---
+  firebase_core: ^3.3.0
+  firebase_auth: ^5.1.0
+  firebase_app_check: ^0.3.0+1
+
+  # --- Local Persistence ---
+  hive_flutter: ^1.1.0
+
+  # --- Monetization ---
+  in_app_purchase: ^3.2.0
+
+  # --- Ads ---
+  google_mobile_ads: ^5.1.0
+
+  # --- Audio ---
+  audioplayers: ^6.1.0
+
+  # --- Camera / AR ---
+  camera: ^0.11.0+2
+
+  # --- Data / Serialization ---
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # --- Utilities ---
+  uuid: ^4.4.0
+  intl: ^0.19.0
+  cached_network_image: ^3.3.1
+  lottie: ^3.1.2
+  flutter_animate: ^4.5.0
+  logger: ^2.4.0
+
+  # --- UI / Icons ---
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # --- Code Generation ---
+  build_runner: ^2.4.11
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  riverpod_generator: ^2.6.0
+
+  # --- Linting ---
+  flutter_lints: ^4.0.0
+  custom_lint: ^0.7.3
+  riverpod_lint: ^2.6.3
+
+dependency_overrides:
+  analyzer_plugin: ^0.13.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/lottie/
+    - assets/audio/
+
+  shaders:
+    - lib/shaders/cloth_physics.frag
+    - lib/shaders/liquid_chrome.frag
+    - lib/shaders/vantablack.frag
+    - lib/shaders/shatter.frag
