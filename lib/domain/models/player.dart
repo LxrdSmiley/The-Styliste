@@ -14,6 +14,17 @@ enum CareerPath {
   mogul,
 }
 
+extension CareerPathExtension on CareerPath {
+  String get displayName {
+    switch (this) {
+      case CareerPath.designer:
+        return 'The Artisan';
+      case CareerPath.mogul:
+        return 'The Architect';
+    }
+  }
+}
+
 /// Starting HQ city and market tier (GDD §1.1 Screen 4)
 enum HqCity {
   @JsonValue('new_york')
@@ -45,9 +56,32 @@ class Player with _$Player {
     @Default(0) int totalXp,
     @Default(false) bool onboardingComplete,
     @Default(false) bool isAnonymous,
+    // --- Ascension Fields (GDD v6 §3.5) ---
+    @Default(false) bool isJointVenture,
+    @Default(0) int sovereignMultipliers,
+    DateTime? jointVentureUnlockedAt,
     DateTime? createdAt,
     DateTime? lastActiveAt,
   }) = _Player;
 
+  const Player._();
+
   factory Player.fromJson(Map<String, dynamic> json) => _$PlayerFromJson(json);
+
+  /// Can unlock Joint Venture at Rank 50
+  bool get canUnlockJointVenture => brandRank >= 50 && !isJointVenture;
+
+  /// Can memorialize at Rank 100
+  bool get canMemorialize => brandRank >= 100;
+
+  /// Sovereign multiplier bonus: +25% per stamp (max 500% at 20 stamps)
+  /// Applied to both Hype Score and idle income globally
+  double get sovereignMultiplierBonus => 1.0 + (sovereignMultipliers * 0.25);
+
+  /// Formatted bonus display (e.g., "+125%")
+  String get sovereignMultiplierDisplay => 
+      '+${(sovereignMultiplierBonus - 1.0) * 100.toInt()}%';
+
+  /// Total memorializations / sovereign multipliers count
+  int get memorializationCount => sovereignMultipliers;
 }

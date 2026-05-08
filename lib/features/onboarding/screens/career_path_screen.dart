@@ -52,33 +52,14 @@ class _CareerPathScreenState extends ConsumerState<CareerPathScreen> {
   }
 
   Future<void> _commitProfile(CareerPath path) async {
-    final OnboardingNotifier notifier =
-        ref.read(onboardingProvider.notifier);
+    // Directive G: Accumulate state, don't create profile yet
+    final OnboardingNotifier notifier = ref.read(onboardingProvider.notifier);
     notifier.setPath(path);
-
-    // Default HQ city to New York if not set (Brand Selection is Phase 1c).
-    final OnboardingState state = ref.read(onboardingProvider);
-    final HqCity city = state.selectedCity ?? HqCity.newYork;
-    notifier.setCity(city);
-    notifier.setCommitting(value: true);
-
-    final String uid = ref.read(activeUidProvider);
-
-    try {
-      await const SupabasePlayerRepository().createPlayerProfile(
-        uid: uid,
-        brandName: state.brandName,
-        path: path,
-        hqCity: city,
-      );
-      notifier.setCommitting(value: false);
-
-      if (!mounted) return;
-      unawaited(HapticFeedback.heavyImpact());
-      context.go(AppRouter.hq);
-    } catch (e) {
-      notifier.setCommitError(e.toString());
-    }
+    
+    // Navigate to Ascension Confirmation (Screen 7) for final review
+    if (!mounted) return;
+    unawaited(HapticFeedback.heavyImpact());
+    context.push(AppRouter.onboardingWhatsNext);
   }
 
   @override

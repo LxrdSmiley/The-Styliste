@@ -40,6 +40,17 @@ class Brand with _$Brand {
     @Default(50) int founderRep,
     // Luxe Tokens — hard currency (GDD §9.8); minted by validate-iap Edge Function.
     @Default(0) int luxeTokens,
+    // Directive H: Crisis Engine — Tarnish & Kintsugi (GDD §8.9.2)
+    @Default(0) int currentTarnish,      // 0-100 reputation damage
+    @Default(0) int kintsugiLevel,       // Number of successful repairs
+    @Default(0) int totalScandalsSurvived,
+    @Default(0) int prestigeTokens,      // Future Gacha system
+    String? marketTier,                  // high_luxury / mid_luxury / mass_market
+    Map<String, dynamic>? avatarConfiguration,
+    // Directive L: Supply Chain & Buffer Stock Engine (GDD §12.1.2)
+    @Default(5000) int warehouseCapacity,     // Max inventory storage
+    @Default(0) int currentInventoryValue,    // Current stored inventory
+    @Default(1) int logisticsLevel,           // Warehouse upgrade tier
   }) = _Brand;
 
   factory Brand.fromJson(Map<String, dynamic> json) => _$BrandFromJson(json);

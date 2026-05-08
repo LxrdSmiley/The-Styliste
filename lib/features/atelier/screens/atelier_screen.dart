@@ -11,7 +11,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../domain/models/design.dart';
 import '../providers/mint_design_provider.dart';
 import '../widgets/fabric_swatch_panel.dart';
 import '../widgets/garment_canvas.dart';
@@ -66,28 +68,17 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
     setState(() => _isMinting = true);
 
     try {
-      await ref.read(
+      final Design design = await ref.read(
         mintDesignProvider(
           _selectedDye.toARGB32().toRadixString(16).padLeft(8, '0').substring(2),
         ).future,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: AppColors.obsidianCard,
-            content: Text(
-              'ALPHA MINTED',
-              style: TextStyle(
-                color: AppColors.gold,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2.0,
-              ),
-            ),
-            duration: Duration(seconds: 2),
-          ),
+        // Navigate to Drop Preview with Vex Critic integration
+        context.push(
+          AppRouter.atelierDropPreview,
+          extra: design,
         );
-        // Return to HQ after successful mint.
-        context.pop();
       }
     } catch (_) {
       if (mounted) {

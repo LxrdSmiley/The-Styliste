@@ -84,5 +84,5 @@ flutter:
   shaders:
     - lib/shaders/cloth_physics.frag
     - lib/shaders/liquid_chrome.frag
-    - lib/shaders/vantablack.frag
+    - lib/shaders/liquid_gold.frag
     - lib/shaders/shatter.frag

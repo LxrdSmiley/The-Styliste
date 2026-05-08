@@ -57,7 +57,8 @@ class _SovereignRegistryScreenState
   void _onConfirm() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     HapticFeedback.mediumImpact();
-    context.go(AppRouter.onboardingCareerPath);
+    // Directive G: Continue to Brand Footprint (Screen 4)
+    context.push(AppRouter.onboardingBrandSelection);
   }
 
   @override
