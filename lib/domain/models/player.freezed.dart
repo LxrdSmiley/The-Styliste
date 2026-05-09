@@ -27,7 +27,11 @@ mixin _$Player {
   int get brandRank => throw _privateConstructorUsedError;
   int get totalXp => throw _privateConstructorUsedError;
   bool get onboardingComplete => throw _privateConstructorUsedError;
-  bool get isAnonymous => throw _privateConstructorUsedError;
+  bool get isAnonymous =>
+      throw _privateConstructorUsedError; // --- Ascension Fields (GDD v6 §3.5) ---
+  bool get isJointVenture => throw _privateConstructorUsedError;
+  int get sovereignMultipliers => throw _privateConstructorUsedError;
+  DateTime? get jointVentureUnlockedAt => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get lastActiveAt => throw _privateConstructorUsedError;
 
@@ -54,6 +58,9 @@ abstract class $PlayerCopyWith<$Res> {
       int totalXp,
       bool onboardingComplete,
       bool isAnonymous,
+      bool isJointVenture,
+      int sovereignMultipliers,
+      DateTime? jointVentureUnlockedAt,
       DateTime? createdAt,
       DateTime? lastActiveAt});
 }
@@ -81,6 +88,9 @@ class _$PlayerCopyWithImpl<$Res, $Val extends Player>
     Object? totalXp = null,
     Object? onboardingComplete = null,
     Object? isAnonymous = null,
+    Object? isJointVenture = null,
+    Object? sovereignMultipliers = null,
+    Object? jointVentureUnlockedAt = freezed,
     Object? createdAt = freezed,
     Object? lastActiveAt = freezed,
   }) {
@@ -117,6 +127,18 @@ class _$PlayerCopyWithImpl<$Res, $Val extends Player>
           ? _value.isAnonymous
           : isAnonymous // ignore: cast_nullable_to_non_nullable
               as bool,
+      isJointVenture: null == isJointVenture
+          ? _value.isJointVenture
+          : isJointVenture // ignore: cast_nullable_to_non_nullable
+              as bool,
+      sovereignMultipliers: null == sovereignMultipliers
+          ? _value.sovereignMultipliers
+          : sovereignMultipliers // ignore: cast_nullable_to_non_nullable
+              as int,
+      jointVentureUnlockedAt: freezed == jointVentureUnlockedAt
+          ? _value.jointVentureUnlockedAt
+          : jointVentureUnlockedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -145,6 +167,9 @@ abstract class _$$PlayerImplCopyWith<$Res> implements $PlayerCopyWith<$Res> {
       int totalXp,
       bool onboardingComplete,
       bool isAnonymous,
+      bool isJointVenture,
+      int sovereignMultipliers,
+      DateTime? jointVentureUnlockedAt,
       DateTime? createdAt,
       DateTime? lastActiveAt});
 }
@@ -170,6 +195,9 @@ class __$$PlayerImplCopyWithImpl<$Res>
     Object? totalXp = null,
     Object? onboardingComplete = null,
     Object? isAnonymous = null,
+    Object? isJointVenture = null,
+    Object? sovereignMultipliers = null,
+    Object? jointVentureUnlockedAt = freezed,
     Object? createdAt = freezed,
     Object? lastActiveAt = freezed,
   }) {
@@ -206,6 +234,18 @@ class __$$PlayerImplCopyWithImpl<$Res>
           ? _value.isAnonymous
           : isAnonymous // ignore: cast_nullable_to_non_nullable
               as bool,
+      isJointVenture: null == isJointVenture
+          ? _value.isJointVenture
+          : isJointVenture // ignore: cast_nullable_to_non_nullable
+              as bool,
+      sovereignMultipliers: null == sovereignMultipliers
+          ? _value.sovereignMultipliers
+          : sovereignMultipliers // ignore: cast_nullable_to_non_nullable
+              as int,
+      jointVentureUnlockedAt: freezed == jointVentureUnlockedAt
+          ? _value.jointVentureUnlockedAt
+          : jointVentureUnlockedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -220,7 +260,7 @@ class __$$PlayerImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$PlayerImpl implements _Player {
+class _$PlayerImpl extends _Player {
   const _$PlayerImpl(
       {required this.id,
       required this.brandName,
@@ -230,8 +270,12 @@ class _$PlayerImpl implements _Player {
       this.totalXp = 0,
       this.onboardingComplete = false,
       this.isAnonymous = false,
+      this.isJointVenture = false,
+      this.sovereignMultipliers = 0,
+      this.jointVentureUnlockedAt,
       this.createdAt,
-      this.lastActiveAt});
+      this.lastActiveAt})
+      : super._();
 
   factory _$PlayerImpl.fromJson(Map<String, dynamic> json) =>
       _$$PlayerImplFromJson(json);
@@ -256,6 +300,15 @@ class _$PlayerImpl implements _Player {
   @override
   @JsonKey()
   final bool isAnonymous;
+// --- Ascension Fields (GDD v6 §3.5) ---
+  @override
+  @JsonKey()
+  final bool isJointVenture;
+  @override
+  @JsonKey()
+  final int sovereignMultipliers;
+  @override
+  final DateTime? jointVentureUnlockedAt;
   @override
   final DateTime? createdAt;
   @override
@@ -263,7 +316,7 @@ class _$PlayerImpl implements _Player {
 
   @override
   String toString() {
-    return 'Player(id: $id, brandName: $brandName, path: $path, hqCity: $hqCity, brandRank: $brandRank, totalXp: $totalXp, onboardingComplete: $onboardingComplete, isAnonymous: $isAnonymous, createdAt: $createdAt, lastActiveAt: $lastActiveAt)';
+    return 'Player(id: $id, brandName: $brandName, path: $path, hqCity: $hqCity, brandRank: $brandRank, totalXp: $totalXp, onboardingComplete: $onboardingComplete, isAnonymous: $isAnonymous, isJointVenture: $isJointVenture, sovereignMultipliers: $sovereignMultipliers, jointVentureUnlockedAt: $jointVentureUnlockedAt, createdAt: $createdAt, lastActiveAt: $lastActiveAt)';
   }
 
   @override
@@ -283,6 +336,12 @@ class _$PlayerImpl implements _Player {
                 other.onboardingComplete == onboardingComplete) &&
             (identical(other.isAnonymous, isAnonymous) ||
                 other.isAnonymous == isAnonymous) &&
+            (identical(other.isJointVenture, isJointVenture) ||
+                other.isJointVenture == isJointVenture) &&
+            (identical(other.sovereignMultipliers, sovereignMultipliers) ||
+                other.sovereignMultipliers == sovereignMultipliers) &&
+            (identical(other.jointVentureUnlockedAt, jointVentureUnlockedAt) ||
+                other.jointVentureUnlockedAt == jointVentureUnlockedAt) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.lastActiveAt, lastActiveAt) ||
@@ -301,6 +360,9 @@ class _$PlayerImpl implements _Player {
       totalXp,
       onboardingComplete,
       isAnonymous,
+      isJointVenture,
+      sovereignMultipliers,
+      jointVentureUnlockedAt,
       createdAt,
       lastActiveAt);
 
@@ -320,7 +382,7 @@ class _$PlayerImpl implements _Player {
   }
 }
 
-abstract class _Player implements Player {
+abstract class _Player extends Player {
   const factory _Player(
       {required final String id,
       required final String brandName,
@@ -330,8 +392,12 @@ abstract class _Player implements Player {
       final int totalXp,
       final bool onboardingComplete,
       final bool isAnonymous,
+      final bool isJointVenture,
+      final int sovereignMultipliers,
+      final DateTime? jointVentureUnlockedAt,
       final DateTime? createdAt,
       final DateTime? lastActiveAt}) = _$PlayerImpl;
+  const _Player._() : super._();
 
   factory _Player.fromJson(Map<String, dynamic> json) = _$PlayerImpl.fromJson;
 
@@ -350,7 +416,13 @@ abstract class _Player implements Player {
   @override
   bool get onboardingComplete;
   @override
-  bool get isAnonymous;
+  bool get isAnonymous; // --- Ascension Fields (GDD v6 §3.5) ---
+  @override
+  bool get isJointVenture;
+  @override
+  int get sovereignMultipliers;
+  @override
+  DateTime? get jointVentureUnlockedAt;
   @override
   DateTime? get createdAt;
   @override

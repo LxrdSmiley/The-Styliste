@@ -94,6 +94,9 @@ abstract final class SupabaseConstants {
   static const String fnExecuteArchivePurchase = 'execute_archive_purchase';
   static const String fnListOnArchive = 'list_on_archive';
   static const String fnCancelArchiveListing = 'cancel_archive_listing';
+
+  // --- Archive Tables ---
+  static const String tableProvenanceLedger = 'provenance_ledger';
   
   // --- Directive L: Supply Chain RPCs ---
   static const String fnProcessIdleIncome = 'process_idle_income';

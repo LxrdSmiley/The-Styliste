@@ -15,6 +15,12 @@ _$PlayerImpl _$$PlayerImplFromJson(Map<String, dynamic> json) => _$PlayerImpl(
       totalXp: (json['totalXp'] as num?)?.toInt() ?? 0,
       onboardingComplete: json['onboardingComplete'] as bool? ?? false,
       isAnonymous: json['isAnonymous'] as bool? ?? false,
+      isJointVenture: json['isJointVenture'] as bool? ?? false,
+      sovereignMultipliers:
+          (json['sovereignMultipliers'] as num?)?.toInt() ?? 0,
+      jointVentureUnlockedAt: json['jointVentureUnlockedAt'] == null
+          ? null
+          : DateTime.parse(json['jointVentureUnlockedAt'] as String),
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
@@ -33,6 +39,10 @@ Map<String, dynamic> _$$PlayerImplToJson(_$PlayerImpl instance) =>
       'totalXp': instance.totalXp,
       'onboardingComplete': instance.onboardingComplete,
       'isAnonymous': instance.isAnonymous,
+      'isJointVenture': instance.isJointVenture,
+      'sovereignMultipliers': instance.sovereignMultipliers,
+      'jointVentureUnlockedAt':
+          instance.jointVentureUnlockedAt?.toIso8601String(),
       'createdAt': instance.createdAt?.toIso8601String(),
       'lastActiveAt': instance.lastActiveAt?.toIso8601String(),
     };

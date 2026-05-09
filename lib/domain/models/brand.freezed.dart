@@ -40,7 +40,24 @@ mixin _$Brand {
       throw _privateConstructorUsedError; // Founder Rep (GDD §8.9.8)
   int get founderRep =>
       throw _privateConstructorUsedError; // Luxe Tokens — hard currency (GDD §9.8); minted by validate-iap Edge Function.
-  int get luxeTokens => throw _privateConstructorUsedError;
+  int get luxeTokens =>
+      throw _privateConstructorUsedError; // Directive H: Crisis Engine — Tarnish & Kintsugi (GDD §8.9.2)
+  int get currentTarnish =>
+      throw _privateConstructorUsedError; // 0-100 reputation damage
+  int get kintsugiLevel =>
+      throw _privateConstructorUsedError; // Number of successful repairs
+  int get totalScandalsSurvived => throw _privateConstructorUsedError;
+  int get prestigeTokens =>
+      throw _privateConstructorUsedError; // Future Gacha system
+  String? get marketTier =>
+      throw _privateConstructorUsedError; // high_luxury / mid_luxury / mass_market
+  Map<String, dynamic>? get avatarConfiguration =>
+      throw _privateConstructorUsedError; // Directive L: Supply Chain & Buffer Stock Engine (GDD §12.1.2)
+  int get warehouseCapacity =>
+      throw _privateConstructorUsedError; // Max inventory storage
+  int get currentInventoryValue =>
+      throw _privateConstructorUsedError; // Current stored inventory
+  int get logisticsLevel => throw _privateConstructorUsedError;
 
   /// Serializes this Brand to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -70,7 +87,16 @@ abstract class $BrandCopyWith<$Res> {
       bool dppEnabled,
       bool dppFullyMapped,
       int founderRep,
-      int luxeTokens});
+      int luxeTokens,
+      int currentTarnish,
+      int kintsugiLevel,
+      int totalScandalsSurvived,
+      int prestigeTokens,
+      String? marketTier,
+      Map<String, dynamic>? avatarConfiguration,
+      int warehouseCapacity,
+      int currentInventoryValue,
+      int logisticsLevel});
 }
 
 /// @nodoc
@@ -102,6 +128,15 @@ class _$BrandCopyWithImpl<$Res, $Val extends Brand>
     Object? dppFullyMapped = null,
     Object? founderRep = null,
     Object? luxeTokens = null,
+    Object? currentTarnish = null,
+    Object? kintsugiLevel = null,
+    Object? totalScandalsSurvived = null,
+    Object? prestigeTokens = null,
+    Object? marketTier = freezed,
+    Object? avatarConfiguration = freezed,
+    Object? warehouseCapacity = null,
+    Object? currentInventoryValue = null,
+    Object? logisticsLevel = null,
   }) {
     return _then(_value.copyWith(
       playerId: null == playerId
@@ -160,6 +195,42 @@ class _$BrandCopyWithImpl<$Res, $Val extends Brand>
           ? _value.luxeTokens
           : luxeTokens // ignore: cast_nullable_to_non_nullable
               as int,
+      currentTarnish: null == currentTarnish
+          ? _value.currentTarnish
+          : currentTarnish // ignore: cast_nullable_to_non_nullable
+              as int,
+      kintsugiLevel: null == kintsugiLevel
+          ? _value.kintsugiLevel
+          : kintsugiLevel // ignore: cast_nullable_to_non_nullable
+              as int,
+      totalScandalsSurvived: null == totalScandalsSurvived
+          ? _value.totalScandalsSurvived
+          : totalScandalsSurvived // ignore: cast_nullable_to_non_nullable
+              as int,
+      prestigeTokens: null == prestigeTokens
+          ? _value.prestigeTokens
+          : prestigeTokens // ignore: cast_nullable_to_non_nullable
+              as int,
+      marketTier: freezed == marketTier
+          ? _value.marketTier
+          : marketTier // ignore: cast_nullable_to_non_nullable
+              as String?,
+      avatarConfiguration: freezed == avatarConfiguration
+          ? _value.avatarConfiguration
+          : avatarConfiguration // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+      warehouseCapacity: null == warehouseCapacity
+          ? _value.warehouseCapacity
+          : warehouseCapacity // ignore: cast_nullable_to_non_nullable
+              as int,
+      currentInventoryValue: null == currentInventoryValue
+          ? _value.currentInventoryValue
+          : currentInventoryValue // ignore: cast_nullable_to_non_nullable
+              as int,
+      logisticsLevel: null == logisticsLevel
+          ? _value.logisticsLevel
+          : logisticsLevel // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -185,7 +256,16 @@ abstract class _$$BrandImplCopyWith<$Res> implements $BrandCopyWith<$Res> {
       bool dppEnabled,
       bool dppFullyMapped,
       int founderRep,
-      int luxeTokens});
+      int luxeTokens,
+      int currentTarnish,
+      int kintsugiLevel,
+      int totalScandalsSurvived,
+      int prestigeTokens,
+      String? marketTier,
+      Map<String, dynamic>? avatarConfiguration,
+      int warehouseCapacity,
+      int currentInventoryValue,
+      int logisticsLevel});
 }
 
 /// @nodoc
@@ -215,6 +295,15 @@ class __$$BrandImplCopyWithImpl<$Res>
     Object? dppFullyMapped = null,
     Object? founderRep = null,
     Object? luxeTokens = null,
+    Object? currentTarnish = null,
+    Object? kintsugiLevel = null,
+    Object? totalScandalsSurvived = null,
+    Object? prestigeTokens = null,
+    Object? marketTier = freezed,
+    Object? avatarConfiguration = freezed,
+    Object? warehouseCapacity = null,
+    Object? currentInventoryValue = null,
+    Object? logisticsLevel = null,
   }) {
     return _then(_$BrandImpl(
       playerId: null == playerId
@@ -273,6 +362,42 @@ class __$$BrandImplCopyWithImpl<$Res>
           ? _value.luxeTokens
           : luxeTokens // ignore: cast_nullable_to_non_nullable
               as int,
+      currentTarnish: null == currentTarnish
+          ? _value.currentTarnish
+          : currentTarnish // ignore: cast_nullable_to_non_nullable
+              as int,
+      kintsugiLevel: null == kintsugiLevel
+          ? _value.kintsugiLevel
+          : kintsugiLevel // ignore: cast_nullable_to_non_nullable
+              as int,
+      totalScandalsSurvived: null == totalScandalsSurvived
+          ? _value.totalScandalsSurvived
+          : totalScandalsSurvived // ignore: cast_nullable_to_non_nullable
+              as int,
+      prestigeTokens: null == prestigeTokens
+          ? _value.prestigeTokens
+          : prestigeTokens // ignore: cast_nullable_to_non_nullable
+              as int,
+      marketTier: freezed == marketTier
+          ? _value.marketTier
+          : marketTier // ignore: cast_nullable_to_non_nullable
+              as String?,
+      avatarConfiguration: freezed == avatarConfiguration
+          ? _value._avatarConfiguration
+          : avatarConfiguration // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+      warehouseCapacity: null == warehouseCapacity
+          ? _value.warehouseCapacity
+          : warehouseCapacity // ignore: cast_nullable_to_non_nullable
+              as int,
+      currentInventoryValue: null == currentInventoryValue
+          ? _value.currentInventoryValue
+          : currentInventoryValue // ignore: cast_nullable_to_non_nullable
+              as int,
+      logisticsLevel: null == logisticsLevel
+          ? _value.logisticsLevel
+          : logisticsLevel // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -294,7 +419,17 @@ class _$BrandImpl implements _Brand {
       this.dppEnabled = false,
       this.dppFullyMapped = false,
       this.founderRep = 50,
-      this.luxeTokens = 0});
+      this.luxeTokens = 0,
+      this.currentTarnish = 0,
+      this.kintsugiLevel = 0,
+      this.totalScandalsSurvived = 0,
+      this.prestigeTokens = 0,
+      this.marketTier,
+      final Map<String, dynamic>? avatarConfiguration,
+      this.warehouseCapacity = 5000,
+      this.currentInventoryValue = 0,
+      this.logisticsLevel = 1})
+      : _avatarConfiguration = avatarConfiguration;
 
   factory _$BrandImpl.fromJson(Map<String, dynamic> json) =>
       _$$BrandImplFromJson(json);
@@ -345,10 +480,53 @@ class _$BrandImpl implements _Brand {
   @override
   @JsonKey()
   final int luxeTokens;
+// Directive H: Crisis Engine — Tarnish & Kintsugi (GDD §8.9.2)
+  @override
+  @JsonKey()
+  final int currentTarnish;
+// 0-100 reputation damage
+  @override
+  @JsonKey()
+  final int kintsugiLevel;
+// Number of successful repairs
+  @override
+  @JsonKey()
+  final int totalScandalsSurvived;
+  @override
+  @JsonKey()
+  final int prestigeTokens;
+// Future Gacha system
+  @override
+  final String? marketTier;
+// high_luxury / mid_luxury / mass_market
+  final Map<String, dynamic>? _avatarConfiguration;
+// high_luxury / mid_luxury / mass_market
+  @override
+  Map<String, dynamic>? get avatarConfiguration {
+    final value = _avatarConfiguration;
+    if (value == null) return null;
+    if (_avatarConfiguration is EqualUnmodifiableMapView)
+      return _avatarConfiguration;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
+
+// Directive L: Supply Chain & Buffer Stock Engine (GDD §12.1.2)
+  @override
+  @JsonKey()
+  final int warehouseCapacity;
+// Max inventory storage
+  @override
+  @JsonKey()
+  final int currentInventoryValue;
+// Current stored inventory
+  @override
+  @JsonKey()
+  final int logisticsLevel;
 
   @override
   String toString() {
-    return 'Brand(playerId: $playerId, heat: $heat, hypoScore: $hypoScore, followers: $followers, idleRevenuePerHour: $idleRevenuePerHour, totalRevenue: $totalRevenue, momentumBuffActive: $momentumBuffActive, momentumBuffUntil: $momentumBuffUntil, lastActiveAt: $lastActiveAt, sustainabilityTier: $sustainabilityTier, dppEnabled: $dppEnabled, dppFullyMapped: $dppFullyMapped, founderRep: $founderRep, luxeTokens: $luxeTokens)';
+    return 'Brand(playerId: $playerId, heat: $heat, hypoScore: $hypoScore, followers: $followers, idleRevenuePerHour: $idleRevenuePerHour, totalRevenue: $totalRevenue, momentumBuffActive: $momentumBuffActive, momentumBuffUntil: $momentumBuffUntil, lastActiveAt: $lastActiveAt, sustainabilityTier: $sustainabilityTier, dppEnabled: $dppEnabled, dppFullyMapped: $dppFullyMapped, founderRep: $founderRep, luxeTokens: $luxeTokens, currentTarnish: $currentTarnish, kintsugiLevel: $kintsugiLevel, totalScandalsSurvived: $totalScandalsSurvived, prestigeTokens: $prestigeTokens, marketTier: $marketTier, avatarConfiguration: $avatarConfiguration, warehouseCapacity: $warehouseCapacity, currentInventoryValue: $currentInventoryValue, logisticsLevel: $logisticsLevel)';
   }
 
   @override
@@ -382,27 +560,55 @@ class _$BrandImpl implements _Brand {
             (identical(other.founderRep, founderRep) ||
                 other.founderRep == founderRep) &&
             (identical(other.luxeTokens, luxeTokens) ||
-                other.luxeTokens == luxeTokens));
+                other.luxeTokens == luxeTokens) &&
+            (identical(other.currentTarnish, currentTarnish) ||
+                other.currentTarnish == currentTarnish) &&
+            (identical(other.kintsugiLevel, kintsugiLevel) ||
+                other.kintsugiLevel == kintsugiLevel) &&
+            (identical(other.totalScandalsSurvived, totalScandalsSurvived) ||
+                other.totalScandalsSurvived == totalScandalsSurvived) &&
+            (identical(other.prestigeTokens, prestigeTokens) ||
+                other.prestigeTokens == prestigeTokens) &&
+            (identical(other.marketTier, marketTier) ||
+                other.marketTier == marketTier) &&
+            const DeepCollectionEquality()
+                .equals(other._avatarConfiguration, _avatarConfiguration) &&
+            (identical(other.warehouseCapacity, warehouseCapacity) ||
+                other.warehouseCapacity == warehouseCapacity) &&
+            (identical(other.currentInventoryValue, currentInventoryValue) ||
+                other.currentInventoryValue == currentInventoryValue) &&
+            (identical(other.logisticsLevel, logisticsLevel) ||
+                other.logisticsLevel == logisticsLevel));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      playerId,
-      heat,
-      hypoScore,
-      followers,
-      idleRevenuePerHour,
-      totalRevenue,
-      momentumBuffActive,
-      momentumBuffUntil,
-      lastActiveAt,
-      sustainabilityTier,
-      dppEnabled,
-      dppFullyMapped,
-      founderRep,
-      luxeTokens);
+  int get hashCode => Object.hashAll([
+        runtimeType,
+        playerId,
+        heat,
+        hypoScore,
+        followers,
+        idleRevenuePerHour,
+        totalRevenue,
+        momentumBuffActive,
+        momentumBuffUntil,
+        lastActiveAt,
+        sustainabilityTier,
+        dppEnabled,
+        dppFullyMapped,
+        founderRep,
+        luxeTokens,
+        currentTarnish,
+        kintsugiLevel,
+        totalScandalsSurvived,
+        prestigeTokens,
+        marketTier,
+        const DeepCollectionEquality().hash(_avatarConfiguration),
+        warehouseCapacity,
+        currentInventoryValue,
+        logisticsLevel
+      ]);
 
   /// Create a copy of Brand
   /// with the given fields replaced by the non-null parameter values.
@@ -435,7 +641,16 @@ abstract class _Brand implements Brand {
       final bool dppEnabled,
       final bool dppFullyMapped,
       final int founderRep,
-      final int luxeTokens}) = _$BrandImpl;
+      final int luxeTokens,
+      final int currentTarnish,
+      final int kintsugiLevel,
+      final int totalScandalsSurvived,
+      final int prestigeTokens,
+      final String? marketTier,
+      final Map<String, dynamic>? avatarConfiguration,
+      final int warehouseCapacity,
+      final int currentInventoryValue,
+      final int logisticsLevel}) = _$BrandImpl;
 
   factory _Brand.fromJson(Map<String, dynamic> json) = _$BrandImpl.fromJson;
 
@@ -469,7 +684,26 @@ abstract class _Brand implements Brand {
   @override
   int get founderRep; // Luxe Tokens — hard currency (GDD §9.8); minted by validate-iap Edge Function.
   @override
-  int get luxeTokens;
+  int get luxeTokens; // Directive H: Crisis Engine — Tarnish & Kintsugi (GDD §8.9.2)
+  @override
+  int get currentTarnish; // 0-100 reputation damage
+  @override
+  int get kintsugiLevel; // Number of successful repairs
+  @override
+  int get totalScandalsSurvived;
+  @override
+  int get prestigeTokens; // Future Gacha system
+  @override
+  String? get marketTier; // high_luxury / mid_luxury / mass_market
+  @override
+  Map<String, dynamic>?
+      get avatarConfiguration; // Directive L: Supply Chain & Buffer Stock Engine (GDD §12.1.2)
+  @override
+  int get warehouseCapacity; // Max inventory storage
+  @override
+  int get currentInventoryValue; // Current stored inventory
+  @override
+  int get logisticsLevel;
 
   /// Create a copy of Brand
   /// with the given fields replaced by the non-null parameter values.

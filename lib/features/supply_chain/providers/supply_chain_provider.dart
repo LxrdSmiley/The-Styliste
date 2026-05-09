@@ -72,6 +72,68 @@ class LiquidationNotifier extends StateNotifier<AsyncValue<LiquidationResult?>> 
   void reset() {
     state = const AsyncValue.data(null);
   }
+
+  // ===========================================================================
+  // Directive O: Flash Sale Frenzy — Liquidation with match bonus
+  // ===========================================================================
+
+  /// Liquidate stock with Flash Sale bonus
+  /// matchCount = successful tier matches, bonus = matchCount * 50 Capital
+  Future<Map<String, dynamic>> liquidateStock({required int matchCount}) async {
+    final int bonus = matchCount * 50;
+
+    try {
+      final SupabaseClient supabase = Supabase.instance.client;
+      final String? userId = supabase.auth.currentUser?.id;
+
+      if (userId == null) {
+        return <String, dynamic>{
+          'success': false,
+          'error': 'Not authenticated',
+        };
+      }
+
+      // Execute base liquidation
+      final Map<String, dynamic> result = await supabase.rpc(
+        'execute_liquidation',
+        params: <String, dynamic>{
+          'p_player_id': userId,
+        },
+      );
+
+      // Inject Flash Sale bonus
+      if (bonus > 0) {
+        await supabase.rpc(
+          'inject_capital_bonus',
+          params: <String, dynamic>{
+            'p_player_id': userId,
+            'p_amount': bonus,
+            'p_reason': 'flash_sale_frenzy_bonus',
+          },
+        );
+      }
+
+      final LiquidationResult liquidationResult = LiquidationResult(
+        liquidatedAmount: (result['liquidated_amount'] as num?)?.toInt() ?? 0,
+        newInventory: (result['new_inventory'] as num?)?.toInt() ?? 0,
+        newRevenue: ((result['new_revenue'] as num?)?.toDouble() ?? 0.0) + bonus,
+      );
+
+      state = AsyncValue.data(liquidationResult);
+
+      return <String, dynamic>{
+        'success': true,
+        'liquidated_amount': liquidationResult.liquidatedAmount,
+        'bonus_amount': bonus,
+        'total_revenue': liquidationResult.newRevenue,
+      };
+    } catch (e) {
+      return <String, dynamic>{
+        'success': false,
+        'error': 'Flash sale liquidation failed: $e',
+      };
+    }
+  }
 }
 
 final StateNotifierProvider<LiquidationNotifier, AsyncValue<LiquidationResult?>>
@@ -122,6 +184,53 @@ class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
 
   void reset() {
     state = const AsyncValue.data(null);
+  }
+
+  // ===========================================================================
+  // Directive O: Supplier Raid — Logistics discount or halt
+  // ===========================================================================
+
+  /// Apply Supplier Raid result
+  /// Win = 15% discount for 14 days, Loss = immediate halt
+  Future<Map<String, dynamic>> applySupplierRaidResult({required bool won}) async {
+    try {
+      final SupabaseClient supabase = Supabase.instance.client;
+      final String? userId = supabase.auth.currentUser?.id;
+
+      if (userId == null) {
+        return <String, dynamic>{
+          'success': false,
+          'error': 'Not authenticated',
+        };
+      }
+
+      if (won) {
+        // Apply 15% discount for 14 days
+        final Map<String, dynamic> result = await supabase.rpc(
+          'apply_logistics_discount',
+          params: <String, dynamic>{
+            'p_player_id': userId,
+            'p_discount_pct': 15.0,
+            'p_duration_days': 14,
+          },
+        );
+        return result as Map<String, dynamic>;
+      } else {
+        // Trigger supply chain halt
+        final Map<String, dynamic> result = await supabase.rpc(
+          'halt_supply_chain',
+          params: <String, dynamic>{
+            'p_player_id': userId,
+          },
+        );
+        return result as Map<String, dynamic>;
+      }
+    } catch (e) {
+      return <String, dynamic>{
+        'success': false,
+        'error': 'Supplier raid result failed: $e',
+      };
+    }
   }
 }
 

@@ -40,6 +40,9 @@ dependencies:
   # --- Camera / AR ---
   camera: ^0.11.0+2
 
+  # --- Cloud Save (Directive O) ---
+  games_services: ^4.0.0
+
   # --- Data / Serialization ---
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0

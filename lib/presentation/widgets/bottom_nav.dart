@@ -1,43 +1,73 @@
-// GDD §3.0 — Bottom nav tabs: Atelier/Ledger | Feed | Maison | Bank
-// Path-specific primary tab (Atelier for Designer, Ledger for Mogul)
-// TODO: Wire go_router navigation in Phase 1
+// GDD §3.0 — Bottom nav tabs: HQ | Feed | Maison | Bank
+// Directive O: Wired to go_router with AurelianPalette
+// HQ tab routes to /hq (shell handles Designer/Mogul switching)
 
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
-import '../../domain/models/player.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../core/router/app_router.dart';
+import '../../core/theme/aurelian_theme.dart';
+
+/// BottomNav — Main navigation shell tabs
+/// Uses context.go() for go_router navigation
 class BottomNav extends StatelessWidget {
   const BottomNav({
     required this.currentIndex,
-    required this.path,
-    required this.onTap,
     super.key,
   });
 
   final int currentIndex;
-  final CareerPath path;
-  final ValueChanged<int> onTap;
+
+  void _onItemTapped(BuildContext context, int index) {
+    switch (index) {
+      case 0:
+        context.go(AppRouter.hq);
+      case 1:
+        context.go(AppRouter.feed);
+      case 2:
+        context.go(AppRouter.maison);
+      case 3:
+        context.go(AppRouter.bank);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final String primaryLabel =
-        path == CareerPath.designer ? 'Atelier' : 'Ledger';
-    final IconData primaryIcon =
-        path == CareerPath.designer ? Icons.palette : Icons.bar_chart;
-
     return BottomNavigationBar(
       currentIndex: currentIndex,
-      onTap: onTap,
-      backgroundColor: AppColors.obsidianSurface,
-      selectedItemColor: AppColors.gold,
-      unselectedItemColor: AppColors.grey600,
+      onTap: (int index) => _onItemTapped(context, index),
+      backgroundColor: AurelianPalette.ivory,
+      selectedItemColor: AurelianPalette.champagneGold,
+      unselectedItemColor: AurelianPalette.textTertiary,
       type: BottomNavigationBarType.fixed,
-      items: <BottomNavigationBarItem>[
-        BottomNavigationBarItem(icon: Icon(primaryIcon), label: primaryLabel),
-        const BottomNavigationBarItem(icon: Icon(Icons.public), label: 'Feed'),
-        const BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Maison'),
-        const BottomNavigationBarItem(
-          icon: Icon(Icons.account_balance),
+      selectedLabelStyle: const TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+      ),
+      unselectedLabelStyle: const TextStyle(
+        fontFamily: 'SpaceGrotesk',
+        fontSize: 11,
+      ),
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home),
+          label: 'HQ',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.public_outlined),
+          activeIcon: Icon(Icons.public),
+          label: 'Feed',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.business_outlined),
+          activeIcon: Icon(Icons.business),
+          label: 'Maison',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.account_balance_outlined),
+          activeIcon: Icon(Icons.account_balance),
           label: 'Bank',
         ),
       ],

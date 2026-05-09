@@ -5,6 +5,7 @@
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/ar_tryon/screens/ar_tryon_screen.dart';
 import '../../features/atelier/screens/atelier_screen.dart';
@@ -26,6 +27,9 @@ import '../../features/store/screens/shop_screen.dart';
 import '../../features/talent/screens/casting_room_screen.dart';
 import '../../features/gala/screens/gala_runway_screen.dart';
 import '../../features/archive/screens/archive_market_screen.dart';
+import '../../features/crisis/screens/kintsugi_repair_screen.dart';
+import '../../features/ledger/screens/bank_screen.dart';
+import '../../features/ledger/screens/equity_screen.dart';
 import '../../features/store/screens/aurelian_storefront_screen.dart';
 import '../../presentation/screens/main_shell.dart';
 
@@ -47,8 +51,7 @@ abstract final class AppRouter {
   static const String ledger = '/ledger';
   static const String maison = '/maison';
   static const String bank = '/bank';
-  static const String worldMap = '/world-map';
-  static const String equity = '/equity';
+  static const String districtMap = '/world-map';
   static const String events = '/events';
   static const String profile = '/profile';
   static const String settings = '/settings';
@@ -76,6 +79,24 @@ abstract final class AppRouter {
 
   static final GoRouter router = GoRouter(
     initialLocation: onboardingAurelianGate,
+    // Directive O: Redirect returning players to HQ
+    redirect: (BuildContext context, GoRouterState state) {
+      final String location = state.matchedLocation;
+      final bool isOnboardingRoute = location.startsWith('/onboarding');
+
+      // Check if user is authenticated and has completed onboarding
+      final User? currentUser = Supabase.instance.client.auth.currentUser;
+      final bool isAuthenticated = currentUser != null;
+
+      // If authenticated and trying to access onboarding, redirect to HQ
+      if (isAuthenticated && isOnboardingRoute) {
+        // TODO: Check if player profile exists in players table
+        // For now, assume authenticated user has completed onboarding
+        return hq;
+      }
+
+      return null; // No redirect
+    },
     routes: <RouteBase>[
       // --- Onboarding (GDD §1.1) — Directive G Complete Sequence ---
       GoRoute(
@@ -206,6 +227,18 @@ abstract final class AppRouter {
         path: districtMap,
         builder: (BuildContext context, GoRouterState state) =>
             const DistrictMapScreen(),
+      ),
+      
+      // --- Directive O: Mogul Terminals ---
+      GoRoute(
+        path: bank,
+        builder: (BuildContext context, GoRouterState state) =>
+            const BankScreen(),
+      ),
+      GoRoute(
+        path: equity,
+        builder: (BuildContext context, GoRouterState state) =>
+            const EquityScreen(),
       ),
 
       // --- Hall of Sovereigns: Rank 100 memorialization (GDD v6) ---

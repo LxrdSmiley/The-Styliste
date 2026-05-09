@@ -113,6 +113,85 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
   void clearError() {
     if (mounted) state = state.copyWith(clearError: true);
   }
+
+  // ===========================================================================
+  // Directive O: Mini-Game Economic Wiring
+  // ===========================================================================
+
+  /// Apply Price War Blitz result: buff or debuff idle multiplier
+  /// Win = +35% for 12h, Loss = -15% for 6h
+  Future<Map<String, dynamic>> applyPriceWarResult({required bool won}) async {
+    final double multiplier = won ? 1.35 : 0.85;
+    final int durationHours = won ? 12 : 6;
+
+    try {
+      final Map<String, dynamic> result = await SupabaseService.client.rpc(
+        'apply_idle_multiplier',
+        params: <String, dynamic>{
+          'p_player_id': SupabaseService.client.auth.currentUser!.id,
+          'p_multiplier': multiplier,
+          'p_duration_hours': durationHours,
+        },
+      );
+      return result as Map<String, dynamic>;
+    } catch (e) {
+      return <String, dynamic>{
+        'success': false,
+        'error': 'Failed to apply price war result: $e',
+      };
+    }
+  }
+
+  /// Apply Power Move Combo: store multiplier for next liquidation
+  Future<Map<String, dynamic>> applyPowerMoveCombo({required double multiplier}) async {
+    try {
+      await SupabaseService.client
+          .from(SupabaseConstants.tableBrandState)
+          .update(<String, dynamic>{
+            'pending_power_move_multiplier': multiplier,
+            'power_move_expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+          })
+          .eq('player_id', SupabaseService.client.auth.currentUser!.id);
+
+      return <String, dynamic>{
+        'success': true,
+        'multiplier': multiplier,
+        'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+      };
+    } catch (e) {
+      return <String, dynamic>{
+        'success': false,
+        'error': 'Failed to store power move combo: $e',
+      };
+    }
+  }
+
+  /// Apply Hostile Takeover result: inject 5000 Capital if 100% ownership
+  Future<Map<String, dynamic>> applyTakeoverResult({required double finalPct}) async {
+    if (finalPct != 100.0) {
+      return <String, dynamic>{
+        'success': false,
+        'reason': 'Takeover incomplete: $finalPct%',
+      };
+    }
+
+    try {
+      final Map<String, dynamic> result = await SupabaseService.client.rpc(
+        'inject_capital_bonus',
+        params: <String, dynamic>{
+          'p_player_id': SupabaseService.client.auth.currentUser!.id,
+          'p_amount': 5000,
+          'p_reason': 'hostile_takeover_victory',
+        },
+      );
+      return result as Map<String, dynamic>;
+    } catch (e) {
+      return <String, dynamic>{
+        'success': false,
+        'error': 'Failed to inject takeover bonus: $e',
+      };
+    }
+  }
 }
 
 final StateNotifierProvider<UpgradeStoreNotifier, UpgradeStoreState>
