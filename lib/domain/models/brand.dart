@@ -6,6 +6,7 @@
 // double' crash loops in the ticker and any other double consumer.
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'brand.freezed.dart';
 part 'brand.g.dart';
@@ -21,11 +22,12 @@ class _SafeDouble implements JsonConverter<double, Object?> {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake)
 class Brand with _$Brand {
   const factory Brand({
     required String playerId,
     @Default(50) int heat,          // 0–100 Brand Heat (GDD §8.9.7)
-    @_SafeDouble() @Default(0.0) double hypoScore,
+    @_SafeDouble() @Default(0.0) double hypeScore,
     @Default(0) int followers,
     @_SafeDouble() @Default(0.0) double idleRevenuePerHour,
     @_SafeDouble() @Default(0.0) double totalRevenue,

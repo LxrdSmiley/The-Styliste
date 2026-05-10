@@ -607,7 +607,7 @@ class _CastingControls extends StatelessWidget {
           Expanded(
             child: _CastButton(
               label: 'SINGLE CAST',
-              cost: TalentTier.castingCost,
+              cost: TalentTierExtension.castingCost,
               enabled: canAffordSingle && !isLoading,
               onTap: onSingleCast,
             ),
@@ -617,7 +617,7 @@ class _CastingControls extends StatelessWidget {
           Expanded(
             child: _CastButton(
               label: 'TEN CAST',
-              cost: TalentTier.castingCostTen,
+              cost: TalentTierExtension.castingCostTen,
               enabled: canAffordTen && !isLoading,
               onTap: onTenCast,
               isHighlighted: true,

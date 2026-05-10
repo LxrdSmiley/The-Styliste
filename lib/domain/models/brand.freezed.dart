@@ -24,7 +24,7 @@ mixin _$Brand {
   int get heat =>
       throw _privateConstructorUsedError; // 0–100 Brand Heat (GDD §8.9.7)
   @_SafeDouble()
-  double get hypoScore => throw _privateConstructorUsedError;
+  double get hypeScore => throw _privateConstructorUsedError;
   int get followers => throw _privateConstructorUsedError;
   @_SafeDouble()
   double get idleRevenuePerHour => throw _privateConstructorUsedError;
@@ -76,7 +76,7 @@ abstract class $BrandCopyWith<$Res> {
   $Res call(
       {String playerId,
       int heat,
-      @_SafeDouble() double hypoScore,
+      @_SafeDouble() double hypeScore,
       int followers,
       @_SafeDouble() double idleRevenuePerHour,
       @_SafeDouble() double totalRevenue,
@@ -116,7 +116,7 @@ class _$BrandCopyWithImpl<$Res, $Val extends Brand>
   $Res call({
     Object? playerId = null,
     Object? heat = null,
-    Object? hypoScore = null,
+    Object? hypeScore = null,
     Object? followers = null,
     Object? idleRevenuePerHour = null,
     Object? totalRevenue = null,
@@ -147,9 +147,9 @@ class _$BrandCopyWithImpl<$Res, $Val extends Brand>
           ? _value.heat
           : heat // ignore: cast_nullable_to_non_nullable
               as int,
-      hypoScore: null == hypoScore
-          ? _value.hypoScore
-          : hypoScore // ignore: cast_nullable_to_non_nullable
+      hypeScore: null == hypeScore
+          ? _value.hypeScore
+          : hypeScore // ignore: cast_nullable_to_non_nullable
               as double,
       followers: null == followers
           ? _value.followers
@@ -245,7 +245,7 @@ abstract class _$$BrandImplCopyWith<$Res> implements $BrandCopyWith<$Res> {
   $Res call(
       {String playerId,
       int heat,
-      @_SafeDouble() double hypoScore,
+      @_SafeDouble() double hypeScore,
       int followers,
       @_SafeDouble() double idleRevenuePerHour,
       @_SafeDouble() double totalRevenue,
@@ -283,7 +283,7 @@ class __$$BrandImplCopyWithImpl<$Res>
   $Res call({
     Object? playerId = null,
     Object? heat = null,
-    Object? hypoScore = null,
+    Object? hypeScore = null,
     Object? followers = null,
     Object? idleRevenuePerHour = null,
     Object? totalRevenue = null,
@@ -314,9 +314,9 @@ class __$$BrandImplCopyWithImpl<$Res>
           ? _value.heat
           : heat // ignore: cast_nullable_to_non_nullable
               as int,
-      hypoScore: null == hypoScore
-          ? _value.hypoScore
-          : hypoScore // ignore: cast_nullable_to_non_nullable
+      hypeScore: null == hypeScore
+          ? _value.hypeScore
+          : hypeScore // ignore: cast_nullable_to_non_nullable
               as double,
       followers: null == followers
           ? _value.followers
@@ -408,7 +408,7 @@ class _$BrandImpl implements _Brand {
   const _$BrandImpl(
       {required this.playerId,
       this.heat = 50,
-      @_SafeDouble() this.hypoScore = 0.0,
+      @_SafeDouble() this.hypeScore = 0.0,
       this.followers = 0,
       @_SafeDouble() this.idleRevenuePerHour = 0.0,
       @_SafeDouble() this.totalRevenue = 0.0,
@@ -443,7 +443,7 @@ class _$BrandImpl implements _Brand {
   @override
   @JsonKey()
   @_SafeDouble()
-  final double hypoScore;
+  final double hypeScore;
   @override
   @JsonKey()
   final int followers;
@@ -526,7 +526,7 @@ class _$BrandImpl implements _Brand {
 
   @override
   String toString() {
-    return 'Brand(playerId: $playerId, heat: $heat, hypoScore: $hypoScore, followers: $followers, idleRevenuePerHour: $idleRevenuePerHour, totalRevenue: $totalRevenue, momentumBuffActive: $momentumBuffActive, momentumBuffUntil: $momentumBuffUntil, lastActiveAt: $lastActiveAt, sustainabilityTier: $sustainabilityTier, dppEnabled: $dppEnabled, dppFullyMapped: $dppFullyMapped, founderRep: $founderRep, luxeTokens: $luxeTokens, currentTarnish: $currentTarnish, kintsugiLevel: $kintsugiLevel, totalScandalsSurvived: $totalScandalsSurvived, prestigeTokens: $prestigeTokens, marketTier: $marketTier, avatarConfiguration: $avatarConfiguration, warehouseCapacity: $warehouseCapacity, currentInventoryValue: $currentInventoryValue, logisticsLevel: $logisticsLevel)';
+    return 'Brand(playerId: $playerId, heat: $heat, hypeScore: $hypeScore, followers: $followers, idleRevenuePerHour: $idleRevenuePerHour, totalRevenue: $totalRevenue, momentumBuffActive: $momentumBuffActive, momentumBuffUntil: $momentumBuffUntil, lastActiveAt: $lastActiveAt, sustainabilityTier: $sustainabilityTier, dppEnabled: $dppEnabled, dppFullyMapped: $dppFullyMapped, founderRep: $founderRep, luxeTokens: $luxeTokens, currentTarnish: $currentTarnish, kintsugiLevel: $kintsugiLevel, totalScandalsSurvived: $totalScandalsSurvived, prestigeTokens: $prestigeTokens, marketTier: $marketTier, avatarConfiguration: $avatarConfiguration, warehouseCapacity: $warehouseCapacity, currentInventoryValue: $currentInventoryValue, logisticsLevel: $logisticsLevel)';
   }
 
   @override
@@ -537,8 +537,8 @@ class _$BrandImpl implements _Brand {
             (identical(other.playerId, playerId) ||
                 other.playerId == playerId) &&
             (identical(other.heat, heat) || other.heat == heat) &&
-            (identical(other.hypoScore, hypoScore) ||
-                other.hypoScore == hypoScore) &&
+            (identical(other.hypeScore, hypeScore) ||
+                other.hypeScore == hypeScore) &&
             (identical(other.followers, followers) ||
                 other.followers == followers) &&
             (identical(other.idleRevenuePerHour, idleRevenuePerHour) ||
@@ -587,7 +587,7 @@ class _$BrandImpl implements _Brand {
         runtimeType,
         playerId,
         heat,
-        hypoScore,
+        hypeScore,
         followers,
         idleRevenuePerHour,
         totalRevenue,
@@ -630,7 +630,7 @@ abstract class _Brand implements Brand {
   const factory _Brand(
       {required final String playerId,
       final int heat,
-      @_SafeDouble() final double hypoScore,
+      @_SafeDouble() final double hypeScore,
       final int followers,
       @_SafeDouble() final double idleRevenuePerHour,
       @_SafeDouble() final double totalRevenue,
@@ -660,7 +660,7 @@ abstract class _Brand implements Brand {
   int get heat; // 0–100 Brand Heat (GDD §8.9.7)
   @override
   @_SafeDouble()
-  double get hypoScore;
+  double get hypeScore;
   @override
   int get followers;
   @override

@@ -2,6 +2,7 @@
 // Freezed + JsonSerializable for type-safe serialization (PROJECT_RULES §3)
 
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 part 'player.freezed.dart';
 part 'player.g.dart';
@@ -46,6 +47,7 @@ enum HqCity {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake)
 class Player with _$Player {
   const factory Player({
     required String id,

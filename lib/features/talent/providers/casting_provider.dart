@@ -230,7 +230,7 @@ final Provider<bool> canAffordSinglePullProvider =
     Provider<bool>((Ref<bool> ref) {
   final AsyncValue<int> luxeAsync = ref.watch(availableLuxeProvider);
   return luxeAsync.when(
-    data: (int luxe) => luxe >= TalentTier.castingCost,
+    data: (int luxe) => luxe >= TalentTierExtension.castingCost,
     loading: () => false,
     error: (_, __) => false,
   );
@@ -241,7 +241,7 @@ final Provider<bool> canAffordTenPullProvider =
     Provider<bool>((Ref<bool> ref) {
   final AsyncValue<int> luxeAsync = ref.watch(availableLuxeProvider);
   return luxeAsync.when(
-    data: (int luxe) => luxe >= TalentTier.castingCostTen,
+    data: (int luxe) => luxe >= TalentTierExtension.castingCostTen,
     loading: () => false,
     error: (_, __) => false,
   );
