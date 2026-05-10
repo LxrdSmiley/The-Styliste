@@ -27,6 +27,7 @@ _$PlayerImpl _$$PlayerImplFromJson(Map<String, dynamic> json) => _$PlayerImpl(
       lastActiveAt: json['lastActiveAt'] == null
           ? null
           : DateTime.parse(json['lastActiveAt'] as String),
+      luxeTrustScore: (json['luxeTrustScore'] as num?)?.toInt() ?? 50,
     );
 
 Map<String, dynamic> _$$PlayerImplToJson(_$PlayerImpl instance) =>
@@ -45,6 +46,7 @@ Map<String, dynamic> _$$PlayerImplToJson(_$PlayerImpl instance) =>
           instance.jointVentureUnlockedAt?.toIso8601String(),
       'createdAt': instance.createdAt?.toIso8601String(),
       'lastActiveAt': instance.lastActiveAt?.toIso8601String(),
+      'luxeTrustScore': instance.luxeTrustScore,
     };
 
 const _$CareerPathEnumMap = {

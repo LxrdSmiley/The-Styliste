@@ -2,63 +2,56 @@
 // Directive O: Luxe Identity with Trust Score and contextual dialogue
 // Note: Rive animation placeholder — PENDING ASSET
 
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/aurelian_theme.dart';
-import '../../../domain/models/brand.dart';
+import '../../../domain/models/player.dart';
 import '../../hq/providers/hq_provider.dart';
 
 /// LuxeWidget — Luxury concierge with Trust Score and contextual dialogue
-/// Displays animated avatar placeholder, Trust Score, and dynamic quotes
+/// GDD §8.12: Trust Score is a relationship meter, not a wealth meter.
+/// Gates dialogue on luxeTrustScore from player stream (default 50 = warm).
 class LuxeWidget extends ConsumerWidget {
   const LuxeWidget({super.key});
 
-  String _getDialogueForCapital(double capital) {
-    if (capital < 10000) {
+  /// GDD §8.12: Dialogue tiers keyed to Trust Score, not capital
+  /// 0–25 Cold · 26–60 Warm · 61–85 Trusted · 86–100 Sovereign
+  String _getDialogueForTrust(int trustScore) {
+    if (trustScore <= 25) {
       return 'Every empire starts with a stitch, darling. Your first design is your foundation.';
-    } else if (capital < 50000) {
+    } else if (trustScore <= 60) {
       return 'The atelier is warm. Your reputation is beginning to ripple through the districts.';
-    } else if (capital < 200000) {
+    } else if (trustScore <= 85) {
       return 'Your name is whispered in high places. Time to expand the Maison influence.';
     } else {
       return 'Sovereign. Your legacy will echo through the Hall for generations.';
     }
   }
 
-  double _getTrustScore(double capital) {
-    // Trust Score scales with capital, capped at 100
-    return math.min(capital / 5000, 100.0);
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<Brand> brandAsync = ref.watch(hqBrandStreamProvider);
+    final AsyncValue<Player> playerAsync = ref.watch(hqPlayerStreamProvider);
 
-    return brandAsync.when(
-      data: (Brand brand) => _LuxeContent(
-        capital: brand.totalRevenue,
-        dialogue: _getDialogueForCapital(brand.totalRevenue),
-        trustScore: _getTrustScore(brand.totalRevenue),
+    return playerAsync.when(
+      data: (Player player) => _LuxeContent(
+        trustScore: player.luxeTrustScore.toDouble(),
+        dialogue: _getDialogueForTrust(player.luxeTrustScore),
       ),
       loading: () => const _LuxeLoading(),
-      error: (_, __) => const _LuxeError(),
+      error: (Object _, StackTrace __) => const _LuxeError(),
     );
   }
 }
 
 class _LuxeContent extends StatelessWidget {
   const _LuxeContent({
-    required this.capital,
-    required this.dialogue,
     required this.trustScore,
+    required this.dialogue,
   });
 
-  final double capital;
-  final String dialogue;
   final double trustScore;
+  final String dialogue;
 
   @override
   Widget build(BuildContext context) {

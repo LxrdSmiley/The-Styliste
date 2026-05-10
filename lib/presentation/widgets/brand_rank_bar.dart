@@ -1,8 +1,10 @@
 // GDD §3.1 — Brand Rank progress bar widget (shared, both paths)
-// TODO: Animate with flutter_animate in Phase 1
+// Phase 1: flutter_animate shimmer on fill; gold glow at rank-up threshold
 
 import 'package:flutter/material.dart';
-import '../../core/theme/app_colors.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
+import '../../core/theme/aurelian_theme.dart';
 
 class BrandRankBar extends StatelessWidget {
   const BrandRankBar({
@@ -16,6 +18,8 @@ class BrandRankBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isNearRankUp = xpProgress >= 0.9;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -25,7 +29,8 @@ class BrandRankBar extends StatelessWidget {
             Text(
               'RANK $currentRank',
               style: const TextStyle(
-                color: AppColors.gold,
+                color: AurelianPalette.champagneGold,
+                fontFamily: 'SpaceGrotesk',
                 fontSize: 12.0,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 2.0,
@@ -33,7 +38,13 @@ class BrandRankBar extends StatelessWidget {
             ),
             Text(
               '${(xpProgress * 100).toStringAsFixed(0)}%',
-              style: const TextStyle(color: AppColors.grey400, fontSize: 11.0),
+              style: TextStyle(
+                color: isNearRankUp
+                    ? AurelianPalette.champagneGold
+                    : AurelianPalette.textTertiary,
+                fontFamily: 'SpaceGrotesk',
+                fontSize: 11.0,
+              ),
             ),
           ],
         ),
@@ -42,10 +53,21 @@ class BrandRankBar extends StatelessWidget {
           borderRadius: const BorderRadius.all(Radius.circular(4.0)),
           child: LinearProgressIndicator(
             value: xpProgress,
-            backgroundColor: AppColors.grey800,
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.gold),
+            backgroundColor: AurelianPalette.textTertiary.withValues(alpha: 0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              isNearRankUp
+                  ? AurelianPalette.champagneGold
+                  : AurelianPalette.champagneGold.withValues(alpha: 0.65),
+            ),
             minHeight: 4.0,
           ),
+        )
+        // Shimmer sweep animates on every build when value changes
+        .animate(key: ValueKey<double>(xpProgress))
+        .shimmer(
+          duration: const Duration(milliseconds: 900),
+          color: AurelianPalette.champagneGold.withValues(alpha: 0.4),
+          size: 0.5,
         ),
       ],
     );

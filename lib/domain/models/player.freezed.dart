@@ -33,7 +33,11 @@ mixin _$Player {
   int get sovereignMultipliers => throw _privateConstructorUsedError;
   DateTime? get jointVentureUnlockedAt => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
-  DateTime? get lastActiveAt => throw _privateConstructorUsedError;
+  DateTime? get lastActiveAt =>
+      throw _privateConstructorUsedError; // --- Luxe Relationship (GDD §8.12) ---
+// Trust Score: relationship meter, NOT wealth meter. Default 50 = warm baseline.
+// Increments: +1 daily check-in, +1 gala entry, +2 casting gold, +5 kintsugi
+  int get luxeTrustScore => throw _privateConstructorUsedError;
 
   /// Serializes this Player to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -62,7 +66,8 @@ abstract class $PlayerCopyWith<$Res> {
       int sovereignMultipliers,
       DateTime? jointVentureUnlockedAt,
       DateTime? createdAt,
-      DateTime? lastActiveAt});
+      DateTime? lastActiveAt,
+      int luxeTrustScore});
 }
 
 /// @nodoc
@@ -93,6 +98,7 @@ class _$PlayerCopyWithImpl<$Res, $Val extends Player>
     Object? jointVentureUnlockedAt = freezed,
     Object? createdAt = freezed,
     Object? lastActiveAt = freezed,
+    Object? luxeTrustScore = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -147,6 +153,10 @@ class _$PlayerCopyWithImpl<$Res, $Val extends Player>
           ? _value.lastActiveAt
           : lastActiveAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      luxeTrustScore: null == luxeTrustScore
+          ? _value.luxeTrustScore
+          : luxeTrustScore // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -171,7 +181,8 @@ abstract class _$$PlayerImplCopyWith<$Res> implements $PlayerCopyWith<$Res> {
       int sovereignMultipliers,
       DateTime? jointVentureUnlockedAt,
       DateTime? createdAt,
-      DateTime? lastActiveAt});
+      DateTime? lastActiveAt,
+      int luxeTrustScore});
 }
 
 /// @nodoc
@@ -200,6 +211,7 @@ class __$$PlayerImplCopyWithImpl<$Res>
     Object? jointVentureUnlockedAt = freezed,
     Object? createdAt = freezed,
     Object? lastActiveAt = freezed,
+    Object? luxeTrustScore = null,
   }) {
     return _then(_$PlayerImpl(
       id: null == id
@@ -254,6 +266,10 @@ class __$$PlayerImplCopyWithImpl<$Res>
           ? _value.lastActiveAt
           : lastActiveAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      luxeTrustScore: null == luxeTrustScore
+          ? _value.luxeTrustScore
+          : luxeTrustScore // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -274,7 +290,8 @@ class _$PlayerImpl extends _Player {
       this.sovereignMultipliers = 0,
       this.jointVentureUnlockedAt,
       this.createdAt,
-      this.lastActiveAt})
+      this.lastActiveAt,
+      this.luxeTrustScore = 50})
       : super._();
 
   factory _$PlayerImpl.fromJson(Map<String, dynamic> json) =>
@@ -313,10 +330,16 @@ class _$PlayerImpl extends _Player {
   final DateTime? createdAt;
   @override
   final DateTime? lastActiveAt;
+// --- Luxe Relationship (GDD §8.12) ---
+// Trust Score: relationship meter, NOT wealth meter. Default 50 = warm baseline.
+// Increments: +1 daily check-in, +1 gala entry, +2 casting gold, +5 kintsugi
+  @override
+  @JsonKey()
+  final int luxeTrustScore;
 
   @override
   String toString() {
-    return 'Player(id: $id, brandName: $brandName, path: $path, hqCity: $hqCity, brandRank: $brandRank, totalXp: $totalXp, onboardingComplete: $onboardingComplete, isAnonymous: $isAnonymous, isJointVenture: $isJointVenture, sovereignMultipliers: $sovereignMultipliers, jointVentureUnlockedAt: $jointVentureUnlockedAt, createdAt: $createdAt, lastActiveAt: $lastActiveAt)';
+    return 'Player(id: $id, brandName: $brandName, path: $path, hqCity: $hqCity, brandRank: $brandRank, totalXp: $totalXp, onboardingComplete: $onboardingComplete, isAnonymous: $isAnonymous, isJointVenture: $isJointVenture, sovereignMultipliers: $sovereignMultipliers, jointVentureUnlockedAt: $jointVentureUnlockedAt, createdAt: $createdAt, lastActiveAt: $lastActiveAt, luxeTrustScore: $luxeTrustScore)';
   }
 
   @override
@@ -345,7 +368,9 @@ class _$PlayerImpl extends _Player {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.lastActiveAt, lastActiveAt) ||
-                other.lastActiveAt == lastActiveAt));
+                other.lastActiveAt == lastActiveAt) &&
+            (identical(other.luxeTrustScore, luxeTrustScore) ||
+                other.luxeTrustScore == luxeTrustScore));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -364,7 +389,8 @@ class _$PlayerImpl extends _Player {
       sovereignMultipliers,
       jointVentureUnlockedAt,
       createdAt,
-      lastActiveAt);
+      lastActiveAt,
+      luxeTrustScore);
 
   /// Create a copy of Player
   /// with the given fields replaced by the non-null parameter values.
@@ -396,7 +422,8 @@ abstract class _Player extends Player {
       final int sovereignMultipliers,
       final DateTime? jointVentureUnlockedAt,
       final DateTime? createdAt,
-      final DateTime? lastActiveAt}) = _$PlayerImpl;
+      final DateTime? lastActiveAt,
+      final int luxeTrustScore}) = _$PlayerImpl;
   const _Player._() : super._();
 
   factory _Player.fromJson(Map<String, dynamic> json) = _$PlayerImpl.fromJson;
@@ -426,7 +453,11 @@ abstract class _Player extends Player {
   @override
   DateTime? get createdAt;
   @override
-  DateTime? get lastActiveAt;
+  DateTime? get lastActiveAt; // --- Luxe Relationship (GDD §8.12) ---
+// Trust Score: relationship meter, NOT wealth meter. Default 50 = warm baseline.
+// Increments: +1 daily check-in, +1 gala entry, +2 casting gold, +5 kintsugi
+  @override
+  int get luxeTrustScore;
 
   /// Create a copy of Player
   /// with the given fields replaced by the non-null parameter values.

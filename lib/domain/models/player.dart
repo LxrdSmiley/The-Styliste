@@ -62,6 +62,10 @@ class Player with _$Player {
     DateTime? jointVentureUnlockedAt,
     DateTime? createdAt,
     DateTime? lastActiveAt,
+    // --- Luxe Relationship (GDD §8.12) ---
+    // Trust Score: relationship meter, NOT wealth meter. Default 50 = warm baseline.
+    // Increments: +1 daily check-in, +1 gala entry, +2 casting gold, +5 kintsugi
+    @Default(50) int luxeTrustScore,
   }) = _Player;
 
   const Player._();
