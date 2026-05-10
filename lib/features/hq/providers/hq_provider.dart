@@ -87,7 +87,7 @@ final Provider<int> idleIncomeTickerProvider =
       final Brand? brand = async.value;
       if (brand == null) return 0;
       final bool isLockdown = brand.currentTarnish >= 100;
-      return isLockdown ? 0 : brand.totalRevenue.toInt();
+      return isLockdown ? 0 : brand.idleRevenuePerHour.toInt();
     }),
   );
 });
