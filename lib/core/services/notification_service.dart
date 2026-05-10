@@ -13,8 +13,11 @@ import 'dart:math' show max;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -234,6 +237,10 @@ class NotificationService with WidgetsBindingObserver {
     required int streakDay,
     required bool isFinal,
   }) async {
+    tz.initializeTimeZones();
+    final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+    final tz.TZDateTime tzScheduledTime =
+        tz.TZDateTime.from(scheduledTime, tz.getLocation(timeZoneName));
     final String title = isFinal
         ? 'Final Call — Your Empire Awaits'
         : 'Daily Check-In Ready';
@@ -267,9 +274,11 @@ class NotificationService with WidgetsBindingObserver {
       id,
       title,
       body,
-      scheduledTime,
+      tzScheduledTime,
       details,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       payload: _encodePayload(<String, dynamic>{
         'type': 'daily_check_in',
         'notification_id': 'check_in_$id',
@@ -323,7 +332,7 @@ class NotificationService with WidgetsBindingObserver {
     // Show local notification from FCM payload
     final Map<String, dynamic> data = message.data;
     
-    final String type = data['type'] ?? 'general';
+    final String type = (data['type'] as String?) ?? 'general';
     final String title = message.notification?.title ?? 'The Styliste';
     final String body = message.notification?.body ?? '';
 

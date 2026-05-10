@@ -3,6 +3,7 @@
 // Replaces deprecated Obsidian & Titanium aesthetic
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// Aurelian Radiance Palette — the foundation of all Alabaster Standard UI
 /// 
@@ -136,12 +137,12 @@ abstract final class AurelianTheme {
         error: AurelianPalette.danger,
         onError: AurelianPalette.ivory,
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AurelianPalette.ivory,
         foregroundColor: AurelianPalette.textPrimary,
         elevation: 0.0,
         centerTitle: true,
-        systemOverlayStyle: SystemUiOverlayStyle(
+        systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
           statusBarColor: Colors.transparent,

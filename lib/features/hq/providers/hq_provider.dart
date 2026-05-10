@@ -38,86 +38,58 @@ final StreamProvider<Brand> hqBrandStreamProvider =
 
 /// Brand heat percent only — for BrandHeatMeter widget
 /// Rebuilds only when heat integer changes (not on every decimal tick)
-final Provider<AsyncValue<int>> brandHeatPercentProvider =
-    Provider<AsyncValue<int>>((Ref<AsyncValue<int>> ref) {
-  final AsyncValue<Brand> brandAsync = ref.watch(
-    hqBrandStreamProvider.select((AsyncValue<Brand> async) {
-      return async.when(
-        data: (Brand brand) => AsyncValue.data(brand.hypeScore.toInt()),
-        loading: () => const AsyncValue.loading(),
-        error: (Object e, StackTrace s) => AsyncValue.error(e, s),
-      );
-    }),
+final Provider<int> brandHeatPercentProvider =
+    Provider<int>((Ref<int> ref) {
+  return ref.watch(
+    hqBrandStreamProvider.select(
+      (AsyncValue<Brand> async) => async.value?.hypeScore.toInt() ?? 0,
+    ),
   );
-  return brandAsync;
 });
 
 /// Sovereign multipliers only — for bonus calculation
-final Provider<AsyncValue<int>> sovereignMultipliersProvider =
-    Provider<AsyncValue<int>>((Ref<AsyncValue<int>> ref) {
-  final AsyncValue<Player> playerAsync = ref.watch(
-    hqPlayerStreamProvider.select((AsyncValue<Player> async) {
-      return async.when(
-        data: (Player player) => AsyncValue.data(player.sovereignMultipliers),
-        loading: () => const AsyncValue.loading(),
-        error: (Object e, StackTrace s) => AsyncValue.error(e, s),
-      );
-    }),
+final Provider<int> sovereignMultipliersProvider =
+    Provider<int>((Ref<int> ref) {
+  return ref.watch(
+    hqPlayerStreamProvider.select(
+      (AsyncValue<Player> async) => async.value?.sovereignMultipliers ?? 0,
+    ),
   );
-  return playerAsync;
 });
 
 /// Career path only — for view switching (Artisan vs Architect)
-final Provider<AsyncValue<CareerPath>> careerPathProvider =
-    Provider<AsyncValue<CareerPath>>((Ref<AsyncValue<CareerPath>> ref) {
-  final AsyncValue<Player> playerAsync = ref.watch(
-    hqPlayerStreamProvider.select((AsyncValue<Player> async) {
-      return async.when(
-        data: (Player player) => AsyncValue.data(player.path),
-        loading: () => const AsyncValue.loading(),
-        error: (Object e, StackTrace s) => AsyncValue.error(e, s),
-      );
-    }),
+final Provider<CareerPath?> careerPathProvider =
+    Provider<CareerPath?>((Ref<CareerPath?> ref) {
+  return ref.watch(
+    hqPlayerStreamProvider.select(
+      (AsyncValue<Player> async) => async.value?.path,
+    ),
   );
-  return playerAsync;
 });
 
 /// Joint venture status only — for Command Floor unlock
-final Provider<AsyncValue<bool>> jointVentureUnlockedProvider =
-    Provider<AsyncValue<bool>>((Ref<AsyncValue<bool>> ref) {
-  final AsyncValue<Player> playerAsync = ref.watch(
-    hqPlayerStreamProvider.select((AsyncValue<Player> async) {
-      return async.when(
-        data: (Player player) => AsyncValue.data(player.isJointVenture),
-        loading: () => const AsyncValue.loading(),
-        error: (Object e, StackTrace s) => AsyncValue.error(e, s),
-      );
-    }),
+final Provider<bool> jointVentureUnlockedProvider =
+    Provider<bool>((Ref<bool> ref) {
+  return ref.watch(
+    hqPlayerStreamProvider.select(
+      (AsyncValue<Player> async) => async.value?.isJointVenture ?? false,
+    ),
   );
-  return playerAsync;
 });
 
 /// Idle income ticker — optimized for cash flow ribbon
 /// Only updates when integer dollar amount changes (not every cent tick)
 /// Kode Addendum #2: Returns 0 when in lockdown (tarnish >= 100)
-final Provider<AsyncValue<int>> idleIncomeTickerProvider =
-    Provider<AsyncValue<int>>((Ref<AsyncValue<int>> ref) {
-  final AsyncValue<Brand> brandAsync = ref.watch(
+final Provider<int> idleIncomeTickerProvider =
+    Provider<int>((Ref<int> ref) {
+  return ref.watch(
     hqBrandStreamProvider.select((AsyncValue<Brand> async) {
-      return async.when(
-        data: (Brand brand) {
-          // Lockdown check: tarnish >= 100 halts all idle income
-          final bool isLockdown = brand.currentTarnish >= 100;
-          return AsyncValue.data(
-            isLockdown ? 0 : brand.totalRevenue.toInt(),
-          );
-        },
-        loading: () => const AsyncValue.loading(),
-        error: (Object e, StackTrace s) => AsyncValue.error(e, s),
-      );
+      final Brand? brand = async.value;
+      if (brand == null) return 0;
+      final bool isLockdown = brand.currentTarnish >= 100;
+      return isLockdown ? 0 : brand.totalRevenue.toInt();
     }),
   );
-  return brandAsync;
 });
 
 // =============================================================================
@@ -125,42 +97,27 @@ final Provider<AsyncValue<int>> idleIncomeTickerProvider =
 // =============================================================================
 
 /// Current tarnish level only (0-100)
-final Provider<AsyncValue<int>> tarnishLevelProvider =
-    Provider<AsyncValue<int>>((Ref<AsyncValue<int>> ref) {
-  final AsyncValue<Brand> brandAsync = ref.watch(
-    hqBrandStreamProvider.select((AsyncValue<Brand> async) {
-      return async.when(
-        data: (Brand brand) => AsyncValue.data(brand.currentTarnish),
-        loading: () => const AsyncValue.loading(),
-        error: (Object e, StackTrace s) => AsyncValue.error(e, s),
-      );
-    }),
+final Provider<int> tarnishLevelProvider =
+    Provider<int>((Ref<int> ref) {
+  return ref.watch(
+    hqBrandStreamProvider.select(
+      (AsyncValue<Brand> async) => async.value?.currentTarnish ?? 0,
+    ),
   );
-  return brandAsync;
 });
 
 /// Kintsugi level (permanent gold veins count)
-final Provider<AsyncValue<int>> kintsugiLevelProvider =
-    Provider<AsyncValue<int>>((Ref<AsyncValue<int>> ref) {
-  final AsyncValue<Brand> brandAsync = ref.watch(
-    hqBrandStreamProvider.select((AsyncValue<Brand> async) {
-      return async.when(
-        data: (Brand brand) => AsyncValue.data(brand.kintsugiLevel),
-        loading: () => const AsyncValue.loading(),
-        error: (Object e, StackTrace s) => AsyncValue.error(e, s),
-      );
-    }),
+final Provider<int> kintsugiLevelProvider =
+    Provider<int>((Ref<int> ref) {
+  return ref.watch(
+    hqBrandStreamProvider.select(
+      (AsyncValue<Brand> async) => async.value?.kintsugiLevel ?? 0,
+    ),
   );
-  return brandAsync;
 });
 
 /// Lockdown state (tarnish >= 100)
 final Provider<bool> isLockdownProvider =
     Provider<bool>((Ref<bool> ref) {
-  final AsyncValue<int> tarnishAsync = ref.watch(tarnishLevelProvider);
-  return tarnishAsync.when(
-    data: (int tarnish) => tarnish >= 100,
-    loading: () => false,
-    error: (_, __) => false,
-  );
+  return ref.watch(tarnishLevelProvider) >= 100;
 });

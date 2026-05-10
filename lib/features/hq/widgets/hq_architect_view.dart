@@ -56,17 +56,14 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
     super.build(context);
     
     // Kode Addendum: Use .select() for optimized rebuilds
-    final AsyncValue<int> heatAsync = ref.watch(brandHeatPercentProvider);
-    final AsyncValue<int> multipliersAsync = ref.watch(sovereignMultipliersProvider);
-    final AsyncValue<int> incomeAsync = ref.watch(idleIncomeTickerProvider);
-    final AsyncValue<int> tarnishAsync = ref.watch(tarnishLevelProvider);
-    final AsyncValue<int> kintsugiAsync = ref.watch(kintsugiLevelProvider);
+    final int heat = ref.watch(brandHeatPercentProvider);
+    final int multipliers = ref.watch(sovereignMultipliersProvider);
+    final int _ = ref.watch(idleIncomeTickerProvider);
+    final int tarnish = ref.watch(tarnishLevelProvider);
+    final int kintsugi = ref.watch(kintsugiLevelProvider);
     final AsyncValue<Brand> brandAsync = ref.watch(hqBrandStreamProvider);
     // Directive L: Supply Chain monitoring
     final AsyncValue<SupplyChainState> supplyChainAsync = ref.watch(supplyChainProvider);
-    
-    final int tarnish = tarnishAsync.value ?? 0;
-    final int kintsugi = kintsugiAsync.value ?? 0;
 
     return Scaffold(
       body: GlassWalledPenthouse(
@@ -85,13 +82,9 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
               // --- Brand Heat Meter ---
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: heatAsync.when(
-                  data: (int heat) => BrandHeatMeter(
-                    heatPercent: heat.clamp(0, 100),
-                    onTap: () => _showHeatBreakdown(context, heat),
-                  ),
-                  loading: () => const SizedBox(height: 24.0),
-                  error: (_, __) => const SizedBox.shrink(),
+                child: BrandHeatMeter(
+                  heatPercent: heat.clamp(0, 100),
+                  onTap: () => _showHeatBreakdown(context, heat),
                 ),
               ),
 
@@ -188,13 +181,7 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                       const SizedBox(height: 32.0),
 
                       // --- Sovereign Badge ---
-                      multipliersAsync.when(
-                        data: (int count) => count > 0
-                            ? _SovereignBadge(count: count)
-                            : const SizedBox.shrink(),
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
+                      if (multipliers > 0) _SovereignBadge(count: multipliers),
 
                       const SizedBox(height: 24.0),
                     ],

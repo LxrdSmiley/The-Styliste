@@ -3,7 +3,6 @@
 // Alabaster Standard: Vex opt-in toggle, procedural critique, editorial snap animation
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
@@ -14,8 +13,6 @@ import '../../design/services/hype_calculator.dart';
 import '../../design/services/vex_ai_engine.dart';
 import '../../trends/models/trend_tsunami.dart';
 import '../../trends/providers/trend_provider.dart';
-
-part 'drop_design_provider.g.dart';
 
 /// State for the drop design flow
 class DropDesignState {

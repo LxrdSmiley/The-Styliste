@@ -42,20 +42,15 @@ class AuthService {
   /// Maps Game Center ID to Supabase UUID
   Future<String?> _signInWithGameCenter() async {
     try {
-      // Check if Game Center is available
-      final bool isAvailable = await gs.GamesServices.isAvailable;
-      if (!isAvailable) {
+      // Sign in and check result
+      final String? signInResult = await gs.GameAuth.signIn();
+      if (signInResult != null) {
+        // signIn() returns error string on failure, null on success
         return null;
       }
 
-      // Sign in silently
-      final gs.Player? player = await gs.GamesServices.signIn();
-      if (player == null) {
-        return null;
-      }
-
-      final String gameCenterId = player.playerId ?? '';
-      if (gameCenterId.isEmpty) {
+      final String? gameCenterId = await gs.Player.getPlayerID();
+      if (gameCenterId == null || gameCenterId.isEmpty) {
         return null;
       }
 
@@ -73,20 +68,15 @@ class AuthService {
   /// Maps Play Games ID to Supabase UUID
   Future<String?> _signInWithPlayGames() async {
     try {
-      // Check if Play Games is available
-      final bool isAvailable = await gs.GamesServices.isAvailable;
-      if (!isAvailable) {
+      // Sign in and check result
+      final String? signInResult = await gs.GameAuth.signIn();
+      if (signInResult != null) {
+        // signIn() returns error string on failure, null on success
         return null;
       }
 
-      // Sign in
-      final gs.Player? player = await gs.GamesServices.signIn();
-      if (player == null) {
-        return null;
-      }
-
-      final String playGamesId = player.playerId ?? '';
-      if (playGamesId.isEmpty) {
+      final String? playGamesId = await gs.Player.getPlayerID();
+      if (playGamesId == null || playGamesId.isEmpty) {
         return null;
       }
 
@@ -168,11 +158,11 @@ class AuthService {
     }
   }
 
+
   /// Get platform display name (for UI)
   Future<String?> getPlatformName() async {
     try {
-      final gs.Player? player = await gs.GamesServices.signIn();
-      return player?.displayName;
+      return await gs.Player.getPlayerName();
     } catch (e) {
       return null;
     }

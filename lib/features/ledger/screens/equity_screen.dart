@@ -3,6 +3,7 @@
 // Stock price, market share, hostile takeover launcher
 
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -354,7 +355,7 @@ class _MarketShareRingPainter extends CustomPainter {
           fontWeight: FontWeight.bold,
         ),
       ),
-      textDirection: TextDirection.ltr,
+      textDirection: ui.TextDirection.ltr,
       textAlign: TextAlign.center,
     );
     textPainter.layout();
@@ -396,7 +397,7 @@ class _LegendItem extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(

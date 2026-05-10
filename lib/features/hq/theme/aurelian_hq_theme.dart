@@ -28,7 +28,7 @@ class AurelianHQTheme {
   );
 
   /// Golden hour sunlight streaming through windows
-  static const LinearGradient sunlightGradient = LinearGradient(
+  static final LinearGradient sunlightGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: <Color>[

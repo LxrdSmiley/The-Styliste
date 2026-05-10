@@ -37,7 +37,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
     with TickerProviderStateMixin {
   late final AnimationController _fillController;
   late final AnimationController _pulseController;
-  FragmentShader? _shader;
+  ui.FragmentShader? _shader;
   bool _isLoading = true;
   bool _isRepairing = false;
   String? _errorMessage;
@@ -59,7 +59,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
 
   Future<void> _loadShader() async {
     try {
-      final FragmentProgram program = await FragmentProgram.fromAsset(
+      final ui.FragmentProgram program = await ui.FragmentProgram.fromAsset(
         'lib/shaders/liquid_gold.frag',
       );
       setState(() {
@@ -474,7 +474,7 @@ class _CostRow extends StatelessWidget {
 class _ShaderPainter extends CustomPainter {
   _ShaderPainter({required this.shader});
 
-  final FragmentShader shader;
+  final ui.FragmentShader? shader;
 
   @override
   void paint(Canvas canvas, Size size) {

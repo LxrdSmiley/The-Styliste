@@ -308,7 +308,7 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
 
   Widget _buildCard(_ResourceCard card, {required bool isPlayer}) {
     final List<IconData> icons = <IconData>[
-      Icons.fabric,
+      Icons.texture,
       Icons.precision_manufacturing,
       Icons.local_shipping,
       Icons.warehouse,

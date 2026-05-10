@@ -2,6 +2,7 @@
 // Hall of Sovereigns: 3D memorialized brands with tier-based materials
 // Alabaster Standard: Quartz → Gold → Alabaster progression
 
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:intl/intl.dart';
 
@@ -32,14 +33,14 @@ extension StatueTierExtension on StatueTier {
   /// Gold: Champagne gold (#F7E7CE)
   /// Alabaster: Pure ivory (#FFFFF0)
   // AI_UNCERTAINTY: These are Flutter Color values; verify with 3D shader compatibility
-  int get materialColorValue {
+  Color get materialColorValue {
     switch (this) {
       case StatueTier.quartz:
-        return 0xFFE8B4B8;
+        return const Color(0xFFE8B4B8);
       case StatueTier.gold:
-        return 0xFFF7E7CE;
+        return const Color(0xFFF7E7CE);
       case StatueTier.alabaster:
-        return 0xFFFFFFF0;
+        return const Color(0xFFFFFFF0);
     }
   }
   
@@ -101,8 +102,6 @@ class SovereignStatue with _$SovereignStatue {
     required CareerPath careerPath,
     @Default(false) bool jointVentureFlag,
   }) = _SovereignStatue;
-
-  const SovereignStatue._();
 
   factory SovereignStatue.fromJson(Map<String, Object?> json) =>
       _$SovereignStatueFromJson(json);
@@ -191,14 +190,3 @@ extension SovereignStatueListExtension on List<SovereignStatue> {
       fold(0.0, (double sum, SovereignStatue s) => sum + s.finalHypeScore) / length;
 }
 
-/// Career path display extension
-extension CareerPathDisplay on CareerPath {
-  String get displayName {
-    switch (this) {
-      case CareerPath.designer:
-        return 'Artisan';
-      case CareerPath.mogul:
-        return 'Architect';
-    }
-  }
-}

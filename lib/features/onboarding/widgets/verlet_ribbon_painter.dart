@@ -20,8 +20,8 @@ class VerletPoint {
 
   double x;
   double y;
-  double oldX;
-  double oldY;
+  late double oldX;
+  late double oldY;
   final bool pinned;
 
   void update() {

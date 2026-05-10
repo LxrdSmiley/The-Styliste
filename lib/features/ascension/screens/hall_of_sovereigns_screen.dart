@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../core/theme/aurelian_theme.dart';
+import '../../../domain/models/player.dart';
 import '../models/sovereign_statue.dart';
 import '../providers/ascension_provider.dart';
 

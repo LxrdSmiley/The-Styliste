@@ -235,7 +235,7 @@ class _SunlightLayer extends StatelessWidget {
         parallaxY * MediaQuery.of(context).size.height * 0.3,
       ),
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: AurelianHQTheme.sunlightGradient,
         ),
       ),

@@ -182,18 +182,16 @@ final StreamProvider<List<RosterTalent>> playerRosterProvider =
   if (userId == null) return const Stream<List<RosterTalent>>.empty();
 
   // Poll roster via RPC (no direct table stream needed for simplicity)
-  return Stream<List<RosterTalent>>.periodic(
-    const Duration(seconds: 5),
-    (_) async {
-      final List<dynamic> result = await supabase.rpc(
-        'get_player_roster',
-        params: <String, dynamic>{'p_player_id': userId},
-      );
-      return result
-          .map((dynamic json) => RosterTalent.fromJson(json as Map<String, dynamic>))
-          .toList();
-    },
-  ).asyncMap((Future<List<RosterTalent>> future) => future);
+  return Stream<int>.periodic(const Duration(seconds: 5), (int i) => i)
+      .asyncMap((int _) async {
+        final List<dynamic> result = await supabase.rpc(
+          'get_player_roster',
+          params: <String, dynamic>{'p_player_id': userId},
+        );
+        return result
+            .map((dynamic json) => RosterTalent.fromJson(json as Map<String, dynamic>))
+            .toList();
+      });
 });
 
 /// Pity state provider

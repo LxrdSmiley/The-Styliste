@@ -2,6 +2,8 @@
 // Aurelian Standard: Editorial "snap" animation, Champagne Gold seal for Sovereign
 // Alabaster palette with delicate borders and soft expansive shadow
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 

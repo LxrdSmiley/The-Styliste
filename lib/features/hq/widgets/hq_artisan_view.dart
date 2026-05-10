@@ -3,6 +3,7 @@
 // Kode Addendum: CustomPainter charts, .select() optimization, 3D lifecycle mgmt
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -78,14 +79,11 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
     super.build(context); // Required for AutomaticKeepAliveClientMixin
     
     // Kode Addendum: Use .select() for optimized rebuilds
-    final AsyncValue<int> heatAsync = ref.watch(brandHeatPercentProvider);
-    final AsyncValue<int> multipliersAsync = ref.watch(sovereignMultipliersProvider);
-    final AsyncValue<int> tarnishAsync = ref.watch(tarnishLevelProvider);
-    final AsyncValue<int> kintsugiAsync = ref.watch(kintsugiLevelProvider);
+    final int heat = ref.watch(brandHeatPercentProvider);
+    final int multipliers = ref.watch(sovereignMultipliersProvider);
+    final int tarnish = ref.watch(tarnishLevelProvider);
+    final int kintsugi = ref.watch(kintsugiLevelProvider);
     final AsyncValue<Brand> brandAsync = ref.watch(hqBrandStreamProvider);
-    
-    final int tarnish = tarnishAsync.value ?? 0;
-    final int kintsugi = kintsugiAsync.value ?? 0;
 
     return Scaffold(
       body: GlassWalledPenthouse(
@@ -104,13 +102,9 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
               // --- Brand Heat Meter (.select() optimized) ---
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: heatAsync.when(
-                  data: (int heat) => BrandHeatMeter(
-                    heatPercent: heat.clamp(0, 100),
-                    onTap: () => _showHeatBreakdown(context, heat),
-                  ),
-                  loading: () => const SizedBox(height: 24.0),
-                  error: (_, __) => const SizedBox.shrink(),
+                child: BrandHeatMeter(
+                  heatPercent: heat.clamp(0, 100),
+                  onTap: () => _showHeatBreakdown(context, heat),
                 ),
               ),
 
@@ -165,13 +159,7 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
                       const SizedBox(height: 32.0),
 
                       // --- Sovereign Multiplier Badge ---
-                      multipliersAsync.when(
-                        data: (int count) => count > 0
-                            ? _SovereignBadge(count: count)
-                            : const SizedBox.shrink(),
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
+                      if (multipliers > 0) _SovereignBadge(count: multipliers),
 
                       const SizedBox(height: 24.0),
                     ],

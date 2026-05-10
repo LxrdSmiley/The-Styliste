@@ -191,7 +191,7 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
             players!inner(display_name),
             talent_pool!inner(name, tier, base_hype_multiplier)
           ''')
-          .eq('event_id', _currentEventId)
+          .eq('event_id', _currentEventId!)
           .order('current_score', ascending: false)
           .range(_offset, _offset + _pageSize - 1);
 
@@ -246,7 +246,7 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
       final List<Map<String, dynamic>> results = await supabase
           .from('gala_submissions')
           .select('id, current_score, vote_count')
-          .eq('event_id', _currentEventId)
+          .eq('event_id', _currentEventId!)
           .inFilter('id', state.submissions.map((s) => s.id).toList());
 
       final Map<String, Map<String, dynamic>> scoreMap = {
