@@ -3,6 +3,7 @@
 // Env strategy: --dart-define-from-file=.env.json (never hardcode keys)
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +17,17 @@ import 'core/services/firebase_service.dart';
 const String _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
 const String _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
+// GDD §8 — FCM background handler (rival alerts, daily check-in reminders)
+// Must be a top-level function annotated with @pragma('vm:entry-point')
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: FirebaseService.currentPlatformOptions,
+  );
+  // Background message received — no UI interaction allowed here
+  // Payload handling (badge updates, local notification scheduling) added in Phase 2
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -24,6 +36,9 @@ Future<void> main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  // Register FCM background handler before Firebase.initializeApp (GDD §8)
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Initialise Firebase (PROJECT_RULES §2)
   await Firebase.initializeApp(

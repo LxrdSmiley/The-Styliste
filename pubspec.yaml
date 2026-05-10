@@ -45,7 +45,7 @@ dependencies:
   camera: ^0.11.0+2
 
   # --- Cloud Save (Directive O) ---
-  games_services: ^4.0.0
+  games_services: ^4.1.1
 
   # --- Data / Serialization ---
   freezed_annotation: ^2.4.4
