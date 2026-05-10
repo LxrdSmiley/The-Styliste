@@ -56,7 +56,7 @@ abstract final class AppRouter {
   static const String maison = '/maison';
   static const String bank = '/bank';
   static const String equity = '/equity';
-  static const String districtMap = '/world-map';
+  static const String districtMap = '/district-map';
   static const String events = '/events';
   static const String profile = '/profile';
   static const String settings = '/settings';

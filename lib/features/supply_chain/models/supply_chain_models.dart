@@ -1,6 +1,8 @@
 // Directive L — Supply Chain Models
 // GDD §12.1.2 — Buffer Stock Engine data structures
 
+import 'dart:math' show pow;
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'supply_chain_models.freezed.dart';
@@ -9,6 +11,7 @@ part 'supply_chain_models.g.dart';
 /// Supply Chain State — Warehouse inventory tracking
 @freezed
 class SupplyChainState with _$SupplyChainState {
+  const SupplyChainState._();
   const factory SupplyChainState({
     @Default(5000) int warehouseCapacity,
     @Default(0) int currentInventoryValue,
@@ -68,6 +71,7 @@ class SupplyChainState with _$SupplyChainState {
 /// Liquidation Result — Inventory to Capital conversion
 @freezed
 class LiquidationResult with _$LiquidationResult {
+  const LiquidationResult._();
   const factory LiquidationResult({
     @Default(0) int liquidatedAmount,
     @Default(0) int newInventory,
@@ -87,6 +91,7 @@ class LiquidationResult with _$LiquidationResult {
 /// Logistics Upgrade — Warehouse expansion
 @freezed
 class LogisticsUpgrade with _$LogisticsUpgrade {
+  const LogisticsUpgrade._();
   const factory LogisticsUpgrade({
     @Default(false) bool success,
     @Default(1) int newLevel,
@@ -117,5 +122,3 @@ class LogisticsUpgrade with _$LogisticsUpgrade {
   int get capacityIncrease => (newCapacity / 1.5 * 0.5).round();
 }
 
-// Helper import
-import 'dart:math' show pow;

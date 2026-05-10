@@ -5,15 +5,9 @@
 -- =============================================================================
 
 -- Ensure onboarding_complete column exists (genesis RPC already sets it TRUE)
+-- DEFAULT FALSE is correct — only execute_sovereign_genesis writes TRUE on completion
 ALTER TABLE public.players
   ADD COLUMN IF NOT EXISTS onboarding_complete BOOL NOT NULL DEFAULT FALSE;
-
--- Back-fill any existing players who completed genesis without the column
--- (idempotent: only runs where column was just added with DEFAULT FALSE)
-UPDATE public.players
-SET onboarding_complete = TRUE
-WHERE onboarding_complete = FALSE
-  AND created_at IS NOT NULL;
 
 -- =============================================================================
 -- COMMENT

@@ -161,6 +161,7 @@ class CastingResult with _$CastingResult {
 /// Pity state tracking
 @freezed
 class PityState with _$PityState {
+  const PityState._();
   const factory PityState({
     @Default('standard') String bannerId,
     @Default(0) int pullsSinceSovereign,
@@ -172,9 +173,9 @@ class PityState with _$PityState {
   
   /// Calculate progress to pity (0.0 - 1.0)
   double get pityProgress => 
-    pullsSinceSovereign / TalentTier.pityThreshold;
+    pullsSinceSovereign / TalentTierExtension.pityThreshold;
   
   /// Pulls remaining until guaranteed Sovereign
   int get pullsUntilPity => 
-    TalentTier.pityThreshold - pullsSinceSovereign;
+    TalentTierExtension.pityThreshold - pullsSinceSovereign;
 }
