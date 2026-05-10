@@ -322,7 +322,7 @@ class _CityCard extends StatelessWidget {
       case HqCity.tokyo:
         return 'Where Tradition Meets Future';
       case HqCity.milan:
-        return 'The Designer's Sanctuary';
+        return "The Designer's Sanctuary";
       default:
         return '';
     }

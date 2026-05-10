@@ -89,6 +89,7 @@ extension StatueTierExtension on StatueTier {
 /// fashion empire achievement with 3D statue representation.
 @freezed
 class SovereignStatue with _$SovereignStatue {
+  const SovereignStatue._();
   const factory SovereignStatue({
     required String id,
     required String playerId,

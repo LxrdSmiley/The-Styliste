@@ -12,6 +12,7 @@ part 'archive_models.g.dart';
 /// Archive Listing — P2P market entry
 @freezed
 class ArchiveListing with _$ArchiveListing {
+  const ArchiveListing._();
   const factory ArchiveListing({
     required String id,
     required String sellerId,
@@ -100,6 +101,7 @@ class ArchiveListing with _$ArchiveListing {
 /// Provenance Record — Single ownership transfer
 @freezed
 class ProvenanceRecord with _$ProvenanceRecord {
+  const ProvenanceRecord._();
   const factory ProvenanceRecord({
     required String id,
     required String designId,

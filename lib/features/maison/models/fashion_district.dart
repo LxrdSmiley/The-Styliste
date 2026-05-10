@@ -102,7 +102,7 @@ class DistrictDetails with _$DistrictDetails {
     String? controllingMaisonTag,
     int? controllingMaisonTreasury,
     int? controllingMaisonHype,
-    bool hasWatermark = false,
+    @Default(false) bool hasWatermark,
   }) = _DistrictDetails;
 }
 

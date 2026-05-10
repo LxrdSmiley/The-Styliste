@@ -9,6 +9,7 @@ part 'check_in_models.g.dart';
 /// Check-In State — Player's daily streak tracking
 @freezed
 class CheckInState with _$CheckInState {
+  const CheckInState._();
   const factory CheckInState({
     @Default(0) int currentStreak,
     DateTime? lastCheckIn,

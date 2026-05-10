@@ -12,6 +12,7 @@ part 'gala_models.g.dart';
 /// Gala Event — Weekly themed competition
 @freezed
 class GalaEvent with _$GalaEvent {
+  const GalaEvent._();
   const factory GalaEvent({
     required String id,
     required String themeTitle,
@@ -55,6 +56,7 @@ class GalaEvent with _$GalaEvent {
 /// Gala Submission — Player's entry with votes
 @freezed
 class GalaSubmission with _$GalaSubmission {
+  const GalaSubmission._();
   const factory GalaSubmission({
     required String id,
     required String eventId,
@@ -96,6 +98,7 @@ class GalaSubmission with _$GalaSubmission {
 /// Vote cast by a player
 @freezed
 class GalaVote with _$GalaVote {
+  const GalaVote._();
   const factory GalaVote({
     required String id,
     required String submissionId,
@@ -118,6 +121,7 @@ class GalaVote with _$GalaVote {
 /// Daily vote limits for a player
 @freezed
 class VoteLimits with _$VoteLimits {
+  const VoteLimits._();
   const factory VoteLimits({
     required String playerId,
     required String eventId,
@@ -163,6 +167,7 @@ class VoteLimits with _$VoteLimits {
 /// Leaderboard entry
 @freezed
 class LeaderboardEntry with _$LeaderboardEntry {
+  const LeaderboardEntry._();
   const factory LeaderboardEntry({
     required int rank,
     required String submissionId,

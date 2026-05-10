@@ -2,9 +2,12 @@
 // Rank 50 Joint Venture & Rank 100 Memorialization
 // Alabaster Standard: Permanent prestige, account-wide multipliers
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
@@ -258,8 +261,8 @@ final Provider<AsyncValue<int>> currentSovereignMultipliersProvider =
 });
 
 /// Computed: Can current user memorialize?
-final Provider<AsyncValue<bool>>> canMemorializeProvider =
-    Provider<AsyncValue<bool>>>((Ref ref) {
+final Provider<AsyncValue<bool>> canMemorializeProvider =
+    Provider<AsyncValue<bool>>((Ref ref) {
   // This would need to check player rank
   // For now return loading
   return const AsyncValue.loading();

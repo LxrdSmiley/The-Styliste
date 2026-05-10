@@ -284,7 +284,6 @@ final FutureProvider<SupplyChainStats> supplyChainStatsProvider =
   );
 });
 
-@immutable
 class SupplyChainStats {
   const SupplyChainStats({
     required this.totalWarehouses,
