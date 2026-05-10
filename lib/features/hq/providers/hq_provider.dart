@@ -42,7 +42,7 @@ final Provider<int> brandHeatPercentProvider =
     Provider<int>((Ref<int> ref) {
   return ref.watch(
     hqBrandStreamProvider.select(
-      (AsyncValue<Brand> async) => async.value?.hypeScore.toInt() ?? 0,
+      (AsyncValue<Brand> async) => async.value?.heat ?? 0,
     ),
   );
 });
