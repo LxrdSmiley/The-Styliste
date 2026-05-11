@@ -14,10 +14,6 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
-Brand _$BrandFromJson(Map<String, dynamic> json) {
-  return _Brand.fromJson(json);
-}
-
 /// @nodoc
 mixin _$Brand {
   String get playerId => throw _privateConstructorUsedError;
@@ -58,9 +54,6 @@ mixin _$Brand {
   int get currentInventoryValue =>
       throw _privateConstructorUsedError; // Current stored inventory
   int get logisticsLevel => throw _privateConstructorUsedError;
-
-  /// Serializes this Brand to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of Brand
   /// with the given fields replaced by the non-null parameter values.
@@ -403,7 +396,7 @@ class __$$BrandImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$BrandImpl implements _Brand {
   const _$BrandImpl(
       {required this.playerId,
@@ -430,9 +423,6 @@ class _$BrandImpl implements _Brand {
       this.currentInventoryValue = 0,
       this.logisticsLevel = 1})
       : _avatarConfiguration = avatarConfiguration;
-
-  factory _$BrandImpl.fromJson(Map<String, dynamic> json) =>
-      _$$BrandImplFromJson(json);
 
   @override
   final String playerId;
@@ -581,7 +571,6 @@ class _$BrandImpl implements _Brand {
                 other.logisticsLevel == logisticsLevel));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hashAll([
         runtimeType,
@@ -617,13 +606,6 @@ class _$BrandImpl implements _Brand {
   @pragma('vm:prefer-inline')
   _$$BrandImplCopyWith<_$BrandImpl> get copyWith =>
       __$$BrandImplCopyWithImpl<_$BrandImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$BrandImplToJson(
-      this,
-    );
-  }
 }
 
 abstract class _Brand implements Brand {
@@ -651,8 +633,6 @@ abstract class _Brand implements Brand {
       final int warehouseCapacity,
       final int currentInventoryValue,
       final int logisticsLevel}) = _$BrandImpl;
-
-  factory _Brand.fromJson(Map<String, dynamic> json) = _$BrandImpl.fromJson;
 
   @override
   String get playerId;

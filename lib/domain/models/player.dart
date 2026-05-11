@@ -46,7 +46,7 @@ enum HqCity {
   saoPaulo,
 }
 
-@freezed
+@Freezed(fromJson: false, toJson: false)
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Player with _$Player {
   const factory Player({

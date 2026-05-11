@@ -21,7 +21,7 @@ class _SafeDouble implements JsonConverter<double, Object?> {
   Object? toJson(double value) => value;
 }
 
-@freezed
+@Freezed(fromJson: false, toJson: false)
 @JsonSerializable(fieldRename: FieldRename.snake)
 class Brand with _$Brand {
   const factory Brand({
