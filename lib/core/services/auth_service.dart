@@ -1,14 +1,21 @@
 // Directive O — Auth Service
 // GDD §1.1 — Cloud Save & Platform Integration
 // Game Center (iOS) / Play Games (Android) silent authentication
+// Android: OAuth code flow — server_auth_code → Firebase credential → verified UID
+// iOS: Game Center sign-in → Player ID → Supabase mapping
 
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:games_services/games_services.dart' as gs;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../constants/supabase_constants.dart';
 import 'supabase_service.dart';
+
+// GDD §1.1 — Web OAuth 2.0 client ID from Google Play Console
+// Setup: Play Console → Setup → API → Linked APIs → Web client ID
+const String _playGamesWebClientId = String.fromEnvironment('PLAY_GAMES_CLIENT_ID');
 
 /// AuthService — Platform game services authentication
 /// Maps platform IDs (Game Center / Play Games) to Supabase UUIDs
@@ -64,25 +71,39 @@ class AuthService {
     }
   }
 
-  /// Android: Sign in with Google Play Games
-  /// Maps Play Games ID to Supabase UUID
+  /// Android: Sign in with Google Play Games via OAuth server auth code flow
+  /// getAuthCode() → Google verifies server-side → Firebase credential → Firebase UID
+  /// Firebase UID is the verified source of truth — cannot be spoofed client-side
   Future<String?> _signInWithPlayGames() async {
     try {
-      // Sign in and check result
+      // Step 1: Silent sign-in to Play Games
       final String? signInResult = await gs.GameAuth.signIn();
       if (signInResult != null) {
         // signIn() returns error string on failure, null on success
         return null;
       }
 
-      final String? playGamesId = await gs.Player.getPlayerID();
-      if (playGamesId == null || playGamesId.isEmpty) {
-        return null;
-      }
+      // Step 2: Get server auth code — requires Web OAuth 2.0 client ID
+      if (_playGamesWebClientId.isEmpty) return null;
+      final String? serverAuthCode = await gs.GameAuth.getAuthCode(
+        _playGamesWebClientId,
+      );
+      if (serverAuthCode == null || serverAuthCode.isEmpty) return null;
 
-      // Map Play Games ID to Supabase user
+      // Step 3: Exchange server auth code for Firebase credential
+      // Google verifies the code server-side — result is a cryptographically
+      // confirmed Firebase UID tied to the player's Google account
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        serverAuthCode: serverAuthCode,
+      );
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(credential);
+      final String? firebaseUid = userCredential.user?.uid;
+      if (firebaseUid == null) return null;
+
+      // Step 4: Link verified Firebase UID to Supabase economy row
       return await _linkPlatformId(
-        platformId: playGamesId,
+        platformId: firebaseUid,
         platform: 'play_games',
       );
     } catch (e) {

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "757476640789",
+    "project_id": "the-styliste",
+    "storage_bucket": "the-styliste.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:757476640789:android:9d964f93910db59e9ca61c",
+        "android_client_info": {
+          "package_name": "com.skinteethnerds.styliste.the_styliste"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyVvmLVZcmCRLgKCC2Asz8t2fKfNwrgRw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

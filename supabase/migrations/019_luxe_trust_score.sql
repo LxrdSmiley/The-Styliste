@@ -33,6 +33,8 @@ GRANT EXECUTE ON FUNCTION increment_luxe_trust(UUID, INT) TO authenticated;
 -- =============================================================================
 -- PATCH: record_check_in — +1 Trust Score per daily claim
 -- =============================================================================
+-- DROP required: RETURNS TABLE column list changed from 016 (42P13 blocks CREATE OR REPLACE)
+DROP FUNCTION IF EXISTS record_check_in(UUID);
 CREATE OR REPLACE FUNCTION record_check_in(p_player_id UUID)
 RETURNS TABLE(
   streak INTEGER,
@@ -143,6 +145,8 @@ GRANT EXECUTE ON FUNCTION record_check_in(UUID) TO authenticated;
 -- =============================================================================
 -- PATCH: submit_to_gala — +1 Trust Score per entry (GDD §6.9)
 -- =============================================================================
+-- DROP required: RETURNS TABLE column order changed from 012 (42P13 blocks CREATE OR REPLACE)
+DROP FUNCTION IF EXISTS submit_to_gala(UUID, UUID, UUID);
 CREATE OR REPLACE FUNCTION submit_to_gala(
   p_player_id UUID,
   p_design_id UUID,
@@ -189,6 +193,8 @@ GRANT EXECUTE ON FUNCTION submit_to_gala(UUID, UUID, UUID) TO authenticated;
 -- PATCH: apply_kintsugi_repair — +5 Trust Score on resolution (GDD §8.9.2)
 -- Kintsugi is the highest-prestige crisis path — founder grows through crisis
 -- =============================================================================
+-- DROP required: RETURNS TABLE column order changed from 010 (42P13 blocks CREATE OR REPLACE)
+DROP FUNCTION IF EXISTS apply_kintsugi_repair(UUID, INTEGER);
 CREATE OR REPLACE FUNCTION apply_kintsugi_repair(
   p_player_id UUID,
   p_prestige_token_cost INTEGER DEFAULT 10
