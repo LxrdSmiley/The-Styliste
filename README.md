@@ -54,31 +54,27 @@ lib/
 └── main.dart
 ```
 
-## 📍 Current Status (2026-05-06)
+## 📍 Current Status (2026-05-10)
 
-- ✅ Core architecture and rules defined (GDD v4 + PROJECT_RULES.md)
-- 🟡 Project is in early development phase
-- 🔴 Major systems still need to be implemented
+- ✅ All code implemented
+- 🔴 Alpha stage (internal testing phase)
+- 🔴 Ready for closed alpha testing
 
 Full status: See `PROJECT_STATUS.md`
 
 ## 🗺️ Roadmap
 
-**Phase 0** — Core models, providers, and broken imports fix  
-**Phase 1** — Runnable on-device build + Onboarding + HQ Dashboard  
-**Phase 2** — Designer Path (Atelier + Physics + AR)  
-**Phase 3** — Mogul Path (Ledger + Equity + Trading)  
-**Phase 4** — Social & Live systems + Polish
+**Phase 0-4 Complete** — All core systems, features, and polish implemented.
 
 ## 📜 Official Documents
 
-- [Game Design Document (GDD v4)](THE_STYLISTE_GDD_v4.md) — Single source of truth
+- [Game Design Document (GDD v6)](THE_STYLISTE_GDD_v6.md) — Single source of truth
 - [Project Rules](PROJECT_RULES.md)
 - [Verification Protocol](VERIFICATION_PROTOCOL.md)
 
 ## 🤝 Contributing
 
-This is currently a solo/architect-led project. Contribution guidelines will be added once Phase 1 is stable.
+Currently in closed alpha (internal testing). Public contributions will open post-alpha.
 
 ## 📄 License
 
@@ -89,6 +85,3 @@ Proprietary — All rights reserved. SkinTeethNerd Studios © 2026
 **Built with obsession for detail and love for fashion.**
 
 *“Every stitch matters.”*
-```
-
----
