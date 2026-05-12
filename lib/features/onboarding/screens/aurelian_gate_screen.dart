@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
@@ -65,6 +66,31 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
     );
     _ribbon = VerletRibbon(pointCount: 18);
     _loadShader();
+    
+    // GDD §10.1 — Age-gate mechanism at onboarding
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAgeGate(context);
+    });
+  }
+
+  Future<void> _checkAgeGate(BuildContext context) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool('age_gate_passed') ?? false) return;
+
+    if (!mounted) return;
+
+    final bool? passed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext ctx) => const _AgeGateDialog(),
+    );
+
+    if (passed == true) {
+      await prefs.setBool('age_gate_passed', true);
+    } else {
+      // App exit for under-13
+      SystemNavigator.pop();
+    }
   }
 
   Future<void> _loadShader() async {
@@ -341,4 +367,61 @@ class _TickerBuilderState extends State<TickerBuilder>
 
   @override
   Widget build(BuildContext context) => widget.child;
+}
+
+class _AgeGateDialog extends StatelessWidget {
+  const _AgeGateDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AurelianPalette.ivory,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AurelianPalette.champagneGold, width: 1),
+      ),
+      title: const Text(
+        'AGE VERIFICATION',
+        style: TextStyle(
+          color: AurelianPalette.textPrimary,
+          fontFamily: 'SpaceGrotesk',
+          fontWeight: FontWeight.w700,
+          letterSpacing: 2.0,
+        ),
+      ),
+      content: const Text(
+        'The Styliste is designed for players aged 13 and older.\n\n'
+        'Are you 13 years of age or older?',
+        style: TextStyle(
+          color: AurelianPalette.textPrimary,
+          fontFamily: 'SpaceGrotesk',
+          height: 1.5,
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text(
+            'NO — EXIT',
+            style: TextStyle(
+              color: AurelianPalette.textTertiary,
+              fontFamily: 'SpaceGrotesk',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text(
+            'YES — CONTINUE',
+            style: TextStyle(
+              color: AurelianPalette.champagneGold,
+              fontFamily: 'SpaceGrotesk',
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }

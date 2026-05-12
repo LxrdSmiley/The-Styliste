@@ -13,6 +13,8 @@ import '../../design/services/hype_calculator.dart';
 import '../../design/services/vex_ai_engine.dart';
 import '../../trends/models/trend_tsunami.dart';
 import '../../trends/providers/trend_provider.dart';
+import '../../talent/models/talent.dart';
+import '../../talent/providers/casting_provider.dart';
 
 /// State for the drop design flow
 class DropDesignState {
@@ -89,10 +91,18 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
     // Calculate projected hype score
     final HypeCalculationInput input = HypeCalculationInput(
       styleTags: styleTags,
-      materialQuality: 75.0, // AI_UNCERTAINTY: Should come from design.fabric_data
-      aestheticAlignment: 80.0, // AI_UNCERTAINTY: Should come from design session data
-      sovereignTalentCount: 0, // AI_UNCERTAINTY: Should fetch from talent provider
-      totalTalentExpertise: 0.0,
+      materialQuality: _getMaterialQuality(design),
+      aestheticAlignment: _getAestheticAlignment(design, styleTags, activeTsunamis),
+      sovereignTalentCount: _ref.read(rosterProvider).maybeWhen(
+        data: (roster) => roster.where((t) => t.tier == TalentTier.sovereign).length,
+        orElse: () => 0,
+      ),
+      totalTalentExpertise: _ref.read(rosterProvider).maybeWhen(
+        data: (roster) => roster
+            .where((t) => t.tier == TalentTier.sovereign)
+            .fold(0.0, (sum, t) => sum + t.expertiseScore),
+        orElse: () => 0.0,
+      ),
     );
 
     final HypeCalculationResult hypeResult = _calculator.calculate(
@@ -213,6 +223,29 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
   /// Reset the flow
   void reset() {
     state = const DropDesignState();
+  }
+
+  double _getMaterialQuality(Design design) {
+    // Map fabric tier to quality score per GDD §4.1
+    return switch (design.fabricTier) {
+      'alabaster_silk' => 95.0,
+      'organic_cotton' => 60.0,
+      'standard_cotton' => 35.0,
+      'synthetic' => 15.0,
+      _ => 50.0,
+    };
+  }
+
+  double _getAestheticAlignment(
+    Design design,
+    List<String> styleTags,
+    List<TrendTsunami> tsunamis,
+  ) {
+    // Base alignment from tag overlap with active tsunamis
+    if (tsunamis.isEmpty) return 50.0;
+    final double tsunamiScore = tsunamis.getMultiplierForTags(styleTags);
+    // Scale: 1.0 = 50, 1.5 = 75, 2.5 = 95
+    return ((tsunamiScore - 1.0) / 1.5 * 45.0 + 50.0).clamp(0.0, 100.0);
   }
 }
 

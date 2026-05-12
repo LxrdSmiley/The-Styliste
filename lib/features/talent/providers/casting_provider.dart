@@ -194,6 +194,9 @@ final StreamProvider<List<RosterTalent>> playerRosterProvider =
       });
 });
 
+/// Alias for playerRosterProvider (GDD §8.10)
+final StreamProvider<List<RosterTalent>> rosterProvider = playerRosterProvider;
+
 /// Pity state provider
 final FutureProvider<PityState> pityStateProvider =
     FutureProvider<PityState>((Ref<AsyncValue<PityState>> ref) async {

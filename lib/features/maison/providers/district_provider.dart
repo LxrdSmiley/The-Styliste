@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/services/supabase_service.dart';
 import '../models/fashion_district.dart';
+import '../../../core/providers/mock_auth_provider.dart';
 
 part 'district_provider.g.dart';
 
@@ -195,18 +196,43 @@ final StateNotifierProvider<DistrictSiegeNotifier, DistrictSiegeState>
   (Ref ref) => DistrictSiegeNotifier(),
 );
 
+/// Provider for the current player's maison ID
+@riverpod
+Future<String?> playerMaisonId(Ref ref) async {
+  final String uid = ref.watch(activeUidProvider);
+
+  // First get the player's maison membership
+  final maisonsResult = await Supabase.instance.client
+      .from(SupabaseConstants.tableMaisonMembers)
+      .select('maison_id')
+      .eq('player_id', uid)
+      .maybeSingle();
+
+  return maisonsResult?['maison_id'] as String?;
+}
+
 /// Computed: Total districts controlled by a maison
 final Provider<AsyncValue<int>> maisonDistrictCountProvider =
     Provider<AsyncValue<int>>((Ref ref) {
   final AsyncValue<List<FashionDistrict>> districtsAsync =
       ref.watch(globalDistrictsProvider);
+  final AsyncValue<String?> maisonIdAsync = ref.watch(playerMaisonIdProvider);
 
   return districtsAsync.when(
-    data: (List<FashionDistrict> districts) {
-      // AI_UNCERTAINTY: Need to filter by current user's maison
-      // For now returns total controlled count
-      return AsyncValue.data(districts.where((FashionDistrict d) => d.isControlled).length);
-    },
+    data: (List<FashionDistrict> districts) => maisonIdAsync.when(
+      data: (String? maisonId) {
+        if (maisonId != null) {
+          return AsyncValue.data(
+            districts.where((FashionDistrict d) => d.controllingMaisonId == maisonId).length,
+          );
+        } else {
+          // Solo player fallback
+          return const AsyncValue.data(0);
+        }
+      },
+      loading: () => const AsyncValue.loading(),
+      error: (Object err, StackTrace stack) => AsyncValue.error(err, stack),
+    ),
     loading: () => const AsyncValue.loading(),
     error: (Object err, StackTrace stack) => AsyncValue.error(err, stack),
   );

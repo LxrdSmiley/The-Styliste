@@ -1,12 +1,13 @@
 // GDD §3.1 — Brand Rank progress bar widget (shared, both paths)
 // Phase 1: flutter_animate shimmer on fill; gold glow at rank-up threshold
+// DIR-015: Shimmer fires specifically on rank-up event
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/theme/aurelian_theme.dart';
 
-class BrandRankBar extends StatelessWidget {
+class BrandRankBar extends StatefulWidget {
   const BrandRankBar({
     required this.currentRank,
     required this.xpProgress,
@@ -17,8 +18,27 @@ class BrandRankBar extends StatelessWidget {
   final double xpProgress; // 0.0–1.0
 
   @override
+  State<BrandRankBar> createState() => _BrandRankBarState();
+}
+
+class _BrandRankBarState extends State<BrandRankBar> {
+  bool _rankUpTriggered = false;
+
+  @override
+  void didUpdateWidget(BrandRankBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.currentRank > oldWidget.currentRank) {
+      setState(() => _rankUpTriggered = true);
+      // Reset trigger after animation completes
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (mounted) setState(() => _rankUpTriggered = false);
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bool isNearRankUp = xpProgress >= 0.9;
+    final bool isNearRankUp = widget.xpProgress >= 0.9;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,7 +47,7 @@ class BrandRankBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Text(
-              'RANK $currentRank',
+              'RANK ${widget.currentRank}',
               style: const TextStyle(
                 color: AurelianPalette.champagneGold,
                 fontFamily: 'SpaceGrotesk',
@@ -37,7 +57,7 @@ class BrandRankBar extends StatelessWidget {
               ),
             ),
             Text(
-              '${(xpProgress * 100).toStringAsFixed(0)}%',
+              '${(widget.xpProgress * 100).toStringAsFixed(0)}%',
               style: TextStyle(
                 color: isNearRankUp
                     ? AurelianPalette.champagneGold
@@ -52,7 +72,7 @@ class BrandRankBar extends StatelessWidget {
         ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(4.0)),
           child: LinearProgressIndicator(
-            value: xpProgress,
+            value: widget.xpProgress,
             backgroundColor: AurelianPalette.textTertiary.withValues(alpha: 0.2),
             valueColor: AlwaysStoppedAnimation<Color>(
               isNearRankUp
@@ -63,11 +83,29 @@ class BrandRankBar extends StatelessWidget {
           ),
         )
         // Shimmer sweep animates on every build when value changes
-        .animate(key: ValueKey<double>(xpProgress))
+        .animate(
+          key: ValueKey<double>(widget.xpProgress),
+        )
         .shimmer(
           duration: const Duration(milliseconds: 900),
           color: AurelianPalette.champagneGold.withValues(alpha: 0.4),
           size: 0.5,
+        )
+        // Additional high-intensity shimmer specifically on rank-up (DIR-015)
+        .animate(target: _rankUpTriggered ? 1.0 : 0.0)
+        .shimmer(
+          duration: const Duration(milliseconds: 1200),
+          color: Colors.white.withValues(alpha: 0.8),
+          size: 0.8,
+        )
+        .boxShadow(
+          begin: const BoxShadow(color: Colors.transparent),
+          end: const BoxShadow(
+            color: AurelianPalette.champagneGold,
+            blurRadius: 12,
+            spreadRadius: 2,
+          ),
+          curve: Curves.elasticOut,
         ),
       ],
     );

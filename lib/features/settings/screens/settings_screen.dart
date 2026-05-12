@@ -208,6 +208,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'Terms of Service',
                   onTap: () => _launchUrl('https://thestyliste.app/terms'),
                 ),
+                _SettingsLinkTile(
+                  icon: Icons.description_outlined,
+                  title: 'EULA',
+                  onTap: () => _launchUrl('https://thestyliste.app/eula'),
+                ),
+                _SettingsLinkTile(
+                  icon: Icons.group_outlined,
+                  title: 'Community Guidelines',
+                  onTap: () => _launchUrl('https://thestyliste.app/community'),
+                ),
+                _SettingsLinkTile(
+                  icon: Icons.cookie_outlined,
+                  title: 'Cookie Policy',
+                  onTap: () => _launchUrl('https://thestyliste.app/cookies'),
+                ),
+                _SettingsLinkTile(
+                  icon: Icons.copyright_outlined,
+                  title: 'DMCA / Copyright',
+                  onTap: () => _launchUrl('https://thestyliste.app/dmca'),
+                ),
+                _SettingsLinkTile(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Refund Policy',
+                  onTap: () => _launchUrl('https://thestyliste.app/refunds'),
+                ),
+                _SettingsLinkTile(
+                  icon: Icons.child_care_outlined,
+                  title: 'Children\'s Privacy',
+                  onTap: () => _launchUrl('https://thestyliste.app/coppa'),
+                ),
+                _SettingsLinkTile(
+                  icon: Icons.accessibility_new_outlined,
+                  title: 'Accessibility Statement',
+                  onTap: () => _launchUrl('https://thestyliste.app/accessibility'),
+                ),
                 const SizedBox(height: 48),
 
                 // ── VERSION ────────────────────────────────────────────────

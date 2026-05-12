@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -39,7 +41,7 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   
   // Kode Addendum: 3D controller lifecycle management
-  // AI_UNCERTAINTY: flutter_3d_controller integration pending
+  final Flutter3DController _modelController = Flutter3DController();
   // When navigating away, pause/dispose to maintain 120Hz sub-menu performance
   bool _is3DPaused = false;
 
@@ -140,6 +142,7 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
                       const SizedBox(height: 16.0),
                       _GarmentPreviewCard(
                         isPaused: _is3DPaused,
+                        controller: _modelController,
                         onTap: () {
                           _onNavigateAway();
                           context.push(AppRouter.atelier);
@@ -190,14 +193,20 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
   }
   
   Future<void> _applyApology(BuildContext context) async {
-    // AI_UNCERTAINTY: Public apology RPC implementation pending
-    // Should call apply_public_apology RPC (10% capital, -30 tarnish)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Public apology issued. Tarnish reduced by 30.'),
-        backgroundColor: Color(0xFFF7E7CE),
-      ),
-    );
+    HapticFeedback.heavyImpact();
+    final result = await Supabase.instance.client
+        .rpc('execute_power_move', params: {
+          'p_move_type': 'public_apology',
+          'p_player_id': Supabase.instance.client.auth.currentUser!.id,
+        });
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] as String? ?? 'Public apology issued'),
+          backgroundColor: const Color(0xFFF7E7CE),
+        ),
+      );
+    }
   }
 }
 
@@ -304,10 +313,12 @@ class _SectionTitle extends StatelessWidget {
 class _GarmentPreviewCard extends StatelessWidget {
   const _GarmentPreviewCard({
     required this.isPaused,
+    required this.controller,
     required this.onTap,
   });
 
   final bool isPaused;
+  final Flutter3DController controller;
   final VoidCallback onTap;
 
   @override
@@ -335,18 +346,10 @@ class _GarmentPreviewCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.0),
           child: Stack(
             children: <Widget>[
-              // 3D Model Placeholder
-              // AI_UNCERTAINTY: flutter_3d_controller integration pending
-              // When available: Flutter3DViewer(filePath: 'assets/models/stichless_mannequin.glb')
-              Center(
-                child: Opacity(
-                  opacity: isPaused ? 0.5 : 1.0,
-                  child: Icon(
-                    Icons.checkroom,
-                    size: 80.0,
-                    color: const Color(0xFFE8D4B8).withValues(alpha: 0.5),
-                  ),
-                ),
+              // 3D Model Viewer
+              Flutter3DViewer(
+                src: 'assets/models/stichless_mannequin.glb',
+                controller: controller,
               ),
 
               // Pause indicator

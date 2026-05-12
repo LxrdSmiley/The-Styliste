@@ -70,6 +70,27 @@ INSERT INTO talent_pool (name, tier, base_hype_multiplier, scandal_risk_factor, 
   ('Kairos', 'sovereign', 1.95, 55, 'Mythical tastemaker, never photographed', ARRAY['Timeless', 'Oracle'])
 ON CONFLICT (id) DO NOTHING;
 
+-- RLS: talent_pool is read-only for all authenticated players
+-- Writes are via service role only (gacha RPC)
+ALTER TABLE public.talent_pool ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Talent pool: read all authenticated"
+  ON public.talent_pool FOR SELECT
+  USING (auth.role() = 'authenticated');
+
+-- Explicitly block client-side writes (service_role bypasses RLS)
+CREATE POLICY "Talent pool: no client insert"
+  ON public.talent_pool FOR INSERT
+  WITH CHECK (false);
+
+CREATE POLICY "Talent pool: no client update"
+  ON public.talent_pool FOR UPDATE
+  USING (false);
+
+CREATE POLICY "Talent pool: no client delete"
+  ON public.talent_pool FOR DELETE
+  USING (false);
+
 -- =============================================================================
 -- Table: player_roster (what the player owns)
 -- Unique constraint prevents duplicate talent ownership
@@ -92,6 +113,19 @@ CREATE INDEX player_roster_favorite_idx ON public.player_roster(player_id, is_fa
 ALTER TABLE public.player_roster ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Roster: read own" ON public.player_roster FOR SELECT USING (player_id = auth.uid());
 
+CREATE POLICY "Roster: insert own"
+  ON public.player_roster FOR INSERT
+  WITH CHECK (player_id = auth.uid());
+
+-- Soft updates (morale/loyalty) go through RPC; direct client edits blocked
+CREATE POLICY "Roster: no client update"
+  ON public.player_roster FOR UPDATE
+  USING (false);
+
+CREATE POLICY "Roster: no client delete"
+  ON public.player_roster FOR DELETE
+  USING (false);
+
 -- =============================================================================
 -- Table: gacha_pity_state (pity tracking per banner)
 -- =============================================================================
@@ -107,6 +141,18 @@ CREATE TABLE IF NOT EXISTS public.gacha_pity_state (
 
 ALTER TABLE public.gacha_pity_state ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Pity: read own" ON public.gacha_pity_state FOR SELECT USING (player_id = auth.uid());
+
+CREATE POLICY "Pity: insert own"
+  ON public.gacha_pity_state FOR INSERT
+  WITH CHECK (player_id = auth.uid());
+
+CREATE POLICY "Pity: no client update"
+  ON public.gacha_pity_state FOR UPDATE
+  USING (false);
+
+CREATE POLICY "Pity: no client delete"
+  ON public.gacha_pity_state FOR DELETE
+  USING (false);
 
 -- =============================================================================
 -- Function: Execute Casting Pull (Server-Authoritative)

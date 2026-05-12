@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/providers/idle_engine_provider.dart';
 import '../../../core/router/app_router.dart';
@@ -211,26 +212,39 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
     );
   }
 
-  void _executePowerMove(String moveName) {
+  void _executePowerMove(String moveName) async {
     HapticFeedback.heavyImpact();
-    // AI_UNCERTAINTY: Power move execution logic pending
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$moveName executed'),
-        backgroundColor: const Color(0xFFF7E7CE),
-      ),
-    );
+    final String moveType = moveName.toLowerCase().replaceAll(' ', '_');
+    final result = await Supabase.instance.client
+        .rpc('execute_power_move', params: {
+          'p_move_type': moveType,
+          'p_player_id': Supabase.instance.client.auth.currentUser!.id,
+        });
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] as String? ?? 'Power Move executed'),
+          backgroundColor: const Color(0xFFF7E7CE),
+        ),
+      );
+    }
   }
   
   Future<void> _applyApology(BuildContext context) async {
-    // AI_UNCERTAINTY: Public apology RPC implementation pending
-    // Should call apply_public_apology RPC (10% capital, -30 tarnish)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Public apology issued. Tarnish reduced by 30.'),
-        backgroundColor: Color(0xFFF7E7CE),
-      ),
-    );
+    HapticFeedback.heavyImpact();
+    final result = await Supabase.instance.client
+        .rpc('execute_power_move', params: {
+          'p_move_type': 'public_apology',
+          'p_player_id': Supabase.instance.client.auth.currentUser!.id,
+        });
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] as String? ?? 'Public apology issued'),
+          backgroundColor: const Color(0xFFF7E7CE),
+        ),
+      );
+    }
   }
 
   void _showLogisticsUpgrade(BuildContext context, SupplyChainState state) {

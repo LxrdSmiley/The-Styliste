@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 
 import '../../../core/providers/onboarding_provider.dart';
 import '../../../core/router/app_router.dart';
@@ -411,81 +412,10 @@ class _AvatarPreviewState extends State<_AvatarPreview>
 
   @override
   Widget build(BuildContext context) {
-    // AI_UNCERTAINTY: flutter_3d_controller integration pending
-    // When available, this would be:
-    // Flutter3DViewer(
-    //   filePath: 'assets/models/stichless_mannequin.glb',
-    //   onLoad: (controller) {
-    //     controller.playAnimation('idle');
-    //     controller.setTexture(_getFaceTexture(widget.faceIndex));
-    //   },
-    // )
-    
-    // For now, elegant placeholder with rotation animation
-    return AnimatedBuilder(
-      animation: _rotateController,
-      builder: (BuildContext context, Widget? child) {
-        final double rotation = math.sin(_rotateController.value * math.pi * 2) * 0.1;
-        
-        return Center(
-          child: Transform.rotate(
-            angle: rotation,
-            child: Container(
-              width: 280.0,
-              height: 400.0,
-              decoration: BoxDecoration(
-                color: AurelianPalette.alabaster,
-                borderRadius: BorderRadius.circular(24.0),
-                border: Border.all(
-                  color: AurelianPalette.champagneGold.withValues(alpha: 0.3),
-                  width: 2.0,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  // Avatar silhouette placeholder
-                  Icon(
-                    Icons.person_outline,
-                    size: 120.0,
-                    color: AurelianPalette.champagneGold.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(height: 24.0),
-                  Text(
-                    'FOUNDER PREVIEW',
-                    style: TextStyle(
-                      fontFamily: 'SpaceGrotesk',
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 2.0,
-                      color: AurelianPalette.textTertiary,
-                    ),
-                  ),
-                  const SizedBox(height: 8.0),
-                  // Current selections display
-                  Text(
-                    'Face: ${widget.faceIndex} | Body: ${widget.bodyIndex}',
-                    style: TextStyle(
-                      fontFamily: 'JetBrainsMono',
-                      fontSize: 11.0,
-                      color: AurelianPalette.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 4.0),
-                  Text(
-                    'Hair: ${widget.hairIndex} | Fit: ${widget.fitIndex}',
-                    style: TextStyle(
-                      fontFamily: 'JetBrainsMono',
-                      fontSize: 11.0,
-                      color: AurelianPalette.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+    // Flutter3DViewer for avatar preview
+    return Flutter3DViewer(
+      src: 'assets/models/stichless_mannequin.glb',
+      controller: Flutter3DController(),
     );
   }
 }

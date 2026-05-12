@@ -23,6 +23,25 @@ CREATE TABLE IF NOT EXISTS public.gala_events (
 CREATE INDEX gala_events_status_idx ON public.gala_events(status);
 CREATE INDEX gala_events_dates_idx ON public.gala_events(starts_at, ends_at);
 
+-- RLS: gala_events is read-only for all; writes via service_role RPC only
+ALTER TABLE public.gala_events ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Gala events: read all"
+  ON public.gala_events FOR SELECT
+  USING (true);
+
+CREATE POLICY "Gala events: no client insert"
+  ON public.gala_events FOR INSERT
+  WITH CHECK (false);
+
+CREATE POLICY "Gala events: no client update"
+  ON public.gala_events FOR UPDATE
+  USING (false);
+
+CREATE POLICY "Gala events: no client delete"
+  ON public.gala_events FOR DELETE
+  USING (false);
+
 -- Seed 12 weeks of themes in advance
 INSERT INTO gala_events (theme_title, theme_description, style_tags, starts_at, ends_at, status) VALUES
   ('Cybernetic Renaissance', 'Where classical art meets neural networks. Think marble statues with LED veins.', ARRAY['Futuristic', 'Classical', 'Neon'], NOW() + INTERVAL '7 days', NOW() + INTERVAL '14 days', 'upcoming'),
@@ -90,6 +109,18 @@ CREATE INDEX gala_votes_voter_idx ON public.gala_votes(voter_id);
 ALTER TABLE public.gala_votes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Votes: read own" ON public.gala_votes FOR SELECT USING (voter_id = auth.uid());
 
+CREATE POLICY "Votes: insert own"
+  ON public.gala_votes FOR INSERT
+  WITH CHECK (voter_id = auth.uid());
+
+CREATE POLICY "Votes: no update"
+  ON public.gala_votes FOR UPDATE
+  USING (false);
+
+CREATE POLICY "Votes: no delete"
+  ON public.gala_votes FOR DELETE
+  USING (false);
+
 -- =============================================================================
 -- Table: gala_vote_limits (daily vote tracking)
 -- =============================================================================
@@ -107,6 +138,19 @@ CREATE TABLE IF NOT EXISTS public.gala_vote_limits (
 
 ALTER TABLE public.gala_vote_limits ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Vote limits: read own" ON public.gala_vote_limits FOR SELECT USING (player_id = auth.uid());
+
+CREATE POLICY "Vote limits: insert own"
+  ON public.gala_vote_limits FOR INSERT
+  WITH CHECK (player_id = auth.uid());
+
+-- Update allowed only via RPC (service_role). Client cannot reset limits.
+CREATE POLICY "Vote limits: no client update"
+  ON public.gala_vote_limits FOR UPDATE
+  USING (false);
+
+CREATE POLICY "Vote limits: no client delete"
+  ON public.gala_vote_limits FOR DELETE
+  USING (false);
 
 -- =============================================================================
 -- RPC: Submit to Gala (strict ownership validation)

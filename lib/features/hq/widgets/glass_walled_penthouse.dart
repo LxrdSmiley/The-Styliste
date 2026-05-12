@@ -4,9 +4,11 @@
 // Directive H: Integrated with TarnishOverlay for Crisis Engine
 
 import 'dart:math' as math;
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
 import '../../crisis/widgets/tarnish_overlay.dart';
 import '../theme/aurelian_hq_theme.dart';
@@ -46,6 +48,7 @@ class GlassWalledPenthouse extends StatefulWidget {
 class _GlassWalledPenthouseState extends State<GlassWalledPenthouse>
     with SingleTickerProviderStateMixin {
   late final AnimationController _parallaxController;
+  StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
   double _parallaxX = 0.0;
   double _parallaxY = 0.0;
 
@@ -66,9 +69,13 @@ class _GlassWalledPenthouseState extends State<GlassWalledPenthouse>
   }
   
   void _initSensors() {
-    // AI_UNCERTAINTY: accelerometer package not confirmed in pubspec
-    // Falling back to simulated parallax via AnimationController
-    // If sensors available, replace with: accelerometerEvents.listen(...)
+    _accelerometerSubscription = accelerometerEventStream().listen((AccelerometerEvent event) {
+      setState(() {
+        // Map G-force to ±5% shift
+        _parallaxX = (event.x / 9.8).clamp(-1.0, 1.0) * 0.05;
+        _parallaxY = (event.y / 9.8).clamp(-1.0, 1.0) * 0.03;
+      });
+    });
   }
   
   void _updateParallax() {
@@ -83,6 +90,7 @@ class _GlassWalledPenthouseState extends State<GlassWalledPenthouse>
   @override
   void dispose() {
     _parallaxController.dispose();
+    _accelerometerSubscription?.cancel();
     super.dispose();
   }
 
