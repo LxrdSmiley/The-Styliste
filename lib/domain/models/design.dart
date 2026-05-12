@@ -26,8 +26,6 @@ enum DesignStatus {
 
 @freezed
 class Design with _$Design {
-  const Design._();
-
   const factory Design({
     required String id,
     required String playerId,
@@ -46,6 +44,8 @@ class Design with _$Design {
   }) = _Design;
 
   factory Design.fromJson(Map<String, dynamic> json) => _$DesignFromJson(json);
+}
 
+extension DesignExtension on Design {
   String get fabricTier => fabricData['tier'] as String? ?? 'standard_cotton';
 }

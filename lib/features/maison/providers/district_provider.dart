@@ -197,8 +197,7 @@ final StateNotifierProvider<DistrictSiegeNotifier, DistrictSiegeState>
 );
 
 /// Provider for the current player's maison ID
-@riverpod
-Future<String?> playerMaisonId(Ref ref) async {
+final playerMaisonIdProvider = FutureProvider<String?>((ref) async {
   final String uid = ref.watch(activeUidProvider);
 
   // First get the player's maison membership
@@ -209,7 +208,7 @@ Future<String?> playerMaisonId(Ref ref) async {
       .maybeSingle();
 
   return maisonsResult?['maison_id'] as String?;
-}
+});
 
 /// Computed: Total districts controlled by a maison
 final Provider<AsyncValue<int>> maisonDistrictCountProvider =

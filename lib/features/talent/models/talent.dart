@@ -110,23 +110,22 @@ class Talent with _$Talent {
   factory Talent.fromJson(Map<String, dynamic> json) => _$TalentFromJson(json);
 }
 
-/// Player's owned talent with acquisition metadata
-@freezed
-class RosterTalent with _$RosterTalent {
-  const factory RosterTalent({
-    required String talentId,
-    required String name,
-    required TalentTier tier,
-    String? portraitUrl,
-    required double baseHypeMultiplier,
-    @Default(0) int scandalRiskFactor,
-    String? biography,
-    DateTime? acquiredAt,
-    @Default(false) bool isFavorite,
-    required int prestigeValue,  // Dupe value
-  }) = _RosterTalent;
-  
-  factory RosterTalent.fromJson(Map<String, dynamic> json) => _$RosterTalentFromJson(json);
+extension TalentExtension on Talent {
+  /// Derived expertise score for hype calculation (GDD §8.10)
+  /// Map multiplier: 1.0 -> 50, 2.0 -> 100
+  double get expertiseScore => (baseHypeMultiplier - 1.0) * 50.0 + 50.0;
+}
+
+extension RosterTalentExtension on RosterTalent {
+  /// Derived expertise score for hype calculation (GDD §8.10)
+  /// Map multiplier: 1.0 -> 50, 2.0 -> 100
+  double get expertiseScore => (baseHypeMultiplier - 1.0) * 50.0 + 50.0;
+}
+
+extension RosterTalentExtension on RosterTalent {
+  /// Derived expertise score for hype calculation (GDD §8.10)
+  /// Map multiplier: 1.0 -> 50, 2.0 -> 100
+  double get expertiseScore => (baseHypeMultiplier - 1.0) * 50.0 + 50.0;
 }
 
 /// Single pull result from casting

@@ -47,7 +47,6 @@ enum HqCity {
 }
 
 @Freezed(fromJson: false, toJson: false)
-@JsonSerializable(fieldRename: FieldRename.snake)
 class Player with _$Player {
   const factory Player({
     required String id,
@@ -73,6 +72,23 @@ class Player with _$Player {
   const Player._();
 
   factory Player.fromJson(Map<String, dynamic> json) => _$PlayerFromJson(json);
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'brand_name': brandName,
+        'path': path.name,
+        'hq_city': hqCity.name,
+        'brand_rank': brandRank,
+        'total_xp': totalXp,
+        'onboarding_complete': onboardingComplete,
+        'is_anonymous': isAnonymous,
+        'is_joint_venture': isJointVenture,
+        'sovereign_multipliers': sovereignMultipliers,
+        'joint_venture_unlocked_at': jointVentureUnlockedAt?.toIso8601String(),
+        'created_at': createdAt?.toIso8601String(),
+        'last_active_at': lastActiveAt?.toIso8601String(),
+        'luxe_trust_score': luxeTrustScore,
+      };
 
   /// Can unlock Joint Venture at Rank 50
   bool get canUnlockJointVenture => brandRank >= 50 && !isJointVenture;
