@@ -59,4 +59,4 @@ GRANT EXECUTE ON FUNCTION increment_post_hype(UUID, UUID) TO authenticated;
 
 -- Comments
 COMMENT ON TABLE post_reactions IS 'Tracks player reactions to posts for rate limiting and authenticity';
-COMMENT ON FUNCTION increment_post_hype IS 'Increments post hype with deduplication to prevent spam';
+COMMENT ON FUNCTION increment_post_hype(UUID, UUID) IS 'Increments post hype with deduplication to prevent spam';
