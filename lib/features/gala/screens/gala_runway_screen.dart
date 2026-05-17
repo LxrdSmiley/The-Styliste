@@ -6,12 +6,10 @@
 // Memory: Only current/next/previous 3D controllers active (120fps)
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../talent/models/talent.dart';
 import '../models/gala_models.dart';
@@ -214,7 +212,7 @@ class _GalaRunwayScreenState extends ConsumerState<GalaRunwayScreen> {
                     ),
                     Text(
                       gala.formattedTimeRemaining,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'JetBrainsMono',
                         fontSize: 10.0,
                         color: AurelianPalette.champagneGold,
@@ -229,22 +227,6 @@ class _GalaRunwayScreenState extends ConsumerState<GalaRunwayScreen> {
           ),
         ),
         
-        // Leaderboard button
-        GestureDetector(
-          onTap: () => context.push(AppRouter.galaLeaderboard),
-          child: Container(
-            padding: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.emoji_events,
-              color: AurelianPalette.champagneGold,
-              size: 20.0,
-            ),
-          ),
-        ),
       ],
     );
   }
@@ -448,7 +430,7 @@ class _VotingConsole extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             // Points explosion animation (when vote cast)
-            if (castState.lastResult?.success == true)
+            if (castState.lastResult?.success ?? false)
               _PointsExplosion(points: castState.lastResult!.finalPoints),
             
             const SizedBox(height: 16.0),

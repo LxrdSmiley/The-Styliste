@@ -81,6 +81,14 @@ extension MarketTierExtension on MarketTier {
   }
 }
 
+extension MarketTierApi on MarketTier {
+  String get apiValue => switch (this) {
+        MarketTier.highLuxury => 'high_luxury',
+        MarketTier.midLuxury => 'mid_luxury',
+        MarketTier.massMarket => 'mass_market',
+      };
+}
+
 // =================================================================-----------
 // Avatar Configuration for Avatar Customizer (Screen 5)
 // =================================================================-----------

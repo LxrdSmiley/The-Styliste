@@ -20,6 +20,7 @@ enum MaisonRole {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Maison with _$Maison {
   const factory Maison({
     required String id,
@@ -36,6 +37,7 @@ class Maison with _$Maison {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class MaisonMember with _$MaisonMember {
   const factory MaisonMember({
     required String maisonId,

@@ -6,14 +6,12 @@
 // The Sovereign Syndicate ($49.99): liquid_gold.frag shader backing.
 // UX: Heavy haptic on success, Luxe cascade animation to treasury.
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:go_router/go_router.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/brand.dart';
@@ -167,11 +165,11 @@ class _AurelianStorefrontScreenState extends ConsumerState<AurelianStorefrontScr
                     if (_lastGrantedAmount != null)
                       Text(
                         '+$_lastGrantedAmount LUXE GRANTED',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'JetBrainsMono',
                           fontSize: 12.0,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF44AA44),
+                          color: Color(0xFF44AA44),
                         ),
                       ).animate().fadeIn().slideY(begin: -0.5, end: 0.0),
                   ],

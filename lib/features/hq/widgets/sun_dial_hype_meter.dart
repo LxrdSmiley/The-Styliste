@@ -8,7 +8,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../theme/aurelian_hq_theme.dart';
 
 /// Sun-Dial Hype Meter — Circular dial with solar sweep animation
 /// 
@@ -19,9 +18,7 @@ import '../theme/aurelian_hq_theme.dart';
 /// - No axes, no tooltips — pure elegance
 class SunDialHypeMeter extends StatefulWidget {
   const SunDialHypeMeter({
-    super.key,
-    required this.hypeScore,
-    required this.maxHype,
+    required this.hypeScore, required this.maxHype, super.key,
     this.size = 200.0,
     this.onThresholdCrossed,
   });
@@ -191,7 +188,7 @@ class _SunDialPainter extends CustomPainter {
       );
 
     // Draw the sweep arc
-    final double startAngle = -math.pi / 2; // 12 o'clock
+    const double startAngle = -math.pi / 2; // 12 o'clock
     final double sweepAngle = progress * 2 * math.pi;
     
     canvas.drawArc(
@@ -271,9 +268,7 @@ class _SunDialPainter extends CustomPainter {
 /// Compact version for small spaces
 class SunDialCompact extends StatelessWidget {
   const SunDialCompact({
-    super.key,
-    required this.hypeScore,
-    required this.maxHype,
+    required this.hypeScore, required this.maxHype, super.key,
     this.size = 80.0,
   });
 
@@ -333,5 +328,5 @@ class _SunDialCompactPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
 }

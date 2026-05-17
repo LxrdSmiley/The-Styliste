@@ -3,11 +3,10 @@
 // GDD §3.0 — "The HQ visually ascends as Brand Rank increases"
 // Directive H: Integrated with TarnishOverlay for Crisis Engine
 
-import 'dart:math' as math;
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 import '../../crisis/widgets/tarnish_overlay.dart';
@@ -23,9 +22,7 @@ import '../theme/aurelian_hq_theme.dart';
 /// - Directive H: Integrated tarnish degradation overlay
 class GlassWalledPenthouse extends StatefulWidget {
   const GlassWalledPenthouse({
-    super.key,
-    required this.rank,
-    required this.child,
+    required this.rank, required this.child, super.key,
     this.playerId,
     this.tarnishLevel = 0,
     this.kintsugiLevel = 0,
@@ -365,7 +362,7 @@ class _WindowFramePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
 }
 
 /// Painter for subtle marble texture
@@ -401,5 +398,5 @@ class _MarbleTexturePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
 }

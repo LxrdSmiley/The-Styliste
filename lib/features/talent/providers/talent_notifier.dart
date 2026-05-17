@@ -4,7 +4,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/constants/supabase_constants.dart';
 
 // =============================================================================
 // Talent State
@@ -84,17 +83,31 @@ class TalentNotifier extends StateNotifier<TalentState> {
           };
         }
 
-        // Reset talent stamina to 100%
-        final Map<String, dynamic> result = await supabase.rpc(
-          'reset_talent_stamina',
-          params: <String, dynamic>{
-            'p_player_id': userId,
-            'p_talent_id': talentId,
+        final Session? session = supabase.auth.currentSession;
+        if (session == null) {
+          state = state.copyWith(isLoading: false);
+          return <String, dynamic>{
+            'success': false,
+            'error': 'Not authenticated',
+          };
+        }
+
+        final FunctionResponse response = await supabase.functions.invoke(
+          'claim-mini-game-reward',
+          body: <String, dynamic>{
+            'game_key': 'staff_rally',
+            'result_key': 'stamina_reset',
+            'talent_id': talentId,
+          },
+          headers: <String, String>{
+            'Authorization': 'Bearer ${session.accessToken}',
           },
         );
+        final Map<String, dynamic> result =
+            Map<String, dynamic>.from(response.data as Map);
 
         state = state.copyWith(isLoading: false);
-        return result as Map<String, dynamic>;
+        return result;
       } else {
         // Apply 24h cooldown
         final DateTime cooldownUntil = DateTime.now().add(const Duration(hours: 24));
@@ -105,10 +118,10 @@ class TalentNotifier extends StateNotifier<TalentState> {
           rallyCooldownUntil: cooldownUntil,
         );
 
-        // Store cooldown in Supabase (using player_talent_roster)
+        // Store cooldown in Supabase.
         if (talentId != null) {
           await supabase
-              .from('player_talent_roster')
+              .from('player_roster')
               .update(<String, dynamic>{
                 'gala_cooldown_until': cooldownUntil.toIso8601String(),
               })

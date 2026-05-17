@@ -8,35 +8,35 @@ part of 'store.dart';
 
 _$StoreImpl _$$StoreImplFromJson(Map<String, dynamic> json) => _$StoreImpl(
       id: json['id'] as String,
-      playerId: json['playerId'] as String,
+      playerId: json['player_id'] as String,
       type: $enumDecode(_$StoreTypeEnumMap, json['type']),
       city: $enumDecode(_$StoreCityEnumMap, json['city']),
       tier: (json['tier'] as num?)?.toInt() ?? 1,
-      revenuePerHour: json['revenuePerHour'] == null
+      revenuePerHour: json['revenue_per_hour'] == null
           ? 0.0
-          : const _SafeDouble().fromJson(json['revenuePerHour']),
+          : const _SafeDouble().fromJson(json['revenue_per_hour']),
       loyalty: (json['loyalty'] as num?)?.toInt() ?? 100,
-      marketShare: json['marketShare'] == null
+      marketShare: json['market_share'] == null
           ? 0.0
-          : const _SafeDouble().fromJson(json['marketShare']),
-      maisonId: json['maisonId'] as String?,
-      openedAt: json['openedAt'] == null
+          : const _SafeDouble().fromJson(json['market_share']),
+      maisonId: json['maison_id'] as String?,
+      openedAt: json['opened_at'] == null
           ? null
-          : DateTime.parse(json['openedAt'] as String),
+          : DateTime.parse(json['opened_at'] as String),
     );
 
 Map<String, dynamic> _$$StoreImplToJson(_$StoreImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'playerId': instance.playerId,
+      'player_id': instance.playerId,
       'type': _$StoreTypeEnumMap[instance.type]!,
       'city': _$StoreCityEnumMap[instance.city]!,
       'tier': instance.tier,
-      'revenuePerHour': const _SafeDouble().toJson(instance.revenuePerHour),
+      'revenue_per_hour': const _SafeDouble().toJson(instance.revenuePerHour),
       'loyalty': instance.loyalty,
-      'marketShare': const _SafeDouble().toJson(instance.marketShare),
-      'maisonId': instance.maisonId,
-      'openedAt': instance.openedAt?.toIso8601String(),
+      'market_share': const _SafeDouble().toJson(instance.marketShare),
+      'maison_id': instance.maisonId,
+      'opened_at': instance.openedAt?.toIso8601String(),
     };
 
 const _$StoreTypeEnumMap = {

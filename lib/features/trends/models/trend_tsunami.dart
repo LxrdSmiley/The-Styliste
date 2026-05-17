@@ -14,6 +14,7 @@ part 'trend_tsunami.g.dart';
 /// - Rank 1 (Crest): 2.5x multiplier
 /// - Rank 2-3 (Surge): 1.5x multiplier
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class TrendTsunami with _$TrendTsunami {
   const factory TrendTsunami({
     required String id,

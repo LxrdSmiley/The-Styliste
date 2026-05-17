@@ -145,7 +145,7 @@ class ArchivePriceFloor {
   /// Get formatted floor price message
   static String getFloorMessage(int hypeScore) {
     final int floor = calculate(hypeScore);
-    return 'Minimum listing price: \$$floor (based on ${hypeScore} hype)';
+    return 'Minimum listing price: \$$floor (based on $hypeScore hype)';
   }
 }
 

@@ -84,7 +84,7 @@ class SupabasePlayerRepository implements PlayerRepository {
       'heat': 50,
       'hype_score': 0.0,
       'followers': 0,
-      'revenue_idle': startingIdleRate,
+      'idle_revenue_per_hour': startingIdleRate,
       'total_revenue': 0.0,
       'momentum_buff_active': false,
       'sustainability_tier': 0,
@@ -98,3 +98,4 @@ class SupabasePlayerRepository implements PlayerRepository {
     return newPlayer;
   }
 }
+

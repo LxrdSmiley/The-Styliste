@@ -114,6 +114,16 @@ DECLARE
   v_defender_power NUMERIC;
   v_days_held INTEGER := 0;
 BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.maison_members
+    WHERE maison_id = p_attacker_maison_id
+      AND player_id = auth.uid()
+      AND role IN ('founder', 'executive_director')
+  ) THEN
+    RAISE EXCEPTION 'Unauthorized';
+  END IF;
+
   -- Step 1: Lock the district row (prevents concurrent takeovers)
   SELECT * INTO v_district
   FROM fashion_districts

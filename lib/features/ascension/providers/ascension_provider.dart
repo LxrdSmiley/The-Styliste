@@ -4,14 +4,12 @@
 
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../domain/models/player.dart';
 import '../models/sovereign_statue.dart';
 
 part 'ascension_provider.g.dart';
@@ -229,7 +227,7 @@ Stream<List<SovereignStatue>> playerStatues(Ref ref, String playerId) {
       .from(SupabaseConstants.tableHallOfSovereigns)
       .stream(primaryKey: const <String>['id'])
       .eq('player_id', playerId)
-      .order('ascended_at', ascending: false)
+      .order('ascended_at')
       .map((List<Map<String, dynamic>> data) {
         return data
             .map((Map<String, dynamic> json) => SovereignStatue.fromJson(json))
@@ -243,7 +241,7 @@ Stream<List<SovereignStatue>> hallOfSovereigns(Ref ref) {
   return Supabase.instance.client
       .from(SupabaseConstants.tableHallOfSovereigns)
       .stream(primaryKey: const <String>['id'])
-      .order('ascended_at', ascending: false)
+      .order('ascended_at')
       .limit(100)
       .map((List<Map<String, dynamic>> data) {
         return data

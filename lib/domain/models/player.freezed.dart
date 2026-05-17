@@ -14,6 +14,10 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
+Player _$PlayerFromJson(Map<String, dynamic> json) {
+  return _Player.fromJson(json);
+}
+
 /// @nodoc
 mixin _$Player {
   String get id => throw _privateConstructorUsedError;
@@ -34,6 +38,9 @@ mixin _$Player {
 // Trust Score: relationship meter, NOT wealth meter. Default 50 = warm baseline.
 // Increments: +1 daily check-in, +1 gala entry, +2 casting gold, +5 kintsugi
   int get luxeTrustScore => throw _privateConstructorUsedError;
+
+  /// Serializes this Player to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of Player
   /// with the given fields replaced by the non-null parameter values.
@@ -268,7 +275,7 @@ class __$$PlayerImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$PlayerImpl extends _Player {
   const _$PlayerImpl(
       {required this.id,
@@ -286,6 +293,9 @@ class _$PlayerImpl extends _Player {
       this.lastActiveAt,
       this.luxeTrustScore = 50})
       : super._();
+
+  factory _$PlayerImpl.fromJson(Map<String, dynamic> json) =>
+      _$$PlayerImplFromJson(json);
 
   @override
   final String id;
@@ -363,6 +373,7 @@ class _$PlayerImpl extends _Player {
                 other.luxeTrustScore == luxeTrustScore));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
@@ -388,6 +399,13 @@ class _$PlayerImpl extends _Player {
   @pragma('vm:prefer-inline')
   _$$PlayerImplCopyWith<_$PlayerImpl> get copyWith =>
       __$$PlayerImplCopyWithImpl<_$PlayerImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$PlayerImplToJson(
+      this,
+    );
+  }
 }
 
 abstract class _Player extends Player {
@@ -407,6 +425,8 @@ abstract class _Player extends Player {
       final DateTime? lastActiveAt,
       final int luxeTrustScore}) = _$PlayerImpl;
   const _Player._() : super._();
+
+  factory _Player.fromJson(Map<String, dynamic> json) = _$PlayerImpl.fromJson;
 
   @override
   String get id;

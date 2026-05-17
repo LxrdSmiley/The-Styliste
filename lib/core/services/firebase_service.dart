@@ -47,19 +47,8 @@ abstract final class FirebaseService {
     );
 
     if (kDebugMode) {
-      try {
-        final String? debugToken =
-            await FirebaseAppCheck.instance.getToken(true);
-        // ignore: avoid_print
-        print('▶ APP_CHECK_DEBUG_TOKEN: $debugToken');
-        print('  ↳ Whitelist this token at:'
-            ' console.firebase.google.com → App Check → Apps → Debug tokens');
-      } catch (e) {
-        // Token fetch can fail if the debug provider is not yet registered;
-        // non-fatal — token will also appear in native logcat/console.
-        // ignore: avoid_print
-        print('▶ APP_CHECK_DEBUG_TOKEN: unavailable ($e)');
-      }
+      debugPrint('Firebase App Check debug provider active for local development.');
     }
   }
 }
+

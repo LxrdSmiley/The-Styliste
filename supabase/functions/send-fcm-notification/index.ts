@@ -109,7 +109,8 @@ async function buildNotification(payload: WebhookPayload): Promise<FCMMessage | 
     if (oldStatus === 'active' && newStatus === 'sold') {
       // Item sold — notify seller
       const sellerId = record.seller_id as string;
-      const token = await getFCMToken(sellerId);
+      const tokens = await getPlayerFCMTokens(sellerId);
+      const token = tokens[0];
       
       if (!token) return null;
 
@@ -206,10 +207,11 @@ async function buildNotification(payload: WebhookPayload): Promise<FCMMessage | 
   if (table === 'district_control' && type === 'UPDATE') {
     const oldController = old_record?.controller_id;
     const newController = record.controller_id;
-    const attackedPlayerId = old_controller as string;
+    const attackedPlayerId = oldController as string;
 
     if (oldController !== newController && attackedPlayerId) {
-      const token = await getFCMToken(attackedPlayerId);
+      const tokens = await getPlayerFCMTokens(attackedPlayerId);
+      const token = tokens[0];
       if (!token) return null;
 
       const districtName = await getDistrictName(record.district_id as string);
@@ -280,24 +282,79 @@ async function sendFCM(message: FCMMessage): Promise<unknown> {
 }
 
 async function getFirebaseAccessToken(): Promise<string> {
-  // In production, use Firebase Admin SDK's credential mechanism
-  // This is a simplified placeholder
   if (!FIREBASE_SERVICE_ACCOUNT) {
     throw new Error('FIREBASE_SERVICE_ACCOUNT not configured');
   }
 
-  // Parse service account and generate JWT
   const serviceAccount = JSON.parse(FIREBASE_SERVICE_ACCOUNT);
-  
-  // Implementation: Generate JWT with service account credentials
-  // Request token from Google OAuth2 token endpoint
-  // Return access token
-  
-  // Placeholder return
-  return 'placeholder_token';
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const claim = {
+    iss: serviceAccount.client_email,
+    scope: 'https://www.googleapis.com/auth/firebase.messaging',
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  };
+
+  const unsignedJwt = `${base64UrlJson(header)}.${base64UrlJson(claim)}`;
+  const key = await crypto.subtle.importKey(
+    'pkcs8',
+    pemToArrayBuffer(serviceAccount.private_key),
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const signature = await crypto.subtle.sign(
+    'RSASSA-PKCS1-v1_5',
+    key,
+    new TextEncoder().encode(unsignedJwt),
+  );
+  const jwt = `${unsignedJwt}.${base64Url(new Uint8Array(signature))}`;
+
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion: jwt,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Google OAuth token request failed: ${await response.text()}`);
+  }
+
+  const tokenResponse = await response.json();
+  return tokenResponse.access_token as string;
 }
 
-async function getFCMToken(playerId: string): Promise<string | null> {
+function base64UrlJson(value: unknown): string {
+  return base64Url(new TextEncoder().encode(JSON.stringify(value)));
+}
+
+function base64Url(bytes: Uint8Array): string {
+  let binary = '';
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function pemToArrayBuffer(pem: string): ArrayBuffer {
+  const base64 = pem
+    .replace('-----BEGIN PRIVATE KEY-----', '')
+    .replace('-----END PRIVATE KEY-----', '')
+    .replace(/\s/g, '');
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+async function getPlayerFCMTokens(playerId: string): Promise<string[]> {
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL') || '',
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
@@ -307,13 +364,15 @@ async function getFCMToken(playerId: string): Promise<string | null> {
     .from('fcm_tokens')
     .select('token')
     .eq('player_id', playerId)
-    .eq('is_active', true)
-    .order('last_used_at', { ascending: false })
-    .limit(1)
-    .single();
+    .eq('is_active', true);
 
-  if (error || !data) return null;
-  return data.token as string;
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? [])
+    .map((row: { token: string }) => row.token)
+    .filter((token: string) => token.length > 0);
 }
 
 async function getDesignName(designId: string): Promise<string> {
@@ -338,7 +397,7 @@ async function getDistrictName(districtId: string): Promise<string> {
   );
 
   const { data } = await supabase
-    .from('districts')
+    .from('fashion_districts')
     .select('name')
     .eq('id', districtId)
     .single();

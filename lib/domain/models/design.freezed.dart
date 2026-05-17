@@ -25,7 +25,7 @@ mixin _$Design {
   String get name => throw _privateConstructorUsedError;
   DesignSessionType get sessionType => throw _privateConstructorUsedError;
   DesignStatus get status => throw _privateConstructorUsedError;
-  double get hypoScore => throw _privateConstructorUsedError;
+  double get hypeScore => throw _privateConstructorUsedError;
   bool get isAlpha => throw _privateConstructorUsedError;
   bool get isDigitalTwin => throw _privateConstructorUsedError; // GDD §8.9.14
   bool get dppRegistered => throw _privateConstructorUsedError;
@@ -55,7 +55,7 @@ abstract class $DesignCopyWith<$Res> {
       String name,
       DesignSessionType sessionType,
       DesignStatus status,
-      double hypoScore,
+      double hypeScore,
       bool isAlpha,
       bool isDigitalTwin,
       bool dppRegistered,
@@ -86,7 +86,7 @@ class _$DesignCopyWithImpl<$Res, $Val extends Design>
     Object? name = null,
     Object? sessionType = null,
     Object? status = null,
-    Object? hypoScore = null,
+    Object? hypeScore = null,
     Object? isAlpha = null,
     Object? isDigitalTwin = null,
     Object? dppRegistered = null,
@@ -117,9 +117,9 @@ class _$DesignCopyWithImpl<$Res, $Val extends Design>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as DesignStatus,
-      hypoScore: null == hypoScore
-          ? _value.hypoScore
-          : hypoScore // ignore: cast_nullable_to_non_nullable
+      hypeScore: null == hypeScore
+          ? _value.hypeScore
+          : hypeScore // ignore: cast_nullable_to_non_nullable
               as double,
       isAlpha: null == isAlpha
           ? _value.isAlpha
@@ -170,7 +170,7 @@ abstract class _$$DesignImplCopyWith<$Res> implements $DesignCopyWith<$Res> {
       String name,
       DesignSessionType sessionType,
       DesignStatus status,
-      double hypoScore,
+      double hypeScore,
       bool isAlpha,
       bool isDigitalTwin,
       bool dppRegistered,
@@ -199,7 +199,7 @@ class __$$DesignImplCopyWithImpl<$Res>
     Object? name = null,
     Object? sessionType = null,
     Object? status = null,
-    Object? hypoScore = null,
+    Object? hypeScore = null,
     Object? isAlpha = null,
     Object? isDigitalTwin = null,
     Object? dppRegistered = null,
@@ -230,9 +230,9 @@ class __$$DesignImplCopyWithImpl<$Res>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as DesignStatus,
-      hypoScore: null == hypoScore
-          ? _value.hypoScore
-          : hypoScore // ignore: cast_nullable_to_non_nullable
+      hypeScore: null == hypeScore
+          ? _value.hypeScore
+          : hypeScore // ignore: cast_nullable_to_non_nullable
               as double,
       isAlpha: null == isAlpha
           ? _value.isAlpha
@@ -271,7 +271,8 @@ class __$$DesignImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$DesignImpl implements _Design {
   const _$DesignImpl(
       {required this.id,
@@ -279,7 +280,7 @@ class _$DesignImpl implements _Design {
       required this.name,
       required this.sessionType,
       this.status = DesignStatus.draft,
-      this.hypoScore = 0.0,
+      this.hypeScore = 0.0,
       this.isAlpha = false,
       this.isDigitalTwin = false,
       this.dppRegistered = false,
@@ -306,7 +307,7 @@ class _$DesignImpl implements _Design {
   final DesignStatus status;
   @override
   @JsonKey()
-  final double hypoScore;
+  final double hypeScore;
   @override
   @JsonKey()
   final bool isAlpha;
@@ -339,7 +340,7 @@ class _$DesignImpl implements _Design {
 
   @override
   String toString() {
-    return 'Design(id: $id, playerId: $playerId, name: $name, sessionType: $sessionType, status: $status, hypoScore: $hypoScore, isAlpha: $isAlpha, isDigitalTwin: $isDigitalTwin, dppRegistered: $dppRegistered, fabricData: $fabricData, sellPotential: $sellPotential, culturalImpact: $culturalImpact, createdAt: $createdAt, droppedAt: $droppedAt)';
+    return 'Design(id: $id, playerId: $playerId, name: $name, sessionType: $sessionType, status: $status, hypeScore: $hypeScore, isAlpha: $isAlpha, isDigitalTwin: $isDigitalTwin, dppRegistered: $dppRegistered, fabricData: $fabricData, sellPotential: $sellPotential, culturalImpact: $culturalImpact, createdAt: $createdAt, droppedAt: $droppedAt)';
   }
 
   @override
@@ -354,8 +355,8 @@ class _$DesignImpl implements _Design {
             (identical(other.sessionType, sessionType) ||
                 other.sessionType == sessionType) &&
             (identical(other.status, status) || other.status == status) &&
-            (identical(other.hypoScore, hypoScore) ||
-                other.hypoScore == hypoScore) &&
+            (identical(other.hypeScore, hypeScore) ||
+                other.hypeScore == hypeScore) &&
             (identical(other.isAlpha, isAlpha) || other.isAlpha == isAlpha) &&
             (identical(other.isDigitalTwin, isDigitalTwin) ||
                 other.isDigitalTwin == isDigitalTwin) &&
@@ -382,7 +383,7 @@ class _$DesignImpl implements _Design {
       name,
       sessionType,
       status,
-      hypoScore,
+      hypeScore,
       isAlpha,
       isDigitalTwin,
       dppRegistered,
@@ -415,7 +416,7 @@ abstract class _Design implements Design {
       required final String name,
       required final DesignSessionType sessionType,
       final DesignStatus status,
-      final double hypoScore,
+      final double hypeScore,
       final bool isAlpha,
       final bool isDigitalTwin,
       final bool dppRegistered,
@@ -438,7 +439,7 @@ abstract class _Design implements Design {
   @override
   DesignStatus get status;
   @override
-  double get hypoScore;
+  double get hypeScore;
   @override
   bool get isAlpha;
   @override

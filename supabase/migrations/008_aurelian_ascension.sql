@@ -48,6 +48,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
+  PERFORM public.assert_self(p_player_id);
   -- Check if already unlocked
   IF EXISTS (
     SELECT 1 FROM public.players 
@@ -120,6 +121,7 @@ DECLARE
   v_tier TEXT;
   v_current_multipliers INT;
 BEGIN
+  PERFORM public.assert_self(p_player_id);
   -- Get player data
   SELECT * INTO v_player FROM public.players WHERE id = p_player_id;
   
@@ -212,6 +214,7 @@ AS $$
 DECLARE
   v_count INT;
 BEGIN
+  PERFORM public.assert_self(p_player_id);
   SELECT sovereign_multipliers INTO v_count
   FROM public.players WHERE id = p_player_id;
   
@@ -257,3 +260,6 @@ COMMENT ON TABLE public.hall_of_sovereigns IS
   
 COMMENT ON FUNCTION public.execute_memorialization IS 
   'Auto-calculates statue tier, grants +1 sovereign multiplier (max 20), creates global feed event.';
+
+
+

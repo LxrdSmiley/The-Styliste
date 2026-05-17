@@ -54,7 +54,7 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
             id: 'p_${DateTime.now().millisecondsSinceEpoch}',
             type: math.Random().nextInt(4),
             side: 'player',
-          ));
+          ),);
 
           // Add to rival side (after delay)
           Future<void>.delayed(const Duration(milliseconds: 800), () {
@@ -64,7 +64,7 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
                   id: 'r_${DateTime.now().millisecondsSinceEpoch}',
                   type: math.Random().nextInt(4),
                   side: 'rival',
-                ));
+                ),);
 
                 // Rival auto-claims after 3 seconds
                 Future<void>.delayed(const Duration(milliseconds: 3000), () {
@@ -131,9 +131,9 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
           children: <Widget>[
             const SizedBox(height: 20),
             // Header
-            Text(
+            const Text(
               'SUPPLIER RAID',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AurelianPalette.champagneGold,
                 fontFamily: 'SpaceGrotesk',
                 fontSize: 24,

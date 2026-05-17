@@ -16,9 +16,9 @@ _$SupplierImpl _$$SupplierImplFromJson(Map<String, dynamic> json) =>
       cost: (json['cost'] as num?)?.toInt() ?? 50,
       reliability: (json['reliability'] as num?)?.toInt() ?? 50,
       prestige: (json['prestige'] as num?)?.toInt() ?? 50,
-      livingWageEnabled: json['livingWageEnabled'] as bool? ?? false,
-      blockchainTraceable: json['blockchainTraceable'] as bool? ?? false,
-      ethicalSupplierBadge: json['ethicalSupplierBadge'] as bool? ?? false,
+      livingWageEnabled: json['living_wage_enabled'] as bool? ?? false,
+      blockchainTraceable: json['blockchain_traceable'] as bool? ?? false,
+      ethicalSupplierBadge: json['ethical_supplier_badge'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$SupplierImplToJson(_$SupplierImpl instance) =>
@@ -31,9 +31,9 @@ Map<String, dynamic> _$$SupplierImplToJson(_$SupplierImpl instance) =>
       'cost': instance.cost,
       'reliability': instance.reliability,
       'prestige': instance.prestige,
-      'livingWageEnabled': instance.livingWageEnabled,
-      'blockchainTraceable': instance.blockchainTraceable,
-      'ethicalSupplierBadge': instance.ethicalSupplierBadge,
+      'living_wage_enabled': instance.livingWageEnabled,
+      'blockchain_traceable': instance.blockchainTraceable,
+      'ethical_supplier_badge': instance.ethicalSupplierBadge,
     };
 
 const _$SupplierTierEnumMap = {
@@ -54,22 +54,22 @@ _$SupplyChainContractImpl _$$SupplyChainContractImplFromJson(
         Map<String, dynamic> json) =>
     _$SupplyChainContractImpl(
       id: json['id'] as String,
-      playerId: json['playerId'] as String,
-      supplierId: json['supplierId'] as String,
+      playerId: json['player_id'] as String,
+      supplierId: json['supplier_id'] as String,
       tier: $enumDecode(_$SupplierTierEnumMap, json['tier']),
       exclusivity: json['exclusivity'] as bool? ?? false,
-      contractExpiresAt: json['contractExpiresAt'] == null
+      contractExpiresAt: json['contract_expires_at'] == null
           ? null
-          : DateTime.parse(json['contractExpiresAt'] as String),
+          : DateTime.parse(json['contract_expires_at'] as String),
     );
 
 Map<String, dynamic> _$$SupplyChainContractImplToJson(
         _$SupplyChainContractImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'playerId': instance.playerId,
-      'supplierId': instance.supplierId,
+      'player_id': instance.playerId,
+      'supplier_id': instance.supplierId,
       'tier': _$SupplierTierEnumMap[instance.tier]!,
       'exclusivity': instance.exclusivity,
-      'contractExpiresAt': instance.contractExpiresAt?.toIso8601String(),
+      'contract_expires_at': instance.contractExpiresAt?.toIso8601String(),
     };

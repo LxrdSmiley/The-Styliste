@@ -6,7 +6,7 @@ part of 'ascension_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$playerStatuesHash() => r'9f3dabc24078b845c7f3dda89e0625823231c226';
+String _$playerStatuesHash() => r'4572a942654d3088af356bb3585ade4f48b2c53d';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -171,7 +171,7 @@ class _PlayerStatuesProviderElement
   String get playerId => (origin as PlayerStatuesProvider).playerId;
 }
 
-String _$hallOfSovereignsHash() => r'40c25b681f342a42b873e28cc5b3e87f62edfc0c';
+String _$hallOfSovereignsHash() => r'c6b40ce05485e9f2a68528a3e0d5851b4a2c8ca6';
 
 /// Stream of all statues in Hall of Sovereigns (global gallery)
 ///

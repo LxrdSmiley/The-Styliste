@@ -14,16 +14,15 @@ part 'fashion_district.g.dart';
 /// - Tokyo: Ginza, Harajuku, Shibuya
 /// - Paris: Le Marais, Saint-Germain, Montmartre
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class FashionDistrict with _$FashionDistrict {
   const factory FashionDistrict({
     required String id,
     required String name,
     required String city,
-    String? controllingMaisonId,
+    required int baseTakeoverCost, required DateTime createdAt, String? controllingMaisonId,
     DateTime? controlledSince,
-    required int baseTakeoverCost,
     @Default(0) int totalHype,
-    required DateTime createdAt,
   }) = _FashionDistrict;
 
   const FashionDistrict._();
@@ -67,6 +66,7 @@ class FashionDistrict with _$FashionDistrict {
 
 /// Permanent legacy watermark for 30-day district control
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DistrictWatermark with _$DistrictWatermark {
   const factory DistrictWatermark({
     required String id,
@@ -81,6 +81,7 @@ class DistrictWatermark with _$DistrictWatermark {
 
 /// Takeover attempt result from RPC
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class TakeoverResult with _$TakeoverResult {
   const factory TakeoverResult({
     required bool success,
@@ -95,6 +96,7 @@ class TakeoverResult with _$TakeoverResult {
 
 /// District with extended info for UI (includes maison name, member hype, etc.)
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DistrictDetails with _$DistrictDetails {
   const factory DistrictDetails({
     required FashionDistrict district,

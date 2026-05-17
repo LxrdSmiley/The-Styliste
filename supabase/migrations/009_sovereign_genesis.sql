@@ -59,6 +59,7 @@ DECLARE
   v_starting_hype_cap NUMERIC;
   v_idle_income_per_hour BIGINT;
 BEGIN
+  PERFORM public.assert_self(p_user_id);
   -- Input validation
   IF p_career_path NOT IN ('designer', 'mogul') THEN
     RETURN QUERY SELECT FALSE, 'INVALID_CAREER_PATH', NULL::UUID, 0::BIGINT;
@@ -188,3 +189,4 @@ GRANT EXECUTE ON FUNCTION execute_sovereign_genesis(UUID, TEXT, TEXT, TEXT, TEXT
 -- =============================================================================
 COMMENT ON FUNCTION execute_sovereign_genesis IS 
   'Atomic player provisioning for The Styliste onboarding. Creates players, brand_state, and welcome post. Returns player_id and starting_capital on success.';
+

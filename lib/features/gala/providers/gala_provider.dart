@@ -7,7 +7,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/constants/supabase_constants.dart';
 import '../models/gala_models.dart';
 import '../services/gala_scoring_engine.dart';
 
@@ -143,7 +142,7 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .order('current_score', ascending: false)
           .range(_offset, _offset + _pageSize - 1);
 
-      final List<GalaSubmission> submissions = results.map((json) {
+      final List<GalaSubmission> submissions = results.map((Map<String, dynamic> json) {
         // Flatten joined data
         final Map<String, dynamic> flat = Map<String, dynamic>.from(json);
         if (json['designs'] != null) {
@@ -195,7 +194,7 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .order('current_score', ascending: false)
           .range(_offset, _offset + _pageSize - 1);
 
-      final List<GalaSubmission> newSubmissions = results.map((json) {
+      final List<GalaSubmission> newSubmissions = results.map((Map<String, dynamic> json) {
         final Map<String, dynamic> flat = Map<String, dynamic>.from(json);
         if (json['designs'] != null) {
           flat['design_name'] = json['designs']['name'];
@@ -211,7 +210,7 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
       }).toList();
 
       state = state.copyWith(
-        submissions: [...state.submissions, ...newSubmissions],
+        submissions: <GalaSubmission>[...state.submissions, ...newSubmissions],
         isLoading: false,
         hasMore: newSubmissions.length == _pageSize,
       );
@@ -247,14 +246,14 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .from('gala_submissions')
           .select('id, current_score, vote_count')
           .eq('event_id', _currentEventId!)
-          .inFilter('id', state.submissions.map((s) => s.id).toList());
+          .inFilter('id', state.submissions.map((GalaSubmission s) => s.id).toList());
 
-      final Map<String, Map<String, dynamic>> scoreMap = {
-        for (var r in results) r['id'] as String: r,
+      final Map<String, Map<String, dynamic>> scoreMap = <String, Map<String, dynamic>>{
+        for (final Map<String, dynamic> r in results) r['id'] as String: r,
       };
 
-      final updated = state.submissions.map((sub) {
-        final update = scoreMap[sub.id];
+      final List<GalaSubmission> updated = state.submissions.map((GalaSubmission sub) {
+        final Map<String, dynamic>? update = scoreMap[sub.id];
         if (update != null) {
           return sub.copyWith(
             currentScore: (update['current_score'] as num).toDouble(),
@@ -315,7 +314,7 @@ final FutureProviderFamily<List<LeaderboardEntry>, String> galaLeaderboardProvid
     );
 
     return results
-        .map((dynamic json) => LeaderboardEntry.fromJson(json as Map<String, dynamic>))
+        .map((json) => LeaderboardEntry.fromJson(json as Map<String, dynamic>))
         .toList();
   },
 );

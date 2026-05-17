@@ -24,7 +24,7 @@ class TarnishOverlay extends StatelessWidget {
     super.key,
     required this.tarnishLevel,
     required this.kintsugiLevel,
-    required this.playerId, // For seeded fracture generation
+    required this.playerId,
     required this.child,
     this.onKintsugiRequest,
     this.onApologyRequest,
@@ -215,7 +215,7 @@ class KintsugiVeinPainter extends CustomPainter {
     Offset start,
     Paint paint,
     math.Random random,
-    {required int depth}
+    {required int depth,}
   ) {
     if (depth <= 0) return;
     
@@ -299,14 +299,14 @@ class _LockdownOverlay extends StatelessWidget {
               const SizedBox(height: 32.0),
               
               // Title
-              Text(
+              const Text(
                 'BRAND LOCKDOWN',
                 style: TextStyle(
                   fontFamily: 'SpaceGrotesk',
                   fontSize: 24.0,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 4.0,
-                  color: const Color(0xFFFF3333),
+                  color: Color(0xFFFF3333),
                 ),
               ),
               

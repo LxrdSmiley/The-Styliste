@@ -25,9 +25,9 @@ mixin _$SovereignStatue {
   String get brandName => throw _privateConstructorUsedError;
   DateTime get ascendedAt => throw _privateConstructorUsedError;
   int get finalMarketCap => throw _privateConstructorUsedError;
-  double get finalHypeScore => throw _privateConstructorUsedError;
   StatueTier get statueTier => throw _privateConstructorUsedError;
   CareerPath get careerPath => throw _privateConstructorUsedError;
+  double get finalHypeScore => throw _privateConstructorUsedError;
   bool get jointVentureFlag => throw _privateConstructorUsedError;
 
   /// Serializes this SovereignStatue to a JSON map.
@@ -52,9 +52,9 @@ abstract class $SovereignStatueCopyWith<$Res> {
       String brandName,
       DateTime ascendedAt,
       int finalMarketCap,
-      double finalHypeScore,
       StatueTier statueTier,
       CareerPath careerPath,
+      double finalHypeScore,
       bool jointVentureFlag});
 }
 
@@ -78,9 +78,9 @@ class _$SovereignStatueCopyWithImpl<$Res, $Val extends SovereignStatue>
     Object? brandName = null,
     Object? ascendedAt = null,
     Object? finalMarketCap = null,
-    Object? finalHypeScore = null,
     Object? statueTier = null,
     Object? careerPath = null,
+    Object? finalHypeScore = null,
     Object? jointVentureFlag = null,
   }) {
     return _then(_value.copyWith(
@@ -104,10 +104,6 @@ class _$SovereignStatueCopyWithImpl<$Res, $Val extends SovereignStatue>
           ? _value.finalMarketCap
           : finalMarketCap // ignore: cast_nullable_to_non_nullable
               as int,
-      finalHypeScore: null == finalHypeScore
-          ? _value.finalHypeScore
-          : finalHypeScore // ignore: cast_nullable_to_non_nullable
-              as double,
       statueTier: null == statueTier
           ? _value.statueTier
           : statueTier // ignore: cast_nullable_to_non_nullable
@@ -116,6 +112,10 @@ class _$SovereignStatueCopyWithImpl<$Res, $Val extends SovereignStatue>
           ? _value.careerPath
           : careerPath // ignore: cast_nullable_to_non_nullable
               as CareerPath,
+      finalHypeScore: null == finalHypeScore
+          ? _value.finalHypeScore
+          : finalHypeScore // ignore: cast_nullable_to_non_nullable
+              as double,
       jointVentureFlag: null == jointVentureFlag
           ? _value.jointVentureFlag
           : jointVentureFlag // ignore: cast_nullable_to_non_nullable
@@ -138,9 +138,9 @@ abstract class _$$SovereignStatueImplCopyWith<$Res>
       String brandName,
       DateTime ascendedAt,
       int finalMarketCap,
-      double finalHypeScore,
       StatueTier statueTier,
       CareerPath careerPath,
+      double finalHypeScore,
       bool jointVentureFlag});
 }
 
@@ -162,9 +162,9 @@ class __$$SovereignStatueImplCopyWithImpl<$Res>
     Object? brandName = null,
     Object? ascendedAt = null,
     Object? finalMarketCap = null,
-    Object? finalHypeScore = null,
     Object? statueTier = null,
     Object? careerPath = null,
+    Object? finalHypeScore = null,
     Object? jointVentureFlag = null,
   }) {
     return _then(_$SovereignStatueImpl(
@@ -188,10 +188,6 @@ class __$$SovereignStatueImplCopyWithImpl<$Res>
           ? _value.finalMarketCap
           : finalMarketCap // ignore: cast_nullable_to_non_nullable
               as int,
-      finalHypeScore: null == finalHypeScore
-          ? _value.finalHypeScore
-          : finalHypeScore // ignore: cast_nullable_to_non_nullable
-              as double,
       statueTier: null == statueTier
           ? _value.statueTier
           : statueTier // ignore: cast_nullable_to_non_nullable
@@ -200,6 +196,10 @@ class __$$SovereignStatueImplCopyWithImpl<$Res>
           ? _value.careerPath
           : careerPath // ignore: cast_nullable_to_non_nullable
               as CareerPath,
+      finalHypeScore: null == finalHypeScore
+          ? _value.finalHypeScore
+          : finalHypeScore // ignore: cast_nullable_to_non_nullable
+              as double,
       jointVentureFlag: null == jointVentureFlag
           ? _value.jointVentureFlag
           : jointVentureFlag // ignore: cast_nullable_to_non_nullable
@@ -209,7 +209,8 @@ class __$$SovereignStatueImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$SovereignStatueImpl extends _SovereignStatue {
   const _$SovereignStatueImpl(
       {required this.id,
@@ -217,9 +218,9 @@ class _$SovereignStatueImpl extends _SovereignStatue {
       required this.brandName,
       required this.ascendedAt,
       required this.finalMarketCap,
-      this.finalHypeScore = 0.0,
       required this.statueTier,
       required this.careerPath,
+      this.finalHypeScore = 0.0,
       this.jointVentureFlag = false})
       : super._();
 
@@ -237,19 +238,19 @@ class _$SovereignStatueImpl extends _SovereignStatue {
   @override
   final int finalMarketCap;
   @override
-  @JsonKey()
-  final double finalHypeScore;
-  @override
   final StatueTier statueTier;
   @override
   final CareerPath careerPath;
+  @override
+  @JsonKey()
+  final double finalHypeScore;
   @override
   @JsonKey()
   final bool jointVentureFlag;
 
   @override
   String toString() {
-    return 'SovereignStatue(id: $id, playerId: $playerId, brandName: $brandName, ascendedAt: $ascendedAt, finalMarketCap: $finalMarketCap, finalHypeScore: $finalHypeScore, statueTier: $statueTier, careerPath: $careerPath, jointVentureFlag: $jointVentureFlag)';
+    return 'SovereignStatue(id: $id, playerId: $playerId, brandName: $brandName, ascendedAt: $ascendedAt, finalMarketCap: $finalMarketCap, statueTier: $statueTier, careerPath: $careerPath, finalHypeScore: $finalHypeScore, jointVentureFlag: $jointVentureFlag)';
   }
 
   @override
@@ -266,12 +267,12 @@ class _$SovereignStatueImpl extends _SovereignStatue {
                 other.ascendedAt == ascendedAt) &&
             (identical(other.finalMarketCap, finalMarketCap) ||
                 other.finalMarketCap == finalMarketCap) &&
-            (identical(other.finalHypeScore, finalHypeScore) ||
-                other.finalHypeScore == finalHypeScore) &&
             (identical(other.statueTier, statueTier) ||
                 other.statueTier == statueTier) &&
             (identical(other.careerPath, careerPath) ||
                 other.careerPath == careerPath) &&
+            (identical(other.finalHypeScore, finalHypeScore) ||
+                other.finalHypeScore == finalHypeScore) &&
             (identical(other.jointVentureFlag, jointVentureFlag) ||
                 other.jointVentureFlag == jointVentureFlag));
   }
@@ -285,9 +286,9 @@ class _$SovereignStatueImpl extends _SovereignStatue {
       brandName,
       ascendedAt,
       finalMarketCap,
-      finalHypeScore,
       statueTier,
       careerPath,
+      finalHypeScore,
       jointVentureFlag);
 
   /// Create a copy of SovereignStatue
@@ -314,9 +315,9 @@ abstract class _SovereignStatue extends SovereignStatue {
       required final String brandName,
       required final DateTime ascendedAt,
       required final int finalMarketCap,
-      final double finalHypeScore,
       required final StatueTier statueTier,
       required final CareerPath careerPath,
+      final double finalHypeScore,
       final bool jointVentureFlag}) = _$SovereignStatueImpl;
   const _SovereignStatue._() : super._();
 
@@ -334,11 +335,11 @@ abstract class _SovereignStatue extends SovereignStatue {
   @override
   int get finalMarketCap;
   @override
-  double get finalHypeScore;
-  @override
   StatueTier get statueTier;
   @override
   CareerPath get careerPath;
+  @override
+  double get finalHypeScore;
   @override
   bool get jointVentureFlag;
 

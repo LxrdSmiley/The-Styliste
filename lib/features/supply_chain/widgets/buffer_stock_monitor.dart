@@ -188,7 +188,7 @@ class _BufferStockMonitorState extends ConsumerState<BufferStockMonitor>
 
                     // Percentage
                     Text(
-                      '${state.formattedFillPercent}',
+                      state.formattedFillPercent,
                       style: TextStyle(
                         fontFamily: 'JetBrainsMono',
                         fontSize: 14.0,
@@ -218,7 +218,7 @@ class _BufferStockMonitorState extends ConsumerState<BufferStockMonitor>
                             color: AurelianPalette.softRose.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               Icon(
@@ -226,7 +226,7 @@ class _BufferStockMonitorState extends ConsumerState<BufferStockMonitor>
                                 size: 16.0,
                                 color: AurelianPalette.softRose,
                               ),
-                              const SizedBox(width: 8.0),
+                              SizedBox(width: 8.0),
                               Text(
                                 'TAP TO LIQUIDATE',
                                 style: TextStyle(
@@ -340,7 +340,7 @@ class _BufferStockMonitorState extends ConsumerState<BufferStockMonitor>
         borderRadius: BorderRadius.circular(16.0),
         border: Border.all(color: AurelianPalette.softRose),
       ),
-      child: Text(
+      child: const Text(
         'SUPPLY CHAIN ERROR',
         style: TextStyle(
           fontFamily: 'SpaceGrotesk',

@@ -15,9 +15,7 @@ import 'package:flutter/material.dart';
 /// - Breathing animation (live, responsive)
 /// - Minimalist: no axes, no tooltips, no padding baggage
 class EmpirePulseGraph extends StatefulWidget {
-  const EmpirePulseGraph({
-    super.key,
-    required this.dataPoints, // 7 values for 7 days
+  const EmpirePulseGraph({super.key, required this.dataPoints, // 7 values for 7 days, super.key,, super.key,
     this.height = 120.0,
     this.animate = true,
   });
@@ -116,7 +114,7 @@ class _EmpirePulsePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..shader = ui.Gradient.linear(
         Offset(0.0, size.height),
-        Offset(0.0, 0.0),
+        const Offset(0.0, 0.0),
         <Color>[
           const Color(0xFFE8D4B8), // Darker gold at bottom
           champagneGold,
@@ -142,7 +140,7 @@ class _EmpirePulsePainter extends CustomPainter {
     
     final Paint fillPaint = Paint()
       ..shader = ui.Gradient.linear(
-        Offset(0.0, 0.0),
+        const Offset(0.0, 0.0),
         Offset(0.0, size.height),
         <Color>[
           champagneGold.withValues(alpha: 0.2),
@@ -211,8 +209,7 @@ class _EmpirePulsePainter extends CustomPainter {
 /// Simplified static version for non-animated use
 class EmpirePulseStatic extends StatelessWidget {
   const EmpirePulseStatic({
-    super.key,
-    required this.dataPoints,
+    required this.dataPoints, super.key,
     this.height = 80.0,
   });
 
@@ -294,5 +291,5 @@ class _EmpirePulseStaticPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
 }

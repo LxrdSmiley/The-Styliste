@@ -121,7 +121,12 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION verify_and_grant_luxe(UUID, TEXT, TEXT, TEXT, TEXT, NUMERIC, INTEGER) TO authenticated;
+-- REVOKE from authenticated (GDD §9.8 hardening)
+-- Only service_role (Edge Function) can execute
+REVOKE EXECUTE ON FUNCTION verify_and_grant_luxe(UUID, TEXT, TEXT, TEXT, TEXT, NUMERIC, INTEGER) FROM authenticated;
+
+COMMENT ON FUNCTION verify_and_grant_luxe IS
+  'CRITICAL: Only callable by validate-iap Edge Function. NEVER grant to authenticated role.';
 
 -- =============================================================================
 -- RPC: Record Failed Transaction

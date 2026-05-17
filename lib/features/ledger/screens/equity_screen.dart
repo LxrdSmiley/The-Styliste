@@ -8,7 +8,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
@@ -136,7 +135,7 @@ class _EquityContent extends StatelessWidget {
               const SizedBox(height: 8),
               const Text(
                 'BASED ON HYPE SCORE × 1.5',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AurelianPalette.textTertiary,
                   fontFamily: 'JetBrainsMono',
                   fontSize: 10,
@@ -250,7 +249,7 @@ class _EquityContent extends StatelessWidget {
         // Takeover info
         const Text(
           'WIN = +5000 CAPITAL • 30 SEC TUG-OF-WAR',
-          style: const TextStyle(
+          style: TextStyle(
             color: AurelianPalette.textTertiary,
             fontFamily: 'JetBrainsMono',
             fontSize: 10,
@@ -279,7 +278,7 @@ class _EquityContent extends StatelessWidget {
                   letterSpacing: 1,
                 ),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               _MiniGameItem(
                 icon: Icons.trending_up,
                 label: 'Hostile Takeover',
@@ -402,7 +401,7 @@ class _LegendItem extends StatelessWidget {
           children: <Widget>[
             Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                 color: AurelianPalette.textTertiary,
                 fontFamily: 'SpaceGrotesk',
                 fontSize: 10,

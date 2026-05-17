@@ -21,8 +21,7 @@ import '../models/vex_review.dart';
 /// - Rotating Sovereign Seal (top-right, only for Sovereign verdict)
 class VexReviewCard extends StatelessWidget {
   const VexReviewCard({
-    super.key,
-    required this.review,
+    required this.review, super.key,
     this.onDismiss,
     this.onShare,
   });
@@ -57,7 +56,6 @@ class VexReviewCard extends StatelessWidget {
           color: AurelianPalette.ivory,
           border: Border.all(
             color: AurelianPalette.champagneGold,
-            width: 1.0,
           ),
           borderRadius: BorderRadius.circular(16.0),
           boxShadow: <BoxShadow>[
@@ -204,7 +202,7 @@ class VexReviewCard extends StatelessWidget {
           color: AurelianPalette.champagneGold,
         ),
         const SizedBox(width: 12.0),
-        Text(
+        const Text(
           'VEX CRITIQUE',
           style: TextStyle(
             fontFamily: 'SpaceGrotesk',
@@ -232,7 +230,6 @@ class VexReviewCard extends StatelessWidget {
         color: badgeColor.withValues(alpha: 0.1),
         border: Border.all(
           color: badgeColor.withValues(alpha: 0.5),
-          width: 1.0,
         ),
         borderRadius: BorderRadius.circular(8.0),
       ),
@@ -288,7 +285,7 @@ class VexReviewCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
+              const Text(
                 'HYPE SCORE',
                 style: TextStyle(
                   fontFamily: 'SpaceGrotesk',

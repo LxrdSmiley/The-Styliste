@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS public.brand_state (
   heat                INT NOT NULL DEFAULT 50 CHECK (heat BETWEEN 0 AND 100),
   hype_score          NUMERIC(10,2) NOT NULL DEFAULT 0,
   followers           INT NOT NULL DEFAULT 0,
-  revenue_idle        NUMERIC(14,2) NOT NULL DEFAULT 0,
+  idle_revenue_per_hour        NUMERIC(14,2) NOT NULL DEFAULT 0,
   total_revenue       NUMERIC(14,2) NOT NULL DEFAULT 0,
   momentum_buff_active BOOLEAN NOT NULL DEFAULT FALSE,
   momentum_buff_until TIMESTAMPTZ,
@@ -355,3 +355,4 @@ BEGIN
   END IF;
 END;
 $$;
+

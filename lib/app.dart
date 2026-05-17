@@ -24,20 +24,24 @@ class TheStyliste extends ConsumerWidget {
 
     // Keep the bridge alive for the entire app lifecycle (directive §1).
     // We don't use the value — just watching it prevents Riverpod disposal.
-    ref.watch(supabaseBridgeProvider);
+    final AsyncValue<void> supabaseBridge = ref.watch(supabaseBridgeProvider);
 
     // Auth gate: hold obsidian until Firebase resolves (no white flash).
     // On error: surface a minimal danger-coloured message for debugging.
     return anonSignIn.when(
       loading: () => const _ObsidianGate(),
       error: (Object e, _) => _ObsidianGate(errorMessage: e.toString()),
-      data: (_) => MaterialApp.router(
-        title: 'The Styliste',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.dark,
-        routerConfig: AppRouter.router,
+      data: (_) => supabaseBridge.when(
+        loading: () => const _ObsidianGate(),
+        error: (Object e, _) => _ObsidianGate(errorMessage: e.toString()),
+        data: (_) => MaterialApp.router(
+          title: 'The Styliste',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.dark,
+          routerConfig: AppRouter.router,
+        ),
       ),
     );
   }

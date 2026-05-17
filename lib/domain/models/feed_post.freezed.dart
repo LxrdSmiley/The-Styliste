@@ -183,7 +183,8 @@ class __$$FeedPostImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$FeedPostImpl implements _FeedPost {
   const _$FeedPostImpl(
       {required this.id,

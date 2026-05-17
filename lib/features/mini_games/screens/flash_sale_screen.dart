@@ -58,7 +58,7 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             tier: math.Random().nextInt(3) + 1,
             xPosition: math.Random().nextDouble() * 0.8 + 0.1,
-          ));
+          ),);
         });
         _spawnGarments();
       }
@@ -66,25 +66,23 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
   }
 
   void _onDrop(String garmentId, int tier) {
-    final _FallingGarment? garment = _garments.firstWhere(
+    final _FallingGarment garment = _garments.firstWhere(
       (_FallingGarment g) => g.id == garmentId,
     );
 
-    if (garment != null) {
-      if (garment.tier == tier) {
-        HapticFeedback.lightImpact();
-        setState(() {
-          _matchCount++;
-          _garments.removeWhere((_FallingGarment g) => g.id == garmentId);
-        });
-      } else {
-        HapticFeedback.vibrate();
-        setState(() {
-          _missCount++;
-        });
-      }
+    if (garment.tier == tier) {
+      HapticFeedback.lightImpact();
+      setState(() {
+        _matchCount++;
+        _garments.removeWhere((_FallingGarment g) => g.id == garmentId);
+      });
+    } else {
+      HapticFeedback.vibrate();
+      setState(() {
+        _missCount++;
+      });
     }
-  }
+    }
 
   void _onMiss() {
     setState(() => _missCount++);
@@ -136,9 +134,9 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
               right: 0,
               child: Column(
                 children: <Widget>[
-                  Text(
+                  const Text(
                     'FLASH SALE FRENZY',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AurelianPalette.champagneGold,
                       fontFamily: 'SpaceGrotesk',
                       fontSize: 24,

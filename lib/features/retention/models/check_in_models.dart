@@ -8,6 +8,7 @@ part 'check_in_models.g.dart';
 
 /// Check-In State — Player's daily streak tracking
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CheckInState with _$CheckInState {
   const CheckInState._();
   const factory CheckInState({
@@ -124,6 +125,7 @@ class CheckInState with _$CheckInState {
 
 /// Check-In Reward Model
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CheckInReward with _$CheckInReward {
   const factory CheckInReward({
     required int day,

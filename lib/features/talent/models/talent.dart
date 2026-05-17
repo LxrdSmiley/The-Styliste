@@ -94,6 +94,7 @@ extension TalentTierExtension on TalentTier {
 
 /// Talent model — represents a celebrity/model/designer in the gacha pool
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Talent with _$Talent {
   const factory Talent({
     required String id,
@@ -116,10 +117,26 @@ extension TalentExtension on Talent {
   double get expertiseScore => (baseHypeMultiplier - 1.0) * 50.0 + 50.0;
 }
 
-extension RosterTalentExtension on RosterTalent {
-  /// Derived expertise score for hype calculation (GDD §8.10)
-  /// Map multiplier: 1.0 -> 50, 2.0 -> 100
-  double get expertiseScore => (baseHypeMultiplier - 1.0) * 50.0 + 50.0;
+/// RosterTalent model — represents a talent in player's roster
+/// Includes talent details plus roster-specific fields
+@freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
+class RosterTalent with _$RosterTalent {
+  const factory RosterTalent({
+    required String talentId,
+    required String name,
+    required TalentTier tier,
+    String? portraitUrl,
+    @Default(1.0) double baseHypeMultiplier,
+    @Default(0) int scandalRiskFactor,
+    String? biography,
+    @Default(<String>[]) List<String> signatureStyle,
+    DateTime? acquiredAt,
+    @Default('casting_call') String acquisitionSource,
+    @Default(false) bool isFavorite,
+  }) = _RosterTalent;
+  
+  factory RosterTalent.fromJson(Map<String, dynamic> json) => _$RosterTalentFromJson(json);
 }
 
 extension RosterTalentExtension on RosterTalent {
@@ -130,13 +147,13 @@ extension RosterTalentExtension on RosterTalent {
 
 /// Single pull result from casting
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PullResult with _$PullResult {
   const factory PullResult({
     required String talentId,
     required String name,
     required TalentTier tier,
-    String? portraitUrl,
-    required bool isDupe,
+    required bool isDupe, String? portraitUrl,
     @Default(0) int prestigeValue,
     double? baseHypeMultiplier,
   }) = _PullResult;
@@ -146,6 +163,7 @@ class PullResult with _$PullResult {
 
 /// Complete casting pull result (single or ten)
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CastingResult with _$CastingResult {
   const factory CastingResult({
     required List<PullResult> pulls,
@@ -159,6 +177,7 @@ class CastingResult with _$CastingResult {
 
 /// Pity state tracking
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PityState with _$PityState {
   const PityState._();
   const factory PityState({

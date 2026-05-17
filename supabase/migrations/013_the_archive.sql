@@ -121,6 +121,7 @@ DECLARE
   v_provenance_multiplier NUMERIC(4,2);
   v_new_transfer_count INTEGER;
 BEGIN
+  PERFORM public.assert_self(p_buyer_id);
   -- Lock the listing row (CRITICAL: Prevents double-spending on Gala Sovereign pieces)
   SELECT * INTO v_listing
   FROM archive_listings
@@ -250,6 +251,7 @@ DECLARE
   v_listing_id UUID;
   v_existing_listing UUID;
 BEGIN
+  PERFORM public.assert_self(p_seller_id);
   -- Verify ownership
   SELECT owner_id, hype_score INTO v_design_owner, v_hype_score
   FROM designs WHERE id = p_design_id;
@@ -408,3 +410,5 @@ COMMENT ON FUNCTION expire_archive_listings IS
 
 COMMENT ON TABLE provenance_ledger IS 
   'Ownership history. Each record adds +10% hype (max +100%). Sovereign owners add +50% separate.';
+
+

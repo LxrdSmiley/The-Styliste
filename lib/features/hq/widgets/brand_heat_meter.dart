@@ -18,8 +18,7 @@ import '../theme/aurelian_hq_theme.dart';
 /// Tap to open Brand Heat breakdown panel
 class BrandHeatMeter extends StatelessWidget {
   const BrandHeatMeter({
-    super.key,
-    required this.heatPercent,
+    required this.heatPercent, super.key,
     this.onTap,
     this.showLabel = true,
     this.height = 24.0,
@@ -139,7 +138,7 @@ class _ObsidianCrackPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
 }
 
 /// Gold pulse overlay for iconic state
@@ -199,10 +198,7 @@ class _PulseOverlayState extends State<_PulseOverlay>
 /// Brand Heat breakdown panel (shown on tap)
 class BrandHeatBreakdownPanel extends StatelessWidget {
   const BrandHeatBreakdownPanel({
-    super.key,
-    required this.heatPercent,
-    required this.decayRate,
-    required this.activeInputs,
+    required this.heatPercent, required this.decayRate, required this.activeInputs, super.key,
   });
 
   final int heatPercent;

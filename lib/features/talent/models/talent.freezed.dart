@@ -206,7 +206,8 @@ class __$$TalentImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$TalentImpl implements _Talent {
   const _$TalentImpl(
       {required this.id,
@@ -363,9 +364,10 @@ mixin _$RosterTalent {
   double get baseHypeMultiplier => throw _privateConstructorUsedError;
   int get scandalRiskFactor => throw _privateConstructorUsedError;
   String? get biography => throw _privateConstructorUsedError;
+  List<String> get signatureStyle => throw _privateConstructorUsedError;
   DateTime? get acquiredAt => throw _privateConstructorUsedError;
+  String get acquisitionSource => throw _privateConstructorUsedError;
   bool get isFavorite => throw _privateConstructorUsedError;
-  int get prestigeValue => throw _privateConstructorUsedError;
 
   /// Serializes this RosterTalent to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -391,9 +393,10 @@ abstract class $RosterTalentCopyWith<$Res> {
       double baseHypeMultiplier,
       int scandalRiskFactor,
       String? biography,
+      List<String> signatureStyle,
       DateTime? acquiredAt,
-      bool isFavorite,
-      int prestigeValue});
+      String acquisitionSource,
+      bool isFavorite});
 }
 
 /// @nodoc
@@ -418,9 +421,10 @@ class _$RosterTalentCopyWithImpl<$Res, $Val extends RosterTalent>
     Object? baseHypeMultiplier = null,
     Object? scandalRiskFactor = null,
     Object? biography = freezed,
+    Object? signatureStyle = null,
     Object? acquiredAt = freezed,
+    Object? acquisitionSource = null,
     Object? isFavorite = null,
-    Object? prestigeValue = null,
   }) {
     return _then(_value.copyWith(
       talentId: null == talentId
@@ -451,18 +455,22 @@ class _$RosterTalentCopyWithImpl<$Res, $Val extends RosterTalent>
           ? _value.biography
           : biography // ignore: cast_nullable_to_non_nullable
               as String?,
+      signatureStyle: null == signatureStyle
+          ? _value.signatureStyle
+          : signatureStyle // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       acquiredAt: freezed == acquiredAt
           ? _value.acquiredAt
           : acquiredAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      acquisitionSource: null == acquisitionSource
+          ? _value.acquisitionSource
+          : acquisitionSource // ignore: cast_nullable_to_non_nullable
+              as String,
       isFavorite: null == isFavorite
           ? _value.isFavorite
           : isFavorite // ignore: cast_nullable_to_non_nullable
               as bool,
-      prestigeValue: null == prestigeValue
-          ? _value.prestigeValue
-          : prestigeValue // ignore: cast_nullable_to_non_nullable
-              as int,
     ) as $Val);
   }
 }
@@ -483,9 +491,10 @@ abstract class _$$RosterTalentImplCopyWith<$Res>
       double baseHypeMultiplier,
       int scandalRiskFactor,
       String? biography,
+      List<String> signatureStyle,
       DateTime? acquiredAt,
-      bool isFavorite,
-      int prestigeValue});
+      String acquisitionSource,
+      bool isFavorite});
 }
 
 /// @nodoc
@@ -508,9 +517,10 @@ class __$$RosterTalentImplCopyWithImpl<$Res>
     Object? baseHypeMultiplier = null,
     Object? scandalRiskFactor = null,
     Object? biography = freezed,
+    Object? signatureStyle = null,
     Object? acquiredAt = freezed,
+    Object? acquisitionSource = null,
     Object? isFavorite = null,
-    Object? prestigeValue = null,
   }) {
     return _then(_$RosterTalentImpl(
       talentId: null == talentId
@@ -541,36 +551,43 @@ class __$$RosterTalentImplCopyWithImpl<$Res>
           ? _value.biography
           : biography // ignore: cast_nullable_to_non_nullable
               as String?,
+      signatureStyle: null == signatureStyle
+          ? _value._signatureStyle
+          : signatureStyle // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       acquiredAt: freezed == acquiredAt
           ? _value.acquiredAt
           : acquiredAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
+      acquisitionSource: null == acquisitionSource
+          ? _value.acquisitionSource
+          : acquisitionSource // ignore: cast_nullable_to_non_nullable
+              as String,
       isFavorite: null == isFavorite
           ? _value.isFavorite
           : isFavorite // ignore: cast_nullable_to_non_nullable
               as bool,
-      prestigeValue: null == prestigeValue
-          ? _value.prestigeValue
-          : prestigeValue // ignore: cast_nullable_to_non_nullable
-              as int,
     ));
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$RosterTalentImpl implements _RosterTalent {
   const _$RosterTalentImpl(
       {required this.talentId,
       required this.name,
       required this.tier,
       this.portraitUrl,
-      required this.baseHypeMultiplier,
+      this.baseHypeMultiplier = 1.0,
       this.scandalRiskFactor = 0,
       this.biography,
+      final List<String> signatureStyle = const <String>[],
       this.acquiredAt,
-      this.isFavorite = false,
-      required this.prestigeValue});
+      this.acquisitionSource = 'casting_call',
+      this.isFavorite = false})
+      : _signatureStyle = signatureStyle;
 
   factory _$RosterTalentImpl.fromJson(Map<String, dynamic> json) =>
       _$$RosterTalentImplFromJson(json);
@@ -584,23 +601,34 @@ class _$RosterTalentImpl implements _RosterTalent {
   @override
   final String? portraitUrl;
   @override
+  @JsonKey()
   final double baseHypeMultiplier;
   @override
   @JsonKey()
   final int scandalRiskFactor;
   @override
   final String? biography;
+  final List<String> _signatureStyle;
+  @override
+  @JsonKey()
+  List<String> get signatureStyle {
+    if (_signatureStyle is EqualUnmodifiableListView) return _signatureStyle;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_signatureStyle);
+  }
+
   @override
   final DateTime? acquiredAt;
   @override
   @JsonKey()
-  final bool isFavorite;
+  final String acquisitionSource;
   @override
-  final int prestigeValue;
+  @JsonKey()
+  final bool isFavorite;
 
   @override
   String toString() {
-    return 'RosterTalent(talentId: $talentId, name: $name, tier: $tier, portraitUrl: $portraitUrl, baseHypeMultiplier: $baseHypeMultiplier, scandalRiskFactor: $scandalRiskFactor, biography: $biography, acquiredAt: $acquiredAt, isFavorite: $isFavorite, prestigeValue: $prestigeValue)';
+    return 'RosterTalent(talentId: $talentId, name: $name, tier: $tier, portraitUrl: $portraitUrl, baseHypeMultiplier: $baseHypeMultiplier, scandalRiskFactor: $scandalRiskFactor, biography: $biography, signatureStyle: $signatureStyle, acquiredAt: $acquiredAt, acquisitionSource: $acquisitionSource, isFavorite: $isFavorite)';
   }
 
   @override
@@ -620,12 +648,14 @@ class _$RosterTalentImpl implements _RosterTalent {
                 other.scandalRiskFactor == scandalRiskFactor) &&
             (identical(other.biography, biography) ||
                 other.biography == biography) &&
+            const DeepCollectionEquality()
+                .equals(other._signatureStyle, _signatureStyle) &&
             (identical(other.acquiredAt, acquiredAt) ||
                 other.acquiredAt == acquiredAt) &&
+            (identical(other.acquisitionSource, acquisitionSource) ||
+                other.acquisitionSource == acquisitionSource) &&
             (identical(other.isFavorite, isFavorite) ||
-                other.isFavorite == isFavorite) &&
-            (identical(other.prestigeValue, prestigeValue) ||
-                other.prestigeValue == prestigeValue));
+                other.isFavorite == isFavorite));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -639,9 +669,10 @@ class _$RosterTalentImpl implements _RosterTalent {
       baseHypeMultiplier,
       scandalRiskFactor,
       biography,
+      const DeepCollectionEquality().hash(_signatureStyle),
       acquiredAt,
-      isFavorite,
-      prestigeValue);
+      acquisitionSource,
+      isFavorite);
 
   /// Create a copy of RosterTalent
   /// with the given fields replaced by the non-null parameter values.
@@ -665,12 +696,13 @@ abstract class _RosterTalent implements RosterTalent {
       required final String name,
       required final TalentTier tier,
       final String? portraitUrl,
-      required final double baseHypeMultiplier,
+      final double baseHypeMultiplier,
       final int scandalRiskFactor,
       final String? biography,
+      final List<String> signatureStyle,
       final DateTime? acquiredAt,
-      final bool isFavorite,
-      required final int prestigeValue}) = _$RosterTalentImpl;
+      final String acquisitionSource,
+      final bool isFavorite}) = _$RosterTalentImpl;
 
   factory _RosterTalent.fromJson(Map<String, dynamic> json) =
       _$RosterTalentImpl.fromJson;
@@ -690,11 +722,13 @@ abstract class _RosterTalent implements RosterTalent {
   @override
   String? get biography;
   @override
+  List<String> get signatureStyle;
+  @override
   DateTime? get acquiredAt;
   @override
-  bool get isFavorite;
+  String get acquisitionSource;
   @override
-  int get prestigeValue;
+  bool get isFavorite;
 
   /// Create a copy of RosterTalent
   /// with the given fields replaced by the non-null parameter values.
@@ -713,8 +747,8 @@ mixin _$PullResult {
   String get talentId => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   TalentTier get tier => throw _privateConstructorUsedError;
-  String? get portraitUrl => throw _privateConstructorUsedError;
   bool get isDupe => throw _privateConstructorUsedError;
+  String? get portraitUrl => throw _privateConstructorUsedError;
   int get prestigeValue => throw _privateConstructorUsedError;
   double? get baseHypeMultiplier => throw _privateConstructorUsedError;
 
@@ -738,8 +772,8 @@ abstract class $PullResultCopyWith<$Res> {
       {String talentId,
       String name,
       TalentTier tier,
-      String? portraitUrl,
       bool isDupe,
+      String? portraitUrl,
       int prestigeValue,
       double? baseHypeMultiplier});
 }
@@ -762,8 +796,8 @@ class _$PullResultCopyWithImpl<$Res, $Val extends PullResult>
     Object? talentId = null,
     Object? name = null,
     Object? tier = null,
-    Object? portraitUrl = freezed,
     Object? isDupe = null,
+    Object? portraitUrl = freezed,
     Object? prestigeValue = null,
     Object? baseHypeMultiplier = freezed,
   }) {
@@ -780,14 +814,14 @@ class _$PullResultCopyWithImpl<$Res, $Val extends PullResult>
           ? _value.tier
           : tier // ignore: cast_nullable_to_non_nullable
               as TalentTier,
-      portraitUrl: freezed == portraitUrl
-          ? _value.portraitUrl
-          : portraitUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
       isDupe: null == isDupe
           ? _value.isDupe
           : isDupe // ignore: cast_nullable_to_non_nullable
               as bool,
+      portraitUrl: freezed == portraitUrl
+          ? _value.portraitUrl
+          : portraitUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
       prestigeValue: null == prestigeValue
           ? _value.prestigeValue
           : prestigeValue // ignore: cast_nullable_to_non_nullable
@@ -812,8 +846,8 @@ abstract class _$$PullResultImplCopyWith<$Res>
       {String talentId,
       String name,
       TalentTier tier,
-      String? portraitUrl,
       bool isDupe,
+      String? portraitUrl,
       int prestigeValue,
       double? baseHypeMultiplier});
 }
@@ -834,8 +868,8 @@ class __$$PullResultImplCopyWithImpl<$Res>
     Object? talentId = null,
     Object? name = null,
     Object? tier = null,
-    Object? portraitUrl = freezed,
     Object? isDupe = null,
+    Object? portraitUrl = freezed,
     Object? prestigeValue = null,
     Object? baseHypeMultiplier = freezed,
   }) {
@@ -852,14 +886,14 @@ class __$$PullResultImplCopyWithImpl<$Res>
           ? _value.tier
           : tier // ignore: cast_nullable_to_non_nullable
               as TalentTier,
-      portraitUrl: freezed == portraitUrl
-          ? _value.portraitUrl
-          : portraitUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
       isDupe: null == isDupe
           ? _value.isDupe
           : isDupe // ignore: cast_nullable_to_non_nullable
               as bool,
+      portraitUrl: freezed == portraitUrl
+          ? _value.portraitUrl
+          : portraitUrl // ignore: cast_nullable_to_non_nullable
+              as String?,
       prestigeValue: null == prestigeValue
           ? _value.prestigeValue
           : prestigeValue // ignore: cast_nullable_to_non_nullable
@@ -873,14 +907,15 @@ class __$$PullResultImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$PullResultImpl implements _PullResult {
   const _$PullResultImpl(
       {required this.talentId,
       required this.name,
       required this.tier,
-      this.portraitUrl,
       required this.isDupe,
+      this.portraitUrl,
       this.prestigeValue = 0,
       this.baseHypeMultiplier});
 
@@ -894,9 +929,9 @@ class _$PullResultImpl implements _PullResult {
   @override
   final TalentTier tier;
   @override
-  final String? portraitUrl;
-  @override
   final bool isDupe;
+  @override
+  final String? portraitUrl;
   @override
   @JsonKey()
   final int prestigeValue;
@@ -905,7 +940,7 @@ class _$PullResultImpl implements _PullResult {
 
   @override
   String toString() {
-    return 'PullResult(talentId: $talentId, name: $name, tier: $tier, portraitUrl: $portraitUrl, isDupe: $isDupe, prestigeValue: $prestigeValue, baseHypeMultiplier: $baseHypeMultiplier)';
+    return 'PullResult(talentId: $talentId, name: $name, tier: $tier, isDupe: $isDupe, portraitUrl: $portraitUrl, prestigeValue: $prestigeValue, baseHypeMultiplier: $baseHypeMultiplier)';
   }
 
   @override
@@ -917,9 +952,9 @@ class _$PullResultImpl implements _PullResult {
                 other.talentId == talentId) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.tier, tier) || other.tier == tier) &&
+            (identical(other.isDupe, isDupe) || other.isDupe == isDupe) &&
             (identical(other.portraitUrl, portraitUrl) ||
                 other.portraitUrl == portraitUrl) &&
-            (identical(other.isDupe, isDupe) || other.isDupe == isDupe) &&
             (identical(other.prestigeValue, prestigeValue) ||
                 other.prestigeValue == prestigeValue) &&
             (identical(other.baseHypeMultiplier, baseHypeMultiplier) ||
@@ -928,8 +963,8 @@ class _$PullResultImpl implements _PullResult {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, talentId, name, tier,
-      portraitUrl, isDupe, prestigeValue, baseHypeMultiplier);
+  int get hashCode => Object.hash(runtimeType, talentId, name, tier, isDupe,
+      portraitUrl, prestigeValue, baseHypeMultiplier);
 
   /// Create a copy of PullResult
   /// with the given fields replaced by the non-null parameter values.
@@ -952,8 +987,8 @@ abstract class _PullResult implements PullResult {
       {required final String talentId,
       required final String name,
       required final TalentTier tier,
-      final String? portraitUrl,
       required final bool isDupe,
+      final String? portraitUrl,
       final int prestigeValue,
       final double? baseHypeMultiplier}) = _$PullResultImpl;
 
@@ -967,9 +1002,9 @@ abstract class _PullResult implements PullResult {
   @override
   TalentTier get tier;
   @override
-  String? get portraitUrl;
-  @override
   bool get isDupe;
+  @override
+  String? get portraitUrl;
   @override
   int get prestigeValue;
   @override
@@ -1113,7 +1148,8 @@ class __$$CastingResultImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$CastingResultImpl implements _CastingResult {
   const _$CastingResultImpl(
       {required final List<PullResult> pulls,
@@ -1341,7 +1377,8 @@ class __$$PityStateImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$PityStateImpl extends _PityState {
   const _$PityStateImpl(
       {this.bannerId = 'standard',

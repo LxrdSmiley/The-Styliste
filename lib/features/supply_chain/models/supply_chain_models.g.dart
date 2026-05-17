@@ -9,51 +9,51 @@ part of 'supply_chain_models.dart';
 _$SupplyChainStateImpl _$$SupplyChainStateImplFromJson(
         Map<String, dynamic> json) =>
     _$SupplyChainStateImpl(
-      warehouseCapacity: (json['warehouseCapacity'] as num?)?.toInt() ?? 5000,
+      warehouseCapacity: (json['warehouse_capacity'] as num?)?.toInt() ?? 5000,
       currentInventoryValue:
-          (json['currentInventoryValue'] as num?)?.toInt() ?? 0,
-      logisticsLevel: (json['logisticsLevel'] as num?)?.toInt() ?? 1,
+          (json['current_inventory_value'] as num?)?.toInt() ?? 0,
+      logisticsLevel: (json['logistics_level'] as num?)?.toInt() ?? 1,
       idleRevenuePerHour:
-          (json['idleRevenuePerHour'] as num?)?.toDouble() ?? 0.0,
-      isFull: json['isFull'] as bool? ?? false,
-      lastActiveAt: json['lastActiveAt'] == null
+          (json['idle_revenue_per_hour'] as num?)?.toDouble() ?? 0.0,
+      isFull: json['is_full'] as bool? ?? false,
+      lastActiveAt: json['last_active_at'] == null
           ? null
-          : DateTime.parse(json['lastActiveAt'] as String),
+          : DateTime.parse(json['last_active_at'] as String),
     );
 
 Map<String, dynamic> _$$SupplyChainStateImplToJson(
         _$SupplyChainStateImpl instance) =>
     <String, dynamic>{
-      'warehouseCapacity': instance.warehouseCapacity,
-      'currentInventoryValue': instance.currentInventoryValue,
-      'logisticsLevel': instance.logisticsLevel,
-      'idleRevenuePerHour': instance.idleRevenuePerHour,
-      'isFull': instance.isFull,
-      'lastActiveAt': instance.lastActiveAt?.toIso8601String(),
+      'warehouse_capacity': instance.warehouseCapacity,
+      'current_inventory_value': instance.currentInventoryValue,
+      'logistics_level': instance.logisticsLevel,
+      'idle_revenue_per_hour': instance.idleRevenuePerHour,
+      'is_full': instance.isFull,
+      'last_active_at': instance.lastActiveAt?.toIso8601String(),
     };
 
 _$LiquidationResultImpl _$$LiquidationResultImplFromJson(
         Map<String, dynamic> json) =>
     _$LiquidationResultImpl(
-      liquidatedAmount: (json['liquidatedAmount'] as num?)?.toInt() ?? 0,
-      newInventory: (json['newInventory'] as num?)?.toInt() ?? 0,
-      newRevenue: (json['newRevenue'] as num?)?.toDouble() ?? 0.0,
+      liquidatedAmount: (json['liquidated_amount'] as num?)?.toInt() ?? 0,
+      newInventory: (json['new_inventory'] as num?)?.toInt() ?? 0,
+      newRevenue: (json['new_revenue'] as num?)?.toDouble() ?? 0.0,
     );
 
 Map<String, dynamic> _$$LiquidationResultImplToJson(
         _$LiquidationResultImpl instance) =>
     <String, dynamic>{
-      'liquidatedAmount': instance.liquidatedAmount,
-      'newInventory': instance.newInventory,
-      'newRevenue': instance.newRevenue,
+      'liquidated_amount': instance.liquidatedAmount,
+      'new_inventory': instance.newInventory,
+      'new_revenue': instance.newRevenue,
     };
 
 _$LogisticsUpgradeImpl _$$LogisticsUpgradeImplFromJson(
         Map<String, dynamic> json) =>
     _$LogisticsUpgradeImpl(
       success: json['success'] as bool? ?? false,
-      newLevel: (json['newLevel'] as num?)?.toInt() ?? 1,
-      newCapacity: (json['newCapacity'] as num?)?.toInt() ?? 5000,
+      newLevel: (json['new_level'] as num?)?.toInt() ?? 1,
+      newCapacity: (json['new_capacity'] as num?)?.toInt() ?? 5000,
       cost: (json['cost'] as num?)?.toInt() ?? 0,
       message: json['message'] as String?,
     );
@@ -62,8 +62,8 @@ Map<String, dynamic> _$$LogisticsUpgradeImplToJson(
         _$LogisticsUpgradeImpl instance) =>
     <String, dynamic>{
       'success': instance.success,
-      'newLevel': instance.newLevel,
-      'newCapacity': instance.newCapacity,
+      'new_level': instance.newLevel,
+      'new_capacity': instance.newCapacity,
       'cost': instance.cost,
       'message': instance.message,
     };

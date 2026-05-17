@@ -89,6 +89,7 @@ extension StatueTierExtension on StatueTier {
 /// Created at Rank 100 ascension. Permanent record of player's
 /// fashion empire achievement with 3D statue representation.
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class SovereignStatue with _$SovereignStatue {
   const SovereignStatue._();
   const factory SovereignStatue({
@@ -97,9 +98,7 @@ class SovereignStatue with _$SovereignStatue {
     required String brandName,
     required DateTime ascendedAt,
     required int finalMarketCap,
-    @Default(0.0) double finalHypeScore,
-    required StatueTier statueTier,
-    required CareerPath careerPath,
+    required StatueTier statueTier, required CareerPath careerPath, @Default(0.0) double finalHypeScore,
     @Default(false) bool jointVentureFlag,
   }) = _SovereignStatue;
 
@@ -119,7 +118,7 @@ class SovereignStatue with _$SovereignStatue {
     } else if (finalMarketCap >= 1000) {
       return '\$${(finalMarketCap / 1000).toStringAsFixed(0)}K';
     }
-    return '\$${finalMarketCap}';
+    return '\$$finalMarketCap';
   }
   
   /// Hype score formatted: "12.5K"
@@ -156,7 +155,7 @@ extension SovereignStatueListExtension on List<SovereignStatue> {
   /// Sort by ascension date (newest first)
   List<SovereignStatue> get byNewest =>
       this..sort((SovereignStatue a, SovereignStatue b) =>
-          b.ascendedAt.compareTo(a.ascendedAt));
+          b.ascendedAt.compareTo(a.ascendedAt),);
   
   /// Sort by tier (Alabaster first, then Gold, then Quartz)
   List<SovereignStatue> get byTier {
@@ -166,7 +165,7 @@ extension SovereignStatueListExtension on List<SovereignStatue> {
       StatueTier.quartz: 2,
     };
     return this..sort((SovereignStatue a, SovereignStatue b) =>
-        tierOrder[a.statueTier]!.compareTo(tierOrder[b.statueTier]!));
+        tierOrder[a.statueTier]!.compareTo(tierOrder[b.statueTier]!),);
   }
   
   /// Group by tier

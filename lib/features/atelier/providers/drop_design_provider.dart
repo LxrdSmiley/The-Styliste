@@ -94,13 +94,13 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
       materialQuality: _getMaterialQuality(design),
       aestheticAlignment: _getAestheticAlignment(design, styleTags, activeTsunamis),
       sovereignTalentCount: _ref.read(rosterProvider).maybeWhen(
-        data: (roster) => roster.where((t) => t.tier == TalentTier.sovereign).length,
+        data: (List<RosterTalent> roster) => roster.where((RosterTalent t) => t.tier == TalentTier.sovereign).length,
         orElse: () => 0,
       ),
       totalTalentExpertise: _ref.read(rosterProvider).maybeWhen(
-        data: (roster) => roster
-            .where((t) => t.tier == TalentTier.sovereign)
-            .fold(0.0, (sum, t) => sum + t.expertiseScore),
+        data: (List<RosterTalent> roster) => roster
+            .where((RosterTalent t) => t.tier == TalentTier.sovereign)
+            .fold(0.0, (double sum, RosterTalent t) => sum + t.expertiseScore),
         orElse: () => 0.0,
       ),
     );
@@ -112,7 +112,7 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
 
     // Generate preview Vex review (only if opted in)
     final VexReview? previewReview = state.vexOptedIn
-        ? _vexEngine.generateReview(result: hypeResult, optedIn: true)
+        ? _vexEngine.generateReview(result: hypeResult)
         : null;
 
     state = state.copyWith(
@@ -132,7 +132,6 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
     final VexReview? newReview = newOptIn && state.hypeResult != null
         ? _vexEngine.generateReview(
             result: state.hypeResult!,
-            optedIn: true,
           )
         : null;
 

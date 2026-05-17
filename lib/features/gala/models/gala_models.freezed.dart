@@ -22,10 +22,10 @@ GalaEvent _$GalaEventFromJson(Map<String, dynamic> json) {
 mixin _$GalaEvent {
   String get id => throw _privateConstructorUsedError;
   String get themeTitle => throw _privateConstructorUsedError;
-  String? get themeDescription => throw _privateConstructorUsedError;
-  List<String> get styleTags => throw _privateConstructorUsedError;
   DateTime get startsAt => throw _privateConstructorUsedError;
   DateTime get endsAt => throw _privateConstructorUsedError;
+  String? get themeDescription => throw _privateConstructorUsedError;
+  List<String> get styleTags => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
   int get prizePoolLuxe => throw _privateConstructorUsedError;
   int get totalSubmissions => throw _privateConstructorUsedError;
@@ -48,10 +48,10 @@ abstract class $GalaEventCopyWith<$Res> {
   $Res call(
       {String id,
       String themeTitle,
-      String? themeDescription,
-      List<String> styleTags,
       DateTime startsAt,
       DateTime endsAt,
+      String? themeDescription,
+      List<String> styleTags,
       String status,
       int prizePoolLuxe,
       int totalSubmissions});
@@ -74,10 +74,10 @@ class _$GalaEventCopyWithImpl<$Res, $Val extends GalaEvent>
   $Res call({
     Object? id = null,
     Object? themeTitle = null,
-    Object? themeDescription = freezed,
-    Object? styleTags = null,
     Object? startsAt = null,
     Object? endsAt = null,
+    Object? themeDescription = freezed,
+    Object? styleTags = null,
     Object? status = null,
     Object? prizePoolLuxe = null,
     Object? totalSubmissions = null,
@@ -91,14 +91,6 @@ class _$GalaEventCopyWithImpl<$Res, $Val extends GalaEvent>
           ? _value.themeTitle
           : themeTitle // ignore: cast_nullable_to_non_nullable
               as String,
-      themeDescription: freezed == themeDescription
-          ? _value.themeDescription
-          : themeDescription // ignore: cast_nullable_to_non_nullable
-              as String?,
-      styleTags: null == styleTags
-          ? _value.styleTags
-          : styleTags // ignore: cast_nullable_to_non_nullable
-              as List<String>,
       startsAt: null == startsAt
           ? _value.startsAt
           : startsAt // ignore: cast_nullable_to_non_nullable
@@ -107,6 +99,14 @@ class _$GalaEventCopyWithImpl<$Res, $Val extends GalaEvent>
           ? _value.endsAt
           : endsAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      themeDescription: freezed == themeDescription
+          ? _value.themeDescription
+          : themeDescription // ignore: cast_nullable_to_non_nullable
+              as String?,
+      styleTags: null == styleTags
+          ? _value.styleTags
+          : styleTags // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       status: null == status
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
@@ -134,10 +134,10 @@ abstract class _$$GalaEventImplCopyWith<$Res>
   $Res call(
       {String id,
       String themeTitle,
-      String? themeDescription,
-      List<String> styleTags,
       DateTime startsAt,
       DateTime endsAt,
+      String? themeDescription,
+      List<String> styleTags,
       String status,
       int prizePoolLuxe,
       int totalSubmissions});
@@ -158,10 +158,10 @@ class __$$GalaEventImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? themeTitle = null,
-    Object? themeDescription = freezed,
-    Object? styleTags = null,
     Object? startsAt = null,
     Object? endsAt = null,
+    Object? themeDescription = freezed,
+    Object? styleTags = null,
     Object? status = null,
     Object? prizePoolLuxe = null,
     Object? totalSubmissions = null,
@@ -175,14 +175,6 @@ class __$$GalaEventImplCopyWithImpl<$Res>
           ? _value.themeTitle
           : themeTitle // ignore: cast_nullable_to_non_nullable
               as String,
-      themeDescription: freezed == themeDescription
-          ? _value.themeDescription
-          : themeDescription // ignore: cast_nullable_to_non_nullable
-              as String?,
-      styleTags: null == styleTags
-          ? _value._styleTags
-          : styleTags // ignore: cast_nullable_to_non_nullable
-              as List<String>,
       startsAt: null == startsAt
           ? _value.startsAt
           : startsAt // ignore: cast_nullable_to_non_nullable
@@ -191,6 +183,14 @@ class __$$GalaEventImplCopyWithImpl<$Res>
           ? _value.endsAt
           : endsAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      themeDescription: freezed == themeDescription
+          ? _value.themeDescription
+          : themeDescription // ignore: cast_nullable_to_non_nullable
+              as String?,
+      styleTags: null == styleTags
+          ? _value._styleTags
+          : styleTags // ignore: cast_nullable_to_non_nullable
+              as List<String>,
       status: null == status
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
@@ -208,15 +208,16 @@ class __$$GalaEventImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$GalaEventImpl extends _GalaEvent {
   const _$GalaEventImpl(
       {required this.id,
       required this.themeTitle,
-      this.themeDescription,
-      final List<String> styleTags = const <String>[],
       required this.startsAt,
       required this.endsAt,
+      this.themeDescription,
+      final List<String> styleTags = const <String>[],
       this.status = 'upcoming',
       this.prizePoolLuxe = 10000,
       this.totalSubmissions = 0})
@@ -231,6 +232,10 @@ class _$GalaEventImpl extends _GalaEvent {
   @override
   final String themeTitle;
   @override
+  final DateTime startsAt;
+  @override
+  final DateTime endsAt;
+  @override
   final String? themeDescription;
   final List<String> _styleTags;
   @override
@@ -241,10 +246,6 @@ class _$GalaEventImpl extends _GalaEvent {
     return EqualUnmodifiableListView(_styleTags);
   }
 
-  @override
-  final DateTime startsAt;
-  @override
-  final DateTime endsAt;
   @override
   @JsonKey()
   final String status;
@@ -257,7 +258,7 @@ class _$GalaEventImpl extends _GalaEvent {
 
   @override
   String toString() {
-    return 'GalaEvent(id: $id, themeTitle: $themeTitle, themeDescription: $themeDescription, styleTags: $styleTags, startsAt: $startsAt, endsAt: $endsAt, status: $status, prizePoolLuxe: $prizePoolLuxe, totalSubmissions: $totalSubmissions)';
+    return 'GalaEvent(id: $id, themeTitle: $themeTitle, startsAt: $startsAt, endsAt: $endsAt, themeDescription: $themeDescription, styleTags: $styleTags, status: $status, prizePoolLuxe: $prizePoolLuxe, totalSubmissions: $totalSubmissions)';
   }
 
   @override
@@ -268,13 +269,13 @@ class _$GalaEventImpl extends _GalaEvent {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.themeTitle, themeTitle) ||
                 other.themeTitle == themeTitle) &&
+            (identical(other.startsAt, startsAt) ||
+                other.startsAt == startsAt) &&
+            (identical(other.endsAt, endsAt) || other.endsAt == endsAt) &&
             (identical(other.themeDescription, themeDescription) ||
                 other.themeDescription == themeDescription) &&
             const DeepCollectionEquality()
                 .equals(other._styleTags, _styleTags) &&
-            (identical(other.startsAt, startsAt) ||
-                other.startsAt == startsAt) &&
-            (identical(other.endsAt, endsAt) || other.endsAt == endsAt) &&
             (identical(other.status, status) || other.status == status) &&
             (identical(other.prizePoolLuxe, prizePoolLuxe) ||
                 other.prizePoolLuxe == prizePoolLuxe) &&
@@ -288,10 +289,10 @@ class _$GalaEventImpl extends _GalaEvent {
       runtimeType,
       id,
       themeTitle,
-      themeDescription,
-      const DeepCollectionEquality().hash(_styleTags),
       startsAt,
       endsAt,
+      themeDescription,
+      const DeepCollectionEquality().hash(_styleTags),
       status,
       prizePoolLuxe,
       totalSubmissions);
@@ -316,10 +317,10 @@ abstract class _GalaEvent extends GalaEvent {
   const factory _GalaEvent(
       {required final String id,
       required final String themeTitle,
-      final String? themeDescription,
-      final List<String> styleTags,
       required final DateTime startsAt,
       required final DateTime endsAt,
+      final String? themeDescription,
+      final List<String> styleTags,
       final String status,
       final int prizePoolLuxe,
       final int totalSubmissions}) = _$GalaEventImpl;
@@ -333,13 +334,13 @@ abstract class _GalaEvent extends GalaEvent {
   @override
   String get themeTitle;
   @override
-  String? get themeDescription;
-  @override
-  List<String> get styleTags;
-  @override
   DateTime get startsAt;
   @override
   DateTime get endsAt;
+  @override
+  String? get themeDescription;
+  @override
+  List<String> get styleTags;
   @override
   String get status;
   @override
@@ -700,7 +701,8 @@ class __$$GalaSubmissionImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$GalaSubmissionImpl extends _GalaSubmission {
   const _$GalaSubmissionImpl(
       {required this.id,
@@ -1130,7 +1132,8 @@ class __$$GalaVoteImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$GalaVoteImpl extends _GalaVote {
   const _$GalaVoteImpl(
       {required this.id,
@@ -1430,7 +1433,8 @@ class __$$VoteLimitsImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$VoteLimitsImpl extends _VoteLimits {
   const _$VoteLimitsImpl(
       {required this.playerId,
@@ -1557,8 +1561,8 @@ mixin _$LeaderboardEntry {
   String get submissionId => throw _privateConstructorUsedError;
   String get playerId => throw _privateConstructorUsedError;
   String get designId => throw _privateConstructorUsedError;
-  String? get talentId => throw _privateConstructorUsedError;
   double get currentScore => throw _privateConstructorUsedError;
+  String? get talentId => throw _privateConstructorUsedError;
   int get voteCount => throw _privateConstructorUsedError;
   bool get isGalaSovereign =>
       throw _privateConstructorUsedError; // Populated fields
@@ -1588,8 +1592,8 @@ abstract class $LeaderboardEntryCopyWith<$Res> {
       String submissionId,
       String playerId,
       String designId,
-      String? talentId,
       double currentScore,
+      String? talentId,
       int voteCount,
       bool isGalaSovereign,
       String? playerName,
@@ -1617,8 +1621,8 @@ class _$LeaderboardEntryCopyWithImpl<$Res, $Val extends LeaderboardEntry>
     Object? submissionId = null,
     Object? playerId = null,
     Object? designId = null,
-    Object? talentId = freezed,
     Object? currentScore = null,
+    Object? talentId = freezed,
     Object? voteCount = null,
     Object? isGalaSovereign = null,
     Object? playerName = freezed,
@@ -1643,14 +1647,14 @@ class _$LeaderboardEntryCopyWithImpl<$Res, $Val extends LeaderboardEntry>
           ? _value.designId
           : designId // ignore: cast_nullable_to_non_nullable
               as String,
-      talentId: freezed == talentId
-          ? _value.talentId
-          : talentId // ignore: cast_nullable_to_non_nullable
-              as String?,
       currentScore: null == currentScore
           ? _value.currentScore
           : currentScore // ignore: cast_nullable_to_non_nullable
               as double,
+      talentId: freezed == talentId
+          ? _value.talentId
+          : talentId // ignore: cast_nullable_to_non_nullable
+              as String?,
       voteCount: null == voteCount
           ? _value.voteCount
           : voteCount // ignore: cast_nullable_to_non_nullable
@@ -1692,8 +1696,8 @@ abstract class _$$LeaderboardEntryImplCopyWith<$Res>
       String submissionId,
       String playerId,
       String designId,
-      String? talentId,
       double currentScore,
+      String? talentId,
       int voteCount,
       bool isGalaSovereign,
       String? playerName,
@@ -1719,8 +1723,8 @@ class __$$LeaderboardEntryImplCopyWithImpl<$Res>
     Object? submissionId = null,
     Object? playerId = null,
     Object? designId = null,
-    Object? talentId = freezed,
     Object? currentScore = null,
+    Object? talentId = freezed,
     Object? voteCount = null,
     Object? isGalaSovereign = null,
     Object? playerName = freezed,
@@ -1745,14 +1749,14 @@ class __$$LeaderboardEntryImplCopyWithImpl<$Res>
           ? _value.designId
           : designId // ignore: cast_nullable_to_non_nullable
               as String,
-      talentId: freezed == talentId
-          ? _value.talentId
-          : talentId // ignore: cast_nullable_to_non_nullable
-              as String?,
       currentScore: null == currentScore
           ? _value.currentScore
           : currentScore // ignore: cast_nullable_to_non_nullable
               as double,
+      talentId: freezed == talentId
+          ? _value.talentId
+          : talentId // ignore: cast_nullable_to_non_nullable
+              as String?,
       voteCount: null == voteCount
           ? _value.voteCount
           : voteCount // ignore: cast_nullable_to_non_nullable
@@ -1782,15 +1786,16 @@ class __$$LeaderboardEntryImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$LeaderboardEntryImpl extends _LeaderboardEntry {
   const _$LeaderboardEntryImpl(
       {required this.rank,
       required this.submissionId,
       required this.playerId,
       required this.designId,
-      this.talentId,
       required this.currentScore,
+      this.talentId,
       this.voteCount = 0,
       this.isGalaSovereign = false,
       this.playerName,
@@ -1811,9 +1816,9 @@ class _$LeaderboardEntryImpl extends _LeaderboardEntry {
   @override
   final String designId;
   @override
-  final String? talentId;
-  @override
   final double currentScore;
+  @override
+  final String? talentId;
   @override
   @JsonKey()
   final int voteCount;
@@ -1832,7 +1837,7 @@ class _$LeaderboardEntryImpl extends _LeaderboardEntry {
 
   @override
   String toString() {
-    return 'LeaderboardEntry(rank: $rank, submissionId: $submissionId, playerId: $playerId, designId: $designId, talentId: $talentId, currentScore: $currentScore, voteCount: $voteCount, isGalaSovereign: $isGalaSovereign, playerName: $playerName, designName: $designName, designImageUrl: $designImageUrl, talentName: $talentName)';
+    return 'LeaderboardEntry(rank: $rank, submissionId: $submissionId, playerId: $playerId, designId: $designId, currentScore: $currentScore, talentId: $talentId, voteCount: $voteCount, isGalaSovereign: $isGalaSovereign, playerName: $playerName, designName: $designName, designImageUrl: $designImageUrl, talentName: $talentName)';
   }
 
   @override
@@ -1847,10 +1852,10 @@ class _$LeaderboardEntryImpl extends _LeaderboardEntry {
                 other.playerId == playerId) &&
             (identical(other.designId, designId) ||
                 other.designId == designId) &&
-            (identical(other.talentId, talentId) ||
-                other.talentId == talentId) &&
             (identical(other.currentScore, currentScore) ||
                 other.currentScore == currentScore) &&
+            (identical(other.talentId, talentId) ||
+                other.talentId == talentId) &&
             (identical(other.voteCount, voteCount) ||
                 other.voteCount == voteCount) &&
             (identical(other.isGalaSovereign, isGalaSovereign) ||
@@ -1873,8 +1878,8 @@ class _$LeaderboardEntryImpl extends _LeaderboardEntry {
       submissionId,
       playerId,
       designId,
-      talentId,
       currentScore,
+      talentId,
       voteCount,
       isGalaSovereign,
       playerName,
@@ -1905,8 +1910,8 @@ abstract class _LeaderboardEntry extends LeaderboardEntry {
       required final String submissionId,
       required final String playerId,
       required final String designId,
-      final String? talentId,
       required final double currentScore,
+      final String? talentId,
       final int voteCount,
       final bool isGalaSovereign,
       final String? playerName,
@@ -1927,9 +1932,9 @@ abstract class _LeaderboardEntry extends LeaderboardEntry {
   @override
   String get designId;
   @override
-  String? get talentId;
-  @override
   double get currentScore;
+  @override
+  String? get talentId;
   @override
   int get voteCount;
   @override
@@ -2081,7 +2086,8 @@ class __$$VoteResultImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$VoteResultImpl implements _VoteResult {
   const _$VoteResultImpl(
       {required this.success,

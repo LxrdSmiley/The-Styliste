@@ -2,7 +2,6 @@
 // GDD §6.9, §12.3.3 — 4-tier weighted voting with talent multipliers
 // Kode Formula: final_points = base_points * (1 + (talent_multiplier - 1) * 0.5)
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/theme/aurelian_theme.dart';

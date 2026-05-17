@@ -210,7 +210,8 @@ class __$$VexReviewImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$VexReviewImpl extends _VexReview {
   const _$VexReviewImpl(
       {required this.headline,

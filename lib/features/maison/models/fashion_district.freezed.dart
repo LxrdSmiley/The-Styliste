@@ -23,11 +23,11 @@ mixin _$FashionDistrict {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get city => throw _privateConstructorUsedError;
+  int get baseTakeoverCost => throw _privateConstructorUsedError;
+  DateTime get createdAt => throw _privateConstructorUsedError;
   String? get controllingMaisonId => throw _privateConstructorUsedError;
   DateTime? get controlledSince => throw _privateConstructorUsedError;
-  int get baseTakeoverCost => throw _privateConstructorUsedError;
   int get totalHype => throw _privateConstructorUsedError;
-  DateTime get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this FashionDistrict to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,11 +49,11 @@ abstract class $FashionDistrictCopyWith<$Res> {
       {String id,
       String name,
       String city,
+      int baseTakeoverCost,
+      DateTime createdAt,
       String? controllingMaisonId,
       DateTime? controlledSince,
-      int baseTakeoverCost,
-      int totalHype,
-      DateTime createdAt});
+      int totalHype});
 }
 
 /// @nodoc
@@ -74,11 +74,11 @@ class _$FashionDistrictCopyWithImpl<$Res, $Val extends FashionDistrict>
     Object? id = null,
     Object? name = null,
     Object? city = null,
+    Object? baseTakeoverCost = null,
+    Object? createdAt = null,
     Object? controllingMaisonId = freezed,
     Object? controlledSince = freezed,
-    Object? baseTakeoverCost = null,
     Object? totalHype = null,
-    Object? createdAt = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -93,6 +93,14 @@ class _$FashionDistrictCopyWithImpl<$Res, $Val extends FashionDistrict>
           ? _value.city
           : city // ignore: cast_nullable_to_non_nullable
               as String,
+      baseTakeoverCost: null == baseTakeoverCost
+          ? _value.baseTakeoverCost
+          : baseTakeoverCost // ignore: cast_nullable_to_non_nullable
+              as int,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       controllingMaisonId: freezed == controllingMaisonId
           ? _value.controllingMaisonId
           : controllingMaisonId // ignore: cast_nullable_to_non_nullable
@@ -101,18 +109,10 @@ class _$FashionDistrictCopyWithImpl<$Res, $Val extends FashionDistrict>
           ? _value.controlledSince
           : controlledSince // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      baseTakeoverCost: null == baseTakeoverCost
-          ? _value.baseTakeoverCost
-          : baseTakeoverCost // ignore: cast_nullable_to_non_nullable
-              as int,
       totalHype: null == totalHype
           ? _value.totalHype
           : totalHype // ignore: cast_nullable_to_non_nullable
               as int,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
     ) as $Val);
   }
 }
@@ -129,11 +129,11 @@ abstract class _$$FashionDistrictImplCopyWith<$Res>
       {String id,
       String name,
       String city,
+      int baseTakeoverCost,
+      DateTime createdAt,
       String? controllingMaisonId,
       DateTime? controlledSince,
-      int baseTakeoverCost,
-      int totalHype,
-      DateTime createdAt});
+      int totalHype});
 }
 
 /// @nodoc
@@ -152,11 +152,11 @@ class __$$FashionDistrictImplCopyWithImpl<$Res>
     Object? id = null,
     Object? name = null,
     Object? city = null,
+    Object? baseTakeoverCost = null,
+    Object? createdAt = null,
     Object? controllingMaisonId = freezed,
     Object? controlledSince = freezed,
-    Object? baseTakeoverCost = null,
     Object? totalHype = null,
-    Object? createdAt = null,
   }) {
     return _then(_$FashionDistrictImpl(
       id: null == id
@@ -171,6 +171,14 @@ class __$$FashionDistrictImplCopyWithImpl<$Res>
           ? _value.city
           : city // ignore: cast_nullable_to_non_nullable
               as String,
+      baseTakeoverCost: null == baseTakeoverCost
+          ? _value.baseTakeoverCost
+          : baseTakeoverCost // ignore: cast_nullable_to_non_nullable
+              as int,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
       controllingMaisonId: freezed == controllingMaisonId
           ? _value.controllingMaisonId
           : controllingMaisonId // ignore: cast_nullable_to_non_nullable
@@ -179,34 +187,27 @@ class __$$FashionDistrictImplCopyWithImpl<$Res>
           ? _value.controlledSince
           : controlledSince // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      baseTakeoverCost: null == baseTakeoverCost
-          ? _value.baseTakeoverCost
-          : baseTakeoverCost // ignore: cast_nullable_to_non_nullable
-              as int,
       totalHype: null == totalHype
           ? _value.totalHype
           : totalHype // ignore: cast_nullable_to_non_nullable
               as int,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
     ));
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$FashionDistrictImpl extends _FashionDistrict {
   const _$FashionDistrictImpl(
       {required this.id,
       required this.name,
       required this.city,
+      required this.baseTakeoverCost,
+      required this.createdAt,
       this.controllingMaisonId,
       this.controlledSince,
-      required this.baseTakeoverCost,
-      this.totalHype = 0,
-      required this.createdAt})
+      this.totalHype = 0})
       : super._();
 
   factory _$FashionDistrictImpl.fromJson(Map<String, dynamic> json) =>
@@ -219,20 +220,20 @@ class _$FashionDistrictImpl extends _FashionDistrict {
   @override
   final String city;
   @override
+  final int baseTakeoverCost;
+  @override
+  final DateTime createdAt;
+  @override
   final String? controllingMaisonId;
   @override
   final DateTime? controlledSince;
   @override
-  final int baseTakeoverCost;
-  @override
   @JsonKey()
   final int totalHype;
-  @override
-  final DateTime createdAt;
 
   @override
   String toString() {
-    return 'FashionDistrict(id: $id, name: $name, city: $city, controllingMaisonId: $controllingMaisonId, controlledSince: $controlledSince, baseTakeoverCost: $baseTakeoverCost, totalHype: $totalHype, createdAt: $createdAt)';
+    return 'FashionDistrict(id: $id, name: $name, city: $city, baseTakeoverCost: $baseTakeoverCost, createdAt: $createdAt, controllingMaisonId: $controllingMaisonId, controlledSince: $controlledSince, totalHype: $totalHype)';
   }
 
   @override
@@ -243,30 +244,22 @@ class _$FashionDistrictImpl extends _FashionDistrict {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.city, city) || other.city == city) &&
+            (identical(other.baseTakeoverCost, baseTakeoverCost) ||
+                other.baseTakeoverCost == baseTakeoverCost) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
             (identical(other.controllingMaisonId, controllingMaisonId) ||
                 other.controllingMaisonId == controllingMaisonId) &&
             (identical(other.controlledSince, controlledSince) ||
                 other.controlledSince == controlledSince) &&
-            (identical(other.baseTakeoverCost, baseTakeoverCost) ||
-                other.baseTakeoverCost == baseTakeoverCost) &&
             (identical(other.totalHype, totalHype) ||
-                other.totalHype == totalHype) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.totalHype == totalHype));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      name,
-      city,
-      controllingMaisonId,
-      controlledSince,
-      baseTakeoverCost,
-      totalHype,
-      createdAt);
+  int get hashCode => Object.hash(runtimeType, id, name, city, baseTakeoverCost,
+      createdAt, controllingMaisonId, controlledSince, totalHype);
 
   /// Create a copy of FashionDistrict
   /// with the given fields replaced by the non-null parameter values.
@@ -290,11 +283,11 @@ abstract class _FashionDistrict extends FashionDistrict {
       {required final String id,
       required final String name,
       required final String city,
+      required final int baseTakeoverCost,
+      required final DateTime createdAt,
       final String? controllingMaisonId,
       final DateTime? controlledSince,
-      required final int baseTakeoverCost,
-      final int totalHype,
-      required final DateTime createdAt}) = _$FashionDistrictImpl;
+      final int totalHype}) = _$FashionDistrictImpl;
   const _FashionDistrict._() : super._();
 
   factory _FashionDistrict.fromJson(Map<String, dynamic> json) =
@@ -307,15 +300,15 @@ abstract class _FashionDistrict extends FashionDistrict {
   @override
   String get city;
   @override
+  int get baseTakeoverCost;
+  @override
+  DateTime get createdAt;
+  @override
   String? get controllingMaisonId;
   @override
   DateTime? get controlledSince;
   @override
-  int get baseTakeoverCost;
-  @override
   int get totalHype;
-  @override
-  DateTime get createdAt;
 
   /// Create a copy of FashionDistrict
   /// with the given fields replaced by the non-null parameter values.
@@ -449,7 +442,8 @@ class __$$DistrictWatermarkImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$DistrictWatermarkImpl implements _DistrictWatermark {
   const _$DistrictWatermarkImpl(
       {required this.id,
@@ -667,7 +661,8 @@ class __$$TakeoverResultImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$TakeoverResultImpl implements _TakeoverResult {
   const _$TakeoverResultImpl(
       {required this.success,
@@ -920,6 +915,7 @@ class __$$DistrictDetailsImplCopyWithImpl<$Res>
 
 /// @nodoc
 
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$DistrictDetailsImpl implements _DistrictDetails {
   const _$DistrictDetailsImpl(
       {required this.district,

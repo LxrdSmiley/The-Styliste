@@ -11,13 +11,13 @@ _$VexReviewImpl _$$VexReviewImplFromJson(Map<String, dynamic> json) =>
       headline: json['headline'] as String,
       body: json['body'] as String,
       verdict: $enumDecode(_$VexVerdictEnumMap, json['verdict']),
-      hypeScore: (json['hypeScore'] as num).toDouble(),
-      matchingTsunamiTag: json['matchingTsunamiTag'] as String?,
-      tsunamiMultiplier: (json['tsunamiMultiplier'] as num?)?.toDouble(),
-      wasOptedIn: json['wasOptedIn'] as bool? ?? true,
-      generatedAt: json['generatedAt'] == null
+      hypeScore: (json['hype_score'] as num).toDouble(),
+      matchingTsunamiTag: json['matching_tsunami_tag'] as String?,
+      tsunamiMultiplier: (json['tsunami_multiplier'] as num?)?.toDouble(),
+      wasOptedIn: json['was_opted_in'] as bool? ?? true,
+      generatedAt: json['generated_at'] == null
           ? null
-          : DateTime.parse(json['generatedAt'] as String),
+          : DateTime.parse(json['generated_at'] as String),
     );
 
 Map<String, dynamic> _$$VexReviewImplToJson(_$VexReviewImpl instance) =>
@@ -25,11 +25,11 @@ Map<String, dynamic> _$$VexReviewImplToJson(_$VexReviewImpl instance) =>
       'headline': instance.headline,
       'body': instance.body,
       'verdict': _$VexVerdictEnumMap[instance.verdict]!,
-      'hypeScore': instance.hypeScore,
-      'matchingTsunamiTag': instance.matchingTsunamiTag,
-      'tsunamiMultiplier': instance.tsunamiMultiplier,
-      'wasOptedIn': instance.wasOptedIn,
-      'generatedAt': instance.generatedAt?.toIso8601String(),
+      'hype_score': instance.hypeScore,
+      'matching_tsunami_tag': instance.matchingTsunamiTag,
+      'tsunami_multiplier': instance.tsunamiMultiplier,
+      'was_opted_in': instance.wasOptedIn,
+      'generated_at': instance.generatedAt?.toIso8601String(),
     };
 
 const _$VexVerdictEnumMap = {

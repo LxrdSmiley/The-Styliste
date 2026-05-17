@@ -10,6 +10,7 @@ part 'supply_chain_models.g.dart';
 
 /// Supply Chain State — Warehouse inventory tracking
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class SupplyChainState with _$SupplyChainState {
   const SupplyChainState._();
   const factory SupplyChainState({
@@ -70,6 +71,7 @@ class SupplyChainState with _$SupplyChainState {
 
 /// Liquidation Result — Inventory to Capital conversion
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LiquidationResult with _$LiquidationResult {
   const LiquidationResult._();
   const factory LiquidationResult({
@@ -90,6 +92,7 @@ class LiquidationResult with _$LiquidationResult {
 
 /// Logistics Upgrade — Warehouse expansion
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LogisticsUpgrade with _$LogisticsUpgrade {
   const LogisticsUpgrade._();
   const factory LogisticsUpgrade({

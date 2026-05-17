@@ -7,9 +7,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
+import '../../../core/providers/mock_auth_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../models/fashion_district.dart';
-import '../../../core/providers/mock_auth_provider.dart';
 
 part 'district_provider.g.dart';
 
@@ -197,11 +197,11 @@ final StateNotifierProvider<DistrictSiegeNotifier, DistrictSiegeState>
 );
 
 /// Provider for the current player's maison ID
-final playerMaisonIdProvider = FutureProvider<String?>((ref) async {
+final FutureProvider<String?> playerMaisonIdProvider = FutureProvider<String?>((FutureProviderRef<String?> ref) async {
   final String uid = ref.watch(activeUidProvider);
 
   // First get the player's maison membership
-  final maisonsResult = await Supabase.instance.client
+  final PostgrestMap? maisonsResult = await Supabase.instance.client
       .from(SupabaseConstants.tableMaisonMembers)
       .select('maison_id')
       .eq('player_id', uid)

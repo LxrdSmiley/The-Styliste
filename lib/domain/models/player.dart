@@ -2,7 +2,6 @@
 // Freezed + JsonSerializable for type-safe serialization (PROJECT_RULES §3)
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:json_annotation/json_annotation.dart';
 
 part 'player.freezed.dart';
 part 'player.g.dart';
@@ -26,6 +25,13 @@ extension CareerPathExtension on CareerPath {
   }
 }
 
+extension CareerPathApi on CareerPath {
+  String get apiValue => switch (this) {
+        CareerPath.designer => 'designer',
+        CareerPath.mogul => 'mogul',
+      };
+}
+
 /// Starting HQ city and market tier (GDD §1.1 Screen 4)
 enum HqCity {
   @JsonValue('new_york')
@@ -46,7 +52,21 @@ enum HqCity {
   saoPaulo,
 }
 
-@Freezed(fromJson: false, toJson: false)
+extension HqCityApi on HqCity {
+  String get apiValue => switch (this) {
+        HqCity.newYork => 'new_york',
+        HqCity.paris => 'paris',
+        HqCity.tokyo => 'tokyo',
+        HqCity.london => 'london',
+        HqCity.milan => 'milan',
+        HqCity.seoul => 'seoul',
+        HqCity.nairobi => 'nairobi',
+        HqCity.saoPaulo => 'sao_paulo',
+      };
+}
+
+@Freezed(fromJson: true, toJson: true)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Player with _$Player {
   const factory Player({
     required String id,
@@ -73,22 +93,8 @@ class Player with _$Player {
 
   factory Player.fromJson(Map<String, dynamic> json) => _$PlayerFromJson(json);
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'brand_name': brandName,
-        'path': path.name,
-        'hq_city': hqCity.name,
-        'brand_rank': brandRank,
-        'total_xp': totalXp,
-        'onboarding_complete': onboardingComplete,
-        'is_anonymous': isAnonymous,
-        'is_joint_venture': isJointVenture,
-        'sovereign_multipliers': sovereignMultipliers,
-        'joint_venture_unlocked_at': jointVentureUnlockedAt?.toIso8601String(),
-        'created_at': createdAt?.toIso8601String(),
-        'last_active_at': lastActiveAt?.toIso8601String(),
-        'luxe_trust_score': luxeTrustScore,
-      };
+  @override
+  Map<String, dynamic> toJson() => _$PlayerToJson(this);
 
   /// Can unlock Joint Venture at Rank 50
   bool get canUnlockJointVenture => brandRank >= 50 && !isJointVenture;
@@ -101,8 +107,8 @@ class Player with _$Player {
   double get sovereignMultiplierBonus => 1.0 + (sovereignMultipliers * 0.25);
 
   /// Formatted bonus display (e.g., "+125%")
-  String get sovereignMultiplierDisplay => 
-      '+${(sovereignMultiplierBonus - 1.0) * 100.toInt()}%';
+  String get sovereignMultiplierDisplay =>
+      '+${((sovereignMultiplierBonus - 1.0) * 100).toInt()}%';
 
   /// Total memorializations / sovereign multipliers count
   int get memorializationCount => sovereignMultipliers;

@@ -30,6 +30,7 @@ enum SupplierCategory {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Supplier with _$Supplier {
   const factory Supplier({
     required String id,
@@ -50,6 +51,7 @@ class Supplier with _$Supplier {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class SupplyChainContract with _$SupplyChainContract {
   const factory SupplyChainContract({
     required String id,

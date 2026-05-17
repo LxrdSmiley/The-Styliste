@@ -11,15 +11,14 @@ part 'gala_models.g.dart';
 
 /// Gala Event — Weekly themed competition
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class GalaEvent with _$GalaEvent {
   const GalaEvent._();
   const factory GalaEvent({
     required String id,
     required String themeTitle,
-    String? themeDescription,
+    required DateTime startsAt, required DateTime endsAt, String? themeDescription,
     @Default(<String>[]) List<String> styleTags,
-    required DateTime startsAt,
-    required DateTime endsAt,
     @Default('upcoming') String status,
     @Default(10000) int prizePoolLuxe,
     @Default(0) int totalSubmissions,
@@ -55,6 +54,7 @@ class GalaEvent with _$GalaEvent {
 
 /// Gala Submission — Player's entry with votes
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class GalaSubmission with _$GalaSubmission {
   const GalaSubmission._();
   const factory GalaSubmission({
@@ -97,6 +97,7 @@ class GalaSubmission with _$GalaSubmission {
 
 /// Vote cast by a player
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class GalaVote with _$GalaVote {
   const GalaVote._();
   const factory GalaVote({
@@ -120,6 +121,7 @@ class GalaVote with _$GalaVote {
 
 /// Daily vote limits for a player
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class VoteLimits with _$VoteLimits {
   const VoteLimits._();
   const factory VoteLimits({
@@ -166,6 +168,7 @@ class VoteLimits with _$VoteLimits {
 
 /// Leaderboard entry
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LeaderboardEntry with _$LeaderboardEntry {
   const LeaderboardEntry._();
   const factory LeaderboardEntry({
@@ -173,8 +176,7 @@ class LeaderboardEntry with _$LeaderboardEntry {
     required String submissionId,
     required String playerId,
     required String designId,
-    String? talentId,
-    required double currentScore,
+    required double currentScore, String? talentId,
     @Default(0) int voteCount,
     @Default(false) bool isGalaSovereign,
     // Populated fields
@@ -196,6 +198,7 @@ class LeaderboardEntry with _$LeaderboardEntry {
 
 /// Submission result after voting
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class VoteResult with _$VoteResult {
   const factory VoteResult({
     required bool success,

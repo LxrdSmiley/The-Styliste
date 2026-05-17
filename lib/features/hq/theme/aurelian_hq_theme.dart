@@ -32,8 +32,8 @@ class AurelianHQTheme {
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: <Color>[
-      Color(0xFFF7E7CE), // Champagne gold
-      Color(0xFFF7E7CE).withValues(alpha: 0.3),
+      const Color(0xFFF7E7CE), // Champagne gold
+      const Color(0xFFF7E7CE).withValues(alpha: 0.3),
       Colors.transparent,
     ],
   );
@@ -48,8 +48,6 @@ class AurelianHQTheme {
 
   /// Sun-Dial Hype Meter gradient (white → champagne-gold)
   static const SweepGradient sunDialGradient = SweepGradient(
-    center: Alignment.center,
-    startAngle: 0.0,
     endAngle: 3.14159 * 2,
     colors: <Color>[
       Colors.white,
@@ -65,11 +63,11 @@ class AurelianHQTheme {
   /// 0-100 brand heat gradient: cool-grey → champagne-gold
   static LinearGradient brandHeatGradient(double heatPercent) {
     return LinearGradient(
-      colors: <Color>[
-        const Color(0xFF8A8A8A), // Cool grey (cold)
-        const Color(0xFFB8B8B8), // Warm grey
-        const Color(0xFFE8D4B8), // Champagne
-        const Color(0xFFF7E7CE), // Gold (hot)
+      colors: const <Color>[
+        Color(0xFF8A8A8A), // Cool grey (cold)
+        Color(0xFFB8B8B8), // Warm grey
+        Color(0xFFE8D4B8), // Champagne
+        Color(0xFFF7E7CE), // Gold (hot)
       ],
       stops: <double>[0.0, 0.3, 0.7, heatPercent.clamp(0.0, 1.0)],
     );
@@ -108,12 +106,12 @@ class AurelianHQTheme {
   /// Penthouse address text ("Floor 47, Manhattan")
   static TextStyle penthouseAddress(int rank) {
     final int floor = (rank / 2).clamp(1, 100).toInt();
-    return TextStyle(
+    return const TextStyle(
       fontFamily: 'SpaceGrotesk',
       fontSize: 10.0,
       fontWeight: FontWeight.w300,
       letterSpacing: 2.0,
-      color: const Color(0xFF666666),
+      color: Color(0xFF666666),
     );
   }
 

@@ -135,7 +135,7 @@ class _BrandFootprintScreenState extends ConsumerState<BrandFootprintScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
+          const Text(
             'YOUR GLOBAL',
             style: TextStyle(
               fontFamily: 'SpaceGrotesk',
@@ -146,7 +146,7 @@ class _BrandFootprintScreenState extends ConsumerState<BrandFootprintScreen> {
             ),
           ),
           const SizedBox(height: 4.0),
-          Text(
+          const Text(
             'FOOTPRINT',
             style: TextStyle(
               fontFamily: 'SpaceGrotesk',
@@ -161,7 +161,7 @@ class _BrandFootprintScreenState extends ConsumerState<BrandFootprintScreen> {
             _currentStep == 0
                 ? 'Choose your empire\'s headquarters'
                 : 'Select your market position',
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'SpaceGrotesk',
               fontSize: 14.0,
               color: AurelianPalette.textSecondary,
@@ -252,10 +252,7 @@ class _BrandFootprintScreenState extends ConsumerState<BrandFootprintScreen> {
 
 class _CitySelectionStep extends StatelessWidget {
   const _CitySelectionStep({
-    super.key,
-    required this.cities,
-    required this.selectedCity,
-    required this.onSelect,
+    required this.cities, required this.selectedCity, required this.onSelect, super.key,
   });
 
   final List<HqCity> cities;
@@ -399,7 +396,7 @@ class _CityCard extends StatelessWidget {
                     const SizedBox(height: 4.0),
                     Text(
                       _cityTagline,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'SpaceGrotesk',
                         fontSize: 12.0,
                         color: AurelianPalette.textSecondary,
@@ -417,7 +414,7 @@ class _CityCard extends StatelessWidget {
                   child: Container(
                     width: 24.0,
                     height: 24.0,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AurelianPalette.champagneGold,
                       shape: BoxShape.circle,
                     ),
@@ -644,10 +641,7 @@ class _PetalPainter extends CustomPainter {
 
 class _TierSelectionStep extends StatelessWidget {
   const _TierSelectionStep({
-    super.key,
-    required this.selectedTier,
-    required this.onSelect,
-    required this.onBack,
+    required this.selectedTier, required this.onSelect, required this.onBack, super.key,
   });
 
   final MarketTier? selectedTier;
@@ -665,7 +659,7 @@ class _TierSelectionStep extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: GestureDetector(
               onTap: onBack,
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Icon(
@@ -673,7 +667,7 @@ class _TierSelectionStep extends StatelessWidget {
                     size: 16.0,
                     color: AurelianPalette.textSecondary,
                   ),
-                  const SizedBox(width: 8.0),
+                  SizedBox(width: 8.0),
                   Text(
                     'BACK TO CITIES',
                     style: TextStyle(
@@ -786,7 +780,7 @@ class _TierCard extends StatelessWidget {
                   Container(
                     width: 24.0,
                     height: 24.0,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AurelianPalette.champagneGold,
                       shape: BoxShape.circle,
                     ),
@@ -801,7 +795,7 @@ class _TierCard extends StatelessWidget {
             const SizedBox(height: 12.0),
             Text(
               tier.description,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'SpaceGrotesk',
                 fontSize: 13.0,
                 color: AurelianPalette.textSecondary,
@@ -817,7 +811,7 @@ class _TierCard extends StatelessWidget {
                 const SizedBox(width: 24.0),
                 _TierStat(
                   label: 'HYPE CEILING',
-                  value: (tier.hypeCeiling / 1000000).toStringAsFixed(1) + 'M',
+                  value: '${(tier.hypeCeiling / 1000000).toStringAsFixed(1)}M',
                 ),
               ],
             ),
@@ -844,7 +838,7 @@ class _TierStat extends StatelessWidget {
       children: <Widget>[
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'SpaceGrotesk',
             fontSize: 9.0,
             fontWeight: FontWeight.w500,

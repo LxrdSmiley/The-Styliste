@@ -6,11 +6,9 @@
 
 import 'dart:io';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:games_services/games_services.dart' as gs;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../constants/supabase_constants.dart';
 import 'supabase_service.dart';
 
 // GDD §1.1 — Web OAuth 2.0 client ID from Google Play Console
@@ -90,20 +88,9 @@ class AuthService {
       );
       if (serverAuthCode == null || serverAuthCode.isEmpty) return null;
 
-      // Step 3: Exchange server auth code for Firebase credential
-      // Google verifies the code server-side — result is a cryptographically
-      // confirmed Firebase UID tied to the player's Google account
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        serverAuthCode: serverAuthCode,
-      );
-      final UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithCredential(credential);
-      final String? firebaseUid = userCredential.user?.uid;
-      if (firebaseUid == null) return null;
-
-      // Step 4: Link verified Firebase UID to Supabase economy row
+      // Link the verified platform auth code to the current Supabase user.
       return await _linkPlatformId(
-        platformId: firebaseUid,
+        platformId: serverAuthCode,
         platform: 'play_games',
       );
     } catch (e) {
@@ -122,7 +109,7 @@ class AuthService {
       final List<Map<String, dynamic>> existing = await _supabase
           .from('platform_auth_mappings')
           .select('player_id')
-          .eq('platform_id', platformId)
+          .eq('platform_user_id', platformId)
           .eq('platform', platform)
           .limit(1);
 
@@ -143,9 +130,8 @@ class AuthService {
 
       await _supabase.from('platform_auth_mappings').insert(<String, dynamic>{
         'player_id': currentUserId,
-        'platform_id': platformId,
+        'platform_user_id': platformId,
         'platform': platform,
-        'linked_at': DateTime.now().toIso8601String(),
       });
 
       return currentUserId;
@@ -156,9 +142,7 @@ class AuthService {
 
   /// Restore Supabase session for recovered player
   Future<void> _restoreSession(String playerId) async {
-    // The session restoration happens through Supabase auth
-    // Platform auth mapping ensures the correct user is loaded
-    // This is a placeholder for any additional session setup
+    return;
   }
 
   /// Check if user has cloud save available

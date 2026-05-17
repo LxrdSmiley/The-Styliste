@@ -83,15 +83,13 @@ final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
         } catch (e) {
           // Bridge errors are non-fatal: log only, never surface to UI.
           if (kDebugMode) {
-            // ignore: avoid_print
-            print('▶ supabaseBridge error: $e');
+            debugPrint('supabaseBridge error: $e');
           }
         }
       },
       onError: (Object e) {
         if (kDebugMode) {
-          // ignore: avoid_print
-          print('▶ supabaseBridge stream error: $e');
+          debugPrint('supabaseBridge stream error: $e');
         }
       },
     );
@@ -130,3 +128,4 @@ final Provider<bool> isAccountLinkedProvider = Provider<bool>(
     );
   },
 );
+

@@ -9,38 +9,38 @@ part of 'campaign.dart';
 _$CampaignImpl _$$CampaignImplFromJson(Map<String, dynamic> json) =>
     _$CampaignImpl(
       id: json['id'] as String,
-      playerId: json['playerId'] as String,
+      playerId: json['player_id'] as String,
       type: $enumDecode(_$CampaignTypeEnumMap, json['type']),
       status: $enumDecodeNullable(_$CampaignStatusEnumMap, json['status']) ??
           CampaignStatus.draft,
       budget: (json['budget'] as num?)?.toDouble() ?? 0.0,
-      roiActual: (json['roiActual'] as num?)?.toDouble() ?? 0.0,
-      roiForecast: (json['roiForecast'] as num?)?.toDouble() ?? 0.0,
-      hypeLift: (json['hypeLift'] as num?)?.toDouble() ?? 0.0,
-      salesLift: (json['salesLift'] as num?)?.toDouble() ?? 0.0,
-      maisonPoolId: json['maisonPoolId'] as String?,
-      launchedAt: json['launchedAt'] == null
+      roiActual: (json['roi_actual'] as num?)?.toDouble() ?? 0.0,
+      roiForecast: (json['roi_forecast'] as num?)?.toDouble() ?? 0.0,
+      hypeLift: (json['hype_lift'] as num?)?.toDouble() ?? 0.0,
+      salesLift: (json['sales_lift'] as num?)?.toDouble() ?? 0.0,
+      maisonPoolId: json['maison_pool_id'] as String?,
+      launchedAt: json['launched_at'] == null
           ? null
-          : DateTime.parse(json['launchedAt'] as String),
-      expiresAt: json['expiresAt'] == null
+          : DateTime.parse(json['launched_at'] as String),
+      expiresAt: json['expires_at'] == null
           ? null
-          : DateTime.parse(json['expiresAt'] as String),
+          : DateTime.parse(json['expires_at'] as String),
     );
 
 Map<String, dynamic> _$$CampaignImplToJson(_$CampaignImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'playerId': instance.playerId,
+      'player_id': instance.playerId,
       'type': _$CampaignTypeEnumMap[instance.type]!,
       'status': _$CampaignStatusEnumMap[instance.status]!,
       'budget': instance.budget,
-      'roiActual': instance.roiActual,
-      'roiForecast': instance.roiForecast,
-      'hypeLift': instance.hypeLift,
-      'salesLift': instance.salesLift,
-      'maisonPoolId': instance.maisonPoolId,
-      'launchedAt': instance.launchedAt?.toIso8601String(),
-      'expiresAt': instance.expiresAt?.toIso8601String(),
+      'roi_actual': instance.roiActual,
+      'roi_forecast': instance.roiForecast,
+      'hype_lift': instance.hypeLift,
+      'sales_lift': instance.salesLift,
+      'maison_pool_id': instance.maisonPoolId,
+      'launched_at': instance.launchedAt?.toIso8601String(),
+      'expires_at': instance.expiresAt?.toIso8601String(),
     };
 
 const _$CampaignTypeEnumMap = {

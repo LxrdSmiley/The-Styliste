@@ -11,6 +11,7 @@ part 'archive_models.g.dart';
 
 /// Archive Listing — P2P market entry
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ArchiveListing with _$ArchiveListing {
   const ArchiveListing._();
   const factory ArchiveListing({
@@ -100,17 +101,13 @@ class ArchiveListing with _$ArchiveListing {
 
 /// Provenance Record — Single ownership transfer
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ProvenanceRecord with _$ProvenanceRecord {
   const ProvenanceRecord._();
   const factory ProvenanceRecord({
     required String id,
     required String designId,
-    String? listingId,
-    required String previousOwnerId,
-    required String newOwnerId,
-    required int salePrice,
-    required int platformTax,
-    required int sellerPayout,
+    required String previousOwnerId, required String newOwnerId, required int salePrice, required int platformTax, required int sellerPayout, String? listingId,
     DateTime? transferredAt,
     // Enriched fields
     String? previousOwnerName,
@@ -138,6 +135,7 @@ class ProvenanceRecord with _$ProvenanceRecord {
 
 /// Transaction Result — Purchase outcome
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PurchaseResult with _$PurchaseResult {
   const factory PurchaseResult({
     required bool success,
@@ -153,6 +151,7 @@ class PurchaseResult with _$PurchaseResult {
 
 /// Listing Result — Create listing outcome
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ListingResult with _$ListingResult {
   const factory ListingResult({
     required bool success,
@@ -167,6 +166,7 @@ class ListingResult with _$ListingResult {
 
 /// Market Statistics
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class MarketStats with _$MarketStats {
   const factory MarketStats({
     @Default(0) int totalActiveListings,

@@ -206,6 +206,12 @@ DECLARE
   v_i INTEGER;
   v_guaranteed_assigned BOOLEAN := FALSE;
 BEGIN
+  PERFORM public.assert_self(p_player_id);
+  -- Authorization check
+  IF auth.uid() != p_player_id THEN
+    RAISE EXCEPTION 'UNAUTHORIZED: Gacha manipulation attempt';
+  END IF;
+
   -- Get current Luxe and Prestige
   SELECT luxe_tokens, prestige_tokens 
   INTO v_current_luxe, v_current_prestige
@@ -353,6 +359,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
+  PERFORM public.assert_self(p_player_id);
   RETURN QUERY
   SELECT 
     tp.id as talent_id,
@@ -385,3 +392,5 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION get_player_roster(UUID) TO authenticated;
+
+

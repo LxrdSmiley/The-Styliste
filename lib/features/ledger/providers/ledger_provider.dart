@@ -121,19 +121,26 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
   /// Apply Price War Blitz result: buff or debuff idle multiplier
   /// Win = +35% for 12h, Loss = -15% for 6h
   Future<Map<String, dynamic>> applyPriceWarResult({required bool won}) async {
-    final double multiplier = won ? 1.35 : 0.85;
-    final int durationHours = won ? 12 : 6;
-
     try {
-      final Map<String, dynamic> result = await SupabaseService.client.rpc(
-        'apply_idle_multiplier',
-        params: <String, dynamic>{
-          'p_player_id': SupabaseService.client.auth.currentUser!.id,
-          'p_multiplier': multiplier,
-          'p_duration_hours': durationHours,
+      final session = SupabaseService.client.auth.currentSession;
+      if (session == null) {
+        return <String, dynamic>{
+          'success': false,
+          'error': 'Not authenticated',
+        };
+      }
+
+      final response = await SupabaseService.client.functions.invoke(
+        'claim-mini-game-reward',
+        body: <String, dynamic>{
+          'game_key': 'price_war',
+          'result_key': won ? 'standard_win' : 'loss',
+        },
+        headers: <String, String>{
+          'Authorization': 'Bearer ${session.accessToken}',
         },
       );
-      return result as Map<String, dynamic>;
+      return Map<String, dynamic>.from(response.data as Map);
     } catch (e) {
       return <String, dynamic>{
         'success': false,
@@ -176,15 +183,25 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
     }
 
     try {
-      final Map<String, dynamic> result = await SupabaseService.client.rpc(
-        'inject_capital_bonus',
-        params: <String, dynamic>{
-          'p_player_id': SupabaseService.client.auth.currentUser!.id,
-          'p_amount': 5000,
-          'p_reason': 'hostile_takeover_victory',
+      final session = SupabaseService.client.auth.currentSession;
+      if (session == null) {
+        return <String, dynamic>{
+          'success': false,
+          'error': 'Not authenticated',
+        };
+      }
+
+      final response = await SupabaseService.client.functions.invoke(
+        'claim-mini-game-reward',
+        body: <String, dynamic>{
+          'game_key': 'hostile_takeover',
+          'result_key': 'complete_takeover',
+        },
+        headers: <String, String>{
+          'Authorization': 'Bearer ${session.accessToken}',
         },
       );
-      return result as Map<String, dynamic>;
+      return Map<String, dynamic>.from(response.data as Map);
     } catch (e) {
       return <String, dynamic>{
         'success': false,

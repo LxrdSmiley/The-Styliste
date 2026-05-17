@@ -3,8 +3,8 @@
 // Alabaster Standard: Deep ivory, 3D mannequin statues, liquid gold backdrop
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/player.dart';
@@ -34,7 +34,7 @@ class HallOfSovereignsScreen extends ConsumerWidget {
         foregroundColor: AurelianPalette.textPrimary,
         elevation: 0.0,
         centerTitle: true,
-        title: Column(
+        title: const Column(
           children: <Widget>[
             Text(
               'HALL OF SOVEREIGNS',
@@ -46,7 +46,7 @@ class HallOfSovereignsScreen extends ConsumerWidget {
                 color: AurelianPalette.textPrimary,
               ),
             ),
-            const SizedBox(height: 4.0),
+            SizedBox(height: 4.0),
             Text(
               'The Immortalized',
               style: TextStyle(
@@ -65,7 +65,7 @@ class HallOfSovereignsScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: AurelianPalette.champagneGold),
         ),
-        error: (Object err, StackTrace stack) => Center(
+        error: (Object err, StackTrace stack) => const Center(
           child: Text(
             'Failed to load Hall of Sovereigns',
             style: TextStyle(color: AurelianPalette.danger),
@@ -176,7 +176,7 @@ class _StatueCard extends StatelessWidget {
                     left: 24.0,
                     child: Text(
                       '#${index + 1}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'SpaceGrotesk',
                         fontSize: 14.0,
                         fontWeight: FontWeight.w300,
@@ -221,7 +221,7 @@ class _StatueCard extends StatelessWidget {
                 // Tier and date
                 Text(
                   '${statue.statueTier.displayName} — ${statue.formattedDate}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontFamily: 'SpaceGrotesk',
                     fontSize: 12.0,
                     letterSpacing: 2.0,
@@ -273,7 +273,7 @@ class _StatueCard extends StatelessWidget {
                         color: AurelianPalette.champagneGold.withValues(alpha: 0.3),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'JOINT VENTURE MASTER',
                       style: TextStyle(
                         fontFamily: 'SpaceGrotesk',
@@ -342,7 +342,7 @@ class _StatColumn extends StatelessWidget {
       children: <Widget>[
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'SpaceGrotesk',
             fontSize: 9.0,
             fontWeight: FontWeight.w500,
@@ -353,7 +353,7 @@ class _StatColumn extends StatelessWidget {
         const SizedBox(height: 4.0),
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'SpaceGrotesk',
             fontSize: 16.0,
             fontWeight: FontWeight.w700,
@@ -379,7 +379,7 @@ class _EmptyHallView extends StatelessWidget {
             color: AurelianPalette.textTertiary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 24.0),
-          Text(
+          const Text(
             'THE HALL AWAITS',
             style: TextStyle(
               fontFamily: 'SpaceGrotesk',
@@ -390,7 +390,7 @@ class _EmptyHallView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12.0),
-          Text(
+          const Text(
             'Reach Rank 100 to immortalize your brand',
             style: TextStyle(
               fontFamily: 'SpaceGrotesk',

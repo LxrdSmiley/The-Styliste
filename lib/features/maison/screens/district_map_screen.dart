@@ -57,7 +57,7 @@ class DistrictMapScreen extends ConsumerWidget {
         foregroundColor: AurelianPalette.textPrimary,
         elevation: 0.0,
         centerTitle: true,
-        title: Text(
+        title: const Text(
           'DISTRICT WARFARE',
           style: TextStyle(
             fontFamily: 'SpaceGrotesk',
@@ -75,7 +75,7 @@ class DistrictMapScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(color: AurelianPalette.champagneGold),
         ),
-        error: (Object err, StackTrace stack) => Center(
+        error: (Object err, StackTrace stack) => const Center(
           child: Text(
             'Failed to load districts',
             style: TextStyle(color: AurelianPalette.danger),
@@ -117,7 +117,7 @@ class _DistrictMapView extends StatelessWidget {
                 top: entry.value['y']!,
                 child: Text(
                   entry.key,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontFamily: 'SpaceGrotesk',
                     fontSize: 10.0,
                     fontWeight: FontWeight.w500,
@@ -158,7 +158,7 @@ class _DistrictMapView extends StatelessWidget {
                 return Positioned(
                   left: pos['x']! - 80,
                   top: pos['y']! - 60,
-                  child: _AurelianWatermark(maisonTag: '[LEGACY]')
+                  child: const _AurelianWatermark(maisonTag: '[LEGACY]')
                       .animate()
                       .fadeIn(duration: const Duration(milliseconds: 800))
                       .rotate(
@@ -234,7 +234,7 @@ class _DistrictNode extends StatelessWidget {
                 const SizedBox(height: 2.0),
                 Text(
                   '${district.daysControlled}d',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontFamily: 'JetBrainsMono',
                     fontSize: 7.0,
                     color: AurelianPalette.textTertiary,
@@ -343,7 +343,7 @@ class _DistrictDetailsSheet extends StatelessWidget {
                 children: <Widget>[
                   Text(
                     district.name.toUpperCase(),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'SpaceGrotesk',
                       fontSize: 24.0,
                       fontWeight: FontWeight.w700,
@@ -352,7 +352,7 @@ class _DistrictDetailsSheet extends StatelessWidget {
                   ),
                   Text(
                     district.city.toUpperCase(),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'SpaceGrotesk',
                       fontSize: 12.0,
                       letterSpacing: 2.0,
@@ -369,7 +369,7 @@ class _DistrictDetailsSheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8.0),
                     border: Border.all(color: AurelianPalette.champagneGold),
                   ),
-                  child: Text(
+                  child: const Text(
                     'LEGACY',
                     style: TextStyle(
                       fontFamily: 'SpaceGrotesk',
@@ -397,14 +397,14 @@ class _DistrictDetailsSheet extends StatelessWidget {
                 color: AurelianPalette.ivoryDark,
                 borderRadius: BorderRadius.circular(8.0),
               ),
-              child: Row(
+              child: const Row(
                 children: <Widget>[
                   Icon(
                     Icons.circle_outlined,
                     size: 16.0,
                     color: AurelianPalette.textSecondary,
                   ),
-                  const SizedBox(width: 12.0),
+                  SizedBox(width: 12.0),
                   Text(
                     'UNOWNED — Open for siege',
                     style: TextStyle(
@@ -468,7 +468,7 @@ class _DistrictDetailsSheet extends StatelessWidget {
         children: <Widget>[
           Text(
             label.toUpperCase(),
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'SpaceGrotesk',
               fontSize: 10.0,
               fontWeight: FontWeight.w500,
@@ -478,7 +478,7 @@ class _DistrictDetailsSheet extends StatelessWidget {
           ),
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontFamily: 'SpaceGrotesk',
               fontSize: 14.0,
               fontWeight: FontWeight.w600,

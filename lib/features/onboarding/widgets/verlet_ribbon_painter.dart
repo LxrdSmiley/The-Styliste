@@ -3,10 +3,8 @@
 // PROJECT_RULES §4 — Physics at 60fps, decoupled from render thread
 
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 
 import '../../../core/theme/aurelian_theme.dart';
 

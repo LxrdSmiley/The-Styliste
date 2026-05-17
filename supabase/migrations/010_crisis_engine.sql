@@ -60,6 +60,12 @@ DECLARE
   v_capital_cost NUMERIC;
   v_current_prestige INTEGER;
 BEGIN
+  PERFORM public.assert_self(p_player_id);
+  -- Authorization check
+  IF auth.uid() != p_player_id THEN
+    RAISE EXCEPTION 'UNAUTHORIZED: Cross-player modification attempt';
+  END IF;
+
   -- Get current state
   SELECT bs.current_tarnish, bs.kintsugi_level, bs.total_revenue, bs.prestige_tokens
   INTO v_current_tarnish, v_current_kintsugi, v_current_capital, v_current_prestige
@@ -130,6 +136,12 @@ DECLARE
   v_capital_cost NUMERIC;
   v_reduction INTEGER;
 BEGIN
+  PERFORM public.assert_self(p_player_id);
+  -- Authorization check
+  IF auth.uid() != p_player_id THEN
+    RAISE EXCEPTION 'UNAUTHORIZED: Cross-player modification attempt';
+  END IF;
+
   SELECT current_tarnish, total_revenue
   INTO v_current_tarnish, v_current_capital
   FROM brand_state WHERE player_id = p_player_id;
@@ -242,3 +254,5 @@ COMMENT ON FUNCTION apply_kintsugi_repair IS
   
 COMMENT ON FUNCTION trigger_scandal IS 
   'Triggers scandal with Kode formula: final_tarnish = base_severity / (1 + kintsugi*0.25 + sovereign*0.15). Returns final tarnish applied.';
+
+

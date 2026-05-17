@@ -27,7 +27,7 @@ const List<String> kAvailableStyleTags = <String>[
 ];
 
 class DropPreviewScreen extends ConsumerStatefulWidget {
-  const DropPreviewScreen({super.key, required this.design});
+  const DropPreviewScreen({required this.design, super.key});
 
   final Design design;
 
@@ -114,7 +114,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
         foregroundColor: AurelianPalette.textPrimary,
         elevation: 0.0,
         centerTitle: true,
-        title: Text(
+        title: const Text(
           'PREVIEW DROP',
           style: TextStyle(
             fontFamily: 'SpaceGrotesk',
@@ -143,7 +143,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
               child: Center(
                 child: Text(
                   widget.design.name,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontFamily: 'SpaceGrotesk',
                     fontSize: 20.0,
                     fontWeight: FontWeight.w600,
@@ -156,7 +156,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
             const SizedBox(height: 24.0),
 
             // --- Style Tags Selection ---
-            Text(
+            const Text(
               'STYLE TAGS (Select up to 3)',
               style: TextStyle(
                 fontFamily: 'SpaceGrotesk',
@@ -205,7 +205,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
               ),
               child: Row(
                 children: <Widget>[
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
@@ -218,7 +218,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                             color: AurelianPalette.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: 4.0),
+                        SizedBox(height: 4.0),
                         Text(
                           'Receive AI critique on your drop',
                           style: TextStyle(
@@ -233,7 +233,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                   Switch(
                     value: dropState.vexOptedIn,
                     onChanged: (_) => ref.read(dropDesignProvider.notifier).toggleVexOptIn(),
-                    activeColor: AurelianPalette.champagneGold,
+                    activeThumbColor: AurelianPalette.champagneGold,
                   ),
                 ],
               ),
@@ -257,7 +257,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(
+                      const Text(
                         'PROJECTED HYPE',
                         style: TextStyle(
                           fontFamily: 'SpaceGrotesk',
@@ -270,7 +270,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                       const SizedBox(height: 4.0),
                       Text(
                         projectedHype.toStringAsFixed(1),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'SpaceGrotesk',
                           fontSize: 32.0,
                           fontWeight: FontWeight.w700,
@@ -291,7 +291,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                       ),
                       child: Text(
                         '${multiplier.toStringAsFixed(1)}x',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'SpaceGrotesk',
                           fontSize: 14.0,
                           fontWeight: FontWeight.w700,

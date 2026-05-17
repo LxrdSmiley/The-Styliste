@@ -20,7 +20,7 @@ const CORS_HEADERS = {
 };
 
 interface BrandStateRow {
-  revenue_idle: number;
+  idle_revenue_per_hour: number;
   total_revenue: number;
   momentum_buff_active: boolean;
   momentum_buff_until: string | null;
@@ -84,7 +84,7 @@ serve(async (req: Request): Promise<Response> => {
     // Fetch brand state
     const { data: brandState, error: brandError } = await admin
       .from("brand_state")
-      .select("revenue_idle, total_revenue, momentum_buff_active, momentum_buff_until, last_active_at")
+      .select("idle_revenue_per_hour, total_revenue, momentum_buff_active, momentum_buff_until, last_active_at")
       .eq("player_id", playerId)
       .single<BrandStateRow>();
 
@@ -118,7 +118,7 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const elapsedHours = elapsedSeconds / 3_600;
-    const baseRate = Number(brandState.revenue_idle);
+    const baseRate = Number(brandState.idle_revenue_per_hour);
 
     // ── Step 4: Decay + momentum buff (GDD §3.4) ──────────────────────────
     let decayFactor = 1.0;
@@ -182,3 +182,4 @@ serve(async (req: Request): Promise<Response> => {
     );
   }
 });
+

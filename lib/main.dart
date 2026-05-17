@@ -34,7 +34,6 @@ Future<void> main() async {
   // Lock orientation to portrait (GDD §1 — portrait-first)
   await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
   ]);
 
   // Register FCM background handler before Firebase.initializeApp (GDD §8)

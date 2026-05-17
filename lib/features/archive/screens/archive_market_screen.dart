@@ -6,7 +6,6 @@
 // Features: Market grid, provenance ledger, Gala/Sovereign badges, 48h FOMO countdown
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -135,7 +134,6 @@ class _ArchiveMarketScreenState extends ConsumerState<ArchiveMarketScreen> {
         border: Border(
           bottom: BorderSide(
             color: Colors.black.withValues(alpha: 0.2),
-            width: 1.0,
           ),
         ),
       ),
@@ -215,7 +213,6 @@ class _ArchiveMarketScreenState extends ConsumerState<ArchiveMarketScreen> {
         border: Border(
           bottom: BorderSide(
             color: Colors.black.withValues(alpha: 0.2),
-            width: 1.0,
           ),
         ),
       ),
@@ -393,8 +390,7 @@ class _ListingCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AurelianPalette.alabaster,
           border: Border.all(
-            color: Colors.black,
-            width: 1.0,
+            
           ),
         ),
         child: Column(
@@ -408,22 +404,21 @@ class _ListingCard extends StatelessWidget {
                   border: Border(
                     bottom: BorderSide(
                       color: Colors.black.withValues(alpha: 0.2),
-                      width: 1.0,
                     ),
                   ),
                 ),
                 child: Row(
                   children: <Widget>[
                     if (listing.isGalaWinner)
-                      _Badge(
+                      const _Badge(
                         label: 'GALA WINNER',
-                        color: const Color(0xFFD4AF37),
+                        color: Color(0xFFD4AF37),
                       ),
                     if (listing.hasSovereignProvenance) ...<Widget>[
                       const SizedBox(width: 4.0),
-                      _Badge(
+                      const _Badge(
                         label: 'SOVEREIGN',
-                        color: const Color(0xFF8B0000),
+                        color: Color(0xFF8B0000),
                       ),
                     ],
                   ],
@@ -451,7 +446,6 @@ class _ListingCard extends StatelessWidget {
                 border: Border(
                   top: BorderSide(
                     color: Colors.black.withValues(alpha: 0.2),
-                    width: 1.0,
                   ),
                 ),
               ),
@@ -537,7 +531,6 @@ class _Badge extends StatelessWidget {
         color: color.withValues(alpha: 0.1),
         border: Border.all(
           color: color,
-          width: 1.0,
         ),
       ),
       child: Text(
@@ -673,8 +666,7 @@ class _ListingDetailSheet extends ConsumerWidget {
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         border: Border.all(
-          color: Colors.black,
-          width: 1.0,
+          
         ),
       ),
       child: Column(
@@ -738,7 +730,6 @@ class _ListingDetailSheet extends ConsumerWidget {
         color: Colors.black.withValues(alpha: 0.03),
         border: Border.all(
           color: Colors.black.withValues(alpha: 0.2),
-          width: 1.0,
         ),
       ),
       child: Column(
@@ -809,7 +800,6 @@ class _ListingDetailSheet extends ConsumerWidget {
       decoration: BoxDecoration(
         border: Border.all(
           color: Colors.black.withValues(alpha: 0.2),
-          width: 1.0,
         ),
       ),
       child: Column(
@@ -865,7 +855,7 @@ class _ListingDetailSheet extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 20.0),
         decoration: BoxDecoration(
           color: Colors.black,
-          border: Border.all(color: Colors.black, width: 2.0),
+          border: Border.all(width: 2.0),
         ),
         child: Center(
           child: state.isPurchasing
@@ -901,7 +891,7 @@ class _ListingDetailSheet extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 20.0),
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: Colors.black, width: 2.0),
+          border: Border.all(width: 2.0),
         ),
         child: Center(
           child: state.isCancelling

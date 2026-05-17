@@ -48,6 +48,7 @@ enum StoreCity {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Store with _$Store {
   const factory Store({
     required String id,

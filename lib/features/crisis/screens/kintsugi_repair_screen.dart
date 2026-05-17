@@ -12,7 +12,6 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/providers/onboarding_provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/brand.dart';
@@ -168,7 +167,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
               color: Color(0xFFD4AF37),
             ),
             const SizedBox(height: 16.0),
-            Text(
+            const Text(
               'Your brand has been restored.',
               style: TextStyle(
                 fontFamily: 'SpaceGrotesk',
@@ -191,14 +190,14 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
               ),
             ),
             const SizedBox(height: 8.0),
-            Text(
+            const Text(
               'Permanent gold veins now adorn your empire.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'SpaceGrotesk',
                 fontSize: 12.0,
                 fontStyle: FontStyle.italic,
-                color: const Color(0xFFD4AF37),
+                color: Color(0xFFD4AF37),
               ),
             ),
           ],
@@ -278,7 +277,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   // Header
-                  Text(
+                  const Text(
                     'KINTSUGI REPAIR',
                     style: TextStyle(
                       fontFamily: 'SpaceGrotesk',
@@ -289,7 +288,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
                     ),
                   ),
                   const SizedBox(height: 8.0),
-                  Text(
+                  const Text(
                     'Fill the cracks with gold',
                     style: TextStyle(
                       fontFamily: 'SpaceGrotesk',
@@ -406,7 +405,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
                   // Cancel button
                   TextButton(
                     onPressed: _isRepairing ? null : () => context.pop(),
-                    child: Text(
+                    child: const Text(
                       'CANCEL',
                       style: TextStyle(
                         fontFamily: 'SpaceGrotesk',
@@ -446,7 +445,7 @@ class _CostRow extends StatelessWidget {
       children: <Widget>[
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'SpaceGrotesk',
             fontSize: 11.0,
             letterSpacing: 2.0,

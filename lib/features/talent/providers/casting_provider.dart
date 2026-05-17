@@ -93,7 +93,7 @@ class CastingNotifier extends StateNotifier<CastingState> {
       if (result['success'] == true) {
         final List<dynamic> pullsJson = result['pulls'] as List<dynamic>;
         final List<PullResult> pulls = pullsJson
-            .map((dynamic json) => PullResult.fromJson(json as Map<String, dynamic>))
+            .map((json) => PullResult.fromJson(json as Map<String, dynamic>))
             .toList();
 
         final CastingResult castingResult = CastingResult(
@@ -189,7 +189,7 @@ final StreamProvider<List<RosterTalent>> playerRosterProvider =
           params: <String, dynamic>{'p_player_id': userId},
         );
         return result
-            .map((dynamic json) => RosterTalent.fromJson(json as Map<String, dynamic>))
+            .map((json) => RosterTalent.fromJson(json as Map<String, dynamic>))
             .toList();
       });
 });

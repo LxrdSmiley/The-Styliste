@@ -5,18 +5,14 @@
 // Server-authoritative with client-side batching for performance
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-import 'dart:math' show Random;
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
-import '../constants/supabase_constants.dart';
 
 // =============================================================================
 // Telemetry Service — Singleton
@@ -280,14 +276,14 @@ class TelemetryService {
                 'session_id': e.sessionId,
                 'device_info': e.deviceInfo,
                 'occurred_at': e.occurredAt.toIso8601String(),
-              })
+              },)
           .toList();
 
       if (eventsData.isEmpty) return;
 
       // Batch insert via RPC
       final SupabaseClient supabase = Supabase.instance.client;
-      await supabase.rpc(
+      await supabase.rpc<void>(
         'batch_log_telemetry',
         params: <String, dynamic>{
           'p_events': eventsData,
@@ -330,9 +326,8 @@ class TelemetryEvent {
     required this.eventType,
     required this.eventName,
     required this.payload,
-    this.sessionId,
+    required this.occurredAt, this.sessionId,
     this.deviceInfo,
-    required this.occurredAt,
   });
 
   final String id;

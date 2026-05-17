@@ -340,7 +340,8 @@ class __$$ArchiveListingImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$ArchiveListingImpl extends _ArchiveListing {
   const _$ArchiveListingImpl(
       {required this.id,
@@ -586,12 +587,12 @@ ProvenanceRecord _$ProvenanceRecordFromJson(Map<String, dynamic> json) {
 mixin _$ProvenanceRecord {
   String get id => throw _privateConstructorUsedError;
   String get designId => throw _privateConstructorUsedError;
-  String? get listingId => throw _privateConstructorUsedError;
   String get previousOwnerId => throw _privateConstructorUsedError;
   String get newOwnerId => throw _privateConstructorUsedError;
   int get salePrice => throw _privateConstructorUsedError;
   int get platformTax => throw _privateConstructorUsedError;
   int get sellerPayout => throw _privateConstructorUsedError;
+  String? get listingId => throw _privateConstructorUsedError;
   DateTime? get transferredAt =>
       throw _privateConstructorUsedError; // Enriched fields
   String? get previousOwnerName => throw _privateConstructorUsedError;
@@ -619,12 +620,12 @@ abstract class $ProvenanceRecordCopyWith<$Res> {
   $Res call(
       {String id,
       String designId,
-      String? listingId,
       String previousOwnerId,
       String newOwnerId,
       int salePrice,
       int platformTax,
       int sellerPayout,
+      String? listingId,
       DateTime? transferredAt,
       String? previousOwnerName,
       int? previousOwnerRank,
@@ -650,12 +651,12 @@ class _$ProvenanceRecordCopyWithImpl<$Res, $Val extends ProvenanceRecord>
   $Res call({
     Object? id = null,
     Object? designId = null,
-    Object? listingId = freezed,
     Object? previousOwnerId = null,
     Object? newOwnerId = null,
     Object? salePrice = null,
     Object? platformTax = null,
     Object? sellerPayout = null,
+    Object? listingId = freezed,
     Object? transferredAt = freezed,
     Object? previousOwnerName = freezed,
     Object? previousOwnerRank = freezed,
@@ -672,10 +673,6 @@ class _$ProvenanceRecordCopyWithImpl<$Res, $Val extends ProvenanceRecord>
           ? _value.designId
           : designId // ignore: cast_nullable_to_non_nullable
               as String,
-      listingId: freezed == listingId
-          ? _value.listingId
-          : listingId // ignore: cast_nullable_to_non_nullable
-              as String?,
       previousOwnerId: null == previousOwnerId
           ? _value.previousOwnerId
           : previousOwnerId // ignore: cast_nullable_to_non_nullable
@@ -696,6 +693,10 @@ class _$ProvenanceRecordCopyWithImpl<$Res, $Val extends ProvenanceRecord>
           ? _value.sellerPayout
           : sellerPayout // ignore: cast_nullable_to_non_nullable
               as int,
+      listingId: freezed == listingId
+          ? _value.listingId
+          : listingId // ignore: cast_nullable_to_non_nullable
+              as String?,
       transferredAt: freezed == transferredAt
           ? _value.transferredAt
           : transferredAt // ignore: cast_nullable_to_non_nullable
@@ -735,12 +736,12 @@ abstract class _$$ProvenanceRecordImplCopyWith<$Res>
   $Res call(
       {String id,
       String designId,
-      String? listingId,
       String previousOwnerId,
       String newOwnerId,
       int salePrice,
       int platformTax,
       int sellerPayout,
+      String? listingId,
       DateTime? transferredAt,
       String? previousOwnerName,
       int? previousOwnerRank,
@@ -764,12 +765,12 @@ class __$$ProvenanceRecordImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? designId = null,
-    Object? listingId = freezed,
     Object? previousOwnerId = null,
     Object? newOwnerId = null,
     Object? salePrice = null,
     Object? platformTax = null,
     Object? sellerPayout = null,
+    Object? listingId = freezed,
     Object? transferredAt = freezed,
     Object? previousOwnerName = freezed,
     Object? previousOwnerRank = freezed,
@@ -786,10 +787,6 @@ class __$$ProvenanceRecordImplCopyWithImpl<$Res>
           ? _value.designId
           : designId // ignore: cast_nullable_to_non_nullable
               as String,
-      listingId: freezed == listingId
-          ? _value.listingId
-          : listingId // ignore: cast_nullable_to_non_nullable
-              as String?,
       previousOwnerId: null == previousOwnerId
           ? _value.previousOwnerId
           : previousOwnerId // ignore: cast_nullable_to_non_nullable
@@ -810,6 +807,10 @@ class __$$ProvenanceRecordImplCopyWithImpl<$Res>
           ? _value.sellerPayout
           : sellerPayout // ignore: cast_nullable_to_non_nullable
               as int,
+      listingId: freezed == listingId
+          ? _value.listingId
+          : listingId // ignore: cast_nullable_to_non_nullable
+              as String?,
       transferredAt: freezed == transferredAt
           ? _value.transferredAt
           : transferredAt // ignore: cast_nullable_to_non_nullable
@@ -839,17 +840,18 @@ class __$$ProvenanceRecordImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$ProvenanceRecordImpl extends _ProvenanceRecord {
   const _$ProvenanceRecordImpl(
       {required this.id,
       required this.designId,
-      this.listingId,
       required this.previousOwnerId,
       required this.newOwnerId,
       required this.salePrice,
       required this.platformTax,
       required this.sellerPayout,
+      this.listingId,
       this.transferredAt,
       this.previousOwnerName,
       this.previousOwnerRank,
@@ -866,8 +868,6 @@ class _$ProvenanceRecordImpl extends _ProvenanceRecord {
   @override
   final String designId;
   @override
-  final String? listingId;
-  @override
   final String previousOwnerId;
   @override
   final String newOwnerId;
@@ -877,6 +877,8 @@ class _$ProvenanceRecordImpl extends _ProvenanceRecord {
   final int platformTax;
   @override
   final int sellerPayout;
+  @override
+  final String? listingId;
   @override
   final DateTime? transferredAt;
 // Enriched fields
@@ -893,7 +895,7 @@ class _$ProvenanceRecordImpl extends _ProvenanceRecord {
 
   @override
   String toString() {
-    return 'ProvenanceRecord(id: $id, designId: $designId, listingId: $listingId, previousOwnerId: $previousOwnerId, newOwnerId: $newOwnerId, salePrice: $salePrice, platformTax: $platformTax, sellerPayout: $sellerPayout, transferredAt: $transferredAt, previousOwnerName: $previousOwnerName, previousOwnerRank: $previousOwnerRank, newOwnerName: $newOwnerName, newOwnerRank: $newOwnerRank, designName: $designName)';
+    return 'ProvenanceRecord(id: $id, designId: $designId, previousOwnerId: $previousOwnerId, newOwnerId: $newOwnerId, salePrice: $salePrice, platformTax: $platformTax, sellerPayout: $sellerPayout, listingId: $listingId, transferredAt: $transferredAt, previousOwnerName: $previousOwnerName, previousOwnerRank: $previousOwnerRank, newOwnerName: $newOwnerName, newOwnerRank: $newOwnerRank, designName: $designName)';
   }
 
   @override
@@ -904,8 +906,6 @@ class _$ProvenanceRecordImpl extends _ProvenanceRecord {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.designId, designId) ||
                 other.designId == designId) &&
-            (identical(other.listingId, listingId) ||
-                other.listingId == listingId) &&
             (identical(other.previousOwnerId, previousOwnerId) ||
                 other.previousOwnerId == previousOwnerId) &&
             (identical(other.newOwnerId, newOwnerId) ||
@@ -916,6 +916,8 @@ class _$ProvenanceRecordImpl extends _ProvenanceRecord {
                 other.platformTax == platformTax) &&
             (identical(other.sellerPayout, sellerPayout) ||
                 other.sellerPayout == sellerPayout) &&
+            (identical(other.listingId, listingId) ||
+                other.listingId == listingId) &&
             (identical(other.transferredAt, transferredAt) ||
                 other.transferredAt == transferredAt) &&
             (identical(other.previousOwnerName, previousOwnerName) ||
@@ -936,12 +938,12 @@ class _$ProvenanceRecordImpl extends _ProvenanceRecord {
       runtimeType,
       id,
       designId,
-      listingId,
       previousOwnerId,
       newOwnerId,
       salePrice,
       platformTax,
       sellerPayout,
+      listingId,
       transferredAt,
       previousOwnerName,
       previousOwnerRank,
@@ -970,12 +972,12 @@ abstract class _ProvenanceRecord extends ProvenanceRecord {
   const factory _ProvenanceRecord(
       {required final String id,
       required final String designId,
-      final String? listingId,
       required final String previousOwnerId,
       required final String newOwnerId,
       required final int salePrice,
       required final int platformTax,
       required final int sellerPayout,
+      final String? listingId,
       final DateTime? transferredAt,
       final String? previousOwnerName,
       final int? previousOwnerRank,
@@ -992,8 +994,6 @@ abstract class _ProvenanceRecord extends ProvenanceRecord {
   @override
   String get designId;
   @override
-  String? get listingId;
-  @override
   String get previousOwnerId;
   @override
   String get newOwnerId;
@@ -1003,6 +1003,8 @@ abstract class _ProvenanceRecord extends ProvenanceRecord {
   int get platformTax;
   @override
   int get sellerPayout;
+  @override
+  String? get listingId;
   @override
   DateTime? get transferredAt; // Enriched fields
   @override
@@ -1167,7 +1169,8 @@ class __$$PurchaseResultImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$PurchaseResultImpl implements _PurchaseResult {
   const _$PurchaseResultImpl(
       {required this.success,
@@ -1387,7 +1390,8 @@ class __$$ListingResultImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$ListingResultImpl implements _ListingResult {
   const _$ListingResultImpl(
       {required this.success, this.listingId, this.message, this.minimumPrice});
@@ -1600,7 +1604,8 @@ class __$$MarketStatsImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$MarketStatsImpl implements _MarketStats {
   const _$MarketStatsImpl(
       {this.totalActiveListings = 0,

@@ -249,7 +249,8 @@ class __$$CampaignImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$CampaignImpl implements _Campaign {
   const _$CampaignImpl(
       {required this.id,

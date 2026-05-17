@@ -6,9 +6,8 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:flutter/scheduler.dart';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -64,7 +63,7 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _ribbon = VerletRibbon(pointCount: 18);
+    _ribbon = VerletRibbon();
     _loadShader();
     
     // GDD §10.1 — Age-gate mechanism at onboarding
@@ -85,7 +84,7 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
       builder: (BuildContext ctx) => const _AgeGateDialog(),
     );
 
-    if (passed == true) {
+    if (passed ?? false) {
       await prefs.setBool('age_gate_passed', true);
     } else {
       // App exit for under-13
@@ -199,7 +198,7 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
     if (!mounted || _ribbon.points.isEmpty) return;
 
     final Size size = MediaQuery.sizeOf(context);
-    final double dt = 1.0 / 60.0; // Fixed timestep for stable physics
+    const double dt = 1.0 / 60.0; // Fixed timestep for stable physics
     _ribbon.update(dt, size);
   }
 
@@ -336,9 +335,7 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
 
 class TickerBuilder extends StatefulWidget {
   const TickerBuilder({
-    super.key,
-    required this.onTick,
-    required this.child,
+    required this.onTick, required this.child, super.key,
   });
 
   final void Function(Duration elapsed) onTick;
@@ -378,7 +375,7 @@ class _AgeGateDialog extends StatelessWidget {
       backgroundColor: AurelianPalette.ivory,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AurelianPalette.champagneGold, width: 1),
+        side: const BorderSide(color: AurelianPalette.champagneGold),
       ),
       title: const Text(
         'AGE VERIFICATION',

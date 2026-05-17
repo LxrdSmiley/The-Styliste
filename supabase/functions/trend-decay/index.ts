@@ -53,7 +53,7 @@ serve(async (_req: Request): Promise<Response> => {
       }
     }
 
-    // TODO: Phase 4 — full trend-decay logic:
+    // AI_UNCERTAINTY: TS-214 tracks the remaining seasonal-meta decay rollout:
     // 1. Update seasonal trend meta (colour palettes, silhouettes, fabrics)
     // 2. Push Realtime event to all connected clients with new trend scores
     // 3. Apply "outdated design" penalties for misaligned drops

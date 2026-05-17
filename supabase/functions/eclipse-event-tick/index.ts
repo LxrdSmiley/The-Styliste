@@ -108,6 +108,7 @@ serve(async (_req: Request): Promise<Response> => {
     // player_id is NULL — system-originated post. hype defaults to 0.
     const { error: feedErr } = await admin.from("feed_posts").insert({
       player_id: null,
+      is_system: true,
       type: "system_eclipse",
       content: {
         event_key: event.event_key,
@@ -119,6 +120,7 @@ serve(async (_req: Request): Promise<Response> => {
         palette: event.palette,
         ends_at: endsAt.toISOString(),
       },
+      hype: 0,
     });
     if (feedErr) {
       console.error("eclipse feed_posts insert error:", feedErr.message);

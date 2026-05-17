@@ -3,14 +3,12 @@
 // 3D base with horizontal scrolling chips for Face/Body/Hair/Fit
 // AI_UNCERTAINTY: flutter_3d_controller integration pending
 
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 
 import '../../../core/providers/onboarding_provider.dart';
 import '../../../core/router/app_router.dart';
@@ -146,7 +144,7 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
           ],
         ),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
@@ -159,7 +157,7 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
               color: AurelianPalette.textTertiary,
             ),
           ),
-          const SizedBox(height: 4.0),
+          SizedBox(height: 4.0),
           Text(
             'VISAGE',
             style: TextStyle(
@@ -170,7 +168,7 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
               color: AurelianPalette.textPrimary,
             ),
           ),
-          const SizedBox(height: 8.0),
+          SizedBox(height: 8.0),
           Text(
             'Customize your founder\'s appearance',
             style: TextStyle(
@@ -265,7 +263,7 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
             // Category label
             Text(
               _categories[_selectedCategory].name,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'SpaceGrotesk',
                 fontSize: 12.0,
                 fontWeight: FontWeight.w600,

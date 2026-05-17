@@ -25,6 +25,7 @@ enum DesignStatus {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Design with _$Design {
   const factory Design({
     required String id,
@@ -32,7 +33,7 @@ class Design with _$Design {
     required String name,
     required DesignSessionType sessionType,
     @Default(DesignStatus.draft) DesignStatus status,
-    @Default(0.0) double hypoScore,
+    @Default(0.0) double hypeScore,
     @Default(false) bool isAlpha,
     @Default(false) bool isDigitalTwin,    // GDD §8.9.14
     @Default(false) bool dppRegistered,
@@ -49,3 +50,4 @@ class Design with _$Design {
 extension DesignExtension on Design {
   String get fabricTier => fabricData['tier'] as String? ?? 'standard_cotton';
 }
+

@@ -7,7 +7,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/constants/supabase_constants.dart';
 import '../models/archive_models.dart';
 import '../services/provenance_calculator.dart';
 
@@ -23,7 +22,7 @@ final StreamProvider<List<ArchiveListing>> archiveListingsProvider =
   return supabase
       .from('archive_listings_enriched')
       .stream(primaryKey: <String>['id'])
-      .order('listed_at', ascending: false)
+      .order('listed_at')
       .map((List<Map<String, dynamic>> data) {
         return data
             .map((Map<String, dynamic> json) => ArchiveListing.fromJson(json))
@@ -39,7 +38,7 @@ final ProviderFamily<AsyncValue<List<ArchiveListing>>, ({int min, int max})>
 
   return allListings.when(
     data: (List<ArchiveListing> listings) {
-      final filtered = listings.where((ArchiveListing l) {
+      final List<ArchiveListing> filtered = listings.where((ArchiveListing l) {
         return l.listingPrice >= range.min && l.listingPrice <= range.max;
       }).toList();
       return AsyncValue.data(filtered);
@@ -105,7 +104,7 @@ class PurchaseState {
   final String? errorMessage;
 
   bool get hasError => errorMessage != null;
-  bool get hasSuccess => lastResult?.success == true;
+  bool get hasSuccess => lastResult?.success ?? false;
 
   PurchaseState copyWith({
     bool? isPurchasing,
@@ -261,7 +260,7 @@ class ListingNotifier extends StateNotifier<ListingState> {
         success: result['success'] as bool,
         listingId: result['listing_id'] as String?,
         message: result['message'] as String?,
-        minimumPrice: result['message']?.toString().contains('Minimum') == true
+        minimumPrice: result['message']?.toString().contains('Minimum') ?? false
             ? int.tryParse(RegExp(r'\d+').firstMatch(result['message'] as String)?.group(0) ?? '0')
             : null,
       );

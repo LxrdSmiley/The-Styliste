@@ -1,34 +1,131 @@
-// GDD §6.x — Player reporting modal: 3-tap flow, pre-filled categories
-// TODO: Implement full modal with screenshot attachment in Phase 4
-
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../../core/theme/app_colors.dart';
 
-class ReportModal extends StatelessWidget {
+class ReportModal extends StatefulWidget {
   const ReportModal({required this.reportedPlayerId, super.key});
 
   final String reportedPlayerId;
 
   @override
+  State<ReportModal> createState() => _ReportModalState();
+}
+
+class _ReportModalState extends State<ReportModal> {
+  static const List<String> _categories = <String>[
+    'harassment',
+    'hate',
+    'spam',
+    'cheating',
+    'inappropriate_content',
+    'other',
+  ];
+
+  final TextEditingController _descriptionController = TextEditingController();
+  String? _selectedCategory;
+  bool _isSubmitting = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final String? category = _selectedCategory;
+    if (category == null || _isSubmitting) return;
+
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
+
+    try {
+      await Supabase.instance.client.from('player_reports').insert(<String, dynamic>{
+        'reporter_id': Supabase.instance.client.auth.currentUser!.id,
+        'reported_player_id': widget.reportedPlayerId,
+        'reported_id': widget.reportedPlayerId,
+        'category': category,
+        'reason': category,
+        'description': _descriptionController.text.trim(),
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Report submitted')),
+      );
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+        _error = 'Report failed. Please try again.';
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const ColoredBox(
+    return ColoredBox(
       color: AppColors.obsidianCard,
-      child: Padding(
-        padding: EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-          Text(
-            'Report Player',
-            style: TextStyle(color: AppColors.ivory, fontSize: 18.0, fontWeight: FontWeight.w700),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            24.0,
+            24.0,
+            24.0,
+            MediaQuery.viewInsetsOf(context).bottom + 24.0,
           ),
-          SizedBox(height: 16.0),
-          // TODO: Phase 4 — category selector, description field, screenshot
-          Text(
-            'Thank you, darling. We\'ll look into this.',
-            style: TextStyle(color: AppColors.gold, fontStyle: FontStyle.italic),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              const Text(
+                'Report Player',
+                style: TextStyle(
+                  color: AppColors.ivory,
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              Wrap(
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: <Widget>[
+                  for (final String category in _categories)
+                    ChoiceChip(
+                      label: Text(category.replaceAll('_', ' ').toUpperCase()),
+                      selected: _selectedCategory == category,
+                      onSelected: (_) => setState(() => _selectedCategory = category),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16.0),
+              TextField(
+                controller: _descriptionController,
+                minLines: 2,
+                maxLines: 4,
+                style: const TextStyle(color: AppColors.ivory),
+                decoration: const InputDecoration(
+                  hintText: 'Add context',
+                  hintStyle: TextStyle(color: AppColors.grey400),
+                ),
+              ),
+              if (_error != null) ...<Widget>[
+                const SizedBox(height: 12.0),
+                Text(_error!, style: const TextStyle(color: AppColors.danger)),
+              ],
+              const SizedBox(height: 16.0),
+              FilledButton(
+                onPressed: _selectedCategory == null || _isSubmitting ? null : _submit,
+                child: Text(_isSubmitting ? 'SUBMITTING' : 'SUBMIT'),
+              ),
+            ],
           ),
-        ],
         ),
       ),
     );

@@ -4,13 +4,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../domain/models/brand.dart';
 import '../../../domain/models/player.dart';
 import '../providers/hq_provider.dart';
@@ -120,14 +119,13 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       // --- Sun-Dial Hype Meter (CustomPainter) ---
-                      _SectionTitle('HYPE SOLARIS'),
+                      const _SectionTitle('HYPE SOLARIS'),
                       const SizedBox(height: 16.0),
                       Center(
                         child: brandAsync.when(
                           data: (Brand brand) => SunDialHypeMeter(
                             hypeScore: brand.hypeScore,
                             maxHype: 100000.0, // 100K max for dial
-                            size: 200.0,
                             onThresholdCrossed: () => HapticFeedback.heavyImpact(),
                           ),
                           loading: () => const SizedBox(height: 200.0),
@@ -138,7 +136,7 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
                       const SizedBox(height: 32.0),
 
                       // --- 3D Garment Preview ---
-                      _SectionTitle('LATEST CREATION'),
+                      const _SectionTitle('LATEST CREATION'),
                       const SizedBox(height: 16.0),
                       _GarmentPreviewCard(
                         isPaused: _is3DPaused,
@@ -194,11 +192,11 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
   
   Future<void> _applyApology(BuildContext context) async {
     HapticFeedback.heavyImpact();
-    final result = await Supabase.instance.client
-        .rpc('execute_power_move', params: {
-          'p_move_type': 'public_apology',
+    final Map<String, dynamic> result = await Supabase.instance.client
+        .rpc<Map<String, dynamic>>('execute_power_move', params: <String, dynamic>{
+          'p_move_key': 'public_apology',
           'p_player_id': Supabase.instance.client.auth.currentUser!.id,
-        });
+        },);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -231,14 +229,14 @@ class _ArtisanHeader extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
+              const Text(
                 'THE ARTISAN',
                 style: TextStyle(
                   fontFamily: 'SpaceGrotesk',
                   fontSize: 10.0,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 3.0,
-                  color: const Color(0xFF888888),
+                  color: Color(0xFF888888),
                 ),
               ),
               const SizedBox(height: 4.0),

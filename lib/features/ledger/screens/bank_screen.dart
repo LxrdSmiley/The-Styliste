@@ -1,19 +1,22 @@
 // Directive O — Bank Screen
 // GDD §5.2 — Mogul Path: Brutalist financial terminal
-// Live Capital + Transaction history + Mocked 7-day chart
+// Live Capital + Transaction history + daily ledger chart
+
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants/supabase_constants.dart';
+import '../../../core/providers/mock_auth_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/brand.dart';
 import '../../hq/providers/hq_provider.dart';
 
 /// Bank Screen — Brutalist financial terminal
-/// Shows Total Capital, mocked 7-day chart, and live transaction ledger
+/// Shows Total Capital, daily revenue chart, and live transaction ledger
 class BankScreen extends ConsumerWidget {
   const BankScreen({super.key});
 
@@ -53,13 +56,30 @@ class BankScreen extends ConsumerWidget {
   }
 }
 
-class _BankContent extends StatelessWidget {
+final FutureProvider<List<Map<String, dynamic>>> dailyRevenueLedgerProvider =
+    FutureProvider<List<Map<String, dynamic>>>(
+        (Ref<AsyncValue<List<Map<String, dynamic>>>> ref) async {
+  final String playerId = ref.watch(activeUidProvider);
+  if (playerId.isEmpty) return <Map<String, dynamic>>[];
+
+  return SupabaseService.client
+      .from('daily_revenue_ledger')
+      .select()
+      .eq('player_id', playerId)
+      .order('revenue_date', ascending: true)
+      .limit(7);
+});
+
+class _BankContent extends ConsumerWidget {
   const _BankContent({required this.brand});
 
   final Brand brand;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<List<Map<String, dynamic>>> ledgerAsync =
+        ref.watch(dailyRevenueLedgerProvider);
+
     return Column(
       children: <Widget>[
         // Total Capital Display
@@ -96,7 +116,7 @@ class _BankContent extends StatelessWidget {
           ),
         ),
 
-        // Mocked 7-Day Chart
+        // 7-Day Chart
         Container(
           height: 150,
           margin: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -109,7 +129,7 @@ class _BankContent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               const Text(
-                '7-DAY REVENUE (MOCKED)',
+                '7-DAY REVENUE',
                 style: TextStyle(
                   color: AurelianPalette.ivory,
                   fontFamily: 'JetBrainsMono',
@@ -118,9 +138,26 @@ class _BankContent extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Expanded(
-                child: CustomPaint(
-                  size: Size.infinite,
-                  painter: _RevenueChartPainter(),
+                child: ledgerAsync.when(
+                  data: (List<Map<String, dynamic>> rows) => CustomPaint(
+                    size: Size.infinite,
+                    painter: _RevenueChartPainter(rows),
+                  ),
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(
+                      color: AurelianPalette.champagneGold,
+                    ),
+                  ),
+                  error: (_, __) => const Center(
+                    child: Text(
+                      'LEDGER UNAVAILABLE',
+                      style: TextStyle(
+                        color: AurelianPalette.danger,
+                        fontFamily: 'JetBrainsMono',
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -182,10 +219,33 @@ class _BankContent extends StatelessWidget {
   }
 }
 
-/// Mocked revenue chart painter
+/// Daily revenue chart painter
 class _RevenueChartPainter extends CustomPainter {
+  const _RevenueChartPainter(this.rows);
+
+  final List<Map<String, dynamic>> rows;
+
   @override
   void paint(Canvas canvas, Size size) {
+    if (rows.isEmpty) {
+      final TextPainter empty = TextPainter(
+        text: const TextSpan(
+          text: 'NO LEDGER DATA',
+          style: TextStyle(
+            color: AurelianPalette.textTertiary,
+            fontFamily: 'JetBrainsMono',
+            fontSize: 11,
+          ),
+        ),
+        textDirection: ui.TextDirection.ltr,
+      )..layout(maxWidth: size.width);
+      empty.paint(
+        canvas,
+        Offset((size.width - empty.width) / 2, (size.height - empty.height) / 2),
+      );
+      return;
+    }
+
     final Paint linePaint = Paint()
       ..color = AurelianPalette.champagneGold
       ..strokeWidth = 2
@@ -195,23 +255,24 @@ class _RevenueChartPainter extends CustomPainter {
       ..color = AurelianPalette.champagneGold.withValues(alpha: 0.1)
       ..style = PaintingStyle.fill;
 
-    // Generate mock bezier curve
-    final Path path = Path();
-    path.moveTo(0, size.height * 0.7);
-
-    // Create a smooth curve
+    final List<double> totals = rows
+        .map((Map<String, dynamic> row) =>
+            (row['revenue_total'] as num?)?.toDouble() ?? 0.0)
+        .toList();
+    final double maxTotal =
+        totals.reduce(mathMax).clamp(1.0, double.infinity).toDouble();
+    final double xStep = rows.length == 1 ? 0 : size.width / (rows.length - 1);
     final List<Offset> points = <Offset>[
-      Offset(size.width * 0.1, size.height * 0.6),
-      Offset(size.width * 0.2, size.height * 0.75),
-      Offset(size.width * 0.3, size.height * 0.5),
-      Offset(size.width * 0.4, size.height * 0.45),
-      Offset(size.width * 0.5, size.height * 0.55),
-      Offset(size.width * 0.6, size.height * 0.35),
-      Offset(size.width * 0.7, size.height * 0.4),
-      Offset(size.width * 0.8, size.height * 0.25),
-      Offset(size.width * 0.9, size.height * 0.3),
-      Offset(size.width, size.height * 0.2),
+      for (int i = 0; i < totals.length; i++)
+        Offset(
+          rows.length == 1 ? size.width / 2 : i * xStep,
+          size.height -
+              ((totals[i] / maxTotal) * size.height * 0.8) -
+              size.height * 0.1,
+        ),
     ];
+
+    final Path path = Path()..moveTo(points.first.dx, points.first.dy);
 
     for (int i = 0; i < points.length - 1; i++) {
       final Offset current = points[i];
@@ -244,8 +305,11 @@ class _RevenueChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _RevenueChartPainter oldDelegate) =>
+      oldDelegate.rows != rows;
 }
+
+double mathMax(double a, double b) => a > b ? a : b;
 
 /// Live transaction list from provenance_ledger and fiat_transactions
 class _TransactionList extends ConsumerWidget {
@@ -270,7 +334,7 @@ class _TransactionList extends ConsumerWidget {
         }
 
         if (snapshot.hasError) {
-          return Center(
+          return const Center(
             child: Text(
               'Error loading transactions',
               style: TextStyle(color: AurelianPalette.danger),

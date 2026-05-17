@@ -10,16 +10,16 @@ _$TalentImpl _$$TalentImplFromJson(Map<String, dynamic> json) => _$TalentImpl(
       id: json['id'] as String,
       name: json['name'] as String,
       tier: $enumDecode(_$TalentTierEnumMap, json['tier']),
-      portraitUrl: json['portraitUrl'] as String?,
+      portraitUrl: json['portrait_url'] as String?,
       baseHypeMultiplier:
-          (json['baseHypeMultiplier'] as num?)?.toDouble() ?? 1.0,
-      scandalRiskFactor: (json['scandalRiskFactor'] as num?)?.toInt() ?? 0,
+          (json['base_hype_multiplier'] as num?)?.toDouble() ?? 1.0,
+      scandalRiskFactor: (json['scandal_risk_factor'] as num?)?.toInt() ?? 0,
       biography: json['biography'] as String?,
-      signatureStyle: (json['signatureStyle'] as List<dynamic>?)
+      signatureStyle: (json['signature_style'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
           const <String>[],
-      isActive: json['isActive'] as bool? ?? true,
+      isActive: json['is_active'] as bool? ?? true,
     );
 
 Map<String, dynamic> _$$TalentImplToJson(_$TalentImpl instance) =>
@@ -27,12 +27,12 @@ Map<String, dynamic> _$$TalentImplToJson(_$TalentImpl instance) =>
       'id': instance.id,
       'name': instance.name,
       'tier': _$TalentTierEnumMap[instance.tier]!,
-      'portraitUrl': instance.portraitUrl,
-      'baseHypeMultiplier': instance.baseHypeMultiplier,
-      'scandalRiskFactor': instance.scandalRiskFactor,
+      'portrait_url': instance.portraitUrl,
+      'base_hype_multiplier': instance.baseHypeMultiplier,
+      'scandal_risk_factor': instance.scandalRiskFactor,
       'biography': instance.biography,
-      'signatureStyle': instance.signatureStyle,
-      'isActive': instance.isActive,
+      'signature_style': instance.signatureStyle,
+      'is_active': instance.isActive,
     };
 
 const _$TalentTierEnumMap = {
@@ -44,54 +44,61 @@ const _$TalentTierEnumMap = {
 
 _$RosterTalentImpl _$$RosterTalentImplFromJson(Map<String, dynamic> json) =>
     _$RosterTalentImpl(
-      talentId: json['talentId'] as String,
+      talentId: json['talent_id'] as String,
       name: json['name'] as String,
       tier: $enumDecode(_$TalentTierEnumMap, json['tier']),
-      portraitUrl: json['portraitUrl'] as String?,
-      baseHypeMultiplier: (json['baseHypeMultiplier'] as num).toDouble(),
-      scandalRiskFactor: (json['scandalRiskFactor'] as num?)?.toInt() ?? 0,
+      portraitUrl: json['portrait_url'] as String?,
+      baseHypeMultiplier:
+          (json['base_hype_multiplier'] as num?)?.toDouble() ?? 1.0,
+      scandalRiskFactor: (json['scandal_risk_factor'] as num?)?.toInt() ?? 0,
       biography: json['biography'] as String?,
-      acquiredAt: json['acquiredAt'] == null
+      signatureStyle: (json['signature_style'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const <String>[],
+      acquiredAt: json['acquired_at'] == null
           ? null
-          : DateTime.parse(json['acquiredAt'] as String),
-      isFavorite: json['isFavorite'] as bool? ?? false,
-      prestigeValue: (json['prestigeValue'] as num).toInt(),
+          : DateTime.parse(json['acquired_at'] as String),
+      acquisitionSource:
+          json['acquisition_source'] as String? ?? 'casting_call',
+      isFavorite: json['is_favorite'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$RosterTalentImplToJson(_$RosterTalentImpl instance) =>
     <String, dynamic>{
-      'talentId': instance.talentId,
+      'talent_id': instance.talentId,
       'name': instance.name,
       'tier': _$TalentTierEnumMap[instance.tier]!,
-      'portraitUrl': instance.portraitUrl,
-      'baseHypeMultiplier': instance.baseHypeMultiplier,
-      'scandalRiskFactor': instance.scandalRiskFactor,
+      'portrait_url': instance.portraitUrl,
+      'base_hype_multiplier': instance.baseHypeMultiplier,
+      'scandal_risk_factor': instance.scandalRiskFactor,
       'biography': instance.biography,
-      'acquiredAt': instance.acquiredAt?.toIso8601String(),
-      'isFavorite': instance.isFavorite,
-      'prestigeValue': instance.prestigeValue,
+      'signature_style': instance.signatureStyle,
+      'acquired_at': instance.acquiredAt?.toIso8601String(),
+      'acquisition_source': instance.acquisitionSource,
+      'is_favorite': instance.isFavorite,
     };
 
 _$PullResultImpl _$$PullResultImplFromJson(Map<String, dynamic> json) =>
     _$PullResultImpl(
-      talentId: json['talentId'] as String,
+      talentId: json['talent_id'] as String,
       name: json['name'] as String,
       tier: $enumDecode(_$TalentTierEnumMap, json['tier']),
-      portraitUrl: json['portraitUrl'] as String?,
-      isDupe: json['isDupe'] as bool,
-      prestigeValue: (json['prestigeValue'] as num?)?.toInt() ?? 0,
-      baseHypeMultiplier: (json['baseHypeMultiplier'] as num?)?.toDouble(),
+      isDupe: json['is_dupe'] as bool,
+      portraitUrl: json['portrait_url'] as String?,
+      prestigeValue: (json['prestige_value'] as num?)?.toInt() ?? 0,
+      baseHypeMultiplier: (json['base_hype_multiplier'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$$PullResultImplToJson(_$PullResultImpl instance) =>
     <String, dynamic>{
-      'talentId': instance.talentId,
+      'talent_id': instance.talentId,
       'name': instance.name,
       'tier': _$TalentTierEnumMap[instance.tier]!,
-      'portraitUrl': instance.portraitUrl,
-      'isDupe': instance.isDupe,
-      'prestigeValue': instance.prestigeValue,
-      'baseHypeMultiplier': instance.baseHypeMultiplier,
+      'is_dupe': instance.isDupe,
+      'portrait_url': instance.portraitUrl,
+      'prestige_value': instance.prestigeValue,
+      'base_hype_multiplier': instance.baseHypeMultiplier,
     };
 
 _$CastingResultImpl _$$CastingResultImplFromJson(Map<String, dynamic> json) =>
@@ -99,33 +106,34 @@ _$CastingResultImpl _$$CastingResultImplFromJson(Map<String, dynamic> json) =>
       pulls: (json['pulls'] as List<dynamic>)
           .map((e) => PullResult.fromJson(e as Map<String, dynamic>))
           .toList(),
-      luxeSpent: (json['luxeSpent'] as num?)?.toInt() ?? 0,
-      prestigeEarned: (json['prestigeEarned'] as num?)?.toInt() ?? 0,
+      luxeSpent: (json['luxe_spent'] as num?)?.toInt() ?? 0,
+      prestigeEarned: (json['prestige_earned'] as num?)?.toInt() ?? 0,
       message: json['message'] as String?,
     );
 
 Map<String, dynamic> _$$CastingResultImplToJson(_$CastingResultImpl instance) =>
     <String, dynamic>{
-      'pulls': instance.pulls,
-      'luxeSpent': instance.luxeSpent,
-      'prestigeEarned': instance.prestigeEarned,
+      'pulls': instance.pulls.map((e) => e.toJson()).toList(),
+      'luxe_spent': instance.luxeSpent,
+      'prestige_earned': instance.prestigeEarned,
       'message': instance.message,
     };
 
 _$PityStateImpl _$$PityStateImplFromJson(Map<String, dynamic> json) =>
     _$PityStateImpl(
-      bannerId: json['bannerId'] as String? ?? 'standard',
-      pullsSinceSovereign: (json['pullsSinceSovereign'] as num?)?.toInt() ?? 0,
-      totalPulls: (json['totalPulls'] as num?)?.toInt() ?? 0,
-      lastPullAt: json['lastPullAt'] == null
+      bannerId: json['banner_id'] as String? ?? 'standard',
+      pullsSinceSovereign:
+          (json['pulls_since_sovereign'] as num?)?.toInt() ?? 0,
+      totalPulls: (json['total_pulls'] as num?)?.toInt() ?? 0,
+      lastPullAt: json['last_pull_at'] == null
           ? null
-          : DateTime.parse(json['lastPullAt'] as String),
+          : DateTime.parse(json['last_pull_at'] as String),
     );
 
 Map<String, dynamic> _$$PityStateImplToJson(_$PityStateImpl instance) =>
     <String, dynamic>{
-      'bannerId': instance.bannerId,
-      'pullsSinceSovereign': instance.pullsSinceSovereign,
-      'totalPulls': instance.totalPulls,
-      'lastPullAt': instance.lastPullAt?.toIso8601String(),
+      'banner_id': instance.bannerId,
+      'pulls_since_sovereign': instance.pullsSinceSovereign,
+      'total_pulls': instance.totalPulls,
+      'last_pull_at': instance.lastPullAt?.toIso8601String(),
     };

@@ -61,7 +61,7 @@ class _DailyCheckInWidgetState extends ConsumerState<DailyCheckInWidget>
     if (playerId == null) return;
 
     try {
-      final response = await Supabase.instance.client
+      final PostgrestMap? response = await Supabase.instance.client
           .from(SupabaseConstants.tableDailyCheckIns)
           .select()
           .eq('player_id', playerId)
@@ -73,10 +73,7 @@ class _DailyCheckInWidgetState extends ConsumerState<DailyCheckInWidget>
             _state = CheckInState.fromJson(response);
           } else {
             _state = const CheckInState(
-              currentStreak: 0,
-              lastCheckIn: null,
-              totalCheckIns: 0,
-              longestStreak: 0,
+              
             );
           }
           _isLoading = false;
@@ -99,10 +96,10 @@ class _DailyCheckInWidgetState extends ConsumerState<DailyCheckInWidget>
     if (playerId == null) return;
 
     try {
-      final result = await Supabase.instance.client.rpc(
+      final Map<String, dynamic> result = await Supabase.instance.client.rpc<Map<String, dynamic>>(
         SupabaseConstants.fnRecordCheckIn,
         params: <String, dynamic>{'p_player_id': playerId},
-      ) as Map<String, dynamic>;
+      );
 
       final bool isNewDay = result['is_new_day'] as bool? ?? false;
       final int streak = result['streak'] as int? ?? 0;

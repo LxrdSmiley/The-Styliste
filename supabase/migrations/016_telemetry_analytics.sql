@@ -79,6 +79,7 @@ DECLARE
   v_reward TEXT;
   v_payload JSONB;
 BEGIN
+  PERFORM public.assert_self(p_player_id);
   -- Get or create check-in record
   SELECT * INTO v_record
   FROM daily_check_ins
@@ -296,6 +297,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
+  PERFORM public.assert_self(p_player_id);
   INSERT INTO fcm_tokens (player_id, token, platform, device_id)
   VALUES (p_player_id, p_token, p_platform, p_device_id)
   ON CONFLICT (player_id, token) DO UPDATE
@@ -478,3 +480,5 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION log_telemetry_event(UUID, TEXT, TEXT, JSONB, UUID, JSONB) TO authenticated;
+
+

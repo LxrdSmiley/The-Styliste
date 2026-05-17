@@ -6,7 +6,6 @@
 // double' crash loops in the ticker and any other double consumer.
 
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:json_annotation/json_annotation.dart';
 
 part 'brand.freezed.dart';
 part 'brand.g.dart';

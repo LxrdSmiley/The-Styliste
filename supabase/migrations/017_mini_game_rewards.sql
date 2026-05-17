@@ -21,6 +21,11 @@ DECLARE
     v_old_capital NUMERIC;
     v_new_capital NUMERIC;
 BEGIN
+    -- Authorization check
+    IF auth.uid() != p_player_id THEN
+        RAISE EXCEPTION 'UNAUTHORIZED: Reward injection blocked';
+    END IF;
+
     -- Validate player exists
     IF NOT EXISTS (SELECT 1 FROM public.players WHERE id = p_player_id) THEN
         RETURN jsonb_build_object(
@@ -94,6 +99,11 @@ AS $$
 DECLARE
     v_expires_at TIMESTAMPTZ;
 BEGIN
+    -- Authorization check
+    IF auth.uid() != p_player_id THEN
+        RAISE EXCEPTION 'UNAUTHORIZED: Reward injection blocked';
+    END IF;
+
     -- Validate player exists
     IF NOT EXISTS (SELECT 1 FROM public.players WHERE id = p_player_id) THEN
         RETURN jsonb_build_object(
@@ -138,52 +148,39 @@ GRANT EXECUTE ON FUNCTION public.apply_idle_multiplier(UUID, NUMERIC, INT) TO au
 -- RPC: reset_talent_stamina
 -- Resets a talent's stamina/morale to 100%
 -- =============================================================================
+DROP FUNCTION IF EXISTS public.reset_talent_stamina(UUID, UUID);
 CREATE OR REPLACE FUNCTION public.reset_talent_stamina(
     p_player_id UUID,
-    p_talent_id UUID
+    p_talent_id TEXT
 )
-RETURNS JSONB
+RETURNS JSON
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-    v_old_stamina INT;
-    v_talent_name TEXT;
+    v_updated_count INTEGER;
 BEGIN
-    -- Validate talent exists and belongs to player
-    SELECT stamina, t.name INTO v_old_stamina, v_talent_name
-    FROM public.player_talent_roster ptr
-    JOIN public.talent t ON t.id = ptr.talent_id
-    WHERE ptr.player_id = p_player_id
-      AND ptr.talent_id = p_talent_id;
+    PERFORM public.assert_self(p_player_id);
 
-    IF v_old_stamina IS NULL THEN
-        RETURN jsonb_build_object(
-            'success', false,
-            'error', 'Talent not found in player roster'
-        );
-    END IF;
-
-    -- Reset stamina to 100
-    UPDATE public.player_talent_roster
+    UPDATE public.player_roster
     SET stamina = 100,
         last_stamina_refresh = NOW()
     WHERE player_id = p_player_id
-      AND talent_id = p_talent_id;
+      AND talent_id::TEXT = p_talent_id;
 
-    RETURN jsonb_build_object(
-        'success', true,
-        'talent_id', p_talent_id,
-        'talent_name', v_talent_name,
-        'old_stamina', v_old_stamina,
-        'new_stamina', 100
-    );
+    GET DIAGNOSTICS v_updated_count = ROW_COUNT;
+
+    IF v_updated_count = 0 THEN
+        RETURN json_build_object('success', false, 'error', 'Talent not found');
+    END IF;
+
+    RETURN json_build_object('success', true, 'stamina', 100);
 END;
 $$;
 
 -- RLS: Only authenticated users can call for themselves
-GRANT EXECUTE ON FUNCTION public.reset_talent_stamina(UUID, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.reset_talent_stamina(UUID, TEXT) TO authenticated;
 
 -- =============================================================================
 -- RPC: apply_logistics_discount
@@ -202,6 +199,11 @@ AS $$
 DECLARE
     v_expires_at TIMESTAMPTZ;
 BEGIN
+    -- Authorization check
+    IF auth.uid() != p_player_id THEN
+        RAISE EXCEPTION 'UNAUTHORIZED: Reward injection blocked';
+    END IF;
+
     -- Validate player exists
     IF NOT EXISTS (SELECT 1 FROM public.players WHERE id = p_player_id) THEN
         RETURN jsonb_build_object(
@@ -250,6 +252,11 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
+    -- Authorization check
+    IF auth.uid() != p_player_id THEN
+        RAISE EXCEPTION 'UNAUTHORIZED: Reward injection blocked';
+    END IF;
+
     -- Validate player exists
     IF NOT EXISTS (SELECT 1 FROM public.players WHERE id = p_player_id) THEN
         RETURN jsonb_build_object(

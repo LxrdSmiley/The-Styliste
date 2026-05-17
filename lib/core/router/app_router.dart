@@ -7,34 +7,36 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../domain/models/design.dart';
+import '../../domain/models/player.dart';
 import '../../features/ar_tryon/screens/ar_tryon_screen.dart';
+import '../../features/archive/screens/archive_market_screen.dart';
+import '../../features/ascension/screens/hall_of_sovereigns_screen.dart';
 import '../../features/atelier/screens/atelier_screen.dart';
 import '../../features/atelier/screens/drop_preview_screen.dart';
+import '../../features/crisis/screens/kintsugi_repair_screen.dart';
+import '../../features/events/screens/events_screen.dart';
 import '../../features/feed/screens/feed_screen.dart';
-import '../../features/ascension/screens/hall_of_sovereigns_screen.dart';
+import '../../features/gala/screens/gala_runway_screen.dart';
+import '../../features/hq/providers/hq_provider.dart';
 import '../../features/hq/screens/hq_screen.dart';
+import '../../features/ledger/screens/bank_screen.dart';
+import '../../features/ledger/screens/equity_screen.dart';
 import '../../features/ledger/screens/ledger_screen.dart';
 import '../../features/maison/screens/district_map_screen.dart';
 import '../../features/maison/screens/maison_screen.dart';
 import '../../features/onboarding/screens/ascension_confirmation_screen.dart';
+import '../../features/onboarding/screens/aurelian_gate_screen.dart';
 import '../../features/onboarding/screens/avatar_customizer_screen.dart';
 import '../../features/onboarding/screens/brand_footprint_screen.dart';
 import '../../features/onboarding/screens/career_path_screen.dart';
-import '../../features/onboarding/screens/aurelian_gate_screen.dart';
 import '../../features/onboarding/screens/origin_script_screen.dart';
 import '../../features/onboarding/screens/sovereign_registry_screen.dart';
-import '../../features/store/screens/shop_screen.dart';
-import '../../features/talent/screens/casting_room_screen.dart';
-import '../../features/gala/screens/gala_runway_screen.dart';
-import '../../features/archive/screens/archive_market_screen.dart';
-import '../../features/crisis/screens/kintsugi_repair_screen.dart';
-import '../../domain/models/design.dart';
-import '../../domain/models/player.dart';
-import '../../features/hq/providers/hq_provider.dart';
-import '../../features/ledger/screens/bank_screen.dart';
-import '../../features/ledger/screens/equity_screen.dart';
+import '../../features/profile/screens/profile_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 import '../../features/store/screens/aurelian_storefront_screen.dart';
+import '../../features/store/screens/shop_screen.dart';
+import '../../features/talent/screens/casting_room_screen.dart';
 import '../../presentation/screens/main_shell.dart';
 
 abstract final class AppRouter {
@@ -45,7 +47,6 @@ abstract final class AppRouter {
   static const String onboardingBrandSelection = '/onboarding/brand-selection';
   static const String onboardingAvatarCustomiser = '/onboarding/avatar-customiser';
   static const String onboardingCareerPath = '/onboarding/career-path';
-  static const String onboardingSpecialization = '/onboarding/specialization';
   static const String onboardingWhatsNext = '/onboarding/whats-next';
 
   static const String hq = '/hq';
@@ -66,15 +67,12 @@ abstract final class AppRouter {
   
   // --- Directive H: Crisis Engine ---
   static const String crisisKintsugi = '/crisis/kintsugi';
-  static const String crisisStatus = '/crisis/status';
   
   // --- Directive I: Sovereign Talent ---
   static const String castingRoom = '/casting-room';
   
   // --- Directive J: Aurelian Gala ---
   static const String galaRunway = '/gala/runway';
-  static const String galaLeaderboard = '/gala/leaderboard';
-  static const String galaSubmit = '/gala/submit';
   
   // --- Directive K: The Archive ---
   static const String archiveMarket = '/archive/market';
@@ -225,6 +223,18 @@ abstract final class AppRouter {
         path: arTryon,
         builder: (BuildContext context, GoRouterState state) =>
             const ArTryOnScreen(),
+      ),
+
+      GoRoute(
+        path: events,
+        builder: (BuildContext context, GoRouterState state) =>
+            const EventsScreen(),
+      ),
+
+      GoRoute(
+        path: profile,
+        builder: (BuildContext context, GoRouterState state) =>
+            const ProfileScreen(),
       ),
 
       // --- District Map: Maison turf war (GDD v6) ---

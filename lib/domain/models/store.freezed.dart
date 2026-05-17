@@ -222,7 +222,8 @@ class __$$StoreImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$StoreImpl implements _Store {
   const _$StoreImpl(
       {required this.id,

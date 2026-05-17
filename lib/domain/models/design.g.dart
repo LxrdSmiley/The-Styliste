@@ -8,43 +8,44 @@ part of 'design.dart';
 
 _$DesignImpl _$$DesignImplFromJson(Map<String, dynamic> json) => _$DesignImpl(
       id: json['id'] as String,
-      playerId: json['playerId'] as String,
+      playerId: json['player_id'] as String,
       name: json['name'] as String,
-      sessionType: $enumDecode(_$DesignSessionTypeEnumMap, json['sessionType']),
+      sessionType:
+          $enumDecode(_$DesignSessionTypeEnumMap, json['session_type']),
       status: $enumDecodeNullable(_$DesignStatusEnumMap, json['status']) ??
           DesignStatus.draft,
-      hypoScore: (json['hypoScore'] as num?)?.toDouble() ?? 0.0,
-      isAlpha: json['isAlpha'] as bool? ?? false,
-      isDigitalTwin: json['isDigitalTwin'] as bool? ?? false,
-      dppRegistered: json['dppRegistered'] as bool? ?? false,
-      fabricData: json['fabricData'] as Map<String, dynamic>? ??
+      hypeScore: (json['hype_score'] as num?)?.toDouble() ?? 0.0,
+      isAlpha: json['is_alpha'] as bool? ?? false,
+      isDigitalTwin: json['is_digital_twin'] as bool? ?? false,
+      dppRegistered: json['dpp_registered'] as bool? ?? false,
+      fabricData: json['fabric_data'] as Map<String, dynamic>? ??
           const <String, dynamic>{},
-      sellPotential: (json['sellPotential'] as num?)?.toDouble() ?? 0.0,
-      culturalImpact: (json['culturalImpact'] as num?)?.toDouble() ?? 0.0,
-      createdAt: json['createdAt'] == null
+      sellPotential: (json['sell_potential'] as num?)?.toDouble() ?? 0.0,
+      culturalImpact: (json['cultural_impact'] as num?)?.toDouble() ?? 0.0,
+      createdAt: json['created_at'] == null
           ? null
-          : DateTime.parse(json['createdAt'] as String),
-      droppedAt: json['droppedAt'] == null
+          : DateTime.parse(json['created_at'] as String),
+      droppedAt: json['dropped_at'] == null
           ? null
-          : DateTime.parse(json['droppedAt'] as String),
+          : DateTime.parse(json['dropped_at'] as String),
     );
 
 Map<String, dynamic> _$$DesignImplToJson(_$DesignImpl instance) =>
     <String, dynamic>{
       'id': instance.id,
-      'playerId': instance.playerId,
+      'player_id': instance.playerId,
       'name': instance.name,
-      'sessionType': _$DesignSessionTypeEnumMap[instance.sessionType]!,
+      'session_type': _$DesignSessionTypeEnumMap[instance.sessionType]!,
       'status': _$DesignStatusEnumMap[instance.status]!,
-      'hypoScore': instance.hypoScore,
-      'isAlpha': instance.isAlpha,
-      'isDigitalTwin': instance.isDigitalTwin,
-      'dppRegistered': instance.dppRegistered,
-      'fabricData': instance.fabricData,
-      'sellPotential': instance.sellPotential,
-      'culturalImpact': instance.culturalImpact,
-      'createdAt': instance.createdAt?.toIso8601String(),
-      'droppedAt': instance.droppedAt?.toIso8601String(),
+      'hype_score': instance.hypeScore,
+      'is_alpha': instance.isAlpha,
+      'is_digital_twin': instance.isDigitalTwin,
+      'dpp_registered': instance.dppRegistered,
+      'fabric_data': instance.fabricData,
+      'sell_potential': instance.sellPotential,
+      'cultural_impact': instance.culturalImpact,
+      'created_at': instance.createdAt?.toIso8601String(),
+      'dropped_at': instance.droppedAt?.toIso8601String(),
     };
 
 const _$DesignSessionTypeEnumMap = {

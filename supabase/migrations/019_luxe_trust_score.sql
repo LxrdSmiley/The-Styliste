@@ -57,6 +57,7 @@ DECLARE
   v_next_milestone INT;
   v_hours_since_last FLOAT;
 BEGIN
+  PERFORM public.assert_self(p_player_id);
   -- Auth guard
   IF auth.uid() != p_player_id THEN
     RAISE EXCEPTION 'Unauthorized';
@@ -215,12 +216,13 @@ DECLARE
   v_current_tarnish INT;
   v_kintsugi_level INT;
 BEGIN
+  PERFORM public.assert_self(p_player_id);
   IF auth.uid() != p_player_id THEN
     RAISE EXCEPTION 'Unauthorized';
   END IF;
 
   -- Get current state
-  SELECT total_revenue, tarnish_level, kintsugi_level
+  SELECT total_revenue, current_tarnish, kintsugi_level
   INTO v_current_capital, v_current_tarnish, v_kintsugi_level
   FROM public.brand_state
   WHERE player_id = p_player_id;
@@ -242,7 +244,7 @@ BEGIN
   UPDATE public.brand_state
   SET
     total_revenue = total_revenue - v_repair_cost,
-    tarnish_level = 0,
+    current_tarnish = 0,
     kintsugi_level = COALESCE(kintsugi_level, 0) + 1
   WHERE player_id = p_player_id
   RETURNING kintsugi_level INTO v_kintsugi_level;
@@ -264,3 +266,5 @@ COMMENT ON COLUMN public.players.luxe_trust_score IS
 
 COMMENT ON FUNCTION increment_luxe_trust IS
   'Safely increments luxe_trust_score by p_amount, capped at 100.';
+
+

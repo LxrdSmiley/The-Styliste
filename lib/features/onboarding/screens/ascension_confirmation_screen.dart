@@ -11,7 +11,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/constants/supabase_constants.dart';
 import '../../../core/providers/onboarding_provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
@@ -96,10 +95,10 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
         params: <String, dynamic>{
           'p_user_id': userId,
           'p_brand_name': state.brandName,
-          'p_career_path': state.selectedPath!.name,
-          'p_city': state.selectedCity!.name,
-          'p_market_tier': state.selectedTier!.name,
-          'p_avatar_config': state.avatarConfig?.toJson() ?? {},
+          'p_career_path': state.selectedPath!.apiValue,
+          'p_city': state.selectedCity!.apiValue,
+          'p_market_tier': state.selectedTier!.apiValue,
+          'p_avatar_config': state.avatarConfig?.toJson() ?? <String, dynamic>{},
         },
       );
       
@@ -214,8 +213,8 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
   }
 
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24.0, 32.0, 24.0, 0.0),
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(24.0, 32.0, 24.0, 0.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -229,7 +228,7 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
               color: AurelianPalette.textTertiary,
             ),
           ),
-          const SizedBox(height: 4.0),
+          SizedBox(height: 4.0),
           Text(
             'CONFIRMATION',
             style: TextStyle(
@@ -240,7 +239,7 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
               color: AurelianPalette.textPrimary,
             ),
           ),
-          const SizedBox(height: 12.0),
+          SizedBox(height: 12.0),
           Text(
             'Review your Sovereign Dossier before sealing your destiny.',
             style: TextStyle(
@@ -264,10 +263,10 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 24.0),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: <Color>[
                 AurelianPalette.champagneGold,
-                const Color(0xFFE8D4B8),
+                Color(0xFFE8D4B8),
               ],
             ),
             borderRadius: BorderRadius.circular(20.0),
@@ -337,7 +336,6 @@ class _SovereignDossier extends StatelessWidget {
         borderRadius: BorderRadius.circular(24.0),
         border: Border.all(
           color: AurelianPalette.champagneGold,
-          width: 1.0,
         ),
         boxShadow: <BoxShadow>[
           BoxShadow(
@@ -360,7 +358,7 @@ class _SovereignDossier extends StatelessWidget {
                   color: AurelianPalette.champagneGold.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                child: Text(
+                child: const Text(
                   'SOVEREIGN DOSSIER',
                   style: TextStyle(
                     fontFamily: 'SpaceGrotesk',
@@ -499,7 +497,7 @@ class _DossierField extends StatelessWidget {
       children: <Widget>[
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'SpaceGrotesk',
             fontSize: 9.0,
             fontWeight: FontWeight.w600,
@@ -567,7 +565,6 @@ class _WhiteOutOverlay extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           gradient: RadialGradient(
-            center: Alignment.center,
             radius: radius,
             colors: <Color>[
               centerColor,

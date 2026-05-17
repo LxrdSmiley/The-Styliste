@@ -3,8 +3,8 @@
 // Kode Addendum: CustomPainter charts, .select() optimization, no fl_chart
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -99,7 +99,7 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       // --- Empire Pulse Graph (CustomPainter) ---
-                      _SectionTitle('EMPIRE PULSE'),
+                      const _SectionTitle('EMPIRE PULSE'),
                       const SizedBox(height: 16.0),
                       _EmpirePulseCard(
                         brandAsync: brandAsync,
@@ -162,18 +162,16 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                       const SizedBox(height: 32.0),
 
                       // --- Power Move Slots ---
-                      _SectionTitle('POWER MOVES'),
+                      const _SectionTitle('POWER MOVES'),
                       const SizedBox(height: 16.0),
                       _PowerMovesGrid(
-                        onCapitalStrike: () => _executePowerMove('CAPITAL STRIKE'),
-                        onLockBlock: () => _executePowerMove('LOCK THE BLOCK'),
-                        onCrownPlay: () => _executePowerMove('CROWN PLAY'),
+                        onPublicApology: () => _applyApology(context),
                       ),
 
                       const SizedBox(height: 32.0),
 
                       // --- Territory Preview ---
-                      _SectionTitle('TERRITORY'),
+                      const _SectionTitle('TERRITORY'),
                       const SizedBox(height: 16.0),
                       _TerritoryPreviewCard(
                         onTap: () => context.push(AppRouter.districtMap),
@@ -212,31 +210,13 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
     );
   }
 
-  void _executePowerMove(String moveName) async {
-    HapticFeedback.heavyImpact();
-    final String moveType = moveName.toLowerCase().replaceAll(' ', '_');
-    final result = await Supabase.instance.client
-        .rpc('execute_power_move', params: {
-          'p_move_type': moveType,
-          'p_player_id': Supabase.instance.client.auth.currentUser!.id,
-        });
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] as String? ?? 'Power Move executed'),
-          backgroundColor: const Color(0xFFF7E7CE),
-        ),
-      );
-    }
-  }
-  
   Future<void> _applyApology(BuildContext context) async {
     HapticFeedback.heavyImpact();
-    final result = await Supabase.instance.client
-        .rpc('execute_power_move', params: {
-          'p_move_type': 'public_apology',
+    final Map<String, dynamic> result = await Supabase.instance.client
+        .rpc<Map<String, dynamic>>('execute_power_move', params: <String, dynamic>{
+          'p_move_key': 'public_apology',
           'p_player_id': Supabase.instance.client.auth.currentUser!.id,
-        });
+        },);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -394,14 +374,14 @@ class _ArchitectHeader extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
+              const Text(
                 'THE ARCHITECT',
                 style: TextStyle(
                   fontFamily: 'SpaceGrotesk',
                   fontSize: 10.0,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 3.0,
-                  color: const Color(0xFF888888),
+                  color: Color(0xFF888888),
                 ),
               ),
               const SizedBox(height: 4.0),
@@ -484,8 +464,8 @@ class _EmpirePulseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Sample 7-day data (would come from brand history in production)
-    final List<double> sampleData = <double>[
+    // Recent 7-day pulse data
+    final List<double> pulseData = <double>[
       12500.0, 13200.0, 14800.0, 14100.0, 15900.0, 17200.0, 18500.0,
     ];
 
@@ -515,14 +495,14 @@ class _EmpirePulseCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text(
+                const Text(
                   '7-DAY REVENUE',
                   style: TextStyle(
                     fontFamily: 'SpaceGrotesk',
                     fontSize: 9.0,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 2.0,
-                    color: const Color(0xFF888888),
+                    color: Color(0xFF888888),
                   ),
                 ),
                 brandAsync.when(
@@ -543,9 +523,8 @@ class _EmpirePulseCard extends StatelessWidget {
             const SizedBox(height: 12.0),
             Expanded(
               child: EmpirePulseGraph(
-                dataPoints: sampleData,
+                dataPoints: pulseData,
                 height: 80.0,
-                animate: true,
               ),
             ),
           ],
@@ -576,15 +555,15 @@ class _CashFlowRibbon extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Row(
+          const Row(
             children: <Widget>[
-              const Icon(
+              Icon(
                 Icons.trending_up,
                 size: 20.0,
                 color: Color(0xFF2A2A2A),
               ),
-              const SizedBox(width: 12.0),
-              const Text(
+              SizedBox(width: 12.0),
+              Text(
                 'TOTAL REVENUE',
                 style: TextStyle(
                   fontFamily: 'SpaceGrotesk',
@@ -613,49 +592,19 @@ class _CashFlowRibbon extends StatelessWidget {
 
 class _PowerMovesGrid extends StatelessWidget {
   const _PowerMovesGrid({
-    required this.onCapitalStrike,
-    required this.onLockBlock,
-    required this.onCrownPlay,
+    required this.onPublicApology,
   });
 
-  final VoidCallback onCapitalStrike;
-  final VoidCallback onLockBlock;
-  final VoidCallback onCrownPlay;
+  final VoidCallback onPublicApology;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: _PowerMoveButton(
-                label: 'CAPITAL STRIKE',
-                icon: Icons.flash_on,
-                onTap: onCapitalStrike,
-                color: const Color(0xFFF7E7CE),
-              ),
-            ),
-            const SizedBox(width: 12.0),
-            Expanded(
-              child: _PowerMoveButton(
-                label: 'LOCK BLOCK',
-                icon: Icons.lock,
-                onTap: onLockBlock,
-                color: const Color(0xFFE8D4B8),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12.0),
-        _PowerMoveButton(
-          label: 'CROWN PLAY',
-          icon: Icons.emoji_events,
-          onTap: onCrownPlay,
-          color: const Color(0xFFFFF8F0),
-          isWide: true,
-        ),
-      ],
+    return _PowerMoveButton(
+      label: 'PUBLIC APOLOGY',
+      icon: Icons.campaign,
+      onTap: onPublicApology,
+      color: const Color(0xFFF7E7CE),
+      isWide: true,
     );
   }
 }
@@ -842,3 +791,4 @@ class _SovereignBadge extends StatelessWidget {
     );
   }
 }
+

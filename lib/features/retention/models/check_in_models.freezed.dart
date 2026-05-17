@@ -170,7 +170,8 @@ class __$$CheckInStateImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$CheckInStateImpl extends _CheckInState {
   const _$CheckInStateImpl(
       {this.currentStreak = 0,
@@ -416,7 +417,8 @@ class __$$CheckInRewardImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$CheckInRewardImpl implements _CheckInReward {
   const _$CheckInRewardImpl(
       {required this.day,

@@ -137,12 +137,12 @@ abstract final class AurelianTheme {
         error: AurelianPalette.danger,
         onError: AurelianPalette.ivory,
       ),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AurelianPalette.ivory,
         foregroundColor: AurelianPalette.textPrimary,
         elevation: 0.0,
         centerTitle: true,
-        systemOverlayStyle: const SystemUiOverlayStyle(
+        systemOverlayStyle: SystemUiOverlayStyle(
           statusBarBrightness: Brightness.light,
           statusBarIconBrightness: Brightness.dark,
           statusBarColor: Colors.transparent,

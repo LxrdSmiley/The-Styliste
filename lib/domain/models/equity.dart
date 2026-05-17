@@ -15,6 +15,7 @@ enum ShareType {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class BrandEquity with _$BrandEquity {
   const factory BrandEquity({
     required String brandId,
@@ -31,6 +32,7 @@ class BrandEquity with _$BrandEquity {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class EquityPosition with _$EquityPosition {
   const factory EquityPosition({
     required String id,

@@ -27,6 +27,12 @@ DECLARE
   v_inventory BIGINT;
   v_revenue NUMERIC;
 BEGIN
+  PERFORM public.assert_self(p_player_id);
+  -- Authorization check
+  IF auth.uid() != p_player_id THEN
+    RAISE EXCEPTION 'UNAUTHORIZED';
+  END IF;
+
   -- Get current inventory
   SELECT current_inventory_value, total_revenue 
   INTO v_inventory, v_revenue
@@ -69,6 +75,12 @@ DECLARE
   v_cost BIGINT;
   v_new_capacity BIGINT;
 BEGIN
+  PERFORM public.assert_self(p_player_id);
+  -- Authorization check
+  IF auth.uid() != p_player_id THEN
+    RAISE EXCEPTION 'UNAUTHORIZED';
+  END IF;
+
   -- Get current stats
   SELECT logistics_level, warehouse_capacity, total_revenue
   INTO v_current_level, v_current_capacity, v_revenue
@@ -133,6 +145,11 @@ DECLARE
   v_new_inventory BIGINT;
   v_actual_add BIGINT;
 BEGIN
+  -- Authorization check
+  IF auth.uid() != p_player_id THEN
+    RAISE EXCEPTION 'UNAUTHORIZED';
+  END IF;
+
   SELECT current_inventory_value, warehouse_capacity
   INTO v_current, v_capacity
   FROM brand_state
@@ -184,6 +201,12 @@ DECLARE
   v_generated_amount BIGINT;
   v_add_result RECORD;
 BEGIN
+  PERFORM public.assert_self(p_player_id);
+  -- Authorization check
+  IF auth.uid() != p_player_id THEN
+    RAISE EXCEPTION 'UNAUTHORIZED';
+  END IF;
+
   -- Get player's idle rate and last active time
   SELECT idle_revenue_per_hour, last_active_at
   INTO v_idle_rate, v_last_active
@@ -262,3 +285,6 @@ COMMENT ON FUNCTION add_inventory IS 'Add generated revenue to inventory (capped
 COMMENT ON FUNCTION process_idle_income IS 'Atomic offline catch-up: calculates elapsed time, generates revenue, adds to inventory. O(1) complexity.';
 
 COMMENT ON TABLE brand_state IS 'Extended with supply chain fields: warehouse_capacity, current_inventory_value, logistics_level';
+
+
+

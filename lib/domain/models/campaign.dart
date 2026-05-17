@@ -31,6 +31,7 @@ enum CampaignStatus {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Campaign with _$Campaign {
   const factory Campaign({
     required String id,

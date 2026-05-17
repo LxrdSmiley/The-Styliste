@@ -41,7 +41,7 @@ interface StoreRow {
 
 interface BrandStateRow {
   total_revenue: number;
-  revenue_idle: number;
+  idle_revenue_per_hour: number;
 }
 
 // Safely coerce a value to a 4-decimal float — prevents JS trailing decimals
@@ -126,7 +126,7 @@ async function handleUpgradeStore(
   // Fetch store and brand_state in parallel.
   const [storeResult, brandResult] = await Promise.all([
     admin.from("stores").select("id, player_id, tier, revenue_per_hour").eq("id", storeId).single<StoreRow>(),
-    admin.from("brand_state").select("total_revenue, revenue_idle").eq("player_id", playerId).single<BrandStateRow>(),
+    admin.from("brand_state").select("total_revenue, idle_revenue_per_hour").eq("player_id", playerId).single<BrandStateRow>(),
   ]);
 
   if (storeResult.error || !storeResult.data) {
@@ -184,7 +184,7 @@ async function handleUpgradeStore(
     throw new Error(`stores update failed: ${storeUpdateError.message}`);
   }
 
-  // Recalculate revenue_idle = sum of all store revenue_per_hour for player.
+  // Recalculate idle_revenue_per_hour = sum of all store revenue_per_hour for player.
   const { data: allStores } = await admin
     .from("stores")
     .select("revenue_per_hour")
@@ -198,7 +198,7 @@ async function handleUpgradeStore(
     .from("brand_state")
     .update({
       total_revenue: newTotalRevenue,
-      revenue_idle: newRevenueIdle,
+      idle_revenue_per_hour: newRevenueIdle,
       updated_at: new Date().toISOString(),
     })
     .eq("player_id", playerId);
@@ -213,8 +213,9 @@ async function handleUpgradeStore(
       new_tier: newTier,
       new_revenue_per_hour: newRevenuePerHour,
       new_total_revenue: newTotalRevenue,
-      new_revenue_idle: newRevenueIdle,
+      new_idle_revenue_per_hour: newRevenueIdle,
     }),
     { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
   );
 }
+

@@ -8,9 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../models/talent.dart';
 import '../providers/casting_provider.dart';
@@ -81,7 +79,7 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
     await _lightController.forward();
     
     // Execute the actual casting pull
-    await ref.read(castingProvider.notifier).executePull(isTenPull: false);
+    await ref.read(castingProvider.notifier).executePull();
     
     // Dossier slides in
     await _dossierController.forward();
@@ -275,7 +273,7 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
         if (state.isRevealing)
           TextButton(
             onPressed: () => ref.read(castingProvider.notifier).skipReveal(),
-            child: Text(
+            child: const Text(
               'SKIP',
               style: TextStyle(
                 fontFamily: 'SpaceGrotesk',
@@ -311,13 +309,13 @@ class _StudioBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: <Color>[
-            const Color(0xFF3A3A3A),  // Lighter concrete at top
-            const Color(0xFF1A1A1A),  // Darker at bottom
+            Color(0xFF3A3A3A),  // Lighter concrete at top
+            Color(0xFF1A1A1A),  // Darker at bottom
           ],
         ),
       ),
@@ -353,7 +351,7 @@ class _ConcreteTexturePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
 }
 
 // =============================================================================
@@ -517,7 +515,7 @@ class _CastingHeader extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Column(
+          const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(

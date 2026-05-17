@@ -183,7 +183,8 @@ class __$$BrandEquityImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$BrandEquityImpl implements _BrandEquity {
   const _$BrandEquityImpl(
       {required this.brandId,
@@ -467,7 +468,8 @@ class __$$EquityPositionImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$EquityPositionImpl implements _EquityPosition {
   const _$EquityPositionImpl(
       {required this.id,

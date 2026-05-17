@@ -9,19 +9,16 @@
 // If player doesn't open for 3 days, stop pinging to avoid spam blocks
 
 import 'dart:io';
-import 'dart:math' show max;
 
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../constants/supabase_constants.dart';
 import 'supabase_service.dart';
 import 'telemetry_service.dart';
 
@@ -72,10 +69,7 @@ class NotificationService with WidgetsBindingObserver {
   Future<void> _requestPermissions() async {
     // iOS permission
     await _fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      provisional: false,
+      
     );
 
     // Android permission (handled in manifest)
@@ -127,23 +121,17 @@ class NotificationService with WidgetsBindingObserver {
         'Daily Check-In',
         description: 'Daily streak reminders and check-in rewards',
         importance: Importance.high,
-        playSound: true,
-        enableVibration: true,
       ),
       const AndroidNotificationChannel(
         _channelTrendTsunami,
         'Trend Tsunami',
         description: '48-hour trend window alerts and market opportunities',
         importance: Importance.max,
-        playSound: true,
-        enableVibration: true,
-        showBadge: true,
       ),
       const AndroidNotificationChannel(
         _channelResaleAlerts,
         'Resale Alerts',
         description: 'This Just Listed alerts and marketplace activity',
-        importance: Importance.defaultImportance,
       ),
       const AndroidNotificationChannel(
         _channelRivalAlerts,
@@ -249,14 +237,13 @@ class NotificationService with WidgetsBindingObserver {
         ? 'Three days away. The fashion world moves fast — do not let your moment pass.'
         : _getCheckInMessage(streakDay);
 
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       _channelDailyCheckIn,
       'Daily Check-In',
       channelDescription: 'Daily streak reminders',
       importance: Importance.high,
       priority: Priority.high,
-      showWhen: true,
-      styleInformation: const BigTextStyleInformation(''),
+      styleInformation: BigTextStyleInformation(''),
     );
 
     const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
@@ -265,7 +252,7 @@ class NotificationService with WidgetsBindingObserver {
       presentSound: true,
     );
 
-    final NotificationDetails details = NotificationDetails(
+    const NotificationDetails details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
@@ -404,7 +391,7 @@ class NotificationService with WidgetsBindingObserver {
     required Duration timeUntil,
   }) async {
     // This would normally come from FCM, but can be triggered locally for testing
-    final String title = '🌊 Trend Tsunami Incoming';
+    const String title = '🌊 Trend Tsunami Incoming';
     final String body = 
         'The "$theme" wave arrives in ${timeUntil.inHours}h. Prepare your designs.';
 
@@ -523,7 +510,7 @@ class NotificationService with WidgetsBindingObserver {
 
   Future<int> _getCurrentStreak(String playerId) async {
     final SupabaseClient supabase = Supabase.instance.client;
-    final response = await supabase
+    final PostgrestMap? response = await supabase
         .from('daily_check_ins')
         .select('current_streak')
         .eq('player_id', playerId)
@@ -538,7 +525,7 @@ class NotificationService with WidgetsBindingObserver {
 
     final String platform = Platform.isIOS ? 'ios' : 'android';
 
-    await SupabaseService.client.rpc(
+    await SupabaseService.client.rpc<void>(
       'register_fcm_token',
       params: <String, dynamic>{
         'p_player_id': playerId,

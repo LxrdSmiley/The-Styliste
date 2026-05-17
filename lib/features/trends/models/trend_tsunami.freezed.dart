@@ -196,7 +196,8 @@ class __$$TrendTsunamiImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$TrendTsunamiImpl extends _TrendTsunami {
   const _$TrendTsunamiImpl(
       {required this.id,

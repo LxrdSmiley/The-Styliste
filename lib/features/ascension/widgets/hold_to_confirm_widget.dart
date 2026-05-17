@@ -29,8 +29,7 @@ typedef OnHoldProgress = void Function(double progress);
 /// ```
 class HoldToConfirmWidget extends StatefulWidget {
   const HoldToConfirmWidget({
-    super.key,
-    required this.label,
+    required this.label, super.key,
     this.subLabel,
     this.onComplete,
     this.onCancel,

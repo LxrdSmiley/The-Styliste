@@ -193,7 +193,8 @@ class __$$MaisonImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$MaisonImpl implements _Maison {
   const _$MaisonImpl(
       {required this.id,
@@ -460,7 +461,8 @@ class __$$MaisonMemberImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$MaisonMemberImpl implements _MaisonMember {
   const _$MaisonMemberImpl(
       {required this.maisonId,

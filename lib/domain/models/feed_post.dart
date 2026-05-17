@@ -18,6 +18,7 @@ class _SafeDouble implements JsonConverter<double, Object?> {
 }
 
 @freezed
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class FeedPost with _$FeedPost {
   const factory FeedPost({
     required String id,

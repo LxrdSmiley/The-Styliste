@@ -170,7 +170,8 @@ class __$$SupplyChainStateImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$SupplyChainStateImpl extends _SupplyChainState {
   const _$SupplyChainStateImpl(
       {this.warehouseCapacity = 5000,
@@ -398,7 +399,8 @@ class __$$LiquidationResultImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$LiquidationResultImpl extends _LiquidationResult {
   const _$LiquidationResultImpl(
       {this.liquidatedAmount = 0, this.newInventory = 0, this.newRevenue = 0.0})
@@ -617,7 +619,8 @@ class __$$LogisticsUpgradeImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$LogisticsUpgradeImpl extends _LogisticsUpgrade {
   const _$LogisticsUpgradeImpl(
       {this.success = false,

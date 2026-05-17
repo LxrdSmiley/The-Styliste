@@ -237,7 +237,8 @@ class __$$SupplierImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$SupplierImpl implements _Supplier {
   const _$SupplierImpl(
       {required this.id,
@@ -556,7 +557,8 @@ class __$$SupplyChainContractImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$SupplyChainContractImpl implements _SupplyChainContract {
   const _$SupplyChainContractImpl(
       {required this.id,
