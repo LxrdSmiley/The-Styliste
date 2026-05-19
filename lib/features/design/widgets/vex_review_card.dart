@@ -11,7 +11,7 @@ import '../../../core/theme/aurelian_theme.dart';
 import '../models/vex_review.dart';
 
 /// The Vex Review Card — editorial critique overlay
-/// 
+///
 /// Displays procedural review with:
 /// - Ivory container with champagne gold 1px border
 /// - Soft expansive shadow
@@ -21,7 +21,8 @@ import '../models/vex_review.dart';
 /// - Rotating Sovereign Seal (top-right, only for Sovereign verdict)
 class VexReviewCard extends StatelessWidget {
   const VexReviewCard({
-    required this.review, super.key,
+    required this.review,
+    super.key,
     this.onDismiss,
     this.onShare,
   });
@@ -30,7 +31,6 @@ class VexReviewCard extends StatelessWidget {
   final VoidCallback? onDismiss;
   final VoidCallback? onShare;
 
-  static const Duration _animationDuration = Duration(milliseconds: 600);
   static const Duration _staggerDelay = Duration(milliseconds: 100);
 
   @override
@@ -118,7 +118,8 @@ class VexReviewCard extends StatelessWidget {
 
                     // --- Divider ---
                     Divider(
-                      color: AurelianPalette.champagneGold.withValues(alpha: 0.3),
+                      color:
+                          AurelianPalette.champagneGold.withValues(alpha: 0.3),
                       thickness: 1.0,
                     )
                         .animate(delay: _staggerDelay * 4)
@@ -309,7 +310,8 @@ class VexReviewCard extends StatelessWidget {
           ),
           if (review.referencesTsunami)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
               decoration: BoxDecoration(
                 color: AurelianPalette.champagneGold.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6.0),
@@ -349,7 +351,8 @@ class VexReviewCard extends StatelessWidget {
             backgroundColor: AurelianPalette.champagneGold,
             foregroundColor: AurelianPalette.textPrimary,
             elevation: 0.0,
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
           ),
           child: const Text(
             'ACCEPT',
@@ -442,7 +445,11 @@ class _SealPainter extends CustomPainter {
     canvas.drawPath(octagon, paint);
 
     // Center dot
-    canvas.drawCircle(center, 3.0, Paint()..color = AurelianPalette.champagneGold);
+    canvas.drawCircle(
+      center,
+      3.0,
+      Paint()..color = AurelianPalette.champagneGold,
+    );
   }
 
   @override

@@ -2,6 +2,8 @@
 // GDD §5.7 — Mogul Path: Corporate warfare, hostile takeovers, stock price
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show FunctionResponse, Session;
 
 import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/brand.dart';
@@ -20,8 +22,8 @@ class EquityState {
     this.activeTakeover,
   });
 
-  final double stockPrice;      // Derived from Hype Score * 1.5
-  final double marketShare;     // Percentage of global market
+  final double stockPrice; // Derived from Hype Score * 1.5
+  final double marketShare; // Percentage of global market
   final bool isLoading;
   final String? errorMessage;
   final TakeoverState? activeTakeover;
@@ -40,9 +42,8 @@ class EquityState {
       marketShare: marketShare ?? this.marketShare,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-      activeTakeover: clearTakeover
-          ? null
-          : (activeTakeover ?? this.activeTakeover),
+      activeTakeover:
+          clearTakeover ? null : (activeTakeover ?? this.activeTakeover),
     );
   }
 }
@@ -59,8 +60,8 @@ class TakeoverState {
   final String targetBrandId;
   final String targetName;
   final double targetStockPrice;
-  final double ownershipPct;  // 0-100
-  final int round;            // 1-5
+  final double ownershipPct; // 0-100
+  final int round; // 1-5
 }
 
 // =============================================================================
@@ -89,7 +90,7 @@ class EquityNotifier extends StateNotifier<EquityState> {
         targetBrandId: targetBrandId,
         targetName: targetName,
         targetStockPrice: targetStockPrice,
-        ownershipPct: 50.0,  // Starts at 50% (tug-of-war)
+        ownershipPct: 50.0, // Starts at 50% (tug-of-war)
         round: 1,
       ),
     );
@@ -116,7 +117,9 @@ class EquityNotifier extends StateNotifier<EquityState> {
   }
 
   /// Apply Hostile Takeover result: inject 5000 Capital if 100% ownership
-  Future<Map<String, dynamic>> applyTakeoverResult({required double finalPct}) async {
+  Future<Map<String, dynamic>> applyTakeoverResult({
+    required double finalPct,
+  }) async {
     if (finalPct != 100.0) {
       return <String, dynamic>{
         'success': false,
@@ -127,7 +130,7 @@ class EquityNotifier extends StateNotifier<EquityState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      final session = SupabaseService.client.auth.currentSession;
+      final Session? session = SupabaseService.client.auth.currentSession;
       if (session == null) {
         state = state.copyWith(isLoading: false);
         return <String, dynamic>{
@@ -136,7 +139,8 @@ class EquityNotifier extends StateNotifier<EquityState> {
         };
       }
 
-      final response = await SupabaseService.client.functions.invoke(
+      final FunctionResponse response =
+          await SupabaseService.client.functions.invoke(
         'claim-mini-game-reward',
         body: <String, dynamic>{
           'game_key': 'hostile_takeover',
@@ -147,7 +151,7 @@ class EquityNotifier extends StateNotifier<EquityState> {
         },
       );
       final Map<String, dynamic> result =
-          Map<String, dynamic>.from(response.data as Map);
+          Map<String, dynamic>.from(response.data as Map<String, dynamic>);
 
       state = state.copyWith(isLoading: false);
       return result;

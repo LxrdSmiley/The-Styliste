@@ -5,7 +5,7 @@
 import 'package:flutter/material.dart';
 
 /// Golden Hour palette extensions for HQ Dashboard
-/// 
+///
 /// The penthouse environment evolves with Brand Rank:
 /// - Higher floors, bigger windows, richer materials as rank increases
 /// - Warm champagne-gold sunlight streaming through floor-to-ceiling windows
@@ -14,7 +14,7 @@ class AurelianHQTheme {
   const AurelianHQTheme._();
 
   // --- Golden Hour Gradients ---
-  
+
   /// Main penthouse background: warm sunlight gradient
   static const LinearGradient penthouseGradient = LinearGradient(
     begin: Alignment.topLeft,
@@ -59,7 +59,7 @@ class AurelianHQTheme {
   );
 
   // --- Brand Heat Meter Gradients ---
-  
+
   /// 0-100 brand heat gradient: cool-grey → champagne-gold
   static LinearGradient brandHeatGradient(double heatPercent) {
     return LinearGradient(
@@ -74,24 +74,24 @@ class AurelianHQTheme {
   }
 
   // --- Surface Colors ---
-  
+
   /// Ivory marble surface
   static const Color marbleSurface = Color(0xFFFAF7F0);
-  
+
   /// Richer marble for higher ranks
   static const Color marblePremium = Color(0xFFF5F0E8);
-  
+
   /// Glass reflection tint
   static const Color glassTint = Color(0x14F7E7CE); // 8% champagne
-  
+
   /// Soft rose accent
   static const Color roseAccent = Color(0xFFFFB7C5);
-  
+
   /// Obsidian crack color (for tarnish state 0-25)
   static const Color obsidianCrack = Color(0xFF1A1A1A);
 
   // --- Typography ---
-  
+
   /// Rank display text style
   static TextStyle rankStyle(int rank) {
     return TextStyle(
@@ -105,7 +105,6 @@ class AurelianHQTheme {
 
   /// Penthouse address text ("Floor 47, Manhattan")
   static TextStyle penthouseAddress(int rank) {
-    final int floor = (rank / 2).clamp(1, 100).toInt();
     return const TextStyle(
       fontFamily: 'SpaceGrotesk',
       fontSize: 10.0,
@@ -116,18 +115,18 @@ class AurelianHQTheme {
   }
 
   // --- Rank-Based Visual Evolution ---
-  
+
   /// Window size factor based on rank (0.5 = small, 1.0 = penthouse)
   static double windowScale(int rank) {
     return 0.5 + ((rank / 100.0) * 0.5);
   }
-  
+
   /// Floor height visualization
   static String floorLabel(int rank) {
     final int floor = ((rank / 100.0) * 99 + 1).toInt();
     return 'F$floor';
   }
-  
+
   /// Material richness tier
   static MaterialTier materialTier(int rank) {
     if (rank >= 80) return MaterialTier.alabaster;
@@ -139,9 +138,9 @@ class AurelianHQTheme {
 
 /// Material richness tiers for HQ evolution
 enum MaterialTier {
-  concrete,  // Ranks 1-24: Startup studio
-  glass,     // Ranks 25-49: First proper office
-  marble,    // Ranks 50-79: Premium penthouse
+  concrete, // Ranks 1-24: Startup studio
+  glass, // Ranks 25-49: First proper office
+  marble, // Ranks 50-79: Premium penthouse
   alabaster, // Ranks 80-100: Sovereign suite
 }
 
@@ -158,7 +157,7 @@ extension MaterialTierExtension on MaterialTier {
         return 'The Sovereign Suite';
     }
   }
-  
+
   Color get surfaceColor {
     switch (this) {
       case MaterialTier.concrete:
@@ -175,10 +174,10 @@ extension MaterialTierExtension on MaterialTier {
 
 /// Brand heat states with visual treatments
 enum BrandHeatState {
-  cold,      // 0-25: Obsidian cracks
-  cool,      // 26-50: Grey tones
-  warm,      // 51-75: Champagne emergence
-  iconic,    // 76-100: Gold pulse
+  cold, // 0-25: Obsidian cracks
+  cool, // 26-50: Grey tones
+  warm, // 51-75: Champagne emergence
+  iconic, // 76-100: Gold pulse
 }
 
 extension BrandHeatStateExtension on BrandHeatState {
@@ -188,10 +187,10 @@ extension BrandHeatStateExtension on BrandHeatState {
     if (percent <= 75) return BrandHeatState.warm;
     return BrandHeatState.iconic;
   }
-  
+
   bool get hasCracks => this == BrandHeatState.cold;
   bool get hasPulse => this == BrandHeatState.iconic;
-  
+
   Color get primaryColor {
     switch (this) {
       case BrandHeatState.cold:

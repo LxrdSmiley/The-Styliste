@@ -142,18 +142,25 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .order('current_score', ascending: false)
           .range(_offset, _offset + _pageSize - 1);
 
-      final List<GalaSubmission> submissions = results.map((Map<String, dynamic> json) {
+      final List<GalaSubmission> submissions =
+          results.map((Map<String, dynamic> json) {
         // Flatten joined data
         final Map<String, dynamic> flat = Map<String, dynamic>.from(json);
-        if (json['designs'] != null) {
-          flat['design_name'] = json['designs']['name'];
-          flat['design_image_url'] = json['designs']['image_url'];
+        final Map<String, dynamic>? design =
+            json['designs'] as Map<String, dynamic>?;
+        final Map<String, dynamic>? player =
+            json['players'] as Map<String, dynamic>?;
+        final Map<String, dynamic>? talent =
+            json['talent_pool'] as Map<String, dynamic>?;
+        if (design != null) {
+          flat['design_name'] = design['name'];
+          flat['design_image_url'] = design['image_url'];
         }
-        if (json['players'] != null) {
-          flat['player_name'] = json['players']['display_name'];
+        if (player != null) {
+          flat['player_name'] = player['display_name'];
         }
-        if (json['talent_pool'] != null) {
-          flat['talent'] = json['talent_pool'];
+        if (talent != null) {
+          flat['talent'] = talent;
         }
         return GalaSubmission.fromJson(flat);
       }).toList();
@@ -194,17 +201,24 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .order('current_score', ascending: false)
           .range(_offset, _offset + _pageSize - 1);
 
-      final List<GalaSubmission> newSubmissions = results.map((Map<String, dynamic> json) {
+      final List<GalaSubmission> newSubmissions =
+          results.map((Map<String, dynamic> json) {
         final Map<String, dynamic> flat = Map<String, dynamic>.from(json);
-        if (json['designs'] != null) {
-          flat['design_name'] = json['designs']['name'];
-          flat['design_image_url'] = json['designs']['image_url'];
+        final Map<String, dynamic>? design =
+            json['designs'] as Map<String, dynamic>?;
+        final Map<String, dynamic>? player =
+            json['players'] as Map<String, dynamic>?;
+        final Map<String, dynamic>? talent =
+            json['talent_pool'] as Map<String, dynamic>?;
+        if (design != null) {
+          flat['design_name'] = design['name'];
+          flat['design_image_url'] = design['image_url'];
         }
-        if (json['players'] != null) {
-          flat['player_name'] = json['players']['display_name'];
+        if (player != null) {
+          flat['player_name'] = player['display_name'];
         }
-        if (json['talent_pool'] != null) {
-          flat['talent'] = json['talent_pool'];
+        if (talent != null) {
+          flat['talent'] = talent;
         }
         return GalaSubmission.fromJson(flat);
       }).toList();
@@ -230,8 +244,10 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
     state = state.copyWith(currentIndex: index);
 
     // Load more when approaching end
-    if (index >= state.submissions.length - 3 && state.hasMore && !state.isLoading) {
-      loadMore();
+    if (index >= state.submissions.length - 3 &&
+        state.hasMore &&
+        !state.isLoading) {
+      unawaited(loadMore());
     }
   }
 
@@ -246,13 +262,18 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .from('gala_submissions')
           .select('id, current_score, vote_count')
           .eq('event_id', _currentEventId!)
-          .inFilter('id', state.submissions.map((GalaSubmission s) => s.id).toList());
+          .inFilter(
+            'id',
+            state.submissions.map((GalaSubmission s) => s.id).toList(),
+          );
 
-      final Map<String, Map<String, dynamic>> scoreMap = <String, Map<String, dynamic>>{
+      final Map<String, Map<String, dynamic>> scoreMap =
+          <String, Map<String, dynamic>>{
         for (final Map<String, dynamic> r in results) r['id'] as String: r,
       };
 
-      final List<GalaSubmission> updated = state.submissions.map((GalaSubmission sub) {
+      final List<GalaSubmission> updated =
+          state.submissions.map((GalaSubmission sub) {
         final Map<String, dynamic>? update = scoreMap[sub.id];
         if (update != null) {
           return sub.copyWith(
@@ -303,18 +324,22 @@ final FutureProviderFamily<VoteLimits, String> voteLimitsProvider =
 // Leaderboard Provider
 // =============================================================================
 
-final FutureProviderFamily<List<LeaderboardEntry>, String> galaLeaderboardProvider =
+final FutureProviderFamily<List<LeaderboardEntry>, String>
+    galaLeaderboardProvider =
     FutureProviderFamily<List<LeaderboardEntry>, String>(
   (Ref<AsyncValue<List<LeaderboardEntry>>> ref, String eventId) async {
     final SupabaseClient supabase = Supabase.instance.client;
 
-    final List<dynamic> results = await supabase.rpc(
+    final List<Object?> results = await supabase.rpc<List<Object?>>(
       'get_gala_leaderboard',
       params: <String, dynamic>{'p_event_id': eventId},
     );
 
     return results
-        .map((json) => LeaderboardEntry.fromJson(json as Map<String, dynamic>))
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (Map<String, dynamic> json) => LeaderboardEntry.fromJson(json),
+        )
         .toList();
   },
 );
@@ -360,7 +385,8 @@ class VoteCastingNotifier extends StateNotifier<VoteCastingState> {
     // Execute haptic first (immediate feedback)
     await tier.executeHaptic();
 
-    state = state.copyWith(isCasting: true, clearError: true, clearResult: true);
+    state =
+        state.copyWith(isCasting: true, clearError: true, clearResult: true);
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
@@ -393,7 +419,8 @@ class VoteCastingNotifier extends StateNotifier<VoteCastingState> {
   }
 }
 
-final StateNotifierProvider<VoteCastingNotifier, VoteCastingState> voteCastingProvider =
+final StateNotifierProvider<VoteCastingNotifier, VoteCastingState>
+    voteCastingProvider =
     StateNotifierProvider<VoteCastingNotifier, VoteCastingState>(
   (Ref<VoteCastingState> ref) => VoteCastingNotifier(),
 );
@@ -467,7 +494,8 @@ class SubmissionNotifier extends StateNotifier<SubmissionState> {
   }
 }
 
-final StateNotifierProvider<SubmissionNotifier, SubmissionState> submissionProvider =
+final StateNotifierProvider<SubmissionNotifier, SubmissionState>
+    submissionProvider =
     StateNotifierProvider<SubmissionNotifier, SubmissionState>(
   (Ref<SubmissionState> ref) => SubmissionNotifier(),
 );

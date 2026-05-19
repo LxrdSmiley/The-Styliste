@@ -1,6 +1,6 @@
 // Directive K — Archive Market Screen
 // GDD §8.9.9, §12.4.3 — Brutalist Auction House
-// 
+//
 // Aesthetic: Alabaster background with harsh black grid lines
 // Typography: JetBrainsMono exclusively (financial terminal)
 // Features: Market grid, provenance ledger, Gala/Sovereign badges, 48h FOMO countdown
@@ -15,7 +15,7 @@ import '../providers/archive_provider.dart';
 import '../services/provenance_calculator.dart';
 
 /// Archive Market — Brutalist P2P Auction House
-/// 
+///
 /// Contrast: Not warm/inviting. Cold, financial, data-driven.
 /// Background: AurelianPalette.alabaster with harsh black grid lines
 /// Font: JetBrainsMono exclusively
@@ -23,7 +23,8 @@ class ArchiveMarketScreen extends ConsumerStatefulWidget {
   const ArchiveMarketScreen({super.key});
 
   @override
-  ConsumerState<ArchiveMarketScreen> createState() => _ArchiveMarketScreenState();
+  ConsumerState<ArchiveMarketScreen> createState() =>
+      _ArchiveMarketScreenState();
 }
 
 class _ArchiveMarketScreenState extends ConsumerState<ArchiveMarketScreen> {
@@ -42,10 +43,10 @@ class _ArchiveMarketScreenState extends ConsumerState<ArchiveMarketScreen> {
         children: <Widget>[
           // Toggle: All Listings / My Listings
           _buildToggleBar(),
-          
+
           // Market stats bar
           _buildStatsBar(),
-          
+
           // Grid
           Expanded(
             child: listingsAsync.when(
@@ -147,7 +148,8 @@ class _ArchiveMarketScreenState extends ConsumerState<ArchiveMarketScreen> {
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: !_showMyListings ? Colors.black : Colors.transparent,
+                      color:
+                          !_showMyListings ? Colors.black : Colors.transparent,
                       width: 2.0,
                     ),
                   ),
@@ -160,7 +162,9 @@ class _ArchiveMarketScreenState extends ConsumerState<ArchiveMarketScreen> {
                     fontSize: 11.0,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 2.0,
-                    color: !_showMyListings ? Colors.black : Colors.black.withValues(alpha: 0.4),
+                    color: !_showMyListings
+                        ? Colors.black
+                        : Colors.black.withValues(alpha: 0.4),
                   ),
                 ),
               ),
@@ -179,7 +183,8 @@ class _ArchiveMarketScreenState extends ConsumerState<ArchiveMarketScreen> {
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: _showMyListings ? Colors.black : Colors.transparent,
+                      color:
+                          _showMyListings ? Colors.black : Colors.transparent,
                       width: 2.0,
                     ),
                   ),
@@ -192,7 +197,9 @@ class _ArchiveMarketScreenState extends ConsumerState<ArchiveMarketScreen> {
                     fontSize: 11.0,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 2.0,
-                    color: _showMyListings ? Colors.black : Colors.black.withValues(alpha: 0.4),
+                    color: _showMyListings
+                        ? Colors.black
+                        : Colors.black.withValues(alpha: 0.4),
                   ),
                 ),
               ),
@@ -289,7 +296,7 @@ class _ArchiveMarketScreenState extends ConsumerState<ArchiveMarketScreen> {
   }
 
   void _showListingDetails(ArchiveListing listing) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: AurelianPalette.alabaster,
       isScrollControlled: true,
@@ -301,7 +308,7 @@ class _ArchiveMarketScreenState extends ConsumerState<ArchiveMarketScreen> {
   }
 
   void _showMarketInfo() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
         backgroundColor: AurelianPalette.alabaster,
@@ -389,9 +396,7 @@ class _ListingCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AurelianPalette.alabaster,
-          border: Border.all(
-            
-          ),
+          border: Border.all(),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -399,7 +404,8 @@ class _ListingCard extends StatelessWidget {
             // Badges row
             if (listing.isGalaWinner || listing.hasSovereignProvenance)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
@@ -424,7 +430,7 @@ class _ListingCard extends StatelessWidget {
                   ],
                 ),
               ),
-            
+
             // Design preview placeholder
             Expanded(
               child: Container(
@@ -438,7 +444,7 @@ class _ListingCard extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // Info section
             Container(
               padding: const EdgeInsets.all(12.0),
@@ -586,7 +592,7 @@ class _ListingDetailSheet extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24.0),
-          
+
           // Title
           Text(
             listing.designName?.toUpperCase() ?? 'UNTITLED',
@@ -598,7 +604,7 @@ class _ListingDetailSheet extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8.0),
-          
+
           // Seller
           Text(
             'SELLER: ${listing.sellerName?.toUpperCase() ?? 'UNKNOWN'}',
@@ -609,25 +615,25 @@ class _ListingDetailSheet extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24.0),
-          
+
           // Price breakdown
           _buildPriceBreakdown(),
           const SizedBox(height: 24.0),
-          
+
           // Provenance section
           _buildProvenanceSection(),
           const SizedBox(height: 24.0),
-          
+
           // Transaction breakdown
           _buildTransactionBreakdown(),
           const SizedBox(height: 24.0),
-          
+
           // Action buttons
           if (isMine)
             _buildCancelButton(ref, listingState)
           else
             _buildPurchaseButton(ref, purchaseState),
-          
+
           // Error display
           if (purchaseState.hasError)
             Padding(
@@ -642,7 +648,7 @@ class _ListingDetailSheet extends ConsumerWidget {
                 textAlign: TextAlign.center,
               ),
             ),
-          
+
           if (listingState.hasError)
             Padding(
               padding: const EdgeInsets.only(top: 16.0),
@@ -665,9 +671,7 @@ class _ListingDetailSheet extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        border: Border.all(
-          
-        ),
+        border: Border.all(),
       ),
       child: Column(
         children: <Widget>[
@@ -719,11 +723,6 @@ class _ListingDetailSheet extends ConsumerWidget {
   }
 
   Widget _buildProvenanceSection() {
-    final ProvenanceBreakdown breakdown = ProvenanceCalculator.getBreakdown(
-      listing.transferCount,
-      listing.hasSovereignProvenance,
-    );
-
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -769,7 +768,8 @@ class _ListingDetailSheet extends ConsumerWidget {
                   fontFamily: 'JetBrainsMono',
                   fontSize: 9.0,
                   fontWeight: FontWeight.w700,
-                  color: listing.hasSovereignProvenance || listing.transferCount > 0
+                  color: listing.hasSovereignProvenance ||
+                          listing.transferCount > 0
                       ? const Color(0xFFD4AF37)
                       : Colors.black,
                 ),
@@ -806,7 +806,10 @@ class _ListingDetailSheet extends ConsumerWidget {
         children: <Widget>[
           _transactionRow('YOU PAY', '\$${breakdown.buyerTotal}', isBold: true),
           const Divider(height: 16.0),
-          _transactionRow('SELLER RECEIVES', '\$${breakdown.sellerPayout} (70%)'),
+          _transactionRow(
+            'SELLER RECEIVES',
+            '\$${breakdown.sellerPayout} (70%)',
+          ),
           const SizedBox(height: 4.0),
           _transactionRow(
             'PLATFORM TAX (BURNED)',
@@ -818,7 +821,9 @@ class _ListingDetailSheet extends ConsumerWidget {
     );
   }
 
-  Widget _transactionRow(String label, String value, {
+  Widget _transactionRow(
+    String label,
+    String value, {
     bool isBold = false,
     Color? valueColor,
   }) {

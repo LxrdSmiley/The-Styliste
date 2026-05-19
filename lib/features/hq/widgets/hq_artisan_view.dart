@@ -2,6 +2,8 @@
 // GDD §3.0 — Sun-Dial Hype Meter, 3D Garment Preview, Recent Drops, Quick Sketch
 // Kode Addendum: CustomPainter charts, .select() optimization, 3D lifecycle mgmt
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_3d_controller/flutter_3d_controller.dart';
@@ -19,7 +21,7 @@ import '../widgets/glass_walled_penthouse.dart';
 import '../widgets/sun_dial_hype_meter.dart';
 
 /// Golden Hour HQ: Artisan View
-/// 
+///
 /// Features:
 /// - Glass-Walled Penthouse parallax background (rank-evolving)
 /// - Sun-Dial Hype Meter (CustomPainter, no fl_chart)
@@ -38,7 +40,6 @@ class HqArtisanView extends ConsumerStatefulWidget {
 
 class _HqArtisanViewState extends ConsumerState<HqArtisanView>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-  
   // Kode Addendum: 3D controller lifecycle management
   final Flutter3DController _modelController = Flutter3DController();
   // When navigating away, pause/dispose to maintain 120Hz sub-menu performance
@@ -78,7 +79,7 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
-    
+
     // Kode Addendum: Use .select() for optimized rebuilds
     final int heat = ref.watch(brandHeatPercentProvider);
     final int multipliers = ref.watch(sovereignMultipliersProvider);
@@ -92,7 +93,8 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
         playerId: widget.player.id,
         tarnishLevel: tarnish,
         kintsugiLevel: kintsugi,
-        onKintsugiRequest: () => context.push(AppRouter.crisisKintsugi),
+        onKintsugiRequest: () =>
+            unawaited(context.push(AppRouter.crisisKintsugi)),
         onApologyRequest: () => _applyApology(context),
         child: SafeArea(
           child: Column(
@@ -126,7 +128,8 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
                           data: (Brand brand) => SunDialHypeMeter(
                             hypeScore: brand.hypeScore,
                             maxHype: 100000.0, // 100K max for dial
-                            onThresholdCrossed: () => HapticFeedback.heavyImpact(),
+                            onThresholdCrossed: () =>
+                                HapticFeedback.heavyImpact(),
                           ),
                           loading: () => const SizedBox(height: 200.0),
                           error: (_, __) => const SizedBox.shrink(),
@@ -143,7 +146,7 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
                         controller: _modelController,
                         onTap: () {
                           _onNavigateAway();
-                          context.push(AppRouter.atelier);
+                          unawaited(context.push(AppRouter.atelier));
                         },
                       ),
 
@@ -153,7 +156,7 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
                       _QuickSketchButton(
                         onTap: () {
                           _onNavigateAway();
-                          context.push(AppRouter.atelier);
+                          unawaited(context.push(AppRouter.atelier));
                         },
                       ),
 
@@ -175,7 +178,7 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
   }
 
   void _showHeatBreakdown(BuildContext context, int heat) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (BuildContext ctx) => BrandHeatBreakdownPanel(
@@ -183,24 +186,32 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
         decayRate: 2.5,
         activeInputs: const <HeatInput>[
           HeatInput(name: 'Recent Drops', contribution: 15.0, isPositive: true),
-          HeatInput(name: 'Trend Alignment', contribution: 8.0, isPositive: true),
+          HeatInput(
+            name: 'Trend Alignment',
+            contribution: 8.0,
+            isPositive: true,
+          ),
           HeatInput(name: 'Time Decay', contribution: -5.0, isPositive: false),
         ],
       ),
     );
   }
-  
+
   Future<void> _applyApology(BuildContext context) async {
-    HapticFeedback.heavyImpact();
-    final Map<String, dynamic> result = await Supabase.instance.client
-        .rpc<Map<String, dynamic>>('execute_power_move', params: <String, dynamic>{
-          'p_move_key': 'public_apology',
-          'p_player_id': Supabase.instance.client.auth.currentUser!.id,
-        },);
+    unawaited(HapticFeedback.heavyImpact());
+    final Map<String, dynamic> result =
+        await Supabase.instance.client.rpc<Map<String, dynamic>>(
+      'execute_power_move',
+      params: <String, dynamic>{
+        'p_move_key': 'public_apology',
+        'p_player_id': Supabase.instance.client.auth.currentUser!.id,
+      },
+    );
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'] as String? ?? 'Public apology issued'),
+          content:
+              Text(result['message'] as String? ?? 'Public apology issued'),
           backgroundColor: const Color(0xFFF7E7CE),
         ),
       );
@@ -220,7 +231,7 @@ class _ArtisanHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MaterialTier tier = AurelianHQTheme.materialTier(player.brandRank);
-    
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 8.0),
       child: Row(
@@ -264,7 +275,8 @@ class _ArtisanHeader extends StatelessWidget {
             ],
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             decoration: BoxDecoration(
               color: const Color(0xFFF7E7CE).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.0),

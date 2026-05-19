@@ -8,17 +8,18 @@ import 'package:flutter/services.dart';
 import '../theme/aurelian_hq_theme.dart';
 
 /// Brand Heat Meter — Horizontal gradient bar showing brand status
-/// 
+///
 /// States:
 /// - 0-25 (Cold): Obsidian cracks along edges
 /// - 26-50 (Cool): Grey tones
-/// - 51-75 (Warm): Champagne emergence  
+/// - 51-75 (Warm): Champagne emergence
 /// - 76-100 (Iconic): Slow gold pulse
 ///
 /// Tap to open Brand Heat breakdown panel
 class BrandHeatMeter extends StatelessWidget {
   const BrandHeatMeter({
-    required this.heatPercent, super.key,
+    required this.heatPercent,
+    super.key,
     this.onTap,
     this.showLabel = true,
     this.height = 24.0,
@@ -31,8 +32,9 @@ class BrandHeatMeter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BrandHeatState state = BrandHeatStateExtension.fromPercent(heatPercent);
-    
+    final BrandHeatState state =
+        BrandHeatStateExtension.fromPercent(heatPercent);
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
@@ -62,7 +64,8 @@ class BrandHeatMeter extends StatelessWidget {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 800),
                 curve: Curves.easeOutCubic,
-                width: (MediaQuery.of(context).size.width - 48.0) * (heatPercent / 100),
+                width: (MediaQuery.of(context).size.width - 48.0) *
+                    (heatPercent / 100),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: <Color>[
@@ -81,8 +84,7 @@ class BrandHeatMeter extends StatelessWidget {
                 ),
 
               // Iconic pulse overlay (76-100)
-              if (state.hasPulse)
-                _PulseOverlay(height: height),
+              if (state.hasPulse) _PulseOverlay(height: height),
 
               // Label
               if (showLabel)
@@ -138,7 +140,7 @@ class _ObsidianCrackPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Gold pulse overlay for iconic state
@@ -198,7 +200,10 @@ class _PulseOverlayState extends State<_PulseOverlay>
 /// Brand Heat breakdown panel (shown on tap)
 class BrandHeatBreakdownPanel extends StatelessWidget {
   const BrandHeatBreakdownPanel({
-    required this.heatPercent, required this.decayRate, required this.activeInputs, super.key,
+    required this.heatPercent,
+    required this.decayRate,
+    required this.activeInputs,
+    super.key,
   });
 
   final int heatPercent;
@@ -207,8 +212,9 @@ class BrandHeatBreakdownPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BrandHeatState state = BrandHeatStateExtension.fromPercent(heatPercent);
-    
+    final BrandHeatState state =
+        BrandHeatStateExtension.fromPercent(heatPercent);
+
     return Container(
       padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
@@ -237,7 +243,8 @@ class BrandHeatBreakdownPanel extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
                 decoration: BoxDecoration(
                   color: state.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12.0),
@@ -268,8 +275,14 @@ class BrandHeatBreakdownPanel extends StatelessWidget {
 
           // Stats
           _StatRow(label: 'Current', value: '$heatPercent°'),
-          _StatRow(label: 'Decay Rate', value: '-${decayRate.toStringAsFixed(1)}/hr'),
-          _StatRow(label: 'Active Inputs', value: '${activeInputs.length} sources'),
+          _StatRow(
+            label: 'Decay Rate',
+            value: '-${decayRate.toStringAsFixed(1)}/hr',
+          ),
+          _StatRow(
+            label: 'Active Inputs',
+            value: '${activeInputs.length} sources',
+          ),
 
           const SizedBox(height: 12.0),
 

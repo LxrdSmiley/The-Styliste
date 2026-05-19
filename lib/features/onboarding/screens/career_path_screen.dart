@@ -53,11 +53,11 @@ class _CareerPathScreenState extends ConsumerState<CareerPathScreen> {
     // Directive G: Accumulate state, don't create profile yet
     final OnboardingNotifier notifier = ref.read(onboardingProvider.notifier);
     notifier.setPath(path);
-    
+
     // Navigate to Ascension Confirmation (Screen 7) for final review
     if (!mounted) return;
     unawaited(HapticFeedback.heavyImpact());
-    context.push(AppRouter.onboardingWhatsNext);
+    unawaited(context.push(AppRouter.onboardingWhatsNext));
   }
 
   @override
@@ -107,9 +107,7 @@ class _CareerPathScreenState extends ConsumerState<CareerPathScreen> {
                       fontSize: 13.0,
                       letterSpacing: 0.5,
                     ),
-                  )
-                      .animate()
-                      .fadeIn(
+                  ).animate().fadeIn(
                         delay: const Duration(milliseconds: 200),
                         duration: const Duration(milliseconds: 400),
                       ),
@@ -132,12 +130,12 @@ class _CareerPathScreenState extends ConsumerState<CareerPathScreen> {
                             path: CareerPath.designer,
                             title: 'THE\nARTISAN',
                             subtitle: 'Designer Track',
-                            description:
-                                'Atelier. Hype. Cloth physics.\n'
+                            description: 'Atelier. Hype. Cloth physics.\n'
                                 'Build the look the world follows.',
                             accentColor: AppColors.gold,
                             icon: Icons.palette_outlined,
-                            isSelected: _pendingSelection == CareerPath.designer,
+                            isSelected:
+                                _pendingSelection == CareerPath.designer,
                             onTap: isCommitting
                                 ? null
                                 : () => _onPathTapped(CareerPath.designer),
@@ -158,8 +156,7 @@ class _CareerPathScreenState extends ConsumerState<CareerPathScreen> {
                             path: CareerPath.mogul,
                             title: 'THE\nARCHITECT',
                             subtitle: 'Mogul Track',
-                            description:
-                                'Ledger. Supply chains.\n'
+                            description: 'Ledger. Supply chains.\n'
                                 'Build the empire behind the brand.',
                             accentColor: AppColors.lime,
                             icon: Icons.bar_chart_outlined,
@@ -311,10 +308,8 @@ class _ConfirmModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isDesigner = path == CareerPath.designer;
-    final Color accentColor =
-        isDesigner ? AppColors.gold : AppColors.lime;
-    final String pathName =
-        isDesigner ? 'The Artisan' : 'The Architect';
+    final Color accentColor = isDesigner ? AppColors.gold : AppColors.lime;
+    final String pathName = isDesigner ? 'The Artisan' : 'The Architect';
 
     return Dialog(
       backgroundColor: AppColors.obsidianCard,

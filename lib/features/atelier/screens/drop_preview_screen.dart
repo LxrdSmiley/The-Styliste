@@ -43,13 +43,13 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
     super.initState();
     // Initialize with default tags
     _selectedTags.addAll(<String>['minimalist', 'ivory']);
-    
+
     // Initialize drop flow
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(dropDesignProvider.notifier).initDropFlow(
-        design: widget.design,
-        styleTags: _selectedTags.toList(),
-      );
+            design: widget.design,
+            styleTags: _selectedTags.toList(),
+          );
     });
   }
 
@@ -63,20 +63,21 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
         }
       }
     });
-    
+
     // Re-initialize with new tags
     ref.read(dropDesignProvider.notifier).initDropFlow(
-      design: widget.design,
-      styleTags: _selectedTags.toList(),
-    );
+          design: widget.design,
+          styleTags: _selectedTags.toList(),
+        );
   }
 
   Future<void> _onDropToFeed() async {
-    final VexReview? review = await ref.read(dropDesignProvider.notifier).executeDrop();
-    
+    final VexReview? review =
+        await ref.read(dropDesignProvider.notifier).executeDrop();
+
     if (mounted && review != null) {
       // Show Vex Review Card in modal
-      await showDialog(
+      await showDialog<void>(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext ctx) => Dialog(
@@ -176,7 +177,8 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                   label: Text(tag),
                   selected: isSelected,
                   onSelected: (_) => _onTagToggle(tag),
-                  selectedColor: AurelianPalette.champagneGold.withValues(alpha: 0.3),
+                  selectedColor:
+                      AurelianPalette.champagneGold.withValues(alpha: 0.3),
                   backgroundColor: AurelianPalette.ivoryDark,
                   side: BorderSide(
                     color: isSelected
@@ -232,7 +234,8 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                   ),
                   Switch(
                     value: dropState.vexOptedIn,
-                    onChanged: (_) => ref.read(dropDesignProvider.notifier).toggleVexOptIn(),
+                    onChanged: (_) =>
+                        ref.read(dropDesignProvider.notifier).toggleVexOptIn(),
                     activeThumbColor: AurelianPalette.champagneGold,
                   ),
                 ],

@@ -34,20 +34,25 @@ final StreamProvider<SupplyChainState> supplyChainProvider =
 // Liquidation State Notifier
 // =============================================================================
 
-class LiquidationNotifier extends StateNotifier<AsyncValue<LiquidationResult?>> {
-  LiquidationNotifier() : super(const AsyncValue.data(null));
+class LiquidationNotifier
+    extends StateNotifier<AsyncValue<LiquidationResult?>> {
+  LiquidationNotifier()
+      : super(const AsyncValue<LiquidationResult?>.data(null));
 
   Future<void> liquidate() async {
     if (state.isLoading) return;
 
-    state = const AsyncValue.loading();
+    state = const AsyncValue<LiquidationResult?>.loading();
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       final String? userId = supabase.auth.currentUser?.id;
 
       if (userId == null) {
-        state = AsyncValue.error('Not authenticated', StackTrace.current);
+        state = AsyncValue<LiquidationResult?>.error(
+          'Not authenticated',
+          StackTrace.current,
+        );
         return;
       }
 
@@ -62,14 +67,14 @@ class LiquidationNotifier extends StateNotifier<AsyncValue<LiquidationResult?>> 
         newRevenue: (result['new_revenue'] as num?)?.toDouble() ?? 0.0,
       );
 
-      state = AsyncValue.data(liquidationResult);
+      state = AsyncValue<LiquidationResult?>.data(liquidationResult);
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+      state = AsyncValue<LiquidationResult?>.error(e, stackTrace);
     }
   }
 
   void reset() {
-    state = const AsyncValue.data(null);
+    state = const AsyncValue<LiquidationResult?>.data(null);
   }
 
   // ===========================================================================
@@ -102,8 +107,11 @@ class LiquidationNotifier extends StateNotifier<AsyncValue<LiquidationResult?>> 
       );
 
       final Map<String, dynamic> data =
-          Map<String, dynamic>.from(response.data as Map);
-      final int reward = ((data['reward'] as Map?)?['currency'] as num?)?.toInt() ?? 0;
+          Map<String, dynamic>.from(response.data as Map<String, dynamic>);
+      final int reward =
+          ((data['reward'] as Map<String, dynamic>?)?['currency'] as num?)
+                  ?.toInt() ??
+              0;
 
       return <String, dynamic>{
         ...data,
@@ -129,19 +137,22 @@ final StateNotifierProvider<LiquidationNotifier, AsyncValue<LiquidationResult?>>
 // =============================================================================
 
 class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
-  LogisticsNotifier() : super(const AsyncValue.data(null));
+  LogisticsNotifier() : super(const AsyncValue<LogisticsUpgrade?>.data(null));
 
   Future<void> upgrade() async {
     if (state.isLoading) return;
 
-    state = const AsyncValue.loading();
+    state = const AsyncValue<LogisticsUpgrade?>.loading();
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       final String? userId = supabase.auth.currentUser?.id;
 
       if (userId == null) {
-        state = AsyncValue.error('Not authenticated', StackTrace.current);
+        state = AsyncValue<LogisticsUpgrade?>.error(
+          'Not authenticated',
+          StackTrace.current,
+        );
         return;
       }
 
@@ -158,14 +169,14 @@ class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
         message: result['message'] as String?,
       );
 
-      state = AsyncValue.data(upgrade);
+      state = AsyncValue<LogisticsUpgrade?>.data(upgrade);
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+      state = AsyncValue<LogisticsUpgrade?>.error(e, stackTrace);
     }
   }
 
   void reset() {
-    state = const AsyncValue.data(null);
+    state = const AsyncValue<LogisticsUpgrade?>.data(null);
   }
 
   // ===========================================================================
@@ -174,7 +185,9 @@ class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
 
   /// Apply Supplier Raid result
   /// Win = 15% discount for 14 days, Loss = immediate halt
-  Future<Map<String, dynamic>> applySupplierRaidResult({required bool won}) async {
+  Future<Map<String, dynamic>> applySupplierRaidResult({
+    required bool won,
+  }) async {
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       if (supabase.auth.currentUser == null) {
@@ -210,7 +223,7 @@ class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
         },
       );
 
-      return Map<String, dynamic>.from(response.data as Map);
+      return Map<String, dynamic>.from(response.data as Map<String, dynamic>);
     } catch (e) {
       return <String, dynamic>{
         'success': false,
@@ -240,7 +253,9 @@ final ProviderFamily<int, int> nextUpgradeCostProvider =
 // =============================================================================
 
 final FutureProvider<SupplyChainStats> supplyChainStatsProvider =
-    FutureProvider<SupplyChainStats>((Ref<AsyncValue<SupplyChainStats>> ref) async {
+    FutureProvider<SupplyChainStats>((
+  Ref<AsyncValue<SupplyChainStats>> ref,
+) async {
   final SupabaseClient supabase = Supabase.instance.client;
 
   // Get total capacity across all players
@@ -254,7 +269,8 @@ final FutureProvider<SupplyChainStats> supplyChainStatsProvider =
 
   for (final Map<String, dynamic> row in stats) {
     final int capacity = (row['warehouse_capacity'] as num?)?.toInt() ?? 5000;
-    final int inventory = (row['current_inventory_value'] as num?)?.toInt() ?? 0;
+    final int inventory =
+        (row['current_inventory_value'] as num?)?.toInt() ?? 0;
 
     totalCapacity += capacity;
     totalInventory += inventory;
@@ -266,7 +282,8 @@ final FutureProvider<SupplyChainStats> supplyChainStatsProvider =
     totalCapacity: totalCapacity,
     totalInventory: totalInventory,
     fullWarehouses: fullWarehouses,
-    globalFillPercent: totalCapacity > 0 ? (totalInventory / totalCapacity) * 100 : 0.0,
+    globalFillPercent:
+        totalCapacity > 0 ? (totalInventory / totalCapacity) * 100 : 0.0,
   );
 });
 

@@ -6,15 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/design.dart';
 import '../../design/models/vex_review.dart';
 import '../../design/services/hype_calculator.dart';
 import '../../design/services/vex_ai_engine.dart';
-import '../../trends/models/trend_tsunami.dart';
-import '../../trends/providers/trend_provider.dart';
 import '../../talent/models/talent.dart';
 import '../../talent/providers/casting_provider.dart';
+import '../../trends/models/trend_tsunami.dart';
+import '../../trends/providers/trend_provider.dart';
 
 /// State for the drop design flow
 class DropDesignState {
@@ -71,7 +70,7 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
   final VexAIEngine _vexEngine = vexEngine;
 
   /// Initialize the drop flow with a minted design
-  /// 
+  ///
   /// [design] — The freshly minted Alpha design
   /// [styleTags] — User-selected style tags for tsunami matching
   void initDropFlow({
@@ -92,17 +91,23 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
     final HypeCalculationInput input = HypeCalculationInput(
       styleTags: styleTags,
       materialQuality: _getMaterialQuality(design),
-      aestheticAlignment: _getAestheticAlignment(design, styleTags, activeTsunamis),
+      aestheticAlignment:
+          _getAestheticAlignment(design, styleTags, activeTsunamis),
       sovereignTalentCount: _ref.read(rosterProvider).maybeWhen(
-        data: (List<RosterTalent> roster) => roster.where((RosterTalent t) => t.tier == TalentTier.sovereign).length,
-        orElse: () => 0,
-      ),
+            data: (List<RosterTalent> roster) => roster
+                .where((RosterTalent t) => t.tier == TalentTier.sovereign)
+                .length,
+            orElse: () => 0,
+          ),
       totalTalentExpertise: _ref.read(rosterProvider).maybeWhen(
-        data: (List<RosterTalent> roster) => roster
-            .where((RosterTalent t) => t.tier == TalentTier.sovereign)
-            .fold(0.0, (double sum, RosterTalent t) => sum + t.expertiseScore),
-        orElse: () => 0.0,
-      ),
+            data: (List<RosterTalent> roster) => roster
+                .where((RosterTalent t) => t.tier == TalentTier.sovereign)
+                .fold(
+                  0.0,
+                  (double sum, RosterTalent t) => sum + t.expertiseScore,
+                ),
+            orElse: () => 0.0,
+          ),
     );
 
     final HypeCalculationResult hypeResult = _calculator.calculate(
@@ -111,9 +116,8 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
     );
 
     // Generate preview Vex review (only if opted in)
-    final VexReview? previewReview = state.vexOptedIn
-        ? _vexEngine.generateReview(result: hypeResult)
-        : null;
+    final VexReview? previewReview =
+        state.vexOptedIn ? _vexEngine.generateReview(result: hypeResult) : null;
 
     state = state.copyWith(
       design: design,
@@ -142,7 +146,7 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
   }
 
   /// Execute the drop to feed
-  /// 
+  ///
   /// 1. Create garment_drops record
   /// 2. Create feed_posts record
   /// 3. Return final VexReview (if opted in)
@@ -172,7 +176,9 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
           .single();
 
       // Step 2: Create garment_drop record
-      await supabase.from(SupabaseConstants.tableGarmentDrops).insert(<String, dynamic>{
+      await supabase
+          .from(SupabaseConstants.tableGarmentDrops)
+          .insert(<String, dynamic>{
         'player_id': supabase.auth.currentUser!.id,
         'design_id': state.design!.id,
         'style_tags': state.styleTags,
@@ -185,10 +191,9 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
       await supabase
           .from(SupabaseConstants.tableDesigns)
           .update(<String, dynamic>{
-            'status': 'dropped',
-            'dropped_at': DateTime.now().toIso8601String(),
-          })
-          .eq('id', state.design!.id);
+        'status': 'dropped',
+        'dropped_at': DateTime.now().toIso8601String(),
+      }).eq('id', state.design!.id);
 
       // Final state transition
       state = state.copyWith(
@@ -252,37 +257,37 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
 final StateNotifierProvider<DropDesignNotifier, DropDesignState>
     dropDesignProvider =
     StateNotifierProvider<DropDesignNotifier, DropDesignState>(
-  (Ref ref) => DropDesignNotifier(ref),
+  (Ref<DropDesignState> ref) => DropDesignNotifier(ref),
 );
 
 /// Provider for just the Vex review (convenience)
 final Provider<AsyncValue<VexReview?>> currentVexReviewProvider =
-    Provider<AsyncValue<VexReview?>>((Ref ref) {
+    Provider<AsyncValue<VexReview?>>((Ref<AsyncValue<VexReview?>> ref) {
   final DropDesignState state = ref.watch(dropDesignProvider);
 
   if (state.error != null) {
-    return AsyncValue.error(state.error!, StackTrace.current);
+    return AsyncValue<VexReview?>.error(state.error!, StackTrace.current);
   }
 
-  return AsyncValue.data(state.vexReview);
+  return AsyncValue<VexReview?>.data(state.vexReview);
 });
 
 /// Provider for the projected hype score (for Atelier UI preview)
 final Provider<AsyncValue<double>> projectedHypeScoreProvider =
-    Provider<AsyncValue<double>>((Ref ref) {
+    Provider<AsyncValue<double>>((Ref<AsyncValue<double>> ref) {
   final DropDesignState state = ref.watch(dropDesignProvider);
 
   if (state.error != null) {
-    return AsyncValue.error(state.error!, StackTrace.current);
+    return AsyncValue<double>.error(state.error!, StackTrace.current);
   }
 
-  return AsyncValue.data(state.hypeResult?.totalScore ?? 0.0);
+  return AsyncValue<double>.data(state.hypeResult?.totalScore ?? 0.0);
 });
 
 /// Provider for tsunami multiplier (for UI badges)
 final Provider<AsyncValue<double>> tsunamiMultiplierProvider =
-    Provider<AsyncValue<double>>((Ref ref) {
+    Provider<AsyncValue<double>>((Ref<AsyncValue<double>> ref) {
   final DropDesignState state = ref.watch(dropDesignProvider);
 
-  return AsyncValue.data(state.hypeResult?.tsunamiMultiplier ?? 1.0);
+  return AsyncValue<double>.data(state.hypeResult?.tsunamiMultiplier ?? 1.0);
 });

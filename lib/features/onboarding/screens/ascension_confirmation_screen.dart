@@ -17,7 +17,7 @@ import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/player.dart';
 
 /// Ascension Confirmation Screen — The Sovereign Genesis
-/// 
+///
 /// Features:
 /// - Sovereign Dossier: Premium card showing all choices
 /// - SEAL THE STANDARD button (massive, gold)
@@ -29,10 +29,12 @@ class AscensionConfirmationScreen extends ConsumerStatefulWidget {
   const AscensionConfirmationScreen({super.key});
 
   @override
-  ConsumerState<AscensionConfirmationScreen> createState() => _AscensionConfirmationScreenState();
+  ConsumerState<AscensionConfirmationScreen> createState() =>
+      _AscensionConfirmationScreenState();
 }
 
-class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmationScreen>
+class _AscensionConfirmationScreenState
+    extends ConsumerState<AscensionConfirmationScreen>
     with TickerProviderStateMixin {
   late final AnimationController _whiteOutController;
   bool _isSealing = false;
@@ -46,7 +48,7 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    
+
     _whiteOutController.addStatusListener(_onWhiteOutStatusChange);
   }
 
@@ -67,29 +69,31 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
 
   Future<void> _sealTheStandard() async {
     if (_isSealing) return;
-    
+
     final OnboardingState state = ref.read(onboardingProvider);
-    
+
     // Validate all required fields
     if (!state.isReadyToCommit) {
-      setState(() => _errorMessage = 'Please complete all choices before sealing.');
+      setState(
+        () => _errorMessage = 'Please complete all choices before sealing.',
+      );
       return;
     }
-    
+
     setState(() => _isSealing = true);
-    
+
     // Step 1: Haptic ramp-up
     await _hapticRampUp();
-    
+
     // Step 2: Start white-out animation
     setState(() => _showWhiteOut = true);
-    _whiteOutController.forward();
-    
+    unawaited(_whiteOutController.forward());
+
     // Step 3: Execute genesis RPC while animation plays
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       final String userId = supabase.auth.currentUser!.id;
-      
+
       final Map<String, dynamic> result = await supabase.rpc(
         'execute_sovereign_genesis',
         params: <String, dynamic>{
@@ -98,10 +102,11 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
           'p_career_path': state.selectedPath!.apiValue,
           'p_city': state.selectedCity!.apiValue,
           'p_market_tier': state.selectedTier!.apiValue,
-          'p_avatar_config': state.avatarConfig?.toJson() ?? <String, dynamic>{},
+          'p_avatar_config':
+              state.avatarConfig?.toJson() ?? <String, dynamic>{},
         },
       );
-      
+
       if (result['success'] == true) {
         // Success: White-out will complete and navigate automatically
         // Animation continues to completion...
@@ -112,7 +117,7 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
       _handleGenesisError(e.toString());
     }
   }
-  
+
   void _handleGenesisError(String error) {
     _whiteOutController.stop();
     _whiteOutController.reset();
@@ -129,7 +134,7 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
     await Future<void>.delayed(const Duration(milliseconds: 200));
     await HapticFeedback.heavyImpact();
     await Future<void>.delayed(const Duration(milliseconds: 200));
-    
+
     // Vibrations during expansion
     for (int i = 0; i < 5; i++) {
       await HapticFeedback.vibrate();
@@ -151,9 +156,9 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
               children: <Widget>[
                 // --- Header ---
                 _buildHeader(),
-                
+
                 const SizedBox(height: 32.0),
-                
+
                 // --- Sovereign Dossier (Kode's Premium Card) ---
                 Expanded(
                   child: SingleChildScrollView(
@@ -164,7 +169,7 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
                         .slideY(begin: 0.1, end: 0.0),
                   ),
                 ),
-                
+
                 // --- Error message ---
                 if (_errorMessage != null)
                   Padding(
@@ -185,18 +190,18 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
                       ),
                     ),
                   ),
-                
+
                 // --- SEAL THE STANDARD button ---
                 _buildSealButton()
                     .animate()
                     .fadeIn(delay: const Duration(milliseconds: 400))
                     .slideY(begin: 0.3, end: 0.0),
-                
+
                 const SizedBox(height: 32.0),
               ],
             ),
           ),
-          
+
           // --- Radiant White-Out overlay ---
           if (_showWhiteOut)
             AnimatedBuilder(
@@ -290,7 +295,8 @@ class _AscensionConfirmationScreenState extends ConsumerState<AscensionConfirmat
                   height: 20.0,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.0,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2A2A2A)),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF2A2A2A)),
                   ),
                 )
               else
@@ -353,7 +359,8 @@ class _SovereignDossier extends StatelessWidget {
           Row(
             children: <Widget>[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
                 decoration: BoxDecoration(
                   color: AurelianPalette.champagneGold.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8.0),
@@ -371,21 +378,21 @@ class _SovereignDossier extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24.0),
-          
+
           // --- Brand Name (Hero) ---
           _DossierField(
             label: 'BRAND NAME',
             value: state.brandName.toUpperCase(),
             isHero: true,
           ),
-          
+
           const Divider(
             height: 32.0,
             color: Color(0xFFE8D4B8),
           ),
-          
+
           // --- Two-column layout ---
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,7 +408,8 @@ class _SovereignDossier extends StatelessWidget {
                     const SizedBox(height: 20.0),
                     _DossierField(
                       label: 'CAREER PATH',
-                      value: state.selectedPath?.displayName.toUpperCase() ?? '—',
+                      value:
+                          state.selectedPath?.displayName.toUpperCase() ?? '—',
                     ),
                   ],
                 ),
@@ -413,7 +421,8 @@ class _SovereignDossier extends StatelessWidget {
                   children: <Widget>[
                     _DossierField(
                       label: 'MARKET TIER',
-                      value: state.selectedTier?.displayName.toUpperCase() ?? '—',
+                      value:
+                          state.selectedTier?.displayName.toUpperCase() ?? '—',
                     ),
                     const SizedBox(height: 20.0),
                     _DossierField(
@@ -428,12 +437,12 @@ class _SovereignDossier extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const Divider(
             height: 32.0,
             color: Color(0xFFE8D4B8),
           ),
-          
+
           // --- Avatar summary ---
           _DossierField(
             label: 'FOUNDER VISAGE',
@@ -441,14 +450,15 @@ class _SovereignDossier extends StatelessWidget {
                 ? 'Face ${state.avatarConfig!.faceIndex} • Body ${state.avatarConfig!.bodyIndex} • Hair ${state.avatarConfig!.hairIndex} • Fit ${state.avatarConfig!.fitIndex}'
                 : 'Default Configuration',
           ),
-          
+
           const SizedBox(height: 20.0),
-          
+
           // --- Hype ceiling (raw stat) ---
           if (state.selectedTier != null)
             _DossierField(
               label: 'HYPE CEILING',
-              value: '${(state.selectedTier!.hypeCeiling / 1000000).toStringAsFixed(1)}M',
+              value:
+                  '${(state.selectedTier!.hypeCeiling / 1000000).toStringAsFixed(1)}M',
               valueFont: 'JetBrainsMono',
             ),
         ],
@@ -536,13 +546,13 @@ class _WhiteOutOverlay extends StatelessWidget {
     // 0.0 - 0.3: Champagne gold center expanding
     // 0.3 - 0.7: Alabaster blending in
     // 0.7 - 1.0: Pure white
-    
+
     final double radius = 0.2 + (progress * 2.0); // 0.2 → 2.2 (fills screen)
-    
+
     Color centerColor;
     Color midColor;
     Color outerColor;
-    
+
     if (progress < 0.3) {
       // Phase 1: Champagne gold dominant
       centerColor = AurelianPalette.champagneGold;
@@ -559,7 +569,7 @@ class _WhiteOutOverlay extends StatelessWidget {
       midColor = Colors.white;
       outerColor = Colors.white.withValues(alpha: 0.9);
     }
-    
+
     return Container(
       color: Colors.transparent,
       child: Container(
@@ -583,7 +593,8 @@ class _WhiteOutOverlay extends StatelessWidget {
                     fontSize: 16.0,
                     fontWeight: FontWeight.w300,
                     letterSpacing: 4.0,
-                    color: AurelianPalette.textTertiary.withValues(alpha: 1.0 - progress),
+                    color: AurelianPalette.textTertiary
+                        .withValues(alpha: 1.0 - progress),
                   ),
                 ),
               )

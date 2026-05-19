@@ -30,12 +30,6 @@ class _VexVocabulary {
     'This is not a statement. It is a whisper into a void that refuses to answer.',
   ];
 
-  static const List<String> tarnishedAdjectives = <String>[
-    'bland', 'uninspired', 'safe to the point of sedation',
-    'retrograde', 'nostalgic for an era that never existed',
-    'commercial', 'mass-market', 'algorithmic',
-  ];
-
   // --- Derivative Pool (40-70) ---
   static const List<String> derivativeHeadlines = <String>[
     'Competent but Forgettable',
@@ -51,12 +45,6 @@ class _VexVocabulary {
     'The references are clear, perhaps too clear. Originality requires transformation, not transcription.',
     'Execution meets industry standards. Vision falls short of cultural relevance.',
     'There is craft here. What is missing is courage.',
-  ];
-
-  static const List<String> derivativeAdjectives = <String>[
-    'competent', 'workmanlike', 'professional',
-    'familiar', 'recognizable', 'accessible',
-    'polished', 'finished', 'complete',
   ];
 
   // --- Visionary Pool (70-90 or tsunami match) ---
@@ -75,12 +63,6 @@ class _VexVocabulary {
     'You have captured the zeitgeist without sacrificing personal vision. This is the definition of relevant fashion.',
     'The silhouette speaks. The fabric listens. Together, they compose a statement that will resonate across the feed.',
     'This is not merely clothing. This is commentary—worn, seen, and understood.',
-  ];
-
-  static const List<String> visionaryAdjectives = <String>[
-    'bold', 'assured', 'definitive',
-    'contemporary', 'relevant', 'essential',
-    'striking', 'memorable', 'iconic',
   ];
 
   // --- Sovereign Pool (90+ and crest match) ---
@@ -102,22 +84,6 @@ class _VexVocabulary {
     'You have captured the crest of the wave and ridden it to shore. Sovereign work.',
   ];
 
-  static const List<String> sovereignAdjectives = <String>[
-    'transcendent', 'sovereign', 'definitive',
-    'epochal', 'canonical', 'foundational',
-    'radiant', 'luminous', 'pure',
-  ];
-
-  // --- Bridge phrases for natural flow ---
-  static const List<String> bridges = <String>[
-    'However,',
-    'Yet,',
-    'That said,',
-    'Nevertheless,',
-    'Conversely,',
-    'Paradoxically,',
-  ];
-
   static const List<String> conclusions = <String>[
     'The verdict is clear.',
     'The judgment stands.',
@@ -127,7 +93,7 @@ class _VexVocabulary {
 }
 
 /// The Vex AI Engine — procedural fashion critic
-/// 
+///
 /// Ingests HypeCalculationResult, outputs emotionally charged editorial review
 /// <100ms generation guaranteed through pre-computed vocabulary pools
 class VexAIEngine {
@@ -136,7 +102,7 @@ class VexAIEngine {
   VexAIEngine({Random? random}) : _random = random ?? Random();
 
   /// Generate a VexReview from hype calculation result
-  /// 
+  ///
   /// [result] — The hype calculation with tsunami multipliers
   /// [optedIn] — Whether player chose to face Vex's judgment
   VexReview generateReview({
@@ -224,7 +190,10 @@ class VexAIEngine {
 
     // Conclusion
     body.write(' ');
-    body.write(_VexVocabulary.conclusions[_random.nextInt(_VexVocabulary.conclusions.length)]);
+    body.write(
+      _VexVocabulary
+          .conclusions[_random.nextInt(_VexVocabulary.conclusions.length)],
+    );
 
     return body.toString();
   }
@@ -250,7 +219,6 @@ class VexAIEngine {
   /// Generate commentary for tsunami-matched designs
   String _generateTsunamiCommentary(HypeCalculationResult result) {
     final String tag = result.matchingTsunamiTag!;
-    final double multiplier = result.tsunamiMultiplier;
 
     if (result.wasCrestMatch) {
       // Crest match (2.5x)

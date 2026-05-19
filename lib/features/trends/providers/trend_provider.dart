@@ -12,10 +12,10 @@ import '../models/trend_tsunami.dart';
 part 'trend_provider.g.dart';
 
 /// Stream of active Trend Tsunamis from Supabase Realtime
-/// 
+///
 /// Emits a list of currently active (non-expired) trend waves.
 /// Each tsunami represents a style tag with a multiplier (2.5x for Crest, 1.5x for Surge)
-/// 
+///
 /// Usage in UI:
 /// ```dart
 /// final tsunamis = ref.watch(activeTsunamiProvider);
@@ -30,57 +30,62 @@ Stream<List<TrendTsunami>> activeTsunami(Ref ref) {
   final SupabaseClient supabase = Supabase.instance.client;
 
   // Subscribe to trend_tsunamis table with realtime
-  return supabase
-      .from(SupabaseConstants.tableTrendTsunamis)
-      .stream(primaryKey: const <String>['id'])
-      .map((List<Map<String, dynamic>> data) {
-        final DateTime now = DateTime.now().toUtc();
+  return supabase.from(SupabaseConstants.tableTrendTsunamis).stream(
+    primaryKey: const <String>['id'],
+  ).map((List<Map<String, dynamic>> data) {
+    final DateTime now = DateTime.now().toUtc();
 
-        return data
-            .map((Map<String, dynamic> json) => TrendTsunami.fromJson(json))
-            .where((TrendTsunami tsunami) {
-              // Filter out expired tsunamis client-side as safety
-              return tsunami.expiresAt.isAfter(now);
-            })
-            .toList()
-          // Sort by rank (Crest first)
-          ..sort((TrendTsunami a, TrendTsunami b) => a.rank.compareTo(b.rank));
-      });
+    return data
+        .map((Map<String, dynamic> json) => TrendTsunami.fromJson(json))
+        .where((TrendTsunami tsunami) {
+      // Filter out expired tsunamis client-side as safety
+      return tsunami.expiresAt.isAfter(now);
+    }).toList()
+      // Sort by rank (Crest first)
+      ..sort((TrendTsunami a, TrendTsunami b) => a.rank.compareTo(b.rank));
+  });
 }
 
 /// Provider for just the Crest tag (rank 1, 2.5x multiplier)
 @riverpod
 AsyncValue<TrendTsunami?> crestTag(Ref ref) {
-  final AsyncValue<List<TrendTsunami>> tsunamis = ref.watch(activeTsunamiProvider);
+  final AsyncValue<List<TrendTsunami>> tsunamis =
+      ref.watch(activeTsunamiProvider);
 
   return tsunamis.when(
     data: (List<TrendTsunami> waves) {
       try {
-        return AsyncValue.data(waves.firstWhere((TrendTsunami t) => t.isCrest));
+        return AsyncValue<TrendTsunami?>.data(
+          waves.firstWhere((TrendTsunami t) => t.isCrest),
+        );
       } on StateError {
-        return const AsyncValue.data(null);
+        return const AsyncValue<TrendTsunami?>.data(null);
       }
     },
-    loading: () => const AsyncValue.loading(),
-    error: (Object err, StackTrace stack) => AsyncValue.error(err, stack),
+    loading: () => const AsyncValue<TrendTsunami?>.loading(),
+    error: (Object err, StackTrace stack) =>
+        AsyncValue<TrendTsunami?>.error(err, stack),
   );
 }
 
 /// Provider for Surge tags (rank 2-3, 1.5x multiplier)
 @riverpod
 AsyncValue<List<TrendTsunami>> surgeTags(Ref ref) {
-  final AsyncValue<List<TrendTsunami>> tsunamis = ref.watch(activeTsunamiProvider);
+  final AsyncValue<List<TrendTsunami>> tsunamis =
+      ref.watch(activeTsunamiProvider);
 
   return tsunamis.when(
-    data: (List<TrendTsunami> waves) =>
-        AsyncValue.data(waves.where((TrendTsunami t) => t.isSurge).toList()),
-    loading: () => const AsyncValue.loading(),
-    error: (Object err, StackTrace stack) => AsyncValue.error(err, stack),
+    data: (List<TrendTsunami> waves) => AsyncValue<List<TrendTsunami>>.data(
+      waves.where((TrendTsunami t) => t.isSurge).toList(),
+    ),
+    loading: () => const AsyncValue<List<TrendTsunami>>.loading(),
+    error: (Object err, StackTrace stack) =>
+        AsyncValue<List<TrendTsunami>>.error(err, stack),
   );
 }
 
 /// Provider that calculates the tsunami multiplier for a specific design's tags
-/// 
+///
 /// Usage:
 /// ```dart
 /// final multiplier = ref.watch(tsunamiMultiplierProvider(['minimalist', 'ivory']));
@@ -90,7 +95,8 @@ AsyncValue<List<TrendTsunami>> surgeTags(Ref ref) {
 /// ```
 @riverpod
 double tsunamiMultiplier(Ref ref, List<String> designTags) {
-  final AsyncValue<List<TrendTsunami>> tsunamis = ref.watch(activeTsunamiProvider);
+  final AsyncValue<List<TrendTsunami>> tsunamis =
+      ref.watch(activeTsunamiProvider);
 
   return tsunamis.when(
     data: (List<TrendTsunami> waves) => waves.getMultiplierForTags(designTags),
@@ -102,7 +108,8 @@ double tsunamiMultiplier(Ref ref, List<String> designTags) {
 /// Provider for checking if a specific tag is part of the active tsunami
 @riverpod
 bool isTagInTsunami(Ref ref, String tag) {
-  final AsyncValue<List<TrendTsunami>> tsunamis = ref.watch(activeTsunamiProvider);
+  final AsyncValue<List<TrendTsunami>> tsunamis =
+      ref.watch(activeTsunamiProvider);
 
   return tsunamis.when(
     data: (List<TrendTsunami> waves) => waves.hasMatchingTag(tag),
@@ -114,7 +121,8 @@ bool isTagInTsunami(Ref ref, String tag) {
 /// Provider for getting the matching tsunami details for a specific tag
 @riverpod
 TrendTsunami? matchingTsunamiForTag(Ref ref, String tag) {
-  final AsyncValue<List<TrendTsunami>> tsunamis = ref.watch(activeTsunamiProvider);
+  final AsyncValue<List<TrendTsunami>> tsunamis =
+      ref.watch(activeTsunamiProvider);
 
   return tsunamis.when(
     data: (List<TrendTsunami> waves) => waves.getMatchingTsunami(tag),
@@ -127,18 +135,19 @@ TrendTsunami? matchingTsunamiForTag(Ref ref, String tag) {
 /// Returns the shortest time remaining (closest to expiration)
 @riverpod
 Duration timeUntilNextTsunami(Ref ref) {
-  final AsyncValue<List<TrendTsunami>> tsunamis = ref.watch(activeTsunamiProvider);
+  final AsyncValue<List<TrendTsunami>> tsunamis =
+      ref.watch(activeTsunamiProvider);
 
   return tsunamis.when(
     data: (List<TrendTsunami> waves) {
       if (waves.isEmpty) return Duration.zero;
-      
+
       // Find the tsunami expiring soonest
       final TrendTsunami soonest = waves.reduce(
         (TrendTsunami a, TrendTsunami b) =>
             a.expiresAt.isBefore(b.expiresAt) ? a : b,
       );
-      
+
       return soonest.timeRemaining;
     },
     loading: () => Duration.zero,
@@ -150,14 +159,14 @@ Duration timeUntilNextTsunami(Ref ref) {
 @riverpod
 String timeUntilNextTsunamiFormatted(Ref ref) {
   final Duration remaining = ref.watch(timeUntilNextTsunamiProvider);
-  
+
   if (remaining.isNegative || remaining.inSeconds == 0) {
     return '00:00:00';
   }
-  
+
   final int hours = remaining.inHours;
   final int minutes = remaining.inMinutes.remainder(60);
   final int seconds = remaining.inSeconds.remainder(60);
-  
+
   return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
 }

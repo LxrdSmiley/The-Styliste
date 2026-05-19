@@ -70,14 +70,20 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
     try {
       final Design design = await ref.read(
         mintDesignProvider(
-          _selectedDye.toARGB32().toRadixString(16).padLeft(8, '0').substring(2),
+          _selectedDye
+              .toARGB32()
+              .toRadixString(16)
+              .padLeft(8, '0')
+              .substring(2),
         ).future,
       );
       if (mounted) {
         // Navigate to Drop Preview with Vex Critic integration
-        context.push(
-          AppRouter.atelierDropPreview,
-          extra: design,
+        unawaited(
+          context.push(
+            AppRouter.atelierDropPreview,
+            extra: design,
+          ),
         );
       }
     } catch (_) {
@@ -108,7 +114,8 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double progress = (_interactionSeconds / _gateSeconds).clamp(0.0, 1.0);
+    final double progress =
+        (_interactionSeconds / _gateSeconds).clamp(0.0, 1.0);
 
     return Scaffold(
       backgroundColor: AppColors.obsidian,

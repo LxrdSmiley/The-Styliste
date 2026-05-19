@@ -14,7 +14,7 @@ import '../models/talent.dart';
 import '../providers/casting_provider.dart';
 
 /// Casting Room — Premium gacha experience
-/// 
+///
 /// UX Flow:
 /// 1. Concrete-and-ivory studio environment
 /// 2. Drag wax seal down to break (heavy haptics)
@@ -34,7 +34,7 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
   late final AnimationController _sealController;
   late final AnimationController _lightController;
   late final AnimationController _dossierController;
-  
+
   double _sealDragProgress = 0.0;
   bool _isDragging = false;
   bool _sealBroken = false;
@@ -66,38 +66,39 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
 
   Future<void> _onSealBreak() async {
     if (_sealBroken) return;
-    
+
     setState(() => _sealBroken = true);
-    
+
     // Heavy impact as seal breaks
     await HapticFeedback.heavyImpact();
-    
+
     // Animate seal breaking
     await _sealController.forward();
-    
+
     // Blinding light bleeds through
     await _lightController.forward();
-    
+
     // Execute the actual casting pull
     await ref.read(castingProvider.notifier).executePull();
-    
+
     // Dossier slides in
     await _dossierController.forward();
   }
 
   void _onSealDragUpdate(DragUpdateDetails details) {
     if (_sealBroken) return;
-    
+
     setState(() {
       _isDragging = true;
-      _sealDragProgress = (_sealDragProgress + details.delta.dy / 200).clamp(0.0, 1.0);
+      _sealDragProgress =
+          (_sealDragProgress + details.delta.dy / 200).clamp(0.0, 1.0);
     });
-    
+
     // Haptic feedback at 50% and 100%
     if (_sealDragProgress >= 0.5 && _sealDragProgress < 0.6) {
       HapticFeedback.lightImpact();
     }
-    
+
     // Break seal at 100%
     if (_sealDragProgress >= 1.0) {
       _onSealBreak();
@@ -106,9 +107,9 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
 
   void _onSealDragEnd(DragEndDetails details) {
     if (_sealBroken) return;
-    
+
     setState(() => _isDragging = false);
-    
+
     // Snap back if not broken
     if (_sealDragProgress < 1.0) {
       _animateSealReset();
@@ -129,28 +130,28 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
   Widget build(BuildContext context) {
     final CastingState state = ref.watch(castingProvider);
     final bool canAfford = ref.watch(canAffordSinglePullProvider);
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFF2A2A2A), // Concrete studio
       body: Stack(
         children: <Widget>[
           // --- Studio Environment ---
           _StudioBackground(),
-          
+
           // --- Main Content ---
           SafeArea(
             child: Column(
               children: <Widget>[
                 // Header
                 _CastingHeader(),
-                
+
                 // Main casting area
                 Expanded(
                   child: state.hasResult
                       ? _buildResultsView(state)
                       : _buildCastingArea(state, canAfford),
                 ),
-                
+
                 // Controls
                 _CastingControls(
                   canAffordSingle: canAfford,
@@ -162,7 +163,7 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
               ],
             ),
           ),
-          
+
           // --- Blinding Light Overlay (when seal breaks) ---
           if (_sealBroken)
             AnimatedBuilder(
@@ -193,10 +194,10 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
               child: AnimatedBuilder(
                 animation: _sealController,
                 builder: (BuildContext context, Widget? child) {
-                  final double progress = _sealBroken 
-                      ? 1.0 
+                  final double progress = _sealBroken
+                      ? 1.0
                       : _sealDragProgress + _sealController.value;
-                  
+
                   return Transform.translate(
                     offset: Offset(0.0, progress * 100),
                     child: Transform.rotate(
@@ -213,19 +214,17 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
                 },
               ),
             ),
-          
+
           if (state.isLoading)
             const CircularProgressIndicator(
               color: AurelianPalette.champagneGold,
             ),
-          
+
           const SizedBox(height: 48.0),
-          
+
           // Instruction text
           Text(
-            canAfford
-                ? 'DRAG SEAL DOWN TO BREAK'
-                : 'INSUFFICIENT LUXE TOKENS',
+            canAfford ? 'DRAG SEAL DOWN TO BREAK' : 'INSUFFICIENT LUXE TOKENS',
             style: TextStyle(
               fontFamily: 'SpaceGrotesk',
               fontSize: 12.0,
@@ -243,7 +242,7 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
 
   Widget _buildResultsView(CastingState state) {
     final CastingResult result = state.lastResult!;
-    
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -254,13 +253,13 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
               padding: const EdgeInsets.all(24.0),
               itemCount: result.pulls.length,
               itemBuilder: (BuildContext context, int index) {
-                final bool isRevealed = !state.isRevealing || 
-                    index < state.currentRevealIndex;
-                
+                final bool isRevealed =
+                    !state.isRevealing || index < state.currentRevealIndex;
+
                 if (!isRevealed) {
                   return const SizedBox.shrink();
                 }
-                
+
                 return _TalentDossier(
                   result: result.pulls[index],
                   delay: index * 100,
@@ -268,7 +267,7 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
               },
             ),
           ),
-        
+
         // Skip button (during reveal)
         if (state.isRevealing)
           TextButton(
@@ -281,7 +280,7 @@ class _CastingRoomScreenState extends ConsumerState<CastingRoomScreen>
               ),
             ),
           ),
-        
+
         // Reset button
         if (!state.isRevealing)
           ElevatedButton(
@@ -314,8 +313,8 @@ class _StudioBackground extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: <Color>[
-            Color(0xFF3A3A3A),  // Lighter concrete at top
-            Color(0xFF1A1A1A),  // Darker at bottom
+            Color(0xFF3A3A3A), // Lighter concrete at top
+            Color(0xFF1A1A1A), // Darker at bottom
           ],
         ),
       ),
@@ -333,15 +332,15 @@ class _ConcreteTexturePainter extends CustomPainter {
     final Paint paint = Paint()
       ..color = const Color(0xFF4A4A4A).withValues(alpha: 0.05)
       ..strokeWidth = 1.0;
-    
+
     // Subtle concrete grain
-    final math.Random random = math.Random(42);  // Seeded
-    
+    final math.Random random = math.Random(42); // Seeded
+
     for (int i = 0; i < 100; i++) {
       final double x = random.nextDouble() * size.width;
       final double y = random.nextDouble() * size.height;
       final double length = random.nextDouble() * 20 + 5;
-      
+
       canvas.drawLine(
         Offset(x, y),
         Offset(x + length, y + random.nextDouble() * 2),
@@ -351,7 +350,7 @@ class _ConcreteTexturePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // =============================================================================
@@ -386,7 +385,7 @@ class _WaxSeal extends StatelessWidget {
       ),
       child: Center(
         child: Icon(
-          Icons.local_florist,  // Wax seal impression
+          Icons.local_florist, // Wax seal impression
           size: 48.0,
           color: canAfford ? const Color(0xFF2A2A2A) : const Color(0xFF999999),
         ),
@@ -509,7 +508,7 @@ class _CastingHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<int> luxeAsync = ref.watch(availableLuxeProvider);
-    
+
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Row(
@@ -542,7 +541,8 @@ class _CastingHeader extends ConsumerWidget {
           ),
           // Luxe balance
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             decoration: BoxDecoration(
               color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.0),
@@ -650,15 +650,15 @@ class _CastButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 20.0),
         decoration: BoxDecoration(
           color: enabled
-              ? (isHighlighted 
-                  ? AurelianPalette.champagneGold 
+              ? (isHighlighted
+                  ? AurelianPalette.champagneGold
                   : const Color(0xFF3A3A3A))
               : const Color(0xFF2A2A2A),
           borderRadius: BorderRadius.circular(16.0),
           border: Border.all(
             color: enabled
-                ? (isHighlighted 
-                    ? AurelianPalette.champagneGold 
+                ? (isHighlighted
+                    ? AurelianPalette.champagneGold
                     : const Color(0xFF666666))
                 : const Color(0xFF444444),
           ),
@@ -673,7 +673,9 @@ class _CastButton extends StatelessWidget {
                 fontWeight: FontWeight.w600,
                 letterSpacing: 2.0,
                 color: enabled
-                    ? (isHighlighted ? const Color(0xFF2A2A2A) : AurelianPalette.ivory)
+                    ? (isHighlighted
+                        ? const Color(0xFF2A2A2A)
+                        : AurelianPalette.ivory)
                     : const Color(0xFF666666),
               ),
             ),
@@ -684,7 +686,9 @@ class _CastButton extends StatelessWidget {
                 fontFamily: 'JetBrainsMono',
                 fontSize: 11.0,
                 color: enabled
-                    ? (isHighlighted ? const Color(0xFF2A2A2A) : AurelianPalette.champagneGold)
+                    ? (isHighlighted
+                        ? const Color(0xFF2A2A2A)
+                        : AurelianPalette.champagneGold)
                     : const Color(0xFF666666),
               ),
             ),

@@ -4,7 +4,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-
 // =============================================================================
 // Talent State
 // =============================================================================
@@ -58,7 +57,9 @@ class TalentNotifier extends StateNotifier<TalentState> {
 
   /// Apply Staff Rally result
   /// Win = Reset stamina to 100%, Loss = 24h cooldown
-  Future<Map<String, dynamic>> applyStaffRallyResult({required bool won}) async {
+  Future<Map<String, dynamic>> applyStaffRallyResult({
+    required bool won,
+  }) async {
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
@@ -104,13 +105,14 @@ class TalentNotifier extends StateNotifier<TalentState> {
           },
         );
         final Map<String, dynamic> result =
-            Map<String, dynamic>.from(response.data as Map);
+            Map<String, dynamic>.from(response.data as Map<String, dynamic>);
 
         state = state.copyWith(isLoading: false);
         return result;
       } else {
         // Apply 24h cooldown
-        final DateTime cooldownUntil = DateTime.now().add(const Duration(hours: 24));
+        final DateTime cooldownUntil =
+            DateTime.now().add(const Duration(hours: 24));
 
         // Update local state
         state = state.copyWith(

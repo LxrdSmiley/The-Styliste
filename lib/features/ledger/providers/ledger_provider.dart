@@ -5,6 +5,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show FunctionResponse, Session;
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/providers/mock_auth_provider.dart';
@@ -23,8 +25,7 @@ final StreamProvider<List<Store>> ledgerStoresStreamProvider =
       .stream(primaryKey: <String>['id'])
       .eq('player_id', uid)
       .map(
-        (List<Map<String, dynamic>> rows) =>
-            rows.map(Store.fromJson).toList(),
+        (List<Map<String, dynamic>> rows) => rows.map(Store.fromJson).toList(),
       );
 });
 
@@ -58,7 +59,9 @@ class UpgradeStoreState {
       UpgradeStoreState(
         upgradingStoreId:
             clearUpgrading ? null : (upgradingStoreId ?? this.upgradingStoreId),
-        optimisticBalance: clearUpgrading ? null : (optimisticBalance ?? this.optimisticBalance),
+        optimisticBalance: clearUpgrading
+            ? null
+            : (optimisticBalance ?? this.optimisticBalance),
         errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       );
 }
@@ -122,7 +125,7 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
   /// Win = +35% for 12h, Loss = -15% for 6h
   Future<Map<String, dynamic>> applyPriceWarResult({required bool won}) async {
     try {
-      final session = SupabaseService.client.auth.currentSession;
+      final Session? session = SupabaseService.client.auth.currentSession;
       if (session == null) {
         return <String, dynamic>{
           'success': false,
@@ -130,7 +133,8 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
         };
       }
 
-      final response = await SupabaseService.client.functions.invoke(
+      final FunctionResponse response =
+          await SupabaseService.client.functions.invoke(
         'claim-mini-game-reward',
         body: <String, dynamic>{
           'game_key': 'price_war',
@@ -140,7 +144,7 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
           'Authorization': 'Bearer ${session.accessToken}',
         },
       );
-      return Map<String, dynamic>.from(response.data as Map);
+      return Map<String, dynamic>.from(response.data as Map<String, dynamic>);
     } catch (e) {
       return <String, dynamic>{
         'success': false,
@@ -150,20 +154,23 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
   }
 
   /// Apply Power Move Combo: store multiplier for next liquidation
-  Future<Map<String, dynamic>> applyPowerMoveCombo({required double multiplier}) async {
+  Future<Map<String, dynamic>> applyPowerMoveCombo({
+    required double multiplier,
+  }) async {
     try {
       await SupabaseService.client
           .from(SupabaseConstants.tableBrandState)
           .update(<String, dynamic>{
-            'pending_power_move_multiplier': multiplier,
-            'power_move_expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
-          })
-          .eq('player_id', SupabaseService.client.auth.currentUser!.id);
+        'pending_power_move_multiplier': multiplier,
+        'power_move_expires_at':
+            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+      }).eq('player_id', SupabaseService.client.auth.currentUser!.id);
 
       return <String, dynamic>{
         'success': true,
         'multiplier': multiplier,
-        'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+        'expires_at':
+            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
       };
     } catch (e) {
       return <String, dynamic>{
@@ -174,7 +181,9 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
   }
 
   /// Apply Hostile Takeover result: inject 5000 Capital if 100% ownership
-  Future<Map<String, dynamic>> applyTakeoverResult({required double finalPct}) async {
+  Future<Map<String, dynamic>> applyTakeoverResult({
+    required double finalPct,
+  }) async {
     if (finalPct != 100.0) {
       return <String, dynamic>{
         'success': false,
@@ -183,7 +192,7 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
     }
 
     try {
-      final session = SupabaseService.client.auth.currentSession;
+      final Session? session = SupabaseService.client.auth.currentSession;
       if (session == null) {
         return <String, dynamic>{
           'success': false,
@@ -191,7 +200,8 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
         };
       }
 
-      final response = await SupabaseService.client.functions.invoke(
+      final FunctionResponse response =
+          await SupabaseService.client.functions.invoke(
         'claim-mini-game-reward',
         body: <String, dynamic>{
           'game_key': 'hostile_takeover',
@@ -201,7 +211,7 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
           'Authorization': 'Bearer ${session.accessToken}',
         },
       );
-      return Map<String, dynamic>.from(response.data as Map);
+      return Map<String, dynamic>.from(response.data as Map<String, dynamic>);
     } catch (e) {
       return <String, dynamic>{
         'success': false,

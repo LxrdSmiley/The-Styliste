@@ -3,16 +3,13 @@
 // GDD §8.9.2 — Obsidian Rot: 0-20 Pristine, 21-50 Fractures, 51-99 Sludge, 100 Lockdown
 
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/aurelian_theme.dart';
-import '../../hq/theme/aurelian_hq_theme.dart';
 import '../services/tarnish_calculator.dart';
 
 /// Tarnish Overlay — Visual degradation system for HQ
-/// 
+///
 /// Features:
 /// - 0-20: Pure Alabaster (no overlay)
 /// - 21-50: Grey hairline fractures (seeded, deterministic per player)
@@ -21,31 +18,32 @@ import '../services/tarnish_calculator.dart';
 /// - Permanent Kintsugi gold veins (from repairs)
 class TarnishOverlay extends StatelessWidget {
   const TarnishOverlay({
-    super.key,
     required this.tarnishLevel,
     required this.kintsugiLevel,
     required this.playerId,
     required this.child,
+    super.key,
     this.onKintsugiRequest,
     this.onApologyRequest,
   });
 
-  final int tarnishLevel;  // 0-100
+  final int tarnishLevel; // 0-100
   final int kintsugiLevel; // Permanent gold veins
-  final String playerId;   // Seed for deterministic fractures
+  final String playerId; // Seed for deterministic fractures
   final Widget child;
   final VoidCallback? onKintsugiRequest;
   final VoidCallback? onApologyRequest;
 
   @override
   Widget build(BuildContext context) {
-    final TarnishVisualTier tier = TarnishCalculator.getVisualTier(tarnishLevel);
-    
+    final TarnishVisualTier tier =
+        TarnishCalculator.getVisualTier(tarnishLevel);
+
     return Stack(
       children: <Widget>[
         // Base content
         child,
-        
+
         // Tier 2: Hairline Fractures (21-50)
         if (tier.index >= TarnishVisualTier.fractured.index)
           CustomPaint(
@@ -56,13 +54,13 @@ class TarnishOverlay extends StatelessWidget {
               opacity: 0.3 + (tarnishLevel - 20) * 0.01,
             ),
           ),
-        
+
         // Tier 3: Obsidian Sludge (51-99)
         if (tier.index >= TarnishVisualTier.obsidian.index)
           _ObsidianSludgeLayer(
             intensity: (tarnishLevel - 50) / 50, // 0.0 → 1.0
           ),
-        
+
         // Permanent Kintsugi Gold Veins (from repairs)
         if (kintsugiLevel > 0)
           CustomPaint(
@@ -72,7 +70,7 @@ class TarnishOverlay extends StatelessWidget {
               level: kintsugiLevel,
             ),
           ),
-        
+
         // Tier 4: Total Lockdown (100)
         if (tier == TarnishVisualTier.lockdown)
           _LockdownOverlay(
@@ -96,7 +94,7 @@ class HairlineFracturePainter extends CustomPainter {
   });
 
   final String seed;
-  final double density;  // 0.0 to 1.0
+  final double density; // 0.0 to 1.0
   final double opacity;
 
   @override
@@ -106,33 +104,33 @@ class HairlineFracturePainter extends CustomPainter {
       ..color = const Color(0xFF6B6B6B).withValues(alpha: opacity)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
-    
+
     // Number of fractures based on density
     final int fractureCount = (5 + density * 15).toInt();
-    
+
     for (int i = 0; i < fractureCount; i++) {
       final double startX = random.nextDouble() * size.width;
       final double startY = random.nextDouble() * size.height;
-      
+
       // Jagged line with 2-4 segments
       final int segments = 2 + random.nextInt(3);
       final Path path = Path();
       path.moveTo(startX, startY);
-      
+
       double currentX = startX;
       double currentY = startY;
-      
+
       for (int j = 0; j < segments; j++) {
         // Random direction and length
         final double angle = random.nextDouble() * math.pi * 2;
         final double length = 20 + random.nextDouble() * 60;
-        
+
         currentX += math.cos(angle) * length;
         currentY += math.sin(angle) * length;
-        
+
         path.lineTo(currentX, currentY);
       }
-      
+
       canvas.drawPath(path, paint);
     }
   }
@@ -184,21 +182,21 @@ class KintsugiVeinPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final math.Random random = math.Random(seed.hashCode + level);
-    
+
     final Paint paint = Paint()
       ..color = const Color(0xFFD4AF37) // Deep gold
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-    
+
     // Veins radiate from repaired fractures
     // Each repair adds 2-3 gold veins
     final int veinCount = level * 2 + random.nextInt(3);
-    
+
     for (int i = 0; i < veinCount; i++) {
       final double centerX = random.nextDouble() * size.width;
       final double centerY = random.nextDouble() * size.height;
-      
+
       // Draw branching gold vein
       _drawGoldVein(
         canvas,
@@ -209,41 +207,42 @@ class KintsugiVeinPainter extends CustomPainter {
       );
     }
   }
-  
+
   void _drawGoldVein(
     Canvas canvas,
     Offset start,
     Paint paint,
-    math.Random random,
-    {required int depth,}
-  ) {
+    math.Random random, {
+    required int depth,
+  }) {
     if (depth <= 0) return;
-    
+
     final double angle = random.nextDouble() * math.pi * 2;
     final double length = 30 + random.nextDouble() * 50;
-    
+
     final Offset end = Offset(
       start.dx + math.cos(angle) * length,
       start.dy + math.sin(angle) * length,
     );
-    
+
     // Draw main vein
     canvas.drawLine(start, end, paint);
-    
+
     // Draw smaller branches
     if (depth > 1) {
       final int branches = 1 + random.nextInt(2);
       for (int i = 0; i < branches; i++) {
-        final double branchAngle = angle + (random.nextDouble() - 0.5) * math.pi / 2;
+        final double branchAngle =
+            angle + (random.nextDouble() - 0.5) * math.pi / 2;
         final double branchLength = length * 0.5;
         final Offset branchEnd = Offset(
           end.dx + math.cos(branchAngle) * branchLength,
           end.dy + math.sin(branchAngle) * branchLength,
         );
-        
+
         final Paint branchPaint = paint..strokeWidth = 1.0;
         canvas.drawLine(end, branchEnd, branchPaint);
-        
+
         // Recursive branches
         _drawGoldVein(canvas, branchEnd, branchPaint, random, depth: depth - 1);
       }
@@ -295,9 +294,9 @@ class _LockdownOverlay extends StatelessWidget {
                   color: Color(0xFFFF3333),
                 ),
               ),
-              
+
               const SizedBox(height: 32.0),
-              
+
               // Title
               const Text(
                 'BRAND LOCKDOWN',
@@ -309,9 +308,9 @@ class _LockdownOverlay extends StatelessWidget {
                   color: Color(0xFFFF3333),
                 ),
               ),
-              
+
               const SizedBox(height: 16.0),
-              
+
               // Message
               Text(
                 'Your reputation has suffered critical damage. '
@@ -324,9 +323,9 @@ class _LockdownOverlay extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.8),
                 ),
               ),
-              
+
               const SizedBox(height: 48.0),
-              
+
               // Kintsugi button (full repair)
               GestureDetector(
                 onTap: onKintsugi,
@@ -369,9 +368,9 @@ class _LockdownOverlay extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16.0),
-              
+
               // Apology button (partial repair)
               GestureDetector(
                 onTap: onApology,
