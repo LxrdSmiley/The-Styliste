@@ -79,11 +79,17 @@ final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
             provider: const OAuthProvider('firebase'),
             idToken: idToken,
           );
-          controller.add(null);
+          if (!controller.isClosed) {
+            controller.add(null);
+          }
         } catch (e) {
-          // Bridge errors are non-fatal: log only, never surface to UI.
+          // Bridge errors are logged. We emit a value anyway to unblock the
+          // app's loading gate, allowing local play/UI to render.
           if (kDebugMode) {
             debugPrint('supabaseBridge error: $e');
+          }
+          if (!controller.isClosed) {
+            controller.add(null);
           }
         }
       },

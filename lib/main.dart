@@ -21,9 +21,11 @@ const String _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 // Must be a top-level function annotated with @pragma('vm:entry-point')
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(
-    options: FirebaseService.currentPlatformOptions,
-  );
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: FirebaseService.currentPlatformOptions,
+    );
+  }
   // Background message received — no UI interaction allowed here
   // Payload handling (badge updates, local notification scheduling) added in Phase 2
 }
@@ -40,9 +42,11 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Initialise Firebase (PROJECT_RULES §2)
-  await Firebase.initializeApp(
-    options: FirebaseService.currentPlatformOptions,
-  );
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      options: FirebaseService.currentPlatformOptions,
+    );
+  }
 
   // Activate Firebase App Check (Play Integrity / DeviceCheck — GDD §8.15.1)
   await FirebaseService.activateAppCheck();
