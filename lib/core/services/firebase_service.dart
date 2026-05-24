@@ -38,17 +38,15 @@ abstract final class FirebaseService {
   /// whitelisting (required for local emulator / dev device attestation).
   static Future<void> activateAppCheck() async {
     await FirebaseAppCheck.instance.activate(
-      androidProvider: kDebugMode
-          ? AndroidProvider.debug
-          : AndroidProvider.playIntegrity,
-      appleProvider: kDebugMode
-          ? AppleProvider.debug
-          : AppleProvider.deviceCheck,
+      androidProvider:
+          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      appleProvider:
+          kDebugMode ? AppleProvider.debug : AppleProvider.deviceCheck,
     );
 
     if (kDebugMode) {
-      debugPrint('Firebase App Check debug provider active for local development.');
+      debugPrint(
+          'Firebase App Check debug provider active for local development.');
     }
   }
 }
-

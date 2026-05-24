@@ -25,7 +25,7 @@ class _SafeDouble implements JsonConverter<double, Object?> {
 class Brand with _$Brand {
   const factory Brand({
     required String playerId,
-    @Default(50) int heat,          // 0–100 Brand Heat (GDD §8.9.7)
+    @Default(50) int heat, // 0–100 Brand Heat (GDD §8.9.7)
     @_SafeDouble() @Default(0.0) double hypeScore,
     @Default(0) int followers,
     @_SafeDouble() @Default(0.0) double idleRevenuePerHour,
@@ -42,16 +42,16 @@ class Brand with _$Brand {
     // Luxe Tokens — hard currency (GDD §9.8); minted by validate-iap Edge Function.
     @Default(0) int luxeTokens,
     // Directive H: Crisis Engine — Tarnish & Kintsugi (GDD §8.9.2)
-    @Default(0) int currentTarnish,      // 0-100 reputation damage
-    @Default(0) int kintsugiLevel,       // Number of successful repairs
+    @Default(0) int currentTarnish, // 0-100 reputation damage
+    @Default(0) int kintsugiLevel, // Number of successful repairs
     @Default(0) int totalScandalsSurvived,
-    @Default(0) int prestigeTokens,      // Future Gacha system
-    String? marketTier,                  // high_luxury / mid_luxury / mass_market
+    @Default(0) int prestigeTokens, // Future Gacha system
+    String? marketTier, // high_luxury / mid_luxury / mass_market
     Map<String, dynamic>? avatarConfiguration,
     // Directive L: Supply Chain & Buffer Stock Engine (GDD §12.1.2)
-    @Default(5000) int warehouseCapacity,     // Max inventory storage
-    @Default(0) int currentInventoryValue,    // Current stored inventory
-    @Default(1) int logisticsLevel,           // Warehouse upgrade tier
+    @Default(5000) int warehouseCapacity, // Max inventory storage
+    @Default(0) int currentInventoryValue, // Current stored inventory
+    @Default(1) int logisticsLevel, // Warehouse upgrade tier
   }) = _Brand;
 
   factory Brand.fromJson(Map<String, dynamic> json) => _$BrandFromJson(json);

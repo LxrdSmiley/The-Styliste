@@ -31,9 +31,7 @@ class _StaffRallyScreenState extends ConsumerState<StaffRallyScreen>
     _gameTimer = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 12),
-    )
-      ..forward()
-      .then((_) => _endGame());
+    )..forward().then((_) => _endGame());
   }
 
   void _onStaffTap(bool hit) {

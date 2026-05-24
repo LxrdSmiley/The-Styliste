@@ -59,9 +59,14 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
         playerId: widget.player.id,
         tarnishLevel: tarnish,
         kintsugiLevel: kintsugi,
+<<<<<<< HEAD
+        onKintsugiRequest: () => context.push(AppRouter.crisisKintsugi),
+        onApologyRequest: () => unawaited(_applyApology(context)),
+=======
         onKintsugiRequest: () =>
             unawaited(context.push(AppRouter.crisisKintsugi)),
         onApologyRequest: () => _applyApology(context),
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
         child: SafeArea(
           child: Column(
             children: <Widget>[
@@ -149,10 +154,14 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
         activeInputs: const <HeatInput>[
           HeatInput(name: 'Recent Drops', contribution: 15.0, isPositive: true),
           HeatInput(
+<<<<<<< HEAD
+              name: 'Trend Alignment', contribution: 8.0, isPositive: true),
+=======
             name: 'Trend Alignment',
             contribution: 8.0,
             isPositive: true,
           ),
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
           HeatInput(name: 'Time Decay', contribution: -5.0, isPositive: false),
         ],
       ),
@@ -160,7 +169,11 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
   }
 
   Future<void> _applyApology(BuildContext context) async {
+<<<<<<< HEAD
+    HapticFeedback.heavyImpact();
+=======
     unawaited(HapticFeedback.heavyImpact());
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     final Map<String, dynamic> result =
         await Supabase.instance.client.rpc<Map<String, dynamic>>(
       'execute_power_move',

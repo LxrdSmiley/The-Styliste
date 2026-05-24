@@ -1,10 +1,10 @@
 // GDD §3.0 — HQ Riverpod providers: stream Player and Brand state
 // PROJECT_RULES §3 — Server is source of truth; client reads via real-time streams.
-// Both providers derive their UID from activeUidProvider (real Firebase UID post-Phase 2).
+// Both providers derive their UID from activeUidProvider (Supabase auth UUID).
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/providers/mock_auth_provider.dart';
+import '../../../core/providers/active_player_provider.dart';
 import '../../../data/repositories/supabase_economy_repository.dart';
 import '../../../data/repositories/supabase_player_repository.dart';
 import '../../../domain/models/brand.dart';
@@ -38,8 +38,7 @@ final StreamProvider<Brand> hqBrandStreamProvider =
 
 /// Brand heat percent only — for BrandHeatMeter widget
 /// Rebuilds only when heat integer changes (not on every decimal tick)
-final Provider<int> brandHeatPercentProvider =
-    Provider<int>((Ref<int> ref) {
+final Provider<int> brandHeatPercentProvider = Provider<int>((Ref<int> ref) {
   return ref.watch(
     hqBrandStreamProvider.select(
       (AsyncValue<Brand> async) => async.value?.heat ?? 0,
@@ -80,8 +79,7 @@ final Provider<bool> jointVentureUnlockedProvider =
 /// Idle income ticker — optimized for cash flow ribbon
 /// Only updates when integer dollar amount changes (not every cent tick)
 /// Kode Addendum #2: Returns 0 when in lockdown (tarnish >= 100)
-final Provider<int> idleIncomeTickerProvider =
-    Provider<int>((Ref<int> ref) {
+final Provider<int> idleIncomeTickerProvider = Provider<int>((Ref<int> ref) {
   return ref.watch(
     hqBrandStreamProvider.select((AsyncValue<Brand> async) {
       final Brand? brand = async.value;
@@ -97,8 +95,7 @@ final Provider<int> idleIncomeTickerProvider =
 // =============================================================================
 
 /// Current tarnish level only (0-100)
-final Provider<int> tarnishLevelProvider =
-    Provider<int>((Ref<int> ref) {
+final Provider<int> tarnishLevelProvider = Provider<int>((Ref<int> ref) {
   return ref.watch(
     hqBrandStreamProvider.select(
       (AsyncValue<Brand> async) => async.value?.currentTarnish ?? 0,
@@ -107,8 +104,7 @@ final Provider<int> tarnishLevelProvider =
 });
 
 /// Kintsugi level (permanent gold veins count)
-final Provider<int> kintsugiLevelProvider =
-    Provider<int>((Ref<int> ref) {
+final Provider<int> kintsugiLevelProvider = Provider<int>((Ref<int> ref) {
   return ref.watch(
     hqBrandStreamProvider.select(
       (AsyncValue<Brand> async) => async.value?.kintsugiLevel ?? 0,
@@ -117,7 +113,6 @@ final Provider<int> kintsugiLevelProvider =
 });
 
 /// Lockdown state (tarnish >= 100)
-final Provider<bool> isLockdownProvider =
-    Provider<bool>((Ref<bool> ref) {
+final Provider<bool> isLockdownProvider = Provider<bool>((Ref<bool> ref) {
   return ref.watch(tarnishLevelProvider) >= 100;
 });

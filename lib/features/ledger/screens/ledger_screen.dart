@@ -63,13 +63,11 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
     }
 
     // Live balance from brand_state Realtime stream (source of truth).
-    final double liveBalance = ref
-        .watch(hqBrandStreamProvider)
-        .maybeWhen(data: (Brand brand) => brand.totalRevenue, orElse: () => 0.0);
+    final double liveBalance = ref.watch(hqBrandStreamProvider).maybeWhen(
+        data: (Brand brand) => brand.totalRevenue, orElse: () => 0.0);
 
     // Effective balance: use optimistic preview during upgrade in-flight.
-    final double displayBalance =
-        upgradeState.optimisticBalance ?? liveBalance;
+    final double displayBalance = upgradeState.optimisticBalance ?? liveBalance;
 
     return Scaffold(
       backgroundColor: AppColors.obsidian,
@@ -219,8 +217,7 @@ class _StoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool buttonEnabled =
-        _canAfford && !_anyUpgradeInFlight;
+    final bool buttonEnabled = _canAfford && !_anyUpgradeInFlight;
 
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -272,7 +269,8 @@ class _StoreCard extends StatelessWidget {
                   vertical: 4.0,
                 ),
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.lime.withValues(alpha: 0.4)),
+                  border:
+                      Border.all(color: AppColors.lime.withValues(alpha: 0.4)),
                   borderRadius: BorderRadius.circular(2.0),
                 ),
                 child: Text(

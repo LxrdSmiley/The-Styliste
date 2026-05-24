@@ -40,13 +40,13 @@ class VexReviewCard extends StatelessWidget {
         FadeEffect(
           begin: 0.0,
           end: 1.0,
-          duration: Duration(milliseconds: 300),
+          duration: _animationDuration,
           curve: Curves.easeOut,
         ),
         ScaleEffect(
           begin: Offset(0.95, 0.95),
           end: Offset(1.0, 1.0),
-          duration: Duration(milliseconds: 400),
+          duration: _animationDuration,
           curve: Curves.easeOutBack,
         ),
       ],
@@ -446,10 +446,14 @@ class _SealPainter extends CustomPainter {
 
     // Center dot
     canvas.drawCircle(
+<<<<<<< HEAD
+        center, 3.0, Paint()..color = AurelianPalette.champagneGold);
+=======
       center,
       3.0,
       Paint()..color = AurelianPalette.champagneGold,
     );
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
   }
 
   @override

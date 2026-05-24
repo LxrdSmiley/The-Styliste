@@ -102,10 +102,8 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
       totalTalentExpertise: _ref.read(rosterProvider).maybeWhen(
             data: (List<RosterTalent> roster) => roster
                 .where((RosterTalent t) => t.tier == TalentTier.sovereign)
-                .fold(
-                  0.0,
-                  (double sum, RosterTalent t) => sum + t.expertiseScore,
-                ),
+                .fold(0.0,
+                    (double sum, RosterTalent t) => sum + t.expertiseScore),
             orElse: () => 0.0,
           ),
     );

@@ -36,8 +36,12 @@ final StreamProvider<SupplyChainState> supplyChainProvider =
 
 class LiquidationNotifier
     extends StateNotifier<AsyncValue<LiquidationResult?>> {
+<<<<<<< HEAD
+  LiquidationNotifier() : super(const AsyncValue.data(null));
+=======
   LiquidationNotifier()
       : super(const AsyncValue<LiquidationResult?>.data(null));
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
 
   Future<void> liquidate() async {
     if (state.isLoading) return;
@@ -107,11 +111,17 @@ class LiquidationNotifier
       );
 
       final Map<String, dynamic> data =
+<<<<<<< HEAD
+          Map<String, dynamic>.from(response.data as Map);
+      final int reward =
+          ((data['reward'] as Map?)?['currency'] as num?)?.toInt() ?? 0;
+=======
           Map<String, dynamic>.from(response.data as Map<String, dynamic>);
       final int reward =
           ((data['reward'] as Map<String, dynamic>?)?['currency'] as num?)
                   ?.toInt() ??
               0;
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
 
       return <String, dynamic>{
         ...data,
@@ -185,9 +195,14 @@ class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
 
   /// Apply Supplier Raid result
   /// Win = 15% discount for 14 days, Loss = immediate halt
+<<<<<<< HEAD
+  Future<Map<String, dynamic>> applySupplierRaidResult(
+      {required bool won}) async {
+=======
   Future<Map<String, dynamic>> applySupplierRaidResult({
     required bool won,
   }) async {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       if (supabase.auth.currentUser == null) {
@@ -253,9 +268,14 @@ final ProviderFamily<int, int> nextUpgradeCostProvider =
 // =============================================================================
 
 final FutureProvider<SupplyChainStats> supplyChainStatsProvider =
+<<<<<<< HEAD
+    FutureProvider<SupplyChainStats>(
+        (Ref<AsyncValue<SupplyChainStats>> ref) async {
+=======
     FutureProvider<SupplyChainStats>((
   Ref<AsyncValue<SupplyChainStats>> ref,
 ) async {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
   final SupabaseClient supabase = Supabase.instance.client;
 
   // Get total capacity across all players

@@ -1,6 +1,6 @@
 // Directive J — Gala Runway Screen
 // GDD §6.9, §12.3.3 — The Void of Radiance
-// 
+//
 // Aesthetic: Vantablack (#000000) background, blinding Alabaster spotlight
 // Interaction: Vertical TikTok-style swipe with escalating haptic voting
 // Memory: Only current/next/previous 3D controllers active (120fps)
@@ -17,7 +17,7 @@ import '../providers/gala_provider.dart';
 import '../services/gala_scoring_engine.dart';
 
 /// Gala Runway — Void of Radiance
-/// 
+///
 /// The player swipes through submissions in a vertical TikTok-style feed.
 /// Each submission shows a 3D garment with optional Gilded Ripple (Sovereign talent).
 /// Voting console at bottom with 4 tiers and escalating haptics.
@@ -72,7 +72,7 @@ class _GalaRunwayScreenState extends ConsumerState<GalaRunwayScreen> {
         children: <Widget>[
           // --- Main feed ---
           _buildFeed(feedState),
-          
+
           // --- Top gradient (status bar blend) ---
           Positioned(
             top: 0.0,
@@ -92,7 +92,7 @@ class _GalaRunwayScreenState extends ConsumerState<GalaRunwayScreen> {
               ),
             ),
           ),
-          
+
           // --- Header ---
           SafeArea(
             child: Padding(
@@ -100,7 +100,7 @@ class _GalaRunwayScreenState extends ConsumerState<GalaRunwayScreen> {
               child: _buildHeader(galaAsync),
             ),
           ),
-          
+
           // --- Voting console ---
           if (feedState.submissions.isNotEmpty)
             Positioned(
@@ -160,7 +160,7 @@ class _GalaRunwayScreenState extends ConsumerState<GalaRunwayScreen> {
       itemBuilder: (BuildContext context, int index) {
         final GalaSubmission submission = feedState.submissions[index];
         final bool isActive = feedState.isIndexActive(index);
-        
+
         return _RunwayCard(
           submission: submission,
           isActive: isActive,
@@ -189,7 +189,7 @@ class _GalaRunwayScreenState extends ConsumerState<GalaRunwayScreen> {
             ),
           ),
         ),
-        
+
         // Theme title
         Expanded(
           child: Padding(
@@ -226,7 +226,6 @@ class _GalaRunwayScreenState extends ConsumerState<GalaRunwayScreen> {
             ),
           ),
         ),
-        
       ],
     );
   }
@@ -248,7 +247,7 @@ class _RunwayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool hasGildedRipple = submission.hasSovereignTalent;
-    
+
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
@@ -260,7 +259,8 @@ class _RunwayCard extends StatelessWidget {
                 center: Alignment.topCenter,
                 radius: 0.8,
                 colors: <Color>[
-                  AurelianPalette.alabaster.withValues(alpha: hasGildedRipple ? 0.6 : 0.3),
+                  AurelianPalette.alabaster
+                      .withValues(alpha: hasGildedRipple ? 0.6 : 0.3),
                   Colors.transparent,
                 ],
                 stops: const <double>[0.0, 1.0],
@@ -272,8 +272,8 @@ class _RunwayCard extends StatelessWidget {
             ),
           ),
         ),
-        
-        // --- 3D Garment Display (placeholder) ---
+
+        // --- Submitted design display ---
         Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -293,8 +293,7 @@ class _RunwayCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              
-              // Garment placeholder
+
               Container(
                 width: 240.0,
                 height: 360.0,
@@ -308,18 +307,36 @@ class _RunwayCard extends StatelessWidget {
                     width: hasGildedRipple ? 2.0 : 1.0,
                   ),
                 ),
-                child: Center(
-                  child: Icon(
-                    Icons.checkroom,
-                    size: 64.0,
-                    color: Colors.white.withValues(alpha: 0.3),
-                  ),
-                ),
+                clipBehavior: Clip.antiAlias,
+                child: submission.designImageUrl == null
+                    ? Center(
+                        child: Icon(
+                          Icons.checkroom,
+                          size: 64.0,
+                          color: Colors.white.withValues(alpha: 0.3),
+                        ),
+                      )
+                    : Image.network(
+                        submission.designImageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (
+                          BuildContext context,
+                          Object error,
+                          StackTrace? stackTrace,
+                        ) =>
+                            Center(
+                          child: Icon(
+                            Icons.broken_image_outlined,
+                            size: 56.0,
+                            color: Colors.white.withValues(alpha: 0.3),
+                          ),
+                        ),
+                      ),
               ),
             ],
           ),
         ),
-        
+
         // --- Submission info (left side) ---
         Positioned(
           left: 16.0,
@@ -378,7 +395,8 @@ class _RunwayCard extends StatelessWidget {
                     vertical: 4.0,
                   ),
                   decoration: BoxDecoration(
-                    color: submission.talent!.tier.tierColor.withValues(alpha: 0.2),
+                    color: submission.talent!.tier.tierColor
+                        .withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(4.0),
                   ),
                   child: Text(
@@ -411,7 +429,7 @@ class _VotingConsole extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final VoteCastingState castState = ref.watch(voteCastingProvider);
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -432,9 +450,9 @@ class _VotingConsole extends ConsumerWidget {
             // Points explosion animation (when vote cast)
             if (castState.lastResult?.success ?? false)
               _PointsExplosion(points: castState.lastResult!.finalPoints),
-            
+
             const SizedBox(height: 16.0),
-            
+
             // Vote buttons row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -455,7 +473,7 @@ class _VotingConsole extends ConsumerWidget {
 
   void _castVote(WidgetRef ref, VoteTier tier) {
     if (submission == null) return;
-    
+
     ref.read(voteCastingProvider.notifier).castVote(submission!.id, tier);
   }
 }
@@ -527,14 +545,15 @@ class _VoteButton extends StatelessWidget {
   }
 
   Widget _getTierIcon(VoteTier tier, bool isEnabled) {
-    final Color color = isEnabled ? tier.tierColor : Colors.white.withValues(alpha: 0.3);
+    final Color color =
+        isEnabled ? tier.tierColor : Colors.white.withValues(alpha: 0.3);
     final double size = switch (tier) {
       VoteTier.adore => 24.0,
       VoteTier.iconic => 28.0,
       VoteTier.sovereign => 32.0,
       VoteTier.timeless => 36.0,
     };
-    
+
     return Icon(
       switch (tier) {
         VoteTier.adore => Icons.favorite,

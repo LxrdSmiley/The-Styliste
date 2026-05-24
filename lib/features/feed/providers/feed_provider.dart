@@ -1,7 +1,7 @@
 // GDD §6.1 — Feed Riverpod providers (Phase 6 + 7).
 // feedStreamProvider: Realtime stream of global feed_posts (newest first).
 // feedHypeOverrideProvider: immutable optimistic hype delta map (postId → delta).
-// hyypePostProvider: fires increment_post_hype RPC.
+// hypePostProvider: fires increment_post_hype RPC.
 // Phase 7 additions:
 //   feedModeProvider: GLOBAL | SYNDICATE toggle state.
 //   followingIdsProvider: Realtime stream of the player's follow graph → Set<String>.
@@ -10,7 +10,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/providers/mock_auth_provider.dart';
+import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/feed_post.dart';
 
@@ -52,14 +52,18 @@ final StateProvider<Map<String, int>> feedHypeOverrideProvider =
 // Hype RPC — atomic Postgres increment. Family-parameterised by postId.
 // ---------------------------------------------------------------------------
 
-final FutureProviderFamily<void, String> hyypePostProvider =
+final FutureProviderFamily<void, String> hypePostProvider =
     FutureProvider.family<void, String>(
   (Ref<AsyncValue<void>> ref, String postId) async {
-    await SupabaseService.client
-        .rpc<void>(
-          'increment_post_hype',
-          params: <String, dynamic>{'target_post_id': postId},
-        );
+    final String uid = ref.read(activeUidProvider);
+
+    await SupabaseService.client.rpc<Map<String, dynamic>>(
+      'increment_post_hype',
+      params: <String, dynamic>{
+        'p_post_id': postId,
+        'p_player_id': uid,
+      },
+    );
   },
 );
 
@@ -76,8 +80,9 @@ final StreamProvider<Set<String>> followingIdsProvider =
       .stream(primaryKey: <String>['follower_id', 'following_id'])
       .eq('follower_id', uid)
       .map(
-        (List<Map<String, dynamic>> rows) =>
-            rows.map((Map<String, dynamic> r) => r['following_id'] as String).toSet(),
+        (List<Map<String, dynamic>> rows) => rows
+            .map((Map<String, dynamic> r) => r['following_id'] as String)
+            .toSet(),
       );
 });
 
@@ -88,13 +93,9 @@ final StreamProvider<Set<String>> followingIdsProvider =
 
 final FutureProvider<List<FeedPost>> syndicateFeedProvider =
     FutureProvider<List<FeedPost>>((Ref<AsyncValue<List<FeedPost>>> ref) async {
-  final List<dynamic> rows = await SupabaseService.client
-      .rpc<List<dynamic>>(
-        'get_syndicate_feed',
-        params: <String, dynamic>{'p_limit': 50},
-      );
-  return rows
-      .cast<Map<String, dynamic>>()
-      .map(FeedPost.fromJson)
-      .toList();
+  final List<dynamic> rows = await SupabaseService.client.rpc<List<dynamic>>(
+    'get_syndicate_feed',
+    params: <String, dynamic>{'p_limit': 50},
+  );
+  return rows.cast<Map<String, dynamic>>().map(FeedPost.fromJson).toList();
 });

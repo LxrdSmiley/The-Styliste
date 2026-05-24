@@ -64,7 +64,7 @@ class _GarmentCanvasState extends State<GarmentCanvas>
       'lib/shaders/cloth_physics.frag',
     );
 
-    // 1×1 ivory placeholder texture — blended with uDyeColor via mix() in shader.
+    // 1×1 ivory fallback texture — blended with uDyeColor via mix() in shader.
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas c = Canvas(recorder);
     c.drawRect(

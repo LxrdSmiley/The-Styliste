@@ -114,9 +114,7 @@ class _SovereignRegistryScreenState
                     fontSize: 13.0,
                     letterSpacing: 0.5,
                   ),
-                )
-                    .animate()
-                    .fadeIn(
+                ).animate().fadeIn(
                       delay: const Duration(milliseconds: 200),
                       duration: const Duration(milliseconds: 400),
                     ),
@@ -164,10 +162,12 @@ class _SovereignRegistryScreenState
                       ),
                     ),
                     errorBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.danger, width: 1.5),
+                      borderSide:
+                          BorderSide(color: AppColors.danger, width: 1.5),
                     ),
                     focusedErrorBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.danger, width: 2.0),
+                      borderSide:
+                          BorderSide(color: AppColors.danger, width: 2.0),
                     ),
                     errorText: _liveError,
                     errorStyle: const TextStyle(
@@ -181,14 +181,14 @@ class _SovereignRegistryScreenState
                             color: AppColors.gold,
                             size: 16.0,
                           )
-                              .animate(
-                                onPlay: (AnimationController c) => c.repeat(reverse: true),
-                              )
-                              .fadeIn(duration: const Duration(milliseconds: 600))
+                            .animate(
+                              onPlay: (AnimationController c) =>
+                                  c.repeat(reverse: true),
+                            )
+                            .fadeIn(duration: const Duration(milliseconds: 600))
                         : null,
                   ),
-                  validator: (String? value) =>
-                      brandNameError(value ?? ''),
+                  validator: (String? value) => brandNameError(value ?? ''),
                 ),
 
                 const SizedBox(height: 24.0),

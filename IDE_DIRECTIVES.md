@@ -1,1173 +1,710 @@
 # IDE_DIRECTIVES.md
 
-## Audit scope
+Audit target: full repository against `THE_STYLISTE_GDD_v6.md`, with security, credentials, legal, and static analysis prioritized ahead of gameplay polish.
 
-- Reviewed upload: `/mnt/data/The-Styliste-master (10).zip`
-- Static audit only: Flutter/Dart SDKs are not installed in this sandbox, so `flutter analyze`, `flutter test`, `dart run build_runner`, and full compilation could not be executed here.
-- Priority order applied: security/credentials → server-authoritative Mogul/economy → schema/model drift → ghost code/TODOs → polish.
+Static-analysis baseline supplied by developer: `dart analyze` reports 115 issues, `flutter analysis` reports 0 errors.
 
----
+## 1. GDD Coverage Map
 
-## Directive 1: Block app entry until Firebase anonymous sign-in and Supabase auth bridge both complete
+Use this table as the implementation acceptance checklist. Status is code-present status, not design intent.
 
-**Problem:** `lib/app.dart` watches `supabaseBridgeProvider` but does not gate rendering on it. Screens can execute Supabase reads/RPCs before `Supabase.instance.client.auth.currentUser` exists, causing UUID mismatches and null crashes.
+| GDD feature | Code map | Status | Required IDE action |
+|---|---|---:|---|
+| GDD §1.1 Onboarding, Aurelian Sanctuary 7 screens | `lib/features/onboarding/screens/*`, `supabase/migrations/018_onboarding_flag.sql` | Partial | Fix analyzer issues in onboarding, replace avatar placeholder with real mannequin asset gate, keep Supabase auth gate before onboarding writes. |
+| GDD §2 Designer Loop | `lib/features/atelier`, `lib/features/feed`, `supabase/functions/mint-design` | Partial | Make Hype Score server-authoritative and formula-correct. See directives 5 and 7. |
+| GDD §2 Mogul Loop | `lib/features/ledger`, `lib/features/store`, `lib/features/supply_chain`, `supabase/functions/process-transaction` | Partial | Repair schema drift and rate-limit all economy RPCs. See directives 2, 6, and 7. |
+| GDD §3 Player Progression Paths | `lib/features/hq`, `lib/domain/models/player.dart`, `lib/core/router/app_router.dart` | Partial | Verify path-specific route guards and suppress unimplemented path widgets until functional. |
+| GDD §3.0 Main HQ Dashboard | `lib/features/hq/screens/hq_screen.dart`, `lib/features/hq/widgets/*` | Partial | Fix bottom-sheet generic warnings and remove `_CashFlowRibbon` dead code. |
+| GDD §3.1-3.2 Brand Rank and pacing | `lib/core/constants/game_constants.dart`, `lib/presentation/widgets/brand_rank_bar.dart`, rank fields in migrations | Partial | Align rank source of truth: use `players.brand_rank` or `brand_state.brand_rank`, not both. |
+| GDD §3.3-3.4 Idle progression and soft cap | `lib/core/services/idle_engine_service.dart`, `supabase/functions/calculate-idle-income`, `supabase/migrations/014_idle_soft_cap.sql` | Partial | Keep server-only idle calculation and add RPC rate limit checks. |
+| GDD §3.5 Aurelian Ascension | `lib/features/ascension`, `supabase/migrations/008_aurelian_ascension.sql` | Partial | Add analyzer type annotations in `ascension_provider.dart`. |
+| GDD §3.6 Accessibility and progressive complexity | `lib/features/settings/screens/settings_screen.dart` Expert Mode | Partial | Add actual accessibility controls beyond Expert Mode: reduced motion, text scale, high contrast. |
+| GDD §3.7 What's Next dashboard | HQ widgets and onboarding redirect | Partial | Add explicit post-onboarding objectives, or hide claims until implemented. |
+| GDD §3.8 F2P progression | Economy constants and store providers | Partial | Add tests proving non-IAP path parity for rank and talent progression. |
+| GDD §3.9 Path specialization | `CareerPath`, HQ path widgets | Partial | Add path-lock tests and prevent cross-path reward leakage. |
+| GDD §4.1 Atelier UI and Hype_Score | `lib/features/atelier`, `lib/features/design/services/hype_calculator.dart`, `supabase/functions/mint-design` | Partial | Replace random hype and local-only calculation. See directive 7. |
+| GDD §4.2 Atelier Verlet physics | `lib/features/atelier/widgets/garment_canvas.dart`, `lib/shaders/cloth_physics.frag`, `lib/features/onboarding/widgets/verlet_ribbon_painter.dart` | Partial | Remove unused physics fields and add golden/smoke tests for nonblank shader render. |
+| GDD §4.3 Avatar customization | `lib/features/onboarding/screens/avatar_customizer_screen.dart` | Partial | Replace "stichless_mannequin.glb display placeholder" with asset-backed preview or hide 3D claim. |
+| GDD §4.4 AR try-on and Street Snaps | `lib/features/ar_tryon/screens/ar_tryon_screen.dart` | Scaffold | Replace Phase 10 tracking placeholder with real ARKit/ARCore/body tracking or mark feature unavailable in alpha. |
+| GDD §5 Mogul domain, Ledger, store, deals | `lib/features/ledger`, `lib/features/store`, `supabase/functions/process-transaction` | Partial | Keep all capital mutations in Edge Functions/RPCs; no client-side economy writes. |
+| GDD §5.1 Supply chain logistics | `lib/features/supply_chain`, `supabase/migrations/009_supply_chain.sql` | Partial | Add missing manual negotiation risks and DPP audit integration. |
+| GDD §5.2 Supplier negotiation risks | `lib/features/supply_chain/providers/supply_chain_provider.dart` | Partial | Add typed models and tests for risk outcomes. |
+| GDD §5.3 Inventory management | `brand_state` inventory fields and supply widgets | Partial | Add tests for capacity caps and overflow behavior. |
+| GDD §5.4 Marketing mechanics and campaign builder | `lib/features/ledger`, `supabase/migrations` campaign tables | Partial | Build campaign UI or hide route claims. |
+| GDD §5.5-5.6 Central bank and equity | `lib/features/ledger`, `lib/features/equity`, `supabase/migrations/011_central_bank_equity.sql` | Partial | Fix analyzer type annotations and add anti-manipulation tests. |
+| GDD §5.7 Mini-games | `lib/features/mini_games`, `supabase/functions/claim-mini-game-reward`, `supabase/migrations/017_mini_game_rewards.sql` | Partial | Use service-only reward RPC and remove broken `inject_capital_bonus` provenance write. See directive 6. |
+| GDD §6.1 Global Live Feed | `lib/features/feed`, `supabase/migrations/002_feed_triggers.sql`, `020_rate_limiting.sql` | Partial | Update feed hype RPC to two-arg hardened function. See directive 5. |
+| GDD §6.2 Partnerships and profit splits | `lib/features/feed`, `supabase/migrations/003_social_graph.sql` | Partial | Add split enforcement tests before alpha. |
+| GDD §6.3 Maisons and leadership | `lib/features/maison`, `supabase/migrations/004_maison_treasury.sql` | Partial | Fix deprecated Riverpod ref and type annotations. |
+| GDD §6.4-6.8 Social hooks, competitions, rewards | `lib/features/gala`, `lib/features/maison`, `lib/features/feed` | Partial | Repair Gala ownership validation and dynamic casts. See directive 6 and static-analysis table. |
+| GDD §6.9 Aurelian Gala | `lib/features/gala`, `supabase/migrations/012_aurelian_gala.sql`, `019_luxe_trust_score.sql` | Partial | Validate design ownership and active event in latest `submit_to_gala`. See directive 6. |
+| GDD §6.10 Reporting | `lib/features/reporting/widgets/report_modal.dart`, `supabase/migrations/015_player_reporting.sql` | Partial | Add screenshot bucket, server-side anti-abuse, moderation queue, and reporter rate limits. |
+| GDD §7 Rivals and events | `lib/features/events`, `supabase/functions/eclipse-event-tick` | Scaffold | Secure cron invocation and replace "Events Coming in Phase 4". |
+| GDD §8.1 Seasonal trend cycles | `lib/features/trends`, `supabase/migrations/006_trend_tsunami.sql` | Partial | Correct multipliers and use active trend in server mint. |
+| GDD §8.1.1 real fashion trends | Trend provider and migration seeds | Missing | Add curated/imported trend source or mark as manual content pipeline. |
+| GDD §8.1.2 Trend Tsunami | `lib/features/trends`, `TrendTsunami`, migrations | Partial | GDD says 48h and 1.5x alignment bonus; current code has 2.5x crest. Correct in directive 7. |
+| GDD §8.3 celebrity endorsement | No complete feature module found | Missing | Add module or remove alpha claim. |
+| GDD §8.4 IP protection | Reporting and legal links only | Partial | Add DMCA flow, proof upload, repeat-infringer policy hook. |
+| GDD §8.5 economic volatility | `lib/features/events`, economy migrations | Partial | Add server-side event generation tests. |
+| GDD §8.6 demographics and loyalty | scattered constants/providers | Partial | Add typed demand segments and formulas. |
+| GDD §8.7 Media/PR and Vex AI critic | `lib/features/design/services/vex_ai_engine.dart`, `vex_review_card.dart` | Partial | Persist opt-in reviews to Brand Story Archive and remove unused pools. |
+| GDD §8.9 regulations and DPP | no complete DPP module | Missing | Add DPP schema, score, audit, and resale display. |
+| GDD §8.9.2 crisis, Tarnish, Kintsugi | `lib/features/crisis`, `supabase/migrations/010_crisis_management.sql` | Partial | Add "Leak a Rumor" and server-side crisis anti-abuse. |
+| GDD §8.9.3-8.9.6 ethical/sustainability supply | supply providers and migrations | Partial | Add certifications and marketing-compliance checks. |
+| GDD §8.9.7-8.9.8 Brand Heat and Founder Rep | `lib/features/hq/widgets/brand_heat_meter.dart`, `lib/features/hq/providers` | Partial | Confirm formulas server-side and fix painter lint. |
+| GDD §8.9.9 resale and circular economy | `lib/features/archive`, `supabase/migrations/013_the_archive.sql` | Partial | Add `designs.owner_id` migration and ownership tests. See directive 6. |
+| GDD §8.9.10 repair/longevity | `lib/features/crisis/screens/kintsugi_repair_screen.dart` | Partial | Remove unused path locals and add repair outcome tests. |
+| GDD §8.9.11 dynamic demand/pricing | `lib/features/ledger`, `hype_calculator.dart` | Partial | Align formulas to GDD and test deterministic outputs. |
+| GDD §8.9.12 Fashion Week politics | `lib/features/events`, `lib/features/gala` | Scaffold | Build event logic or hide alpha route. |
+| GDD §8.9.13 wholesale/B2B | no complete feature module found | Missing | Add schema/provider/UI or move out of alpha scope. |
+| GDD §8.9.14 physical vs digital fashion | no complete split module found | Missing | Add product split fields and demand tests. |
+| GDD §8.10 Talent/Sovereign gacha | `lib/features/talent`, `supabase/migrations/011_talent_system.sql` | Partial | Verify actual odds, pity, and PvP caps server-side. |
+| GDD §8.11 follower system | `lib/features/feed/providers/feed_provider.dart`, social graph migration | Partial | Fix hype RPC and add follow-abuse rate limits. |
+| GDD §8.12 Luxe mentor and quests | `lib/features/luxe`, daily check-in widgets, migrations | Partial | Replace Rive placeholder and implement memory/quests/multi-language. |
+| GDD §8.13 Brand Story Archive | `lib/features/profile`, archive/provenance views | Scaffold | Replace profile placeholder and persist story entries. |
+| GDD §8.16 Support and feedback | reporting modal only | Partial | Add support ticket form, history, surveys, and SLA states. |
+| GDD §8.15 Security | `lib/core/services/firebase_service.dart`, Supabase RLS migrations, Edge Functions | Partial | Apply directives 2, 3, 4, 5, and 6. |
+| GDD §9 Monetization | `lib/features/store`, `supabase/functions/validate-iap`, store migrations | Partial | Align product IDs, disclose odds, and add refund/legal manual tasks. |
+| GDD §10.1 legal docs | Settings links only; no repo legal docs found | Missing | Add Marketing Policy link in IDE; legal text is manual. See directive 9 and `MANUAL_TASKS.md`. |
+| GDD §12 v6 overhaul | Trend Tsunami, Vex, DPP, crisis, monetization | Partial | Treat Trend, Vex, DPP, "Leak a Rumor", and season pass as alpha blockers if promised in release notes. |
 
-**In `lib/app.dart`, replace:**
+## 2. Keep Supabase Security Hardening Migration And Verify It
 
-```dart
-final AsyncValue<Object?> anonSignIn =
-    ref.watch(firebaseAnonSignInProvider);
-ref.watch(supabaseBridgeProvider);
-return anonSignIn.when(
-  loading: () => const _ObsidianGate(),
-  error: (Object e, _) => _ObsidianGate(errorMessage: e.toString()),
-  data: (_) => MaterialApp.router(
-    title: 'The Styliste',
-    debugShowCheckedModeBanner: false,
-    theme: AppTheme.lightTheme,
-    darkTheme: AppTheme.darkTheme,
-    themeMode: ThemeMode.dark,
-    routerConfig: AppRouter.router,
-  ),
-);
+GDD §8.15, §6.1, §8.16, §9.7.
+
+File: `supabase/migrations/027_security_hardening.sql`
+
+Status: patched in this audit. Keep this migration and run it on a local branch database before more gameplay work.
+
+The migration now closes the Supabase advisor findings that are IDE-fixable in SQL:
+
+```sql
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC;
+REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM anon;
 ```
 
-**With:**
+It also replaces unsafe client-callable functions with explicit grants, fixes mutable function search paths, changes exposed views to invoker views, and adds missing FK indexes.
 
-```dart
-final AsyncValue<Object?> anonSignIn =
-    ref.watch(firebaseAnonSignInProvider);
-final AsyncValue<void> supabaseBridge = ref.watch(supabaseBridgeProvider);
-
-return anonSignIn.when(
-  loading: () => const _ObsidianGate(),
-  error: (Object e, _) => _ObsidianGate(errorMessage: e.toString()),
-  data: (_) => supabaseBridge.when(
-    loading: () => const _ObsidianGate(),
-    error: (Object e, _) => _ObsidianGate(errorMessage: e.toString()),
-    data: (_) => MaterialApp.router(
-      title: 'The Styliste',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.dark,
-      routerConfig: AppRouter.router,
-    ),
-  ),
-);
-```
-
-**Use:** Riverpod async auth gate pattern. Do not render economy/HQ/onboarding routes until Supabase auth is ready.
-
-**Test:**
+Test:
 
 ```bash
-flutter analyze
-flutter test
+supabase db reset
+supabase db lint
+supabase db push --dry-run
 ```
 
-Manual smoke test: cold launch → anonymous Firebase sign-in → Supabase user exists → onboarding/HQ does not crash.
+Then manually verify:
 
-**Cite:** GDD v6 §1.1 Onboarding Flow; PROJECT_RULES §2 Firebase + Supabase Split, §3 Source of Truth Hierarchy.
+```sql
+select * from public.daily_revenue_ledger limit 1;
+select * from public.player_active_buffs limit 1;
+select public.increment_post_hype('<post-id>'::uuid, '<own-player-id>'::uuid);
+```
 
----
+Expected:
 
-## Directive 2: Replace Firebase UID usage with Supabase UUID as the active player id
+- Anonymous calls to public RPCs fail.
+- Authenticated calls only work for the current `auth.uid()`.
+- Second hype on the same post returns `ALREADY_HYPED`.
+- Supabase advisor no longer reports security-definer views, mutable `search_path`, or anon-executable security-definer RPCs.
 
-**Problem:** `activeUidProvider` currently exposes Firebase UID. Supabase tables use UUID columns and RLS uses `auth.uid()`. Passing Firebase UID into `.eq('id', uid)` and RPC params breaks UUID casts and can bypass the intended server-authoritative identity model.
+Reference: Supabase states API grants and RLS both control access, and functions should grant `EXECUTE` only to appropriate roles: https://supabase.com/docs/guides/api/securing-your-api. Supabase also documents `security_invoker` views so underlying RLS applies: https://supabase.com/docs/guides/database/tables#view-security.
 
-**In `lib/core/providers/mock_auth_provider.dart`, replace the entire file with:**
+## 3. Add Edge Function Invocation Secrets And App Check Verification Hooks
 
-```dart
-import 'dart:async';
+GDD §8.15.1, §8.15.2.
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+File: `supabase/functions/eclipse-event-tick/index.ts`
 
-const String kMockUid = 'mock-uid-phase1';
+Problem: the function uses `SUPABASE_SERVICE_ROLE_KEY` and says "no JWT required". If deployed with public invocation, anyone with the URL can trigger global events.
 
-final StreamProvider<String?> supabaseUserIdProvider =
-    StreamProvider<String?>((Ref<String?> ref) {
-  final StreamController<String?> controller = StreamController<String?>();
-  controller.add(Supabase.instance.client.auth.currentUser?.id);
+Insert immediately after the `OPTIONS` block:
 
-  final StreamSubscription<AuthState> subscription =
-      Supabase.instance.client.auth.onAuthStateChange.listen((AuthState state) {
-    controller.add(state.session?.user.id);
-  });
+```ts
+const expectedSecret = Deno.env.get("ECLIPSE_EVENT_TICK_SECRET");
+const providedSecret = req.headers.get("x-cron-secret");
 
-  ref.onDispose(() {
-    unawaited(subscription.cancel());
-    unawaited(controller.close());
-  });
-
-  return controller.stream.distinct();
-});
-
-final Provider<String> activeUidProvider = Provider<String>((Ref<String> ref) {
-  final AsyncValue<String?> supabaseUid = ref.watch(supabaseUserIdProvider);
-  return supabaseUid.maybeWhen(
-    data: (String? uid) => uid ?? '',
-    orElse: () => Supabase.instance.client.auth.currentUser?.id ?? '',
+if (!expectedSecret || providedSecret !== expectedSecret) {
+  return new Response(
+    JSON.stringify({ error: "Forbidden" }),
+    { status: 403, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
   );
-});
-```
-
-If the local Riverpod version rejects typed `Ref<String?>` / `Ref<String>`, use untyped `Ref ref` consistently.
-
-**Use:** Supabase session UUID as the only player id for Supabase tables/RPCs. Firebase UID must only be used to bridge/authenticate, not as a database primary key.
-
-**Test:**
-
-```bash
-flutter analyze
-rg "FirebaseAuth.instance.currentUser\?\.uid|activeUidProvider" lib
-```
-
-Confirm no Supabase query/RPC receives Firebase UID.
-
-**Cite:** PROJECT_RULES §2 Firebase + Supabase Split, §3 Source of Truth Hierarchy; GDD v6 §1.1.
-
----
-
-## Directive 3: Add auth guards to player-scoped Supabase RPCs and revoke unsafe direct economy mutation
-
-**Problem:** Multiple `SECURITY DEFINER` RPCs accept `p_player_id`, `p_user_id`, `p_buyer_id`, or `p_seller_id` without proving the caller owns that UUID. This allows cross-player mutation if the function is callable by `authenticated`.
-
-**Create `supabase/migrations/020_security_hardening.sql` with:**
-
-```sql
--- Security hardening: player-scoped RPC guard helpers and dangerous grant removal.
-
-CREATE OR REPLACE FUNCTION public.assert_self(p_player_id UUID)
-RETURNS VOID
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  IF auth.uid() IS NULL OR auth.uid() <> p_player_id THEN
-    RAISE EXCEPTION 'Unauthorized';
-  END IF;
-END;
-$$;
-
-REVOKE ALL ON FUNCTION public.assert_self(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.assert_self(UUID) TO authenticated, service_role;
-
--- Client must not directly mint currency, inventory, Luxe, or arbitrary mini-game rewards.
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'add_inventory') THEN
-    REVOKE EXECUTE ON FUNCTION public.add_inventory(UUID, TEXT, INTEGER) FROM authenticated;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'verify_and_grant_luxe') THEN
-    REVOKE EXECUTE ON FUNCTION public.verify_and_grant_luxe(UUID, TEXT, TEXT, TEXT, TEXT, NUMERIC, INTEGER) FROM authenticated;
-    GRANT EXECUTE ON FUNCTION public.verify_and_grant_luxe(UUID, TEXT, TEXT, TEXT, TEXT, NUMERIC, INTEGER) TO service_role;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'record_failed_transaction') THEN
-    REVOKE EXECUTE ON FUNCTION public.record_failed_transaction(UUID, TEXT, TEXT, NUMERIC, TEXT) FROM authenticated;
-    GRANT EXECUTE ON FUNCTION public.record_failed_transaction(UUID, TEXT, TEXT, NUMERIC, TEXT) TO service_role;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'increment_luxe_trust') THEN
-    REVOKE EXECUTE ON FUNCTION public.increment_luxe_trust(UUID, INTEGER) FROM authenticated;
-    GRANT EXECUTE ON FUNCTION public.increment_luxe_trust(UUID, INTEGER) TO service_role;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'trigger_scandal') THEN
-    REVOKE EXECUTE ON FUNCTION public.trigger_scandal(UUID, TEXT, TEXT, INTEGER) FROM authenticated;
-    GRANT EXECUTE ON FUNCTION public.trigger_scandal(UUID, TEXT, TEXT, INTEGER) TO service_role;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'calculate_global_trend_tsunami') THEN
-    REVOKE EXECUTE ON FUNCTION public.calculate_global_trend_tsunami() FROM authenticated;
-    GRANT EXECUTE ON FUNCTION public.calculate_global_trend_tsunami() TO service_role;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'inject_capital_bonus') THEN
-    REVOKE EXECUTE ON FUNCTION public.inject_capital_bonus(UUID, NUMERIC) FROM authenticated;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'apply_idle_multiplier') THEN
-    REVOKE EXECUTE ON FUNCTION public.apply_idle_multiplier(UUID, INTEGER, INTEGER) FROM authenticated;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'reset_talent_stamina') THEN
-    REVOKE EXECUTE ON FUNCTION public.reset_talent_stamina(UUID, TEXT) FROM authenticated;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'apply_logistics_discount') THEN
-    REVOKE EXECUTE ON FUNCTION public.apply_logistics_discount(UUID, INTEGER, INTEGER) FROM authenticated;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'halt_supply_chain') THEN
-    REVOKE EXECUTE ON FUNCTION public.halt_supply_chain(UUID, INTEGER) FROM authenticated;
-  END IF;
-END $$;
-```
-
-**Then patch each existing player-scoped RPC body immediately after `BEGIN`:**
-
-```sql
-PERFORM public.assert_self(p_player_id);
-```
-
-Apply the matching param name per function:
-
-- `execute_sovereign_genesis` → `PERFORM public.assert_self(p_user_id);`
-- `unlock_joint_venture` → `PERFORM public.assert_self(p_player_id);`
-- `execute_memorialization` → `PERFORM public.assert_self(p_player_id);`
-- `get_sovereign_multiplier` → `PERFORM public.assert_self(p_player_id);`
-- `apply_kintsugi_repair` → `PERFORM public.assert_self(p_player_id);`
-- `apply_public_apology` → `PERFORM public.assert_self(p_player_id);`
-- `execute_casting_pull` → `PERFORM public.assert_self(p_player_id);`
-- `get_player_roster` → `PERFORM public.assert_self(p_player_id);`
-- `execute_archive_purchase` → `PERFORM public.assert_self(p_buyer_id);`
-- `list_on_archive` → `PERFORM public.assert_self(p_seller_id);`
-- `execute_liquidation` → `PERFORM public.assert_self(p_player_id);`
-- `upgrade_logistics` → `PERFORM public.assert_self(p_player_id);`
-- `process_idle_income` → `PERFORM public.assert_self(p_player_id);`
-- `record_check_in` → `PERFORM public.assert_self(p_player_id);`
-- `register_fcm_token` → `PERFORM public.assert_self(p_player_id);`
-- `claim_daily_reward` → `PERFORM public.assert_self(p_player_id);`
-
-**Patch `attempt_district_takeover` with maison membership authorization instead of self-check:**
-
-```sql
-IF NOT EXISTS (
-  SELECT 1
-  FROM public.maison_members
-  WHERE maison_id = p_attacker_maison_id
-    AND player_id = auth.uid()
-    AND role IN ('founder', 'executive_director')
-) THEN
-  RAISE EXCEPTION 'Unauthorized';
-END IF;
-```
-
-**Use:** Supabase RLS + `SECURITY DEFINER` ownership assertion. Client must never pass arbitrary player ids to mutate economy.
-
-**Test:**
-
-```bash
-supabase db reset
-supabase test db
-```
-
-Manual SQL test: create two authenticated users; user A must fail when calling any listed RPC with user B’s UUID.
-
-**Cite:** PROJECT_RULES §3 Source of Truth Hierarchy, §4 Forbidden Patterns; GDD v6 §3.3 Idle Progression, §5.5 Equity System, §6.3 Maisons, §8.9.2 Crisis Management.
-
----
-
-## Directive 4: Standardize idle revenue column to `idle_revenue_per_hour`
-
-**Problem:** Schema/code drift exists between `brand_state.revenue_idle`, `brand_state.idle_revenue_per_hour`, `Brand.idleRevenuePerHour`, `execute_sovereign_genesis`, and `calculate-idle-income`. This can break idle economy calculation and onboarding.
-
-**If the database is not deployed yet:**
-
-- In `supabase/migrations/001_initial_schema.sql`, replace every `revenue_idle` column definition/reference with `idle_revenue_per_hour`.
-- In `supabase/migrations/014_supply_chain.sql`, remove the duplicate `ADD COLUMN IF NOT EXISTS idle_revenue_per_hour` if it becomes redundant.
-
-**If the database may already be deployed, add this to a new migration instead:**
-
-```sql
-ALTER TABLE public.brand_state
-  ADD COLUMN IF NOT EXISTS idle_revenue_per_hour NUMERIC(14,2) NOT NULL DEFAULT 0;
-
-DO $$
-BEGIN
-  IF EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = 'brand_state'
-      AND column_name = 'revenue_idle'
-  ) THEN
-    EXECUTE '
-      UPDATE public.brand_state
-      SET idle_revenue_per_hour = CASE
-        WHEN idle_revenue_per_hour = 0 THEN COALESCE(revenue_idle, 0)
-        ELSE idle_revenue_per_hour
-      END
-    ';
-  END IF;
-END $$;
-```
-
-**In `supabase/functions/calculate-idle-income/index.ts`, replace all:**
-
-```ts
-revenue_idle
-```
-
-**With:**
-
-```ts
-idle_revenue_per_hour
-```
-
-Also update the row interface and calculations:
-
-```ts
-interface BrandStateRow {
-  idle_revenue_per_hour: number;
-  last_active_at: string;
-  current_cap_soft: number;
 }
-
-const baseRate = Number(brandState.idle_revenue_per_hour);
 ```
 
-**Use:** Server-authoritative idle economy. Keep client UI read-only for idle income math.
+Apply the same header-secret pattern to any service-role-only cron/admin Edge Function.
 
-**Test:**
+Test:
 
 ```bash
-supabase db reset
-supabase functions serve calculate-idle-income
+curl -i https://<project>.functions.supabase.co/eclipse-event-tick
+curl -i -H "x-cron-secret: $ECLIPSE_EVENT_TICK_SECRET" https://<project>.functions.supabase.co/eclipse-event-tick
 ```
 
-Manual test: set `idle_revenue_per_hour = 120`; simulate two hours offline; payout must respect GDD soft cap.
+Expected: first call returns 403; second call executes.
 
-**Cite:** GDD v6 §3.3 Idle Progression Mechanics, §3.4 Idle Soft Cap Mechanics; PROJECT_RULES §3.
+Manual follow-up is required for Firebase App Check token verification in Supabase Edge Functions. The Flutter app activates App Check, but Supabase Functions do not automatically enforce Firebase App Check. See `MANUAL_TASKS.md`.
 
----
+Reference: Firebase App Check for Flutter uses Play Integrity on Android and DeviceCheck/App Attest on Apple platforms to help ensure only the app can access Firebase resources: https://firebase.google.com/docs/app-check/flutter/default-providers.
 
-## Directive 5: Fix `019_luxe_trust_score.sql` crisis column drift
+## 4. Fail Fast When Runtime Keys Are Missing
 
-**Problem:** `supabase/migrations/019_luxe_trust_score.sql` patches `apply_kintsugi_repair` using `tarnish_level`, but `010_crisis_engine.sql` defines `current_tarnish`. The function will fail once executed.
+GDD §8.15.1.
 
-**In `supabase/migrations/019_luxe_trust_score.sql`, replace every:**
+File: `lib/main.dart`
 
-```sql
-tarnish_level
-```
+Problem: `_supabaseUrl` and `_supabaseAnonKey` are checked only with `assert`, which is stripped from release builds.
 
-**With:**
-
-```sql
-current_tarnish
-```
-
-Specifically verify the function uses:
-
-```sql
-SELECT total_revenue, current_tarnish, kintsugi_level
-INTO v_current_revenue, v_current_tarnish, v_kintsugi_level
-FROM public.brand_state
-WHERE player_id = p_player_id;
-```
-
-and:
-
-```sql
-UPDATE public.brand_state
-SET total_revenue = total_revenue - v_cost,
-    current_tarnish = 0,
-    kintsugi_level = kintsugi_level + 1,
-    luxe_trust_score = GREATEST(0, luxe_trust_score - 10)
-WHERE player_id = p_player_id;
-```
-
-**Use:** Existing crisis schema; no new duplicate tarnish column.
-
-**Test:**
-
-```bash
-supabase db reset
-```
-
-Manual RPC test: call `apply_kintsugi_repair` after setting `current_tarnish > 0`; verify tarnish resets and Luxe Trust penalty applies.
-
-**Cite:** GDD v6 §8.9.2 Crisis Management.
-
----
-
-## Directive 6: Fix Talent table drift between `player_roster` and `player_talent_roster`
-
-**Problem:** `017_mini_game_rewards.sql` and `lib/features/talent/providers/talent_notifier.dart` reference `player_talent_roster`, but migrations create `player_roster`. `reset_talent_stamina` also expects stamina columns that do not exist.
-
-**Create a migration `supabase/migrations/021_talent_roster_hardening.sql` with:**
-
-```sql
-ALTER TABLE public.player_roster
-  ADD COLUMN IF NOT EXISTS stamina INTEGER NOT NULL DEFAULT 100 CHECK (stamina BETWEEN 0 AND 100),
-  ADD COLUMN IF NOT EXISTS morale INTEGER NOT NULL DEFAULT 100 CHECK (morale BETWEEN 0 AND 100),
-  ADD COLUMN IF NOT EXISTS last_stamina_refresh TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS gala_cooldown_until TIMESTAMPTZ;
-```
-
-**In `lib/features/talent/providers/talent_notifier.dart`, replace:**
+Replace:
 
 ```dart
-.from('player_talent_roster')
+assert(_supabaseUrl.isNotEmpty, 'SUPABASE_URL must be set via --dart-define-from-file');
+assert(_supabaseAnonKey.isNotEmpty, 'SUPABASE_ANON_KEY must be set via --dart-define-from-file');
 ```
 
-**With:**
+With:
 
 ```dart
-.from('player_roster')
-```
-
-**In `supabase/migrations/017_mini_game_rewards.sql`, rewrite `reset_talent_stamina` to target `player_roster` and guard ownership:**
-
-```sql
-CREATE OR REPLACE FUNCTION public.reset_talent_stamina(
-  p_player_id UUID,
-  p_talent_id TEXT
-)
-RETURNS JSON
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_updated_count INTEGER;
-BEGIN
-  PERFORM public.assert_self(p_player_id);
-
-  UPDATE public.player_roster
-  SET stamina = 100,
-      last_stamina_refresh = now()
-  WHERE player_id = p_player_id
-    AND talent_id::TEXT = p_talent_id;
-
-  GET DIAGNOSTICS v_updated_count = ROW_COUNT;
-
-  IF v_updated_count = 0 THEN
-    RETURN json_build_object('success', false, 'error', 'Talent not found');
-  END IF;
-
-  RETURN json_build_object('success', true, 'stamina', 100);
-END;
-$$;
-```
-
-**Use:** Single canonical roster table.
-
-**Test:**
-
-```bash
-supabase db reset
-flutter analyze
-```
-
-Manual test: pull talent → roster row exists → apply stamina reset reward → `player_roster.stamina = 100`.
-
-**Cite:** GDD v6 §8.10 Talent Management, §6.9 Aurelian Gala.
-
----
-
-## Directive 7: Implement or remove missing `execute_power_move` RPC
-
-**Problem:** `lib/features/hq/widgets/hq_architect_view.dart` and `lib/features/hq/widgets/hq_artisan_view.dart` call `rpc('execute_power_move')`, but no migration defines that function. This is runtime-dead UI.
-
-**Create `supabase/migrations/022_execute_power_move.sql` with a minimal server-authoritative implementation:**
-
-```sql
-CREATE OR REPLACE FUNCTION public.execute_power_move(
-  p_player_id UUID,
-  p_move_key TEXT
-)
-RETURNS JSON
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_cost NUMERIC := 0;
-  v_effect JSONB := '{}'::jsonb;
-BEGIN
-  PERFORM public.assert_self(p_player_id);
-
-  CASE p_move_key
-    WHEN 'public_apology' THEN
-      SELECT (public.apply_public_apology(p_player_id))->>'cost'
-      INTO v_cost;
-      v_effect := jsonb_build_object('crisis_reduction', 25);
-    ELSE
-      RAISE EXCEPTION 'Unknown power move: %', p_move_key;
-  END CASE;
-
-  RETURN json_build_object(
-    'success', true,
-    'move_key', p_move_key,
-    'cost', COALESCE(v_cost, 0),
-    'effect', v_effect
+if (_supabaseUrl.isEmpty || _supabaseAnonKey.isEmpty) {
+  throw StateError(
+    'SUPABASE_URL and SUPABASE_ANON_KEY must be set via --dart-define-from-file',
   );
-END;
-$$;
-
-REVOKE ALL ON FUNCTION public.execute_power_move(UUID, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.execute_power_move(UUID, TEXT) TO authenticated;
-```
-
-Then update both HQ widgets so only supported `p_move_key` values are passed. Remove any button whose backend effect is not implemented.
-
-**Use:** Server-authoritative HQ actions. No client-only Power Move effects.
-
-**Test:**
-
-```bash
-supabase db reset
-flutter analyze
-```
-
-Manual test: press Public Apology in HQ → RPC returns success → brand state updates through server function only.
-
-**Cite:** GDD v6 §3.0 Main HQ Dashboard, §8.9.2 Crisis Management.
-
----
-
-## Directive 8: Fix system feed posts and FCM notification backend drift
-
-**Problem A:** `supabase/functions/eclipse-event-tick/index.ts` inserts `feed_posts.player_id = null`, but `feed_posts.player_id` is `NOT NULL`.
-
-**Add migration `supabase/migrations/023_system_feed_posts.sql`:**
-
-```sql
-ALTER TABLE public.feed_posts
-  ALTER COLUMN player_id DROP NOT NULL,
-  ADD COLUMN IF NOT EXISTS is_system BOOLEAN NOT NULL DEFAULT false;
-
-DROP POLICY IF EXISTS "Users can create feed posts" ON public.feed_posts;
-
-CREATE POLICY "Users can create own feed posts"
-ON public.feed_posts
-FOR INSERT
-TO authenticated
-WITH CHECK (player_id = auth.uid() AND is_system = false);
-```
-
-**In `supabase/functions/eclipse-event-tick/index.ts`, set system posts explicitly:**
-
-```ts
-await supabase.from('feed_posts').insert({
-  player_id: null,
-  is_system: true,
-  content: announcement,
-  hype_score: 0,
-});
-```
-
-**Problem B:** `supabase/functions/send-fcm-notification/index.ts` queries `districts`, but the schema table is `fashion_districts`; it also returns `placeholder_token`.
-
-**In `supabase/functions/send-fcm-notification/index.ts`, replace:**
-
-```ts
-.from('districts')
-```
-
-**With:**
-
-```ts
-.from('fashion_districts')
-```
-
-**Replace the placeholder-token path with a real token lookup:**
-
-```ts
-async function getPlayerFCMTokens(playerId: string): Promise<string[]> {
-  const { data, error } = await supabase
-    .from('fcm_tokens')
-    .select('token')
-    .eq('player_id', playerId);
-
-  if (error) {
-    throw error;
-  }
-
-  return (data ?? [])
-    .map((row: { token: string }) => row.token)
-    .filter((token: string) => token.length > 0);
 }
 ```
 
-If no tokens exist, return a 204-style success payload and do not attempt FCM send.
-
-**Use:** Service-role Edge Function for system notifications; no placeholder notification path.
-
-**Test:**
+Test:
 
 ```bash
-supabase functions serve eclipse-event-tick
-supabase functions serve send-fcm-notification
-```
-
-Manual test: trigger district takeover → notification function resolves `fashion_districts` and real `fcm_tokens` rows.
-
-**Cite:** GDD v6 §6.1 Global Live Feed, §7.2 Fashion Events.
-
----
-
-## Directive 9: Fix Supabase JSON serialization drift in Freezed models
-
-**Problem:** Many generated `*.g.dart` files read camelCase JSON keys, while Supabase returns snake_case columns. This silently nulls fields or breaks parsing for domain rows.
-
-**In these Freezed model files, add or verify:**
-
-```dart
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
-```
-
-Apply to:
-
-- `lib/domain/models/design.dart`
-- `lib/domain/models/store.dart`
-- `lib/domain/models/campaign.dart`
-- `lib/domain/models/equity.dart`
-- `lib/domain/models/maison.dart`
-- `lib/domain/models/supplier.dart`
-- `lib/domain/models/feed_post.dart`
-- `lib/features/archive/models/archive_models.dart`
-- `lib/features/check_in/models/check_in_models.dart`
-- `lib/features/gala/models/gala_models.dart`
-- `lib/features/maison/models/fashion_district.dart`
-- `lib/features/onboarding/models/sovereign_statue.dart`
-- `lib/features/supply_chain/models/supply_chain_models.dart`
-- `lib/features/talent/models/talent.dart`
-- `lib/features/trends/models/trend_tsunami.dart`
-- `lib/features/vex/models/vex_review.dart`
-
-**In `lib/domain/models/design.dart`, replace typo field:**
-
-```dart
-int hypoScore
-```
-
-**With:**
-
-```dart
-int hypeScore
-```
-
-Then regenerate all Freezed/JSON code:
-
-```bash
-dart run build_runner build --delete-conflicting-outputs
-```
-
-**Use:** Supabase snake_case row mapping. Do not manually map snake_case in repositories unless the model is intentionally not a database row.
-
-**Test:**
-
-```bash
-dart run build_runner build --delete-conflicting-outputs
-flutter analyze
-rg "json\['[a-z]+[A-Z]" lib -g "*.g.dart"
-```
-
-Investigate every remaining camelCase generated key. Only client-only DTOs may remain camelCase.
-
-**Cite:** PROJECT_RULES §3 Source of Truth Hierarchy; GDD v6 §4.1 Atelier UI, §5.1 Supply Chain Logistics, §6.3 Maisons, §8.10 Talent Management.
-
----
-
-## Directive 10: Fix onboarding enum API values before calling `execute_sovereign_genesis`
-
-**Problem:** `AscensionConfirmationScreen` sends enum `.name`, producing `newYork`, `highLuxury`, and `midLuxury`. `execute_sovereign_genesis` validates snake_case values such as `new_york` and `high_luxury`.
-
-**In `lib/domain/models/player.dart`, add:**
-
-```dart
-extension CareerPathApi on CareerPath {
-  String get apiValue => switch (this) {
-        CareerPath.designer => 'designer',
-        CareerPath.mogul => 'mogul',
-      };
-}
-
-extension HqCityApi on HqCity {
-  String get apiValue => switch (this) {
-        HqCity.newYork => 'new_york',
-        HqCity.paris => 'paris',
-        HqCity.tokyo => 'tokyo',
-        HqCity.milan => 'milan',
-      };
-}
-```
-
-**In `lib/core/providers/onboarding_provider.dart`, add:**
-
-```dart
-extension MarketTierApi on MarketTier {
-  String get apiValue => switch (this) {
-        MarketTier.highLuxury => 'high_luxury',
-        MarketTier.midLuxury => 'mid_luxury',
-        MarketTier.massMarket => 'mass_market',
-      };
-}
-```
-
-**In `lib/features/onboarding/screens/ascension_confirmation_screen.dart`, replace:**
-
-```dart
-'p_career_path': state.selectedPath!.name,
-'p_city': state.selectedCity!.name,
-'p_market_tier': state.selectedTier!.name,
-```
-
-**With:**
-
-```dart
-'p_career_path': state.selectedPath!.apiValue,
-'p_city': state.selectedCity!.apiValue,
-'p_market_tier': state.selectedTier!.apiValue,
-```
-
-**Use:** Explicit API values for DB/RPC params. Do not depend on Dart enum `.name` for persisted values.
-
-**Test:**
-
-```bash
-flutter analyze
-```
-
-Manual test: select New York + High Luxury → RPC receives `new_york` and `high_luxury` → player and brand rows are created.
-
-**Cite:** GDD v6 §1.1 Onboarding Flow — The Aurelian Sanctuary.
-
----
-
-## Directive 11: Fix `Player.toJson` and sovereign multiplier display bug
-
-**Problem A:** `Player.toJson` manually serializes enum `.name`, which conflicts with snake_case DB values for `hq_city`.
-
-**In `lib/domain/models/player.dart`, replace the manual `toJson()` body with generated serialization:**
-
-```dart
-factory Player.fromJson(Map<String, dynamic> json) => _$PlayerFromJson(json);
-Map<String, dynamic> toJson() => _$PlayerToJson(this);
-```
-
-Ensure enum fields use `@JsonValue` annotations or converters so DB values remain snake_case.
-
-**Problem B:** `sovereignMultiplierDisplay` has an operator precedence bug.
-
-**Replace:**
-
-```dart
-String get sovereignMultiplierDisplay => 
-    '+${(sovereignMultiplierBonus - 1.0) * 100.toInt()}%';
-```
-
-**With:**
-
-```dart
-String get sovereignMultiplierDisplay =>
-    '+${((sovereignMultiplierBonus - 1.0) * 100).toInt()}%';
-```
-
-**Use:** Generated JSON and explicit enum conversion.
-
-**Test:**
-
-```bash
-dart run build_runner build --delete-conflicting-outputs
-flutter analyze
-flutter test
-```
-
-Manual test: a multiplier of `1.25` displays `+25%`.
-
-**Cite:** GDD v6 §3.5 Aurelian Ascension.
-
----
-
-## Directive 12: Replace client-controlled mini-game reward amounts with server-authoritative claims
-
-**Problem:** Mini-game screens generate outcomes with client `Random()` and then call reward RPCs with arbitrary player ids/amounts/durations. This violates server-authoritative economy rules and is exploitable.
-
-**In these files, remove direct reward RPC calls and route all rewards through one server-authoritative claim endpoint:**
-
-- `lib/features/mini_games/screens/supplier_raid_screen.dart`
-- `lib/features/mini_games/screens/flash_sale_screen.dart`
-- Any screen calling `inject_capital_bonus`, `apply_idle_multiplier`, `apply_logistics_discount`, `halt_supply_chain`, or `reset_talent_stamina`
-
-**Create a new Edge Function `supabase/functions/claim-mini-game-reward/index.ts`:**
-
-```ts
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const supabase = createClient(supabaseUrl, serviceRoleKey);
-
-Deno.serve(async (req: Request) => {
-  const authHeader = req.headers.get('Authorization') ?? '';
-  const token = authHeader.replace('Bearer ', '');
-  const { data: userData, error: userError } = await supabase.auth.getUser(token);
-
-  if (userError || !userData.user) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
-  }
-
-  const { game_key: gameKey, result_key: resultKey } = await req.json();
-  const playerId = userData.user.id;
-
-  const rewardTable: Record<string, Record<string, { currency: number }>> = {
-    supplier_raid: {
-      standard_win: { currency: 250 },
-      perfect_win: { currency: 500 },
-    },
-    flash_sale: {
-      standard_win: { currency: 150 },
-      perfect_win: { currency: 300 },
-    },
-  };
-
-  const reward = rewardTable[gameKey]?.[resultKey];
-  if (!reward) {
-    return new Response(JSON.stringify({ error: 'Invalid reward' }), { status: 400 });
-  }
-
-  const { error } = await supabase.rpc('process_idle_income', {
-    p_player_id: playerId,
-    p_amount: reward.currency,
-  });
-
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 400 });
-  }
-
-  return new Response(JSON.stringify({ success: true, reward }), { status: 200 });
-});
-```
-
-If `process_idle_income` does not accept direct amount claims, create a dedicated guarded RPC for mini-game rewards. Do not reuse unrestricted `add_inventory`.
-
-**Use:** Server-defined reward table. Client may report result key only; server decides payout.
-
-**Test:**
-
-```bash
-supabase functions serve claim-mini-game-reward
-flutter analyze
-```
-
-Manual tamper test: alter request payload to claim invalid high reward → server returns 400 and no economy mutation occurs.
-
-**Cite:** PROJECT_RULES §3 and §4; GDD v6 §3.8 F2P Progression Strategies, §5.1 Supply Chain Logistics.
-
----
-
-## Directive 13: Replace mocked bank chart data with server ledger data
-
-**Problem:** `lib/features/ledger/screens/bank_screen.dart` uses mocked 7-day chart data. This is ghost economy UI and can mislead players.
-
-**In `lib/features/ledger/screens/bank_screen.dart`, remove mocked chart generation and read from a Supabase daily ledger view.**
-
-**Create migration `supabase/migrations/024_daily_revenue_view.sql`:**
-
-```sql
-CREATE OR REPLACE VIEW public.daily_revenue_ledger AS
-SELECT
-  player_id,
-  date_trunc('day', created_at)::date AS revenue_date,
-  SUM(amount) AS revenue_total
-FROM public.idle_income_log
-GROUP BY player_id, date_trunc('day', created_at)::date;
-
-GRANT SELECT ON public.daily_revenue_ledger TO authenticated;
-```
-
-**Add RLS-safe client query:**
-
-```dart
-final String playerId = ref.watch(activeUidProvider);
-final List<dynamic> rows = await Supabase.instance.client
-    .from('daily_revenue_ledger')
-    .select()
-    .eq('player_id', playerId)
-    .order('revenue_date', ascending: true)
-    .limit(7);
-```
-
-**Use:** Ledger-derived finance visuals only. No mock revenue chart in production UI.
-
-**Test:**
-
-```bash
-flutter analyze
-supabase db reset
-```
-
-Manual test: create three `idle_income_log` rows → bank chart renders only those dates/totals.
-
-**Cite:** GDD v6 §5.1 Supply Chain Logistics, §3.3 Idle Progression Mechanics.
-
----
-
-## Directive 14: Complete player reporting flow
-
-**Problem:** `lib/features/reporting/widgets/report_modal.dart` is placeholder-level, but GDD requires player reporting in three taps or fewer, backend submission, and anti-abuse support.
-
-**In `lib/features/reporting/widgets/report_modal.dart`, implement a modal that writes to `player_reports`:**
-
-```dart
-await Supabase.instance.client.from('player_reports').insert(<String, dynamic>{
-  'reporter_id': Supabase.instance.client.auth.currentUser!.id,
-  'reported_player_id': reportedPlayerId,
-  'category': selectedCategory,
-  'description': descriptionController.text.trim(),
-});
-```
-
-Add category buttons: `harassment`, `hate`, `spam`, `cheating`, `inappropriate_content`, `other`.
-
-After submit, show a non-blocking success state and close the modal. Do not expose reporter identity in client UI.
-
-**Use:** Supabase insert under RLS. Keep the flow at three taps: open → category → submit.
-
-**Test:**
-
-```bash
-flutter analyze
-```
-
-Manual test: report a player → `player_reports` row exists → duplicate spam is rate-limited by backend policy if configured.
-
-**Cite:** GDD v6 §6.10 Player Reporting and Safety.
-
----
-
-## Directive 15: Remove or route ghost navigation constants and dead bottom nav
-
-**Problem:** `AppRouter` declares routes such as `events`, `profile`, `crisisStatus`, `galaLeaderboard`, `galaSubmit`, and `onboardingSpecialization` without complete route wiring. `BottomNav` appears superseded by `MainShell` and can become dead code.
-
-**In `lib/core/router/app_router.dart`:**
-
-- Add `GoRoute`s for every declared route constant that has a real screen.
-- Delete constants for screens not implemented.
-- Ensure route names used by widgets exist in `AppRouter.router`.
-
-**In `lib/core/widgets/bottom_nav.dart`:**
-
-- Delete the file if `MainShell` is the only shell navigation implementation.
-- Otherwise wire it into `MainShell` and remove the duplicate `_FloatingNavBar` implementation.
-
-**Use:** One navigation source of truth. No route constants without routes.
-
-**Test:**
-
-```bash
-flutter analyze
-rg "AppRoutes\." lib
-```
-
-Manual route test: tap each bottom-nav item and each deep-linking button; no unknown route errors.
-
-**Cite:** GDD v6 §3.0 Main HQ Dashboard, §3.6 Accessibility & Progressive Complexity.
-
----
-
-## Directive 16: Replace `print` and production debug leakage
-
-**Problem:** `analysis_options.yaml` enables `avoid_print`, but code still uses `print` in auth/Firebase paths. Debug token logs can leak sensitive setup data if misbuilt.
-
-**In `lib/core/providers/auth_provider.dart`, replace all `print(...)` calls with:**
-
-```dart
-if (kDebugMode) {
-  debugPrint('message');
-}
-```
-
-Add imports where needed:
-
-```dart
-import 'package:flutter/foundation.dart';
-```
-
-**In `lib/core/services/firebase_service.dart`, ensure App Check debug token logging is debug-only and never compiled into release behavior:**
-
-```dart
-if (kDebugMode) {
-  debugPrint('Firebase App Check debug provider active for local development.');
-}
-```
-
-Do not print raw App Check debug tokens in app logs.
-
-**Use:** Flutter `debugPrint` gated by `kDebugMode`; no `print`.
-
-**Test:**
-
-```bash
-flutter analyze
-rg "\bprint\(" lib
-```
-
-**Cite:** PROJECT_RULES §1 Non-Negotiable Constraints, §5 Quality Gates.
-
----
-
-## Directive 17: Add missing platform auth mapping table or remove unused cloud-save auth service
-
-**Problem:** `lib/core/services/auth_service.dart` references `platform_auth_mappings`, but no migration creates that table. `_restoreSession` is placeholder-like and the service can mislead future implementation.
-
-**Option A — implement the table. Create `supabase/migrations/025_platform_auth_mappings.sql`:**
-
-```sql
-CREATE TABLE IF NOT EXISTS public.platform_auth_mappings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  player_id UUID NOT NULL REFERENCES public.players(id) ON DELETE CASCADE,
-  platform TEXT NOT NULL CHECK (platform IN ('play_games', 'game_center')),
-  platform_user_id TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  UNIQUE(platform, platform_user_id),
-  UNIQUE(player_id, platform)
-);
-
-ALTER TABLE public.platform_auth_mappings ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can read own platform mappings"
-ON public.platform_auth_mappings
-FOR SELECT
-TO authenticated
-USING (player_id = auth.uid());
-
-CREATE POLICY "Users can insert own platform mappings"
-ON public.platform_auth_mappings
-FOR INSERT
-TO authenticated
-WITH CHECK (player_id = auth.uid());
-```
-
-**Option B — if platform cloud save is not shipping in this milestone:**
-
-- Remove `lib/core/services/auth_service.dart`.
-- Remove all providers/imports referencing it.
-- Remove `games_services` usage until implemented.
-
-**Use:** No table references without migrations.
-
-**Test:**
-
-```bash
-supabase db reset
-flutter analyze
-rg "platform_auth_mappings|AuthService" lib supabase
-```
-
-**Cite:** GDD v6 §3.6 Accessibility & Progressive Complexity; PROJECT_RULES §5 Quality Gates.
-
----
-
-## Directive 18: Update `.env.json.example` to match required `--dart-define` keys
-
-**Problem:** `.env.json.example` only lists Supabase keys, but `FirebaseService.currentPlatformOptions` requires multiple Firebase `String.fromEnvironment` values. New devs will fail bootstrapping.
-
-**In `.env.json.example`, replace contents with:**
-
-```json
-{
-  "SUPABASE_URL": "https://your-project.supabase.co",
-  "SUPABASE_ANON_KEY": "your-supabase-anon-key",
-  "FIREBASE_ANDROID_API_KEY": "your-android-api-key",
-  "FIREBASE_ANDROID_APP_ID": "your-android-app-id",
-  "FIREBASE_IOS_API_KEY": "your-ios-api-key",
-  "FIREBASE_IOS_APP_ID": "your-ios-app-id",
-  "FIREBASE_MESSAGING_SENDER_ID": "your-sender-id",
-  "FIREBASE_PROJECT_ID": "your-project-id",
-  "FIREBASE_STORAGE_BUCKET": "your-project.appspot.com",
-  "PLAY_GAMES_CLIENT_ID": "your-play-games-client-id"
-}
-```
-
-**Use:** Environment-driven platform config only.
-
-**Test:**
-
-```bash
+flutter run --release
 flutter run --dart-define-from-file=.env.json
+dart analyze
 ```
 
-**Cite:** PROJECT_RULES §1 Non-Negotiable Constraints, §2 Firebase + Supabase Split.
+Expected: missing runtime config fails before app boot; configured app boots normally.
 
----
+Reference: Firebase allows config API keys in app config, but they must be managed and restricted appropriately: https://firebase.google.com/docs/projects/api-keys.
 
-## Directive 19: Replace TODO/placeholder UI with shippable disabled states or remove it from routes
+## 5. Fix Feed Hype RPC After Security Hardening
 
-**Problem:** Placeholder surfaces exist in AR, events, world map, profile, reporting, Luxe, and notification code. Shipping placeholders violates the project quality gate.
+GDD §6.1, §8.11, §8.15.2.
 
-**Search and fix all matches:**
+File: `lib/features/feed/providers/feed_provider.dart`
 
-```bash
-rg -n "TODO|placeholder|mock|sample|stub|not implemented|coming soon" lib supabase
-```
-
-For each result:
-
-- If the feature is in the current milestone: implement the server-backed behavior.
-- If the feature is not in the current milestone: remove route access and show no production entry point.
-- If the UI must remain visible: show a server-backed disabled state with copy that does not imply fake progress or fake rewards.
-
-High-priority files found in the static audit:
-
-- `lib/features/world_map/screens/world_map_screen.dart`
-- `lib/features/events/screens/events_screen.dart`
-- `lib/features/profile/screens/profile_screen.dart`
-- `lib/features/reporting/widgets/report_modal.dart`
-- `lib/features/ar/screens/ar_runway_screen.dart`
-- `lib/features/gala/screens/gala_submission_screen.dart`
-- `supabase/functions/send-fcm-notification/index.ts`
-- `supabase/functions/trend-decay/index.ts`
-
-**Use:** No ghost code; no fake backend.
-
-**Test:**
-
-```bash
-flutter analyze
-rg -n "TODO|placeholder|mock|sample|stub|not implemented|coming soon" lib supabase
-```
-
-Every remaining hit must be annotated with `// AI_UNCERTAINTY:` and linked to a tracked task.
-
-**Cite:** PROJECT_RULES §4 Forbidden Patterns, §5 Quality Gates; VERIFICATION_PROTOCOL §3.
-
----
-
-## Directive 20: Enforce portrait-first and 60fps-safe Atelier physics
-
-**Problem:** GDD requires tactile Atelier manipulation and 60fps. Any physics/drag/shader implementation must avoid rebuild-heavy patterns and unbounded per-frame work.
-
-**In Atelier widgets/services, enforce:**
-
-- Use `CustomPainter` or isolated render widgets for cloth/Verlet previews.
-- Use `RepaintBoundary` around interactive canvas sections.
-- Avoid `setState` for every particle if Riverpod/global state is involved.
-- Keep Supabase writes out of drag/tick loops; persist only on confirmed design save.
-- Lock mobile orientation to portrait in app startup if not already configured.
-
-**Add to `lib/main.dart` before `runApp`:**
+Problem: Dart calls the retired one-arg RPC:
 
 ```dart
-await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
-  DeviceOrientation.portraitUp,
-]);
+await SupabaseService.client
+    .rpc<void>(
+      'increment_post_hype',
+      params: <String, dynamic>{'target_post_id': postId},
+    );
 ```
 
-Add imports if missing:
+Replace the provider block with:
 
 ```dart
-import 'package:flutter/services.dart';
+final FutureProviderFamily<void, String> hypePostProvider =
+    FutureProvider.family<void, String>(
+  (Ref<AsyncValue<void>> ref, String postId) async {
+    final String uid = ref.read(activeUidProvider);
+
+    await SupabaseService.client.rpc<Map<String, dynamic>>(
+      'increment_post_hype',
+      params: <String, dynamic>{
+        'p_post_id': postId,
+        'p_player_id': uid,
+      },
+    );
+  },
+);
 ```
 
-**Use:** 60fps local rendering; server-authoritative persistence only on save.
+Then replace all references to `hyypePostProvider` with `hypePostProvider`.
 
-**Test:**
+Test:
 
 ```bash
-flutter analyze
-flutter run --profile
+rg -n "hyypePostProvider|target_post_id" lib
+dart analyze
 ```
 
-Manual profile test: Atelier drag must stay near 16ms/frame on low-end Android.
+Expected: no typo provider remains, no call to the revoked one-arg RPC remains, tapping hype once increments, tapping twice does not double-count.
 
-**Cite:** GDD v6 §4.1 Atelier UI, §4.2 Atelier Physics Simulation; PROJECT_RULES §1 Non-Negotiable Constraints.
+## 6. Add Schema Drift Repair Migration Before Alpha
+
+GDD §5.7, §6.9, §8.9.9, §8.12.
+
+Create a new migration: `supabase/migrations/028_schema_drift_repair.sql`
+
+Add:
+
+```sql
+-- Archive functions require ownership transfer. Existing schema only had player_id.
+ALTER TABLE public.designs
+  ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES public.players(id);
+
+UPDATE public.designs
+SET owner_id = player_id
+WHERE owner_id IS NULL;
+
+CREATE INDEX IF NOT EXISTS designs_owner_idx ON public.designs(owner_id);
+
+-- Latest Gala function must validate ownership and active event.
+DROP FUNCTION IF EXISTS public.submit_to_gala(UUID, UUID, UUID);
+CREATE OR REPLACE FUNCTION public.submit_to_gala(
+  p_player_id UUID,
+  p_design_id UUID,
+  p_event_id UUID
+)
+RETURNS TABLE(submission_id UUID, success BOOLEAN, message TEXT)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_submission_id UUID;
+  v_existing UUID;
+BEGIN
+  PERFORM public.assert_self(p_player_id);
+
+  IF NOT EXISTS (
+    SELECT 1 FROM public.designs
+    WHERE id = p_design_id AND COALESCE(owner_id, player_id) = p_player_id
+  ) THEN
+    RAISE EXCEPTION 'DESIGN_NOT_OWNED';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM public.gala_events
+    WHERE id = p_event_id AND status = 'active'
+  ) THEN
+    RAISE EXCEPTION 'GALA_EVENT_NOT_ACTIVE';
+  END IF;
+
+  SELECT id INTO v_existing
+  FROM public.gala_submissions
+  WHERE player_id = p_player_id AND event_id = p_event_id;
+
+  IF v_existing IS NOT NULL THEN
+    RETURN QUERY SELECT v_existing, FALSE, 'ALREADY_SUBMITTED';
+    RETURN;
+  END IF;
+
+  INSERT INTO public.gala_submissions (player_id, design_id, event_id, submitted_at)
+  VALUES (p_player_id, p_design_id, p_event_id, NOW())
+  RETURNING id INTO v_submission_id;
+
+  PERFORM public.increment_luxe_trust(p_player_id, 1);
+
+  RETURN QUERY SELECT v_submission_id, TRUE, 'SUBMISSION_ACCEPTED';
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.submit_to_gala(UUID, UUID, UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.submit_to_gala(UUID, UUID, UUID) TO authenticated;
+
+-- 019_luxe_trust_score referenced last_check_in_at, but 016 created last_check_in.
+DROP FUNCTION IF EXISTS public.record_check_in(UUID);
+CREATE OR REPLACE FUNCTION public.record_check_in(p_player_id UUID)
+RETURNS TABLE(success BOOLEAN, streak INTEGER, reward_luxe INTEGER, message TEXT)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_last_check_in DATE;
+  v_streak INTEGER := 1;
+  v_reward INTEGER := 10;
+BEGIN
+  PERFORM public.assert_self(p_player_id);
+
+  SELECT last_check_in, current_streak
+  INTO v_last_check_in, v_streak
+  FROM public.daily_check_ins
+  WHERE player_id = p_player_id;
+
+  IF v_last_check_in = CURRENT_DATE THEN
+    RETURN QUERY SELECT FALSE, v_streak, 0, 'ALREADY_CLAIMED';
+    RETURN;
+  END IF;
+
+  IF v_last_check_in = CURRENT_DATE - INTERVAL '1 day' THEN
+    v_streak := v_streak + 1;
+  ELSE
+    v_streak := 1;
+  END IF;
+
+  v_reward := 10 + LEAST(v_streak, 30);
+
+  INSERT INTO public.daily_check_ins (player_id, current_streak, last_check_in, total_check_ins)
+  VALUES (p_player_id, v_streak, CURRENT_DATE, 1)
+  ON CONFLICT (player_id) DO UPDATE
+  SET current_streak = EXCLUDED.current_streak,
+      last_check_in = EXCLUDED.last_check_in,
+      total_check_ins = public.daily_check_ins.total_check_ins + 1;
+
+  UPDATE public.brand_state
+  SET luxe_tokens = luxe_tokens + v_reward
+  WHERE player_id = p_player_id;
+
+  PERFORM public.increment_luxe_trust(p_player_id, 1);
+
+  RETURN QUERY SELECT TRUE, v_streak, v_reward, 'CHECK_IN_CLAIMED';
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.record_check_in(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.record_check_in(UUID) TO authenticated;
+
+-- Do not log pure currency rewards into provenance_ledger; it is design ownership history.
+CREATE OR REPLACE FUNCTION public.inject_capital_bonus(
+  p_player_id UUID,
+  p_amount INT,
+  p_reason TEXT DEFAULT 'mini_game_reward'
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF auth.role() <> 'service_role' THEN
+    RAISE EXCEPTION 'SERVICE_ROLE_REQUIRED';
+  END IF;
+
+  RETURN public.grant_mini_game_reward(
+    p_player_id,
+    'hostile_takeover',
+    p_reason,
+    p_amount
+  );
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.inject_capital_bonus(UUID, INT, TEXT) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.inject_capital_bonus(UUID, INT, TEXT) TO service_role;
+```
+
+Test:
+
+```bash
+supabase db reset
+supabase db lint
+```
+
+Expected: migrations apply cleanly; Gala rejects another player's design; archive transfer can update `designs.owner_id`; daily check-in no longer references a missing column.
+
+## 7. Make Hype Score Server-Authoritative And GDD-Correct
+
+GDD §4.1, §8.1.2, §8.10, §12.3.
+
+Files:
+
+- `lib/features/design/services/hype_calculator.dart`
+- `supabase/functions/mint-design/index.ts`
+- `supabase/migrations/006_trend_tsunami.sql`
+
+Problem: GDD §4.1 formula is:
+
+```text
+Hype_Score = (Aesthetic_Alignment * Material_Quality) + Sovereign_Talent_Multiplier
+```
+
+GDD §8.1.2 says Trend Tsunami applies a 1.5x bonus to aesthetic alignment during the 48-hour trend. Current Dart comments and code use `Base_Score * Tsunami_Multiplier + Sovereign_Talent_Bonus` and allow a 2.5x crest. The Edge Function uses `Math.random()`, so the client preview and server mint are not the same economy.
+
+In `hype_calculator.dart`, replace the comment block:
+
+```dart
+// Formula: H_score = (Base_Score × Tsunami_Multiplier) + Sovereign_Talent_Bonus
+//
+// Tsunami Multipliers:
+//   - Crest Tag (Rank 1): 2.5x
+//   - Surge Tags (Rank 2-3): 1.5x
+//   - No match: 1.0x
+```
+
+With:
+
+```dart
+// Formula: Hype_Score =
+//   (Aesthetic_Alignment * Trend_Tsunami_Alignment_Multiplier * Material_Quality_Normalized)
+//   + Sovereign_Talent_Multiplier
+//
+// Trend Tsunami:
+//   - Active matching trend: 1.5x to Aesthetic_Alignment for 48 hours.
+//   - No match: 1.0x.
+```
+
+Then replace the Step 1 to Step 4 body in `calculate()` with deterministic formula logic:
+
+```dart
+final double tsunamiMultiplier = _hasTrendMatch(input, activeTsunamis) ? 1.5 : 1.0;
+final double adjustedAesthetic =
+    (input.aestheticAlignment * tsunamiMultiplier).clamp(0.0, 100.0);
+final double materialQualityNormalized = input.materialQuality / 100.0;
+final double baseScore =
+    adjustedAesthetic * materialQualityNormalized * config.baseMultiplier;
+final double talentBonus = input.sovereignTalentCount > 0
+    ? input.totalTalentExpertise * config.talentBonusPerLevel * input.sovereignTalentCount
+    : 0.0;
+final double totalScore = (baseScore + talentBonus).clamp(0.0, 100.0);
+```
+
+Add helper:
+
+```dart
+bool _hasTrendMatch(
+  HypeCalculationInput input,
+  List<TrendTsunami> activeTsunamis,
+) {
+  return activeTsunamis.any(
+    (TrendTsunami trend) => trend.getMultiplierForAnyTag(input.styleTags) != null,
+  );
+}
+```
+
+In `mint-design/index.ts`, replace the random section:
+
+```ts
+const baseHype: number = Math.random() * 70.0 + 30.0;
+const rankBonus: number = Math.min(brandRank * 0.5, 25.0);
+const rawHype: number = baseHype + rankBonus;
+const hypoScore: number = parseFloat(Math.min(rawHype, 100.0).toFixed(2));
+```
+
+With server-side deterministic input validation. Do not accept a client-supplied `hype_score`:
+
+```ts
+const materialQuality = clampNumber(body.material_quality ?? 50, 0, 100);
+const aestheticAlignment = clampNumber(body.aesthetic_alignment ?? 50, 0, 100);
+const styleTags = Array.isArray(body.style_tags) ? body.style_tags.slice(0, 8) : [];
+const trendMultiplier = await resolveTrendMultiplier(admin, styleTags);
+const sovereignTalentBonus = await resolveSovereignTalentBonus(admin, playerId);
+
+const adjustedAesthetic = Math.min(aestheticAlignment * trendMultiplier, 100);
+const rawHype = adjustedAesthetic * (materialQuality / 100) + sovereignTalentBonus;
+const hypoScore = parseFloat(Math.min(rawHype, 100).toFixed(2));
+```
+
+Add helpers in the same file:
+
+```ts
+function clampNumber(value: unknown, min: number, max: number): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return min;
+  return Math.min(Math.max(n, min), max);
+}
+```
+
+Test:
+
+```bash
+dart test test/hype_calculator_test.dart
+supabase functions serve mint-design
+```
+
+Add tests for no trend, matching trend, invalid client values, and Sovereign Talent bonus cap.
+
+## 8. Remove TODOs, Scaffolds, Dead Code, And Ghost Claims
+
+GDD §4.3, §4.4, §6.10, §7.2, §8.12, §8.13.
+
+Replace or hide these alpha-breaking placeholders:
+
+| File | Current scaffold | Replacement |
+|---|---|---|
+| `lib/features/world_map/screens/world_map_screen.dart` | `World Map - Coming in Phase 4` | Hide route in `app_router.dart` or replace with implemented 2.5D globe/city nodes. |
+| `lib/features/events/screens/events_screen.dart` | `Events - Coming in Phase 4` | Hide route or implement Fashion Week/event calendar logic. |
+| `lib/features/profile/screens/profile_screen.dart` | `Profile - Coming in Phase 4` | Implement Brand Story Archive and founder profile or remove route from alpha nav. |
+| `lib/features/ar_tryon/screens/ar_tryon_screen.dart` | hardcoded `ALPHA PROTOTYPE`, `TRACKING - PHASE 10`, 2D torso box | Gate as unavailable in alpha or implement real AR tracking and real design binding. |
+| `lib/features/luxe/widgets/luxe_widget.dart` | Rive placeholder/pulsing container | Add `assets/animations/luxe_idle.riv` or render a non-placeholder mentor component. |
+| `lib/features/gala/screens/gala_runway_screen.dart` | 3D garment display placeholder | Bind to actual submitted design preview. |
+| `lib/features/archive/screens/archive_market_screen.dart` | design preview placeholder | Render real design image/canvas preview from `design_image_url`. |
+| `lib/features/onboarding/screens/avatar_customizer_screen.dart` | mannequin placeholder comment | Add real asset or remove 3D claim. |
+| `lib/core/providers/mock_auth_provider.dart` | name says `mock`, stale `kMockUid` | Rename file/provider to `active_player_provider.dart`, keep Supabase UUID source. |
+| `lib/domain/repositories/player_repository.dart` | "Uses mock UID until Firebase Auth is wired" | Update stale comment; Firebase/Supabase bridge exists. |
+| `test/widget_test.dart` | Phase 0 scaffold smoke test only | Add real auth-gate/onboarding/provider smoke tests. |
+| `README.md` | "Phase 0-4 Complete - All core systems..." | Replace with alpha audit status and known blockers. |
+
+Test:
+
+```bash
+rg -n "TODO|FIXME|placeholder|Coming in Phase|Phase 10|mock-uid|scaffold smoke|PENDING ASSET" lib test README.md
+dart analyze
+flutter test
+```
+
+Expected: remaining matches are either intentional implementation comments or tracked manual tasks.
+
+## 9. Add Missing Marketing Policy Link In Settings
+
+GDD §10.1.
+
+File: `lib/features/settings/screens/settings_screen.dart`
+
+Problem: Settings links Privacy, Terms, EULA, Community, Cookie, DMCA, Refund, Children's Privacy, and Accessibility. GDD also requires Marketing and Advertising Policy.
+
+Insert after Accessibility Statement:
+
+```dart
+_SettingsLinkTile(
+  icon: Icons.campaign_outlined,
+  title: 'Marketing & Advertising Policy',
+  onTap: () => _launchUrl('https://thestyliste.app/marketing'),
+),
+```
+
+Test:
+
+```bash
+dart analyze
+flutter test
+```
+
+Manual test: Settings > Legal opens every policy URL without a 404.
+
+## 10. Static Analysis Fix List
+
+GDD §8.15 quality gate.
+
+Run:
+
+```bash
+dart analyze
+dart format lib test
+```
+
+Apply every fix below. The analyzer baseline is the developer-provided `dart analyze` output with 115 issues.
+
+### 10.1 Warnings
+
+| Issue | Exact fix |
+|---|---|
+| `lib/features/archive/screens/archive_market_screen.dart:292 inference_failure_on_function_invocation` | Add explicit type: `showModalBottomSheet<void>(...)` unless awaiting a value. |
+| `lib/features/archive/screens/archive_market_screen.dart:304 inference_failure_on_function_invocation` | Add explicit type: `showDialog<void>(...)` unless awaiting a value. |
+| `lib/features/archive/screens/archive_market_screen.dart:722 unused_local_variable breakdown` | Remove `breakdown` or render it in the UI. |
+| `lib/features/atelier/providers/drop_design_provider.dart:9 unused_import` | Remove `import '../../../core/services/supabase_service.dart';`. |
+| `lib/features/atelier/screens/drop_preview_screen.dart:79 inference_failure_on_function_invocation` | Add explicit type: `showDialog<void>(...)`. |
+| `lib/features/crisis/screens/kintsugi_repair_screen.dart:149 inference_failure_on_function_invocation` | Add explicit type: `showDialog<void>(...)`. |
+| `lib/features/crisis/screens/kintsugi_repair_screen.dart:526 unused_local_variable fillLength` | Remove `fillLength` or use it in path rendering. |
+| `lib/features/crisis/screens/kintsugi_repair_screen.dart:527 unused_local_variable fillPath` | Remove `fillPath` or use it in path rendering. |
+| `lib/features/crisis/widgets/tarnish_overlay.dart:6 unused_import` | Remove `import 'dart:ui';`. |
+| `lib/features/crisis/widgets/tarnish_overlay.dart:10 unused_import` | Remove unused Aurelian theme import. |
+| `lib/features/crisis/widgets/tarnish_overlay.dart:11 unused_import` | Remove unused HQ theme import. |
+| `lib/features/design/services/vex_ai_engine.dart:33 unused_field tarnishedAdjectives` | Use in generated Tarnished Vex copy or remove the field. |
+| `lib/features/design/services/vex_ai_engine.dart:56 unused_field derivativeAdjectives` | Use in derivative review generation or remove. |
+| `lib/features/design/services/vex_ai_engine.dart:80 unused_field visionaryAdjectives` | Use in visionary review generation or remove. |
+| `lib/features/design/services/vex_ai_engine.dart:105 unused_field sovereignAdjectives` | Use in sovereign review generation or remove. |
+| `lib/features/design/services/vex_ai_engine.dart:112 unused_field bridges` | Use in review sentence composition or remove. |
+| `lib/features/design/services/vex_ai_engine.dart:253 unused_local_variable multiplier` | Remove the local or include it in scoring/output. |
+| `lib/features/design/widgets/vex_review_card.dart:33 unused_field _animationDuration` | Use it in the animation controller/duration or remove. |
+| `lib/features/hq/theme/aurelian_hq_theme.dart:108 unused_local_variable floor` | Remove `floor` or use it in the color calculation. |
+| `lib/features/hq/widgets/hq_architect_view.dart:198 inference_failure_on_function_invocation` | Add `showModalBottomSheet<void>(...)`. |
+| `lib/features/hq/widgets/hq_architect_view.dart:234 inference_failure_on_function_invocation` | Add `showModalBottomSheet<void>(...)`. |
+| `lib/features/hq/widgets/hq_architect_view.dart:537 unused_element _CashFlowRibbon` | Remove class or wire it into the architect view. |
+| `lib/features/hq/widgets/hq_artisan_view.dart:178 inference_failure_on_function_invocation` | Add `showModalBottomSheet<void>(...)`. |
+| `lib/features/maison/screens/district_map_screen.dart:262 inference_failure_on_function_invocation` | Add `showModalBottomSheet<void>(...)`. |
+| `lib/features/onboarding/screens/aurelian_gate_screen.dart:50 unused_field _pressStartTime` | Remove the field or use it for press-duration logic. |
+| `lib/features/onboarding/widgets/verlet_ribbon_painter.dart:175 unused_field _shadowOffset` | Remove the field or use it in shadow drawing. |
+| `lib/features/onboarding/widgets/verlet_ribbon_painter.dart:291 unused_local_variable size` | Remove the local or use it in paint bounds. |
+
+### 10.2 Infos
+
+| Issue | Exact fix |
+|---|---|
+| `archive_provider.dart:44 always_specify_types` | Add explicit type to the local declaration. |
+| `archive_provider.dart:46 always_specify_types` | Add explicit type to the local declaration. |
+| `archive_provider.dart:47 always_specify_types` | Add explicit type to the local declaration. |
+| `ascension_provider.dart:258 always_specify_types` | Add explicit type to the local declaration. |
+| `ascension_provider.dart:266 always_specify_types` | Add explicit type to the local declaration. |
+| `drop_design_provider.dart:16 directives_ordering` | Sort imports by Dart style after removing the unused import. |
+| `drop_design_provider.dart:264 always_specify_types` | Add explicit type to the local declaration. |
+| `drop_design_provider.dart:267 always_specify_types` | Add explicit type to the local declaration. |
+| `drop_design_provider.dart:276 always_specify_types` | Add explicit type to the local declaration. |
+| `drop_design_provider.dart:279 always_specify_types` | Add explicit type to the local declaration. |
+| `drop_design_provider.dart:287 always_specify_types` | Add explicit type to the local declaration. |
+| `atelier_screen.dart:78 unawaited_futures` | Add `import 'dart:async';` and wrap intentionally fire-and-forget Future with `unawaited(...)`, or `await` it. |
+| `kintsugi_repair_screen.dart:93 unawaited_futures` | Add `unawaited(...)` or `await`. |
+| `tarnish_overlay.dart:25-28 always_put_required_named_parameters_first` | Move all `required` named parameters before optional named parameters in the constructor. |
+| `gala_provider.dart:149 avoid_dynamic_calls` | Cast response rows to `Map<String, dynamic>` before property access. |
+| `gala_provider.dart:150 avoid_dynamic_calls` | Cast nested object before property access. |
+| `gala_provider.dart:153 avoid_dynamic_calls` | Cast nested object before property access. |
+| `gala_provider.dart:200 avoid_dynamic_calls` | Cast response rows to `Map<String, dynamic>` before property access. |
+| `gala_provider.dart:201 avoid_dynamic_calls` | Cast nested object before property access. |
+| `gala_provider.dart:204 avoid_dynamic_calls` | Cast nested object before property access. |
+| `gala_provider.dart:317 always_specify_types` | Add explicit type to the local declaration. |
+| `brand_heat_meter.dart:141 non_constant_identifier_names` | Rename `CustomPainter` parameter/local to `oldDelegate`. |
+| `empire_pulse_painter.dart:18 always_put_required_named_parameters_first` | Move required named parameter before optional parameters. |
+| `empire_pulse_painter.dart:294 non_constant_identifier_names` | Rename `CustomPainter` parameter/local to `oldDelegate`. |
+| `glass_walled_penthouse.dart:365 non_constant_identifier_names` | Rename `CustomPainter` parameter/local to `oldDelegate`. |
+| `glass_walled_penthouse.dart:401 non_constant_identifier_names` | Rename `CustomPainter` parameter/local to `oldDelegate`. |
+| `hq_architect_view.dart:214 unawaited_futures` | Add `unawaited(...)` or `await`. |
+| `hq_artisan_view.dart:194 unawaited_futures` | Add `unawaited(...)` or `await`. |
+| `sun_dial_hype_meter.dart:331 non_constant_identifier_names` | Rename `CustomPainter` parameter/local to `oldDelegate`. |
+| `equity_provider.dart:130 always_specify_types` | Use `final Session? session = ...`. |
+| `equity_provider.dart:139 always_specify_types` | Use `final FunctionResponse response = ...`. |
+| `equity_provider.dart:150 always_specify_types` | Add explicit type to callback/local declaration. |
+| `ledger_provider.dart:125 always_specify_types` | Use `final Session? session = ...`. |
+| `ledger_provider.dart:133 always_specify_types` | Use `final FunctionResponse response = ...`. |
+| `ledger_provider.dart:143 always_specify_types` | Add explicit type to callback/local declaration. |
+| `ledger_provider.dart:186 always_specify_types` | Use `final Session? session = ...`. |
+| `ledger_provider.dart:194 always_specify_types` | Use `final FunctionResponse response = ...`. |
+| `ledger_provider.dart:204 always_specify_types` | Add explicit type to callback/local declaration. |
+| `bank_screen.dart:260 require_trailing_commas` | Add trailing comma to the argument/list literal at that callsite. |
+| `district_provider.dart:200 deprecated_member_use` | Replace `FutureProviderRef` with `Ref`. |
+| `district_provider.dart:224 always_specify_types` | Add explicit type to local declaration. |
+| `district_provider.dart:229 always_specify_types` | Add explicit type to local declaration. |
+| `district_provider.dart:232 always_specify_types` | Add explicit type to local declaration. |
+| `district_provider.dart:233 always_specify_types` | Add explicit type to local declaration. |
+| `district_provider.dart:235 always_specify_types` | Add explicit type to local declaration. |
+| `district_provider.dart:236 always_specify_types` | Add explicit type to local declaration. |
+| `district_provider.dart:256 always_specify_types` | Add explicit type to local declaration. |
+| `district_provider.dart:258 always_specify_types` | Add explicit type to local declaration. |
+| `district_provider.dart:259 always_specify_types` | Add explicit type to local declaration. |
+| `ascension_confirmation_screen.dart:86 unawaited_futures` | Add `unawaited(...)` or `await`. |
+| `aurelian_gate_screen.dart:82 use_build_context_synchronously` | After the async gap, guard with `if (!context.mounted) return;` before using that `BuildContext`. |
+| `aurelian_gate_screen.dart:91 unawaited_futures` | Add `unawaited(...)` or `await`. |
+| `avatar_customizer_screen.dart:221 always_specify_types` | Add explicit type to local declaration. |
+| `career_path_screen.dart:60 unawaited_futures` | Add `unawaited(...)` or `await`. |
+| `daily_check_in_widget.dart:93 unawaited_futures` | Add `unawaited(...)` or `await`. |
+| `supply_chain_provider.dart:38 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:43 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:50 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:65 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:67 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:72 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:105 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:106 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:132 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:137 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:144 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:161 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:163 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:168 always_specify_types` | Add explicit type to local declaration. |
+| `supply_chain_provider.dart:213 always_specify_types` | Add explicit type to local declaration. |
+| `casting_provider.dart:96 always_specify_types` | Add explicit type to local declaration. |
+| `casting_provider.dart:192 always_specify_types` | Add explicit type to local declaration. |
+| `casting_provider.dart:223 always_specify_types` | Add explicit type to local declaration. |
+| `casting_provider.dart:224 always_specify_types` | Add explicit type to local declaration. |
+| `casting_provider.dart:225 always_specify_types` | Add explicit type to local declaration. |
+| `talent_notifier.dart:107 always_specify_types` | Add explicit type to local declaration. |
+| `casting_room_screen.dart:354 non_constant_identifier_names` | Rename `CustomPainter` parameter/local to `oldDelegate`. |
+| `trend_provider.dart:59 always_specify_types` | Add explicit type to local declaration. |
+| `trend_provider.dart:61 always_specify_types` | Add explicit type to local declaration. |
+| `trend_provider.dart:64 always_specify_types` | Add explicit type to local declaration. |
+| `trend_provider.dart:65 always_specify_types` | Add explicit type to local declaration. |
+| `trend_provider.dart:76 always_specify_types` | Add explicit type to local declaration. |
+| `trend_provider.dart:77 always_specify_types` | Add explicit type to local declaration. |
+| `trend_provider.dart:78 always_specify_types` | Add explicit type to local declaration. |
+| `brand_rank_bar.dart:33 always_specify_types` | Add explicit type to local declaration. |
+
+Final static-analysis test:
+
+```bash
+dart analyze
+flutter analyze
+flutter test
+```
+
+Expected: `dart analyze` returns 0 issues; `flutter analyze` remains 0 errors.

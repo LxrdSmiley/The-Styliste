@@ -17,7 +17,7 @@ import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/player.dart';
 
 /// Brand Footprint Screen — City + Tier Selection
-/// 
+///
 /// Flow:
 /// 1. Select HQ City (NYC, Paris, Tokyo, Milan)
 /// 2. Select Market Tier (High/Mid/Mass)
@@ -26,7 +26,8 @@ class BrandFootprintScreen extends ConsumerStatefulWidget {
   const BrandFootprintScreen({super.key});
 
   @override
-  ConsumerState<BrandFootprintScreen> createState() => _BrandFootprintScreenState();
+  ConsumerState<BrandFootprintScreen> createState() =>
+      _BrandFootprintScreenState();
 }
 
 class _BrandFootprintScreenState extends ConsumerState<BrandFootprintScreen> {
@@ -57,7 +58,7 @@ class _BrandFootprintScreenState extends ConsumerState<BrandFootprintScreen> {
     HapticFeedback.mediumImpact();
     setState(() => _selectedCity = city);
     ref.read(onboardingProvider.notifier).setCity(city);
-    
+
     // Auto-advance to tier after short delay
     Future<void>.delayed(const Duration(milliseconds: 400), () {
       if (mounted) {
@@ -87,14 +88,14 @@ class _BrandFootprintScreenState extends ConsumerState<BrandFootprintScreen> {
           children: <Widget>[
             // --- Header ---
             _buildHeader(),
-            
+
             const SizedBox(height: 32.0),
-            
+
             // --- Progress indicator ---
             _buildProgressIndicator(),
-            
+
             const SizedBox(height: 32.0),
-            
+
             // --- Content area ---
             Expanded(
               child: AnimatedSwitcher(
@@ -114,14 +115,14 @@ class _BrandFootprintScreenState extends ConsumerState<BrandFootprintScreen> {
                       ),
               ),
             ),
-            
+
             // --- Continue button ---
             if (_selectedCity != null && _selectedTier != null)
               _buildContinueButton()
                   .animate()
                   .fadeIn(delay: const Duration(milliseconds: 200))
                   .slideY(begin: 0.3, end: 0.0),
-            
+
             const SizedBox(height: 32.0),
           ],
         ),
@@ -252,7 +253,10 @@ class _BrandFootprintScreenState extends ConsumerState<BrandFootprintScreen> {
 
 class _CitySelectionStep extends StatelessWidget {
   const _CitySelectionStep({
-    required this.cities, required this.selectedCity, required this.onSelect, super.key,
+    required this.cities,
+    required this.selectedCity,
+    required this.onSelect,
+    super.key,
   });
 
   final List<HqCity> cities;
@@ -267,7 +271,7 @@ class _CitySelectionStep extends StatelessWidget {
       itemBuilder: (BuildContext context, int index) {
         final HqCity city = cities[index];
         final bool isSelected = selectedCity == city;
-        
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
           child: _CityCard(
@@ -361,7 +365,7 @@ class _CityCard extends StatelessWidget {
               // Atmospheric effect
               if (_atmosphericEffect != null)
                 Positioned.fill(child: _atmosphericEffect!),
-              
+
               // City gradient overlay
               Container(
                 decoration: BoxDecoration(
@@ -375,7 +379,7 @@ class _CityCard extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // Content
               Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -388,7 +392,8 @@ class _CityCard extends StatelessWidget {
                       style: TextStyle(
                         fontFamily: 'SpaceGrotesk',
                         fontSize: 24.0,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w400,
                         letterSpacing: 2.0,
                         color: AurelianPalette.textPrimary,
                       ),
@@ -405,7 +410,7 @@ class _CityCard extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Selection indicator
               if (isSelected)
                 Positioned(
@@ -471,7 +476,7 @@ class _SnowfallEffectState extends State<_SnowfallEffect>
       vsync: this,
       duration: const Duration(seconds: 3),
     )..repeat();
-    
+
     // Generate random snowflakes
     for (int i = 0; i < 20; i++) {
       _snowflakes.add(_Snowflake.random());
@@ -545,8 +550,9 @@ class _SnowfallPainter extends CustomPainter {
 
     for (final _Snowflake flake in snowflakes) {
       final double y = ((flake.y + progress * flake.speed) % 1.0) * size.height;
-      final double x = flake.x * size.width + math.sin(progress * math.pi * 2 + flake.wobble) * 10;
-      
+      final double x = flake.x * size.width +
+          math.sin(progress * math.pi * 2 + flake.wobble) * 10;
+
       canvas.drawCircle(
         Offset(x, y),
         flake.size,
@@ -613,19 +619,21 @@ class _PetalPainter extends CustomPainter {
     // Draw a few falling petals
     for (int i = 0; i < 8; i++) {
       final double y = ((i * 0.12 + progress * 0.3) % 1.0) * size.height;
-      final double x = (i * 0.1 + math.sin(progress * math.pi * 2 + i) * 0.05 + 0.5) * size.width;
+      final double x =
+          (i * 0.1 + math.sin(progress * math.pi * 2 + i) * 0.05 + 0.5) *
+              size.width;
       final double rotation = progress * math.pi * 4 + i;
-      
+
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(rotation);
-      
+
       // Draw petal shape
       final Path path = Path()
         ..moveTo(0.0, -6.0)
         ..quadraticBezierTo(4.0, 0.0, 0.0, 6.0)
         ..quadraticBezierTo(-4.0, 0.0, 0.0, -6.0);
-      
+
       canvas.drawPath(path, paint);
       canvas.restore();
     }
@@ -641,7 +649,10 @@ class _PetalPainter extends CustomPainter {
 
 class _TierSelectionStep extends StatelessWidget {
   const _TierSelectionStep({
-    required this.selectedTier, required this.onSelect, required this.onBack, super.key,
+    required this.selectedTier,
+    required this.onSelect,
+    required this.onBack,
+    super.key,
   });
 
   final MarketTier? selectedTier;
@@ -681,9 +692,9 @@ class _TierSelectionStep extends StatelessWidget {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 16.0),
-        
+
         // Tier cards
         Expanded(
           child: ListView.builder(
@@ -692,7 +703,7 @@ class _TierSelectionStep extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               final MarketTier tier = MarketTier.values[index];
               final bool isSelected = selectedTier == tier;
-              
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: _TierCard(
@@ -806,7 +817,8 @@ class _TierCard extends StatelessWidget {
               children: <Widget>[
                 _TierStat(
                   label: 'STARTING CAPITAL',
-                  value: '\$${(tier.startingCapital / 1000).toStringAsFixed(0)}K',
+                  value:
+                      '\$${(tier.startingCapital / 1000).toStringAsFixed(0)}K',
                 ),
                 const SizedBox(width: 24.0),
                 _TierStat(

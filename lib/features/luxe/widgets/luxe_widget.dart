@@ -1,6 +1,5 @@
-// GDD §8.12 — Luxe mentor: 2D animated fox, daily check-ins, quest prompts
+// GDD §8.12 - Luxe mentor: 2D animated concierge, daily check-ins, quest prompts
 // Directive O: Luxe Identity with Trust Score and contextual dialogue
-// Note: Rive animation placeholder — PENDING ASSET
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,9 +65,7 @@ class _LuxeContent extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          // Avatar placeholder (pulsing gold container)
-          // PENDING ASSET: RiveAnimation.asset('assets/animations/luxe_idle.riv')
-          _PulsingAvatar(),
+          _LuxeSigil(),
           const SizedBox(width: 16),
 
           // Content area
@@ -95,7 +92,8 @@ class _LuxeContent extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: trustScore / 100,
-                          backgroundColor: AurelianPalette.softRose.withValues(alpha: 0.3),
+                          backgroundColor:
+                              AurelianPalette.softRose.withValues(alpha: 0.3),
                           valueColor: const AlwaysStoppedAnimation<Color>(
                             AurelianPalette.champagneGold,
                           ),
@@ -136,14 +134,12 @@ class _LuxeContent extends StatelessWidget {
   }
 }
 
-/// Pulsing avatar placeholder
-/// Replaces RiveAnimation.asset('assets/animations/luxe_idle.riv') until asset ready
-class _PulsingAvatar extends StatefulWidget {
+class _LuxeSigil extends StatefulWidget {
   @override
-  State<_PulsingAvatar> createState() => _PulsingAvatarState();
+  State<_LuxeSigil> createState() => _LuxeSigilState();
 }
 
-class _PulsingAvatarState extends State<_PulsingAvatar>
+class _LuxeSigilState extends State<_LuxeSigil>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -192,7 +188,7 @@ class _PulsingAvatarState extends State<_PulsingAvatar>
           ),
           child: const Center(
             child: Icon(
-              Icons.auto_awesome, // Placeholder for fox icon
+              Icons.auto_awesome,
               color: AurelianPalette.champagneGold,
               size: 28,
             ),

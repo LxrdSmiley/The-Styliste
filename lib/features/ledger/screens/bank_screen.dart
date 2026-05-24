@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/providers/mock_auth_provider.dart';
+import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/brand.dart';
@@ -242,9 +242,13 @@ class _RevenueChartPainter extends CustomPainter {
       empty.paint(
         canvas,
         Offset(
+<<<<<<< HEAD
+            (size.width - empty.width) / 2, (size.height - empty.height) / 2),
+=======
           (size.width - empty.width) / 2,
           (size.height - empty.height) / 2,
         ),
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
       );
       return;
     }

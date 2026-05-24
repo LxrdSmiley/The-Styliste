@@ -1,11 +1,9 @@
 // Directive G — Screen 5: Avatar Customizer
 // GDD §1.1 — Founder's visage customization
-// 3D base with horizontal scrolling chips for Face/Body/Hair/Fit
-// AI_UNCERTAINTY: flutter_3d_controller integration pending
+// Founder preview with horizontal scrolling chips for Face/Body/Hair/Fit
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,7 +15,7 @@ import '../../../core/theme/aurelian_theme.dart';
 /// Avatar Customizer Screen — Founder's identity
 ///
 /// Features:
-/// - 3D stichless_mannequin.glb display (placeholder for now)
+/// - Founder preview driven by selected Face/Body/Hair/Fit values
 /// - Bottom sheet customization UI
 /// - 4 categories: Face, Body, Hair, Starting Fit
 /// - Horizontal scrolling chips for each
@@ -43,7 +41,11 @@ class _AvatarCustomizerScreenState
         'Bold',
         'Youthful',
         'Refined',
+<<<<<<< HEAD
+        'Avant-Garde'
+=======
         'Avant-Garde',
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
       ],
     ),
     _CustomizationCategory(
@@ -107,7 +109,7 @@ class _AvatarCustomizerScreenState
       body: SafeArea(
         child: Stack(
           children: <Widget>[
-            // --- 3D Model / Avatar Preview (full screen behind) ---
+            // --- Avatar Preview (full screen behind) ---
             Positioned.fill(
               child: _AvatarPreview(
                 faceIndex: faceIndex,
@@ -385,7 +387,7 @@ class _AvatarCustomizerScreenState
 }
 
 // =============================================================================
-// 3D Avatar Preview (Placeholder)
+// Avatar Preview
 // =============================================================================
 
 class _AvatarPreview extends StatefulWidget {
@@ -426,10 +428,86 @@ class _AvatarPreviewState extends State<_AvatarPreview>
 
   @override
   Widget build(BuildContext context) {
-    // Flutter3DViewer for avatar preview
-    return Flutter3DViewer(
-      src: 'assets/models/stichless_mannequin.glb',
-      controller: Flutter3DController(),
+    final List<Color> palette = <Color>[
+      AurelianPalette.champagneGold,
+      AurelianPalette.softRose,
+      AurelianPalette.textSecondary,
+      AurelianPalette.textPrimary,
+      AurelianPalette.alabaster,
+    ];
+    final Color accent = palette[widget.fitIndex % palette.length];
+
+    return AnimatedBuilder(
+      animation: _rotateController,
+      builder: (BuildContext context, Widget? child) {
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: <Color>[
+                AurelianPalette.ivory,
+                accent.withValues(alpha: 0.12),
+              ],
+            ),
+          ),
+          child: Center(
+            child: Transform.rotate(
+              angle: (_rotateController.value - 0.5) * 0.12,
+              child: Container(
+                width: 220,
+                height: 360,
+                decoration: BoxDecoration(
+                  color: AurelianPalette.alabaster.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(110),
+                  border: Border.all(
+                    color: accent.withValues(alpha: 0.55),
+                    width: 2,
+                  ),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: accent.withValues(alpha: 0.2),
+                      blurRadius: 40,
+                      spreadRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.face_retouching_natural,
+                      size: 72,
+                      color: AurelianPalette.textPrimary.withValues(
+                        alpha: 0.72 + widget.faceIndex * 0.04,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Icon(
+                      Icons.accessibility_new,
+                      size: 124,
+                      color: accent.withValues(
+                        alpha: 0.45 + widget.bodyIndex * 0.05,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'FIT ${widget.fitIndex + 1} / HAIR ${widget.hairIndex + 1}',
+                      style: TextStyle(
+                        fontFamily: 'JetBrainsMono',
+                        fontSize: 10,
+                        letterSpacing: 2,
+                        color: AurelianPalette.textSecondary
+                            .withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

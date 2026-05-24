@@ -13,16 +13,26 @@ import '../../domain/models/player.dart';
 
 /// Basic local profanity blocklist — extended in Phase 4 with server-side check.
 const List<String> _kBlocklist = <String>[
-  'fuck', 'shit', 'ass', 'bitch', 'cunt', 'dick', 'pussy', 'cock',
-  'nigga', 'nigger', 'faggot', 'retard',
+  'fuck',
+  'shit',
+  'ass',
+  'bitch',
+  'cunt',
+  'dick',
+  'pussy',
+  'cock',
+  'nigga',
+  'nigger',
+  'faggot',
+  'retard',
 ];
 
 enum BrandNameValidationResult {
   valid,
-  tooShort,       // < 3 chars
-  tooLong,        // > 15 chars
-  invalidChars,   // not alphanumeric (spaces allowed between words)
-  blocklisted,    // matches local profanity list
+  tooShort, // < 3 chars
+  tooLong, // > 15 chars
+  invalidChars, // not alphanumeric (spaces allowed between words)
+  blocklisted, // matches local profanity list
 }
 
 // =================================================================-----------
@@ -30,9 +40,9 @@ enum BrandNameValidationResult {
 // =================================================================-----------
 
 enum MarketTier {
-  highLuxury,   // Low initial sales, massive hype ceiling
-  midLuxury,    // Balanced path
-  massMarket,   // High initial volume, strict hype caps
+  highLuxury, // Low initial sales, massive hype ceiling
+  midLuxury, // Balanced path
+  massMarket, // High initial volume, strict hype caps
 }
 
 extension MarketTierExtension on MarketTier {
@@ -46,7 +56,7 @@ extension MarketTierExtension on MarketTier {
         return 'Mass Market';
     }
   }
-  
+
   String get description {
     switch (this) {
       case MarketTier.highLuxury:
@@ -57,7 +67,7 @@ extension MarketTierExtension on MarketTier {
         return 'Volume is victory. High initial volume, strict hype caps.';
     }
   }
-  
+
   int get startingCapital {
     switch (this) {
       case MarketTier.highLuxury:
@@ -68,7 +78,7 @@ extension MarketTierExtension on MarketTier {
         return 200000;
     }
   }
-  
+
   int get hypeCeiling {
     switch (this) {
       case MarketTier.highLuxury:
@@ -138,7 +148,8 @@ BrandNameValidationResult validateBrandName(String name) {
   if (trimmed.length > 15) return BrandNameValidationResult.tooLong;
 
   // Alphanumeric + single internal spaces only — no special chars
-  final RegExp validPattern = RegExp(r'^[a-zA-Z0-9]([a-zA-Z0-9 ]*[a-zA-Z0-9])?$');
+  final RegExp validPattern =
+      RegExp(r'^[a-zA-Z0-9]([a-zA-Z0-9 ]*[a-zA-Z0-9])?$');
   if (!validPattern.hasMatch(trimmed)) {
     return BrandNameValidationResult.invalidChars;
   }
@@ -154,8 +165,10 @@ BrandNameValidationResult validateBrandName(String name) {
 String? brandNameError(String name) {
   return switch (validateBrandName(name)) {
     BrandNameValidationResult.valid => null,
-    BrandNameValidationResult.tooShort => 'Brand name must be at least 3 characters.',
-    BrandNameValidationResult.tooLong => 'Brand name must be 15 characters or fewer.',
+    BrandNameValidationResult.tooShort =>
+      'Brand name must be at least 3 characters.',
+    BrandNameValidationResult.tooLong =>
+      'Brand name must be 15 characters or fewer.',
     BrandNameValidationResult.invalidChars =>
       'Alphanumeric characters only. No special symbols.',
     BrandNameValidationResult.blocklisted =>
@@ -182,15 +195,15 @@ class OnboardingState {
   final String brandName;
   final CareerPath? selectedPath;
   final HqCity? selectedCity;
-  final MarketTier? selectedTier;        // NEW: Screen 4
-  final AvatarConfig? avatarConfig;        // NEW: Screen 5
+  final MarketTier? selectedTier; // NEW: Screen 4
+  final AvatarConfig? avatarConfig; // NEW: Screen 5
 
   /// True while createPlayerProfile is in-flight.
   final bool isCommitting;
 
   /// Non-null if the Supabase commit failed.
   final String? commitError;
-  
+
   /// White-out animation progress (0.0 → 1.0)
   final double genesisProgress;
 
@@ -238,30 +251,30 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
   void setCity(HqCity city) {
     state = state.copyWith(selectedCity: city, clearError: true);
   }
-  
+
   void setTier(MarketTier tier) {
     state = state.copyWith(selectedTier: tier, clearError: true);
   }
-  
+
   void setAvatarConfig(AvatarConfig config) {
     state = state.copyWith(avatarConfig: config, clearError: true);
   }
-  
+
   void updateAvatarFace(int index) {
     final AvatarConfig current = state.avatarConfig ?? const AvatarConfig();
     state = state.copyWith(avatarConfig: current.copyWith(faceIndex: index));
   }
-  
+
   void updateAvatarBody(int index) {
     final AvatarConfig current = state.avatarConfig ?? const AvatarConfig();
     state = state.copyWith(avatarConfig: current.copyWith(bodyIndex: index));
   }
-  
+
   void updateAvatarHair(int index) {
     final AvatarConfig current = state.avatarConfig ?? const AvatarConfig();
     state = state.copyWith(avatarConfig: current.copyWith(hairIndex: index));
   }
-  
+
   void updateAvatarFit(int index) {
     final AvatarConfig current = state.avatarConfig ?? const AvatarConfig();
     state = state.copyWith(avatarConfig: current.copyWith(fitIndex: index));
@@ -270,7 +283,7 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
   void setCommitting({required bool value}) {
     state = state.copyWith(isCommitting: value);
   }
-  
+
   void setGenesisProgress(double progress) {
     state = state.copyWith(genesisProgress: progress);
   }

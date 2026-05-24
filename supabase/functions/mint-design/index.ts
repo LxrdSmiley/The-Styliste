@@ -1,6 +1,6 @@
 // Edge Function: mint-design
 // GDD §4.1 — Server-authoritative Alpha design minting.
-// PROJECT_RULES §2 — Client cannot dictate hype_score; server generates it.
+// PROJECT_RULES §2 — Client cannot dictate hype_score; server calculates it.
 //
 // Auth: same hybrid pattern as calculate-idle-income (Phase 3):
 //   Step 1: verifyClient.auth.getUser(token) → cryptographic JWT check → player_id
@@ -11,7 +11,7 @@
 // serialisation by Postgres.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -19,11 +19,100 @@ const CORS_HEADERS = {
 };
 
 interface MintDesignRequest {
-  fabric_color_hex: string; // e.g. "C9A84C" — no leading #
+  fabric_color_hex?: unknown; // e.g. "C9A84C" - no leading #
+  material_quality?: unknown;
+  aesthetic_alignment?: unknown;
+  style_tags?: unknown;
 }
 
-interface PlayerRow {
-  brand_rank: number;
+interface TrendRow {
+  tag_name: string;
+  multiplier: number | string;
+}
+
+interface TalentPoolRow {
+  tier: string;
+  base_hype_multiplier: number | string | null;
+}
+
+interface RosterTalentRow {
+  talent_pool: TalentPoolRow | TalentPoolRow[] | null;
+}
+
+function clampNumber(value: unknown, min: number, max: number): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return min;
+  return Math.min(Math.max(n, min), max);
+}
+
+function normalizeStyleTags(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((tag: unknown): string => String(tag).trim())
+    .filter((tag: string): boolean => tag.length > 0)
+    .slice(0, 8);
+}
+
+function normalizeTalentPool(row: RosterTalentRow): TalentPoolRow | null {
+  if (Array.isArray(row.talent_pool)) {
+    return row.talent_pool[0] ?? null;
+  }
+  return row.talent_pool;
+}
+
+async function resolveTrendMultiplier(
+  admin: SupabaseClient,
+  styleTags: string[],
+): Promise<number> {
+  if (styleTags.length === 0) return 1.0;
+
+  const normalizedTags = new Set(
+    styleTags.map((tag: string): string => tag.toLowerCase()),
+  );
+  const { data, error } = await admin
+    .from("trend_tsunamis")
+    .select("tag_name, multiplier")
+    .gt("expires_at", new Date().toISOString());
+
+  if (error) {
+    console.error("trend_tsunamis lookup failed:", error.message);
+    return 1.0;
+  }
+
+  const rows = (data ?? []) as TrendRow[];
+  const hasMatch = rows.some((row: TrendRow): boolean =>
+    normalizedTags.has(row.tag_name.toLowerCase())
+  );
+
+  return hasMatch ? 1.5 : 1.0;
+}
+
+async function resolveSovereignTalentBonus(
+  admin: SupabaseClient,
+  playerId: string,
+): Promise<number> {
+  const { data, error } = await admin
+    .from("player_roster")
+    .select("talent_pool(tier, base_hype_multiplier)")
+    .eq("player_id", playerId)
+    .limit(3);
+
+  if (error) {
+    console.error("player_roster talent lookup failed:", error.message);
+    return 0.0;
+  }
+
+  const rows = (data ?? []) as RosterTalentRow[];
+  const bonus = rows.reduce((total: number, row: RosterTalentRow): number => {
+    const talent = normalizeTalentPool(row);
+    if (!talent || talent.tier !== "sovereign") return total;
+
+    const multiplier = clampNumber(talent.base_hype_multiplier, 1.0, 2.0);
+    return total + (multiplier - 1.0) * 10.0;
+  }, 0.0);
+
+  return Math.min(bonus, 25.0);
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -59,11 +148,14 @@ serve(async (req: Request): Promise<Response> => {
     const playerId: string = user.id;
 
     // ── Step 2: Parse client body ──────────────────────────────────────────
-    const body: MintDesignRequest = await req.json();
-    const fabricColorHex: string = (body.fabric_color_hex ?? "FAF7F0")
+    const body = (await req.json()) as MintDesignRequest;
+    const fabricColorHex: string = String(body.fabric_color_hex ?? "FAF7F0")
       .replace(/^#/, "")
       .toUpperCase()
       .slice(0, 6);
+    const materialQuality = clampNumber(body.material_quality ?? 50, 0, 100);
+    const aestheticAlignment = clampNumber(body.aesthetic_alignment ?? 50, 0, 100);
+    const styleTags = normalizeStyleTags(body.style_tags);
 
     // ── Step 3: Admin client for privileged DB ops ─────────────────────────
     const admin = createClient(
@@ -71,22 +163,13 @@ serve(async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    // Read brand_rank from players to weight hype_score.
-    const { data: player } = await admin
-      .from("players")
-      .select("brand_rank")
-      .eq("id", playerId)
-      .single<PlayerRow>();
+    // ── Step 4: Server-authoritative deterministic hype_score ──────────────
+    const trendMultiplier = await resolveTrendMultiplier(admin, styleTags);
+    const sovereignTalentBonus = await resolveSovereignTalentBonus(admin, playerId);
 
-    const brandRank: number = player?.brand_rank ?? 1;
-
-    // ── Step 4: Server-generated weighted hype_score ───────────────────────
-    // Range: 10–100. Brand rank adds up to +25 bonus (rank 1–50 scale).
-    // Always a float — multiply by 1.0 to guarantee non-integer serialisation.
-    const baseHype: number = Math.random() * 70.0 + 30.0;
-    const rankBonus: number = Math.min(brandRank * 0.5, 25.0);
-    const rawHype: number = baseHype + rankBonus;
-    const hypoScore: number = parseFloat(Math.min(rawHype, 100.0).toFixed(2));
+    const adjustedAesthetic = Math.min(aestheticAlignment * trendMultiplier, 100);
+    const rawHype = adjustedAesthetic * (materialQuality / 100) + sovereignTalentBonus;
+    const hypoScore: number = parseFloat(Math.min(rawHype, 100).toFixed(2));
 
     // ── Step 5: Generate design name deterministically ─────────────────────
     const suffix: string = Date.now().toString(36).toUpperCase().slice(-4);
@@ -97,12 +180,18 @@ serve(async (req: Request): Promise<Response> => {
       .from("designs")
       .insert({
         player_id: playerId,
+        owner_id: playerId,
         name: designName,
         session_type: "quick_sketch",
         status: "complete",
         hype_score: hypoScore,
         is_alpha: true,
-        fabric_data: { color_hex: fabricColorHex },
+        fabric_data: {
+          color_hex: fabricColorHex,
+          material_quality: materialQuality,
+          aesthetic_alignment: aestheticAlignment,
+          style_tags: styleTags,
+        },
       })
       .select()
       .single();

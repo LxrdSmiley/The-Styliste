@@ -12,7 +12,7 @@ import '../models/sovereign_statue.dart';
 import '../providers/ascension_provider.dart';
 
 /// Hall of Sovereigns: Infinite 3D gallery of memorialized brands
-/// 
+///
 /// Features:
 /// - Deep ivory/alabaster background
 /// - 3D stichless_mannequin.glb models for each statue tier
@@ -24,7 +24,7 @@ class HallOfSovereignsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<SovereignStatue>> statuesAsync = 
+    final AsyncValue<List<SovereignStatue>> statuesAsync =
         ref.watch(hallOfSovereignsProvider);
 
     return Scaffold(
@@ -63,7 +63,8 @@ class HallOfSovereignsScreen extends ConsumerWidget {
       body: statuesAsync.when(
         data: (List<SovereignStatue> statues) => _HallGallery(statues: statues),
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AurelianPalette.champagneGold),
+          child:
+              CircularProgressIndicator(color: AurelianPalette.champagneGold),
         ),
         error: (Object err, StackTrace stack) => const Center(
           child: Text(
@@ -96,10 +97,7 @@ class _HallGallery extends StatelessWidget {
         return _StatueCard(
           statue: statue,
           index: index,
-        )
-            .animate()
-            .fadeIn(delay: Duration(milliseconds: index * 100))
-            .slideY(
+        ).animate().fadeIn(delay: Duration(milliseconds: index * 100)).slideY(
               begin: 0.2,
               end: 0.0,
               duration: const Duration(milliseconds: 600),
@@ -133,12 +131,14 @@ class _StatueCard extends StatelessWidget {
               color: AurelianPalette.alabaster,
               borderRadius: BorderRadius.circular(24.0),
               border: Border.all(
-                color: statue.statueTier.materialColorValue.withValues(alpha: 0.3),
+                color:
+                    statue.statueTier.materialColorValue.withValues(alpha: 0.3),
                 width: 2.0,
               ),
               boxShadow: <BoxShadow>[
                 BoxShadow(
-                  color: statue.statueTier.materialColorValue.withValues(alpha: 0.2),
+                  color: statue.statueTier.materialColorValue
+                      .withValues(alpha: 0.2),
                   blurRadius: 32.0,
                   spreadRadius: 4.0,
                   offset: const Offset(0.0, 16.0),
@@ -153,12 +153,14 @@ class _StatueCard extends StatelessWidget {
                   // AI_UNCERTAINTY: flutter_3d_controller implementation needed
                   // For now showing material color background with silhouette
                   Container(
-                    color: statue.statueTier.materialColorValue.withValues(alpha: 0.1),
+                    color: statue.statueTier.materialColorValue
+                        .withValues(alpha: 0.1),
                     child: Center(
                       child: Icon(
                         Icons.person_outline,
                         size: 120.0,
-                        color: statue.statueTier.materialColorValue.withValues(alpha: 0.5),
+                        color: statue.statueTier.materialColorValue
+                            .withValues(alpha: 0.5),
                       ),
                     ),
                   ),
@@ -267,10 +269,12 @@ class _StatueCard extends StatelessWidget {
                       vertical: 8.0,
                     ),
                     decoration: BoxDecoration(
-                      color: AurelianPalette.champagneGold.withValues(alpha: 0.1),
+                      color:
+                          AurelianPalette.champagneGold.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.0),
                       border: Border.all(
-                        color: AurelianPalette.champagneGold.withValues(alpha: 0.3),
+                        color: AurelianPalette.champagneGold
+                            .withValues(alpha: 0.3),
                       ),
                     ),
                     child: const Text(

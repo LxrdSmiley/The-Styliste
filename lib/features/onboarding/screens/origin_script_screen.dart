@@ -37,8 +37,7 @@ class OriginScriptScreen extends ConsumerStatefulWidget {
   const OriginScriptScreen({super.key});
 
   @override
-  ConsumerState<OriginScriptScreen> createState() =>
-      _OriginScriptScreenState();
+  ConsumerState<OriginScriptScreen> createState() => _OriginScriptScreenState();
 }
 
 class _OriginScriptScreenState extends ConsumerState<OriginScriptScreen> {
@@ -139,7 +138,8 @@ class _OriginScriptScreenState extends ConsumerState<OriginScriptScreen> {
         backgroundColor: AppColors.obsidian,
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 64.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 32.0, vertical: 64.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,

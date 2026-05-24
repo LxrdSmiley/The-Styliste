@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/providers/mock_auth_provider.dart';
+import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../domain/models/brand.dart';
@@ -118,15 +118,19 @@ class _PlayerMaisonCard extends StatelessWidget {
     // Stream maison_members for this player joined with maisons.
     final Stream<List<Map<String, dynamic>>> stream = SupabaseService.client
         .from(SupabaseConstants.tableMaisonMembers)
-        .stream(primaryKey: <String>['maison_id', 'player_id'])
-        .eq('player_id', uid);
+        .stream(primaryKey: <String>['maison_id', 'player_id']).eq(
+            'player_id', uid);
 
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: stream,
-      builder: (BuildContext context,
-          AsyncSnapshot<List<Map<String, dynamic>>> snapshot,) {
-        final bool loading = snapshot.connectionState == ConnectionState.waiting;
-        final List<Map<String, dynamic>> rows = snapshot.data ?? <Map<String, dynamic>>[];
+      builder: (
+        BuildContext context,
+        AsyncSnapshot<List<Map<String, dynamic>>> snapshot,
+      ) {
+        final bool loading =
+            snapshot.connectionState == ConnectionState.waiting;
+        final List<Map<String, dynamic>> rows =
+            snapshot.data ?? <Map<String, dynamic>>[];
         final bool affiliated = rows.isNotEmpty;
 
         return Container(
@@ -181,7 +185,8 @@ class _AffiliatedBody extends ConsumerWidget {
             SnackBar(
               content: Text(
                 next.errorMessage!,
-                style: const TextStyle(color: AppColors.ivory, letterSpacing: 1.5),
+                style:
+                    const TextStyle(color: AppColors.ivory, letterSpacing: 1.5),
               ),
               backgroundColor: AppColors.obsidianCard,
             ),
@@ -233,7 +238,8 @@ class _AffiliatedBody extends ConsumerWidget {
                     builder: (BuildContext ctx) => const _TreasuryDonateSheet(),
                   ),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 9.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 9.0),
             decoration: BoxDecoration(
               border: Border.all(
                 color: AppColors.ivory.withValues(
@@ -324,7 +330,9 @@ class _IvoryButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
         decoration: BoxDecoration(
-          color: outlined ? Colors.transparent : AppColors.ivory.withValues(alpha: 0.08),
+          color: outlined
+              ? Colors.transparent
+              : AppColors.ivory.withValues(alpha: 0.08),
           border: Border.all(
             color: AppColors.ivory.withValues(alpha: outlined ? 0.25 : 0.0),
           ),
@@ -352,14 +360,15 @@ class _TrendingMaisonSliver extends StatelessWidget {
   Widget build(BuildContext context) {
     final Stream<List<Map<String, dynamic>>> stream = SupabaseService.client
         .from(SupabaseConstants.tableMaisons)
-        .stream(primaryKey: <String>['id'])
-        .limit(10);
+        .stream(primaryKey: <String>['id']).limit(10);
 
     return SliverToBoxAdapter(
       child: StreamBuilder<List<Map<String, dynamic>>>(
         stream: stream,
-        builder: (BuildContext context,
-            AsyncSnapshot<List<Map<String, dynamic>>> snapshot,) {
+        builder: (
+          BuildContext context,
+          AsyncSnapshot<List<Map<String, dynamic>>> snapshot,
+        ) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Padding(
               padding: EdgeInsets.all(20.0),
@@ -436,9 +445,11 @@ class _MaisonRow extends StatelessWidget {
           ),
           if (recruiting)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.ivory.withValues(alpha: 0.2)),
+                border:
+                    Border.all(color: AppColors.ivory.withValues(alpha: 0.2)),
                 borderRadius: BorderRadius.circular(2.0),
               ),
               child: Text(
@@ -577,7 +588,8 @@ class _TreasuryDonateSheetState extends ConsumerState<_TreasuryDonateSheet> {
               // Divide into at most 1000 steps for precise but not fractal control.
               divisions: maxSlider > 0 ? (maxSlider.toInt().clamp(1, 1000)) : 1,
               onChanged: maxSlider > 0
-                  ? (double v) => setState(() => _sliderValue = v.floorToDouble())
+                  ? (double v) =>
+                      setState(() => _sliderValue = v.floorToDouble())
                   : null,
             ),
           ),
@@ -590,7 +602,8 @@ class _TreasuryDonateSheetState extends ConsumerState<_TreasuryDonateSheet> {
                 label: '25%',
                 onTap: maxSlider > 0
                     ? () => setState(
-                          () => _sliderValue = (maxSlider * 0.25).floorToDouble(),
+                          () =>
+                              _sliderValue = (maxSlider * 0.25).floorToDouble(),
                         )
                     : null,
               ),
@@ -599,7 +612,8 @@ class _TreasuryDonateSheetState extends ConsumerState<_TreasuryDonateSheet> {
                 label: '50%',
                 onTap: maxSlider > 0
                     ? () => setState(
-                          () => _sliderValue = (maxSlider * 0.50).floorToDouble(),
+                          () =>
+                              _sliderValue = (maxSlider * 0.50).floorToDouble(),
                         )
                     : null,
               ),

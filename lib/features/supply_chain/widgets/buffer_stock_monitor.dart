@@ -1,6 +1,6 @@
 // Directive L — Buffer Stock Monitor
 // GDD §12.1.2 — Replaces Cash Flow Ribbon with warehouse capacity display
-// 
+//
 // The Golden Hour HQ Integration:
 // - Flowing (0-99%): Champagne gold progress bar
 // - Halted (100%): Flashing SoftRose with liquidation prompt
@@ -19,11 +19,11 @@ import '../models/supply_chain_models.dart';
 import '../providers/supply_chain_provider.dart';
 
 /// Buffer Stock Monitor — Warehouse capacity display with liquidation trigger
-/// 
+///
 /// States:
 /// - Flowing: Champagne gold bar, ticking inventory value
 /// - Halted (100%): Flashing SoftRose, "SUPPLY CHAIN HALTED"
-/// 
+///
 /// Interaction: Tap to liquidate when full. Heavy haptic feedback.
 class BufferStockMonitor extends ConsumerStatefulWidget {
   const BufferStockMonitor({super.key});
@@ -55,8 +55,10 @@ class _BufferStockMonitorState extends ConsumerState<BufferStockMonitor>
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<SupplyChainState> stateAsync = ref.watch(supplyChainProvider);
-    final AsyncValue<LiquidationResult?> liquidationAsync = ref.watch(liquidationProvider);
+    final AsyncValue<SupplyChainState> stateAsync =
+        ref.watch(supplyChainProvider);
+    final AsyncValue<LiquidationResult?> liquidationAsync =
+        ref.watch(liquidationProvider);
 
     // Handle liquidation result
     liquidationAsync.whenOrNull(
@@ -122,7 +124,9 @@ class _BufferStockMonitorState extends ConsumerState<BufferStockMonitor>
                         Icon(
                           Icons.warehouse,
                           size: 20.0,
-                          color: isHalted ? AurelianPalette.softRose : const Color(0xFF2A2A2A),
+                          color: isHalted
+                              ? AurelianPalette.softRose
+                              : const Color(0xFF2A2A2A),
                         ),
                         const SizedBox(width: 12.0),
                         Text(
@@ -132,7 +136,9 @@ class _BufferStockMonitorState extends ConsumerState<BufferStockMonitor>
                             fontSize: 11.0,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 2.0,
-                            color: isHalted ? AurelianPalette.softRose : const Color(0xFF2A2A2A),
+                            color: isHalted
+                                ? AurelianPalette.softRose
+                                : const Color(0xFF2A2A2A),
                           ),
                         ),
                       ],
@@ -215,7 +221,8 @@ class _BufferStockMonitorState extends ConsumerState<BufferStockMonitor>
                             vertical: 8.0,
                           ),
                           decoration: BoxDecoration(
-                            color: AurelianPalette.softRose.withValues(alpha: 0.2),
+                            color:
+                                AurelianPalette.softRose.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: const Row(
@@ -256,11 +263,14 @@ class _BufferStockMonitorState extends ConsumerState<BufferStockMonitor>
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF44AA44),
                     ),
-                  ).animate().slideY(
-                    begin: 1.0,
-                    end: 0.0,
-                    duration: 300.ms,
-                  ).fadeIn(),
+                  )
+                      .animate()
+                      .slideY(
+                        begin: 1.0,
+                        end: 0.0,
+                        duration: 300.ms,
+                      )
+                      .fadeIn(),
                 ],
 
                 // Loading state

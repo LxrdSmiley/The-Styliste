@@ -17,7 +17,9 @@ class GalaEvent with _$GalaEvent {
   const factory GalaEvent({
     required String id,
     required String themeTitle,
-    required DateTime startsAt, required DateTime endsAt, String? themeDescription,
+    required DateTime startsAt,
+    required DateTime endsAt,
+    String? themeDescription,
     @Default(<String>[]) List<String> styleTags,
     @Default('upcoming') String status,
     @Default(10000) int prizePoolLuxe,
@@ -28,8 +30,7 @@ class GalaEvent with _$GalaEvent {
       _$GalaEventFromJson(json);
 
   /// Check if event is currently accepting submissions
-  bool get isAcceptingSubmissions =>
-      status == 'active' || status == 'upcoming';
+  bool get isAcceptingSubmissions => status == 'active' || status == 'upcoming';
 
   /// Check if event is in voting phase
   bool get isVoting => status == 'voting' || status == 'active';
@@ -41,10 +42,10 @@ class GalaEvent with _$GalaEvent {
   String get formattedTimeRemaining {
     final Duration remaining = timeRemaining;
     if (remaining.isNegative) return 'ENDED';
-    
+
     final int days = remaining.inDays;
     final int hours = remaining.inHours % 24;
-    
+
     if (days > 0) {
       return '$days DAYS $hours HRS';
     }
@@ -141,7 +142,7 @@ class VoteLimits with _$VoteLimits {
   bool canVote(VoteTier tier) {
     switch (tier) {
       case VoteTier.adore:
-        return adoreUsed < 100;  // Soft limit
+        return adoreUsed < 100; // Soft limit
       case VoteTier.iconic:
         return iconicUsed < 10;
       case VoteTier.sovereign:
@@ -176,7 +177,8 @@ class LeaderboardEntry with _$LeaderboardEntry {
     required String submissionId,
     required String playerId,
     required String designId,
-    required double currentScore, String? talentId,
+    required double currentScore,
+    String? talentId,
     @Default(0) int voteCount,
     @Default(false) bool isGalaSovereign,
     // Populated fields

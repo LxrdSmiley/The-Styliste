@@ -12,7 +12,7 @@ part 'sovereign_statue.freezed.dart';
 part 'sovereign_statue.g.dart';
 
 /// Statue material tiers — fixed progression based on memorialization count
-/// 
+///
 /// 1st memorialization = Quartz (Rose Gold)
 /// 2nd-4th memorializations = Gold (Champagne Gold)
 /// 5th+ memorializations = Alabaster (Pure Ivory)
@@ -28,7 +28,7 @@ enum StatueTier {
 /// Extension for tier properties
 extension StatueTierExtension on StatueTier {
   /// Material color for 3D rendering and UI
-  /// 
+  ///
   /// Quartz: Rose gold / pinkish (#E8B4B8)
   /// Gold: Champagne gold (#F7E7CE)
   /// Alabaster: Pure ivory (#FFFFF0)
@@ -43,7 +43,7 @@ extension StatueTierExtension on StatueTier {
         return const Color(0xFFFFFFF0);
     }
   }
-  
+
   /// Display name for UI
   String get displayName {
     switch (this) {
@@ -55,7 +55,7 @@ extension StatueTierExtension on StatueTier {
         return 'ALABASTER';
     }
   }
-  
+
   /// Description of the tier
   String get description {
     switch (this) {
@@ -67,10 +67,10 @@ extension StatueTierExtension on StatueTier {
         return 'Pure Aurelian perfection';
     }
   }
-  
+
   /// Opacity for watermark overlay (Aurelian watermark effect)
   double get watermarkOpacity => 0.3;
-  
+
   /// Font weight for museum plaque
   FontWeight get plaqueFontWeight {
     switch (this) {
@@ -85,7 +85,7 @@ extension StatueTierExtension on StatueTier {
 }
 
 /// A memorialized brand in the Hall of Sovereigns
-/// 
+///
 /// Created at Rank 100 ascension. Permanent record of player's
 /// fashion empire achievement with 3D statue representation.
 @freezed
@@ -98,7 +98,9 @@ class SovereignStatue with _$SovereignStatue {
     required String brandName,
     required DateTime ascendedAt,
     required int finalMarketCap,
-    required StatueTier statueTier, required CareerPath careerPath, @Default(0.0) double finalHypeScore,
+    required StatueTier statueTier,
+    required CareerPath careerPath,
+    @Default(0.0) double finalHypeScore,
     @Default(false) bool jointVentureFlag,
   }) = _SovereignStatue;
 
@@ -107,10 +109,10 @@ class SovereignStatue with _$SovereignStatue {
 
   /// Formatted ascension date: "January 15, 2026"
   String get formattedDate => DateFormat('MMMM d, yyyy').format(ascendedAt);
-  
+
   /// Short date: "Jan 2026"
   String get shortDate => DateFormat('MMM yyyy').format(ascendedAt);
-  
+
   /// Market cap formatted: "$1.5M" or "$850K"
   String get marketCapFormatted {
     if (finalMarketCap >= 1000000) {
@@ -120,7 +122,7 @@ class SovereignStatue with _$SovereignStatue {
     }
     return '\$$finalMarketCap';
   }
-  
+
   /// Hype score formatted: "12.5K"
   String get hypeScoreFormatted {
     if (finalHypeScore >= 1000) {
@@ -128,7 +130,7 @@ class SovereignStatue with _$SovereignStatue {
     }
     return finalHypeScore.toStringAsFixed(0);
   }
-  
+
   /// Museum plaque text
   String get plaqueText {
     final StringBuffer buffer = StringBuffer();
@@ -145,7 +147,7 @@ class SovereignStatue with _$SovereignStatue {
     buffer.writeln('Ascended $formattedDate');
     return buffer.toString();
   }
-  
+
   /// Single-line summary for lists
   String get summary => '$brandName — ${statueTier.displayName} — $shortDate';
 }
@@ -153,10 +155,12 @@ class SovereignStatue with _$SovereignStatue {
 /// Extension methods for statue collections
 extension SovereignStatueListExtension on List<SovereignStatue> {
   /// Sort by ascension date (newest first)
-  List<SovereignStatue> get byNewest =>
-      this..sort((SovereignStatue a, SovereignStatue b) =>
-          b.ascendedAt.compareTo(a.ascendedAt),);
-  
+  List<SovereignStatue> get byNewest => this
+    ..sort(
+      (SovereignStatue a, SovereignStatue b) =>
+          b.ascendedAt.compareTo(a.ascendedAt),
+    );
+
   /// Sort by tier (Alabaster first, then Gold, then Quartz)
   List<SovereignStatue> get byTier {
     final Map<StatueTier, int> tierOrder = <StatueTier, int>{
@@ -164,28 +168,36 @@ extension SovereignStatueListExtension on List<SovereignStatue> {
       StatueTier.gold: 1,
       StatueTier.quartz: 2,
     };
-    return this..sort((SovereignStatue a, SovereignStatue b) =>
-        tierOrder[a.statueTier]!.compareTo(tierOrder[b.statueTier]!),);
+    return this
+      ..sort(
+        (SovereignStatue a, SovereignStatue b) =>
+            tierOrder[a.statueTier]!.compareTo(tierOrder[b.statueTier]!),
+      );
   }
-  
+
   /// Group by tier
   Map<StatueTier, List<SovereignStatue>> get byTierGroup {
-    final Map<StatueTier, List<SovereignStatue>> result = <StatueTier, List<SovereignStatue>>{};
+    final Map<StatueTier, List<SovereignStatue>> result =
+        <StatueTier, List<SovereignStatue>>{};
     for (final SovereignStatue statue in this) {
-      result.putIfAbsent(statue.statueTier, () => <SovereignStatue>[]).add(statue);
+      result
+          .putIfAbsent(statue.statueTier, () => <SovereignStatue>[])
+          .add(statue);
     }
     return result;
   }
-  
+
   /// Filter by player
   List<SovereignStatue> byPlayer(String playerId) =>
       where((SovereignStatue s) => s.playerId == playerId).toList();
-  
-  /// Total market cap of all statues
-  int get totalMarketCap => fold(0, (int sum, SovereignStatue s) => sum + s.finalMarketCap);
-  
-  /// Average hype score
-  double get averageHype => isEmpty ? 0.0 : 
-      fold(0.0, (double sum, SovereignStatue s) => sum + s.finalHypeScore) / length;
-}
 
+  /// Total market cap of all statues
+  int get totalMarketCap =>
+      fold(0, (int sum, SovereignStatue s) => sum + s.finalMarketCap);
+
+  /// Average hype score
+  double get averageHype => isEmpty
+      ? 0.0
+      : fold(0.0, (double sum, SovereignStatue s) => sum + s.finalHypeScore) /
+          length;
+}

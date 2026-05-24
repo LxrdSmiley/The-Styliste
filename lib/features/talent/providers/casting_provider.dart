@@ -187,13 +187,21 @@ final StreamProvider<List<RosterTalent>> playerRosterProvider =
   // Poll roster via RPC (no direct table stream needed for simplicity)
   return Stream<int>.periodic(const Duration(seconds: 5), (int i) => i)
       .asyncMap((int _) async {
+<<<<<<< HEAD
+    final List<dynamic> result = await supabase.rpc(
+=======
     final List<Object?> result = await supabase.rpc<List<Object?>>(
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
       'get_player_roster',
       params: <String, dynamic>{'p_player_id': userId},
     );
     return result
+<<<<<<< HEAD
+        .map((json) => RosterTalent.fromJson(json as Map<String, dynamic>))
+=======
         .whereType<Map<String, dynamic>>()
         .map((Map<String, dynamic> json) => RosterTalent.fromJson(json))
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
         .toList();
   });
 });

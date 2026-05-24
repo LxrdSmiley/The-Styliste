@@ -14,7 +14,7 @@ part 'trend_provider.g.dart';
 /// Stream of active Trend Tsunamis from Supabase Realtime
 ///
 /// Emits a list of currently active (non-expired) trend waves.
-/// Each tsunami represents a style tag with a multiplier (2.5x for Crest, 1.5x for Surge)
+/// Each tsunami represents a style tag with a 1.5x alignment multiplier.
 ///
 /// Usage in UI:
 /// ```dart
@@ -31,8 +31,7 @@ Stream<List<TrendTsunami>> activeTsunami(Ref ref) {
 
   // Subscribe to trend_tsunamis table with realtime
   return supabase.from(SupabaseConstants.tableTrendTsunamis).stream(
-    primaryKey: const <String>['id'],
-  ).map((List<Map<String, dynamic>> data) {
+      primaryKey: const <String>['id']).map((List<Map<String, dynamic>> data) {
     final DateTime now = DateTime.now().toUtc();
 
     return data
@@ -46,7 +45,7 @@ Stream<List<TrendTsunami>> activeTsunami(Ref ref) {
   });
 }
 
-/// Provider for just the Crest tag (rank 1, 2.5x multiplier)
+/// Provider for just the Crest tag (rank 1 display priority)
 @riverpod
 AsyncValue<TrendTsunami?> crestTag(Ref ref) {
   final AsyncValue<List<TrendTsunami>> tsunamis =
@@ -89,8 +88,7 @@ AsyncValue<List<TrendTsunami>> surgeTags(Ref ref) {
 /// Usage:
 /// ```dart
 /// final multiplier = ref.watch(tsunamiMultiplierProvider(['minimalist', 'ivory']));
-/// // Returns 2.5 if 'minimalist' is the Crest tag
-/// // Returns 1.5 if 'ivory' is a Surge tag
+/// // Returns 1.5 if any active trend matches
 /// // Returns 1.0 if no match
 /// ```
 @riverpod

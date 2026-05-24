@@ -8,7 +8,7 @@ part 'fashion_district.freezed.dart';
 part 'fashion_district.g.dart';
 
 /// A fashion district — hyper-localized territory for Maison control
-/// 
+///
 /// 9 districts total: 3 cities × 3 districts each
 /// - NYC: SoHo, Meatpacking, Williamsburg
 /// - Tokyo: Ginza, Harajuku, Shibuya
@@ -20,7 +20,9 @@ class FashionDistrict with _$FashionDistrict {
     required String id,
     required String name,
     required String city,
-    required int baseTakeoverCost, required DateTime createdAt, String? controllingMaisonId,
+    required int baseTakeoverCost,
+    required DateTime createdAt,
+    String? controllingMaisonId,
     DateTime? controlledSince,
     @Default(0) int totalHype,
   }) = _FashionDistrict;
@@ -55,10 +57,12 @@ class FashionDistrict with _$FashionDistrict {
   }
 
   /// Display string for defense multiplier (e.g., "1.25x")
-  String get defenseMultiplierDisplay => '${defenseMultiplier.toStringAsFixed(2)}x';
+  String get defenseMultiplierDisplay =>
+      '${defenseMultiplier.toStringAsFixed(2)}x';
 
   /// Cost to attempt takeover (base cost, actual bid may need to exceed defender power)
-  String get takeoverCostFormatted => '\$${baseTakeoverCost.toStringAsFixed(0)}';
+  String get takeoverCostFormatted =>
+      '\$${baseTakeoverCost.toStringAsFixed(0)}';
 
   /// City group identifier for UI clustering
   String get cityGroup => city.toLowerCase().replaceAll(' ', '_');
@@ -127,18 +131,21 @@ extension DistrictListExtension on List<FashionDistrict> {
       where((FashionDistrict d) => d.hasLegacyWatermark).toList();
 
   /// Sort by city, then by name
-  List<FashionDistrict> get sorted =>
-      this..sort((FashionDistrict a, FashionDistrict b) {
-        final int cityCompare = a.city.compareTo(b.city);
-        if (cityCompare != 0) return cityCompare;
-        return a.name.compareTo(b.name);
-      });
+  List<FashionDistrict> get sorted => this
+    ..sort((FashionDistrict a, FashionDistrict b) {
+      final int cityCompare = a.city.compareTo(b.city);
+      if (cityCompare != 0) return cityCompare;
+      return a.name.compareTo(b.name);
+    });
 
   /// Group by city
   Map<String, List<FashionDistrict>> get byCityGroup {
-    final Map<String, List<FashionDistrict>> result = <String, List<FashionDistrict>>{};
+    final Map<String, List<FashionDistrict>> result =
+        <String, List<FashionDistrict>>{};
     for (final FashionDistrict district in this) {
-      result.putIfAbsent(district.city, () => <FashionDistrict>[]).add(district);
+      result
+          .putIfAbsent(district.city, () => <FashionDistrict>[])
+          .add(district);
     }
     return result;
   }

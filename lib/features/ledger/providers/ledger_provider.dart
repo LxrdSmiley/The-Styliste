@@ -9,7 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart'
     show FunctionResponse, Session;
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/providers/mock_auth_provider.dart';
+import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/store.dart';
 
@@ -154,9 +154,14 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
   }
 
   /// Apply Power Move Combo: store multiplier for next liquidation
+<<<<<<< HEAD
+  Future<Map<String, dynamic>> applyPowerMoveCombo(
+      {required double multiplier}) async {
+=======
   Future<Map<String, dynamic>> applyPowerMoveCombo({
     required double multiplier,
   }) async {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     try {
       await SupabaseService.client
           .from(SupabaseConstants.tableBrandState)
@@ -181,9 +186,14 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
   }
 
   /// Apply Hostile Takeover result: inject 5000 Capital if 100% ownership
+<<<<<<< HEAD
+  Future<Map<String, dynamic>> applyTakeoverResult(
+      {required double finalPct}) async {
+=======
   Future<Map<String, dynamic>> applyTakeoverResult({
     required double finalPct,
   }) async {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     if (finalPct != 100.0) {
       return <String, dynamic>{
         'success': false,

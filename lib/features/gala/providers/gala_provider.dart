@@ -247,7 +247,11 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
     if (index >= state.submissions.length - 3 &&
         state.hasMore &&
         !state.isLoading) {
+<<<<<<< HEAD
+      loadMore();
+=======
       unawaited(loadMore());
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     }
   }
 
@@ -263,9 +267,13 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .select('id, current_score, vote_count')
           .eq('event_id', _currentEventId!)
           .inFilter(
+<<<<<<< HEAD
+              'id', state.submissions.map((GalaSubmission s) => s.id).toList());
+=======
             'id',
             state.submissions.map((GalaSubmission s) => s.id).toList(),
           );
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
 
       final Map<String, Map<String, dynamic>> scoreMap =
           <String, Map<String, dynamic>>{
@@ -464,15 +472,18 @@ class SubmissionNotifier extends StateNotifier<SubmissionState> {
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
+      final String playerId = supabase.auth.currentUser!.id;
 
-      final Map<String, dynamic> result = await supabase.rpc(
+      final List<dynamic> rows = await supabase.rpc<List<dynamic>>(
         'submit_to_gala',
         params: <String, dynamic>{
-          'p_event_id': eventId,
+          'p_player_id': playerId,
           'p_design_id': designId,
-          'p_talent_id': talentId,
+          'p_event_id': eventId,
         },
       );
+      final Map<String, dynamic> result =
+          (rows.first as Map<dynamic, dynamic>).cast<String, dynamic>();
 
       if (result['success'] == true) {
         state = state.copyWith(

@@ -1,12 +1,13 @@
 // GDD v6 §3 — Hype Score Calculator with Trend Tsunami Multiplier
 // Alabaster Standard: Real-time 48h player-driven trend integration
-// 
-// Formula: H_score = (Base_Score × Tsunami_Multiplier) + Sovereign_Talent_Bonus
 //
-// Tsunami Multipliers:
-//   - Crest Tag (Rank 1): 2.5x
-//   - Surge Tags (Rank 2-3): 1.5x
-//   - No match: 1.0x
+// Formula: Hype_Score =
+//   (Aesthetic_Alignment * Trend_Tsunami_Alignment_Multiplier * Material_Quality_Normalized)
+//   + Sovereign_Talent_Multiplier
+//
+// Trend Tsunami:
+//   - Active matching trend: 1.5x to Aesthetic_Alignment for 48 hours.
+//   - No match: 1.0x.
 
 import '../../trends/models/trend_tsunami.dart';
 
@@ -14,13 +15,13 @@ import '../../trends/models/trend_tsunami.dart';
 class HypeCalculatorConfig {
   /// Base multiplier for all calculations (can be tuned globally)
   final double baseMultiplier;
-  
+
   /// Sovereign talent bonus per talent level (GDD §8.10)
   final double talentBonusPerLevel;
-  
+
   /// Material quality weight in base score
   final double materialQualityWeight;
-  
+
   /// Aesthetic alignment weight in base score
   final double aestheticAlignmentWeight;
 
@@ -47,16 +48,16 @@ class HypeCalculatorConfig {
 class HypeCalculationInput {
   /// Design's style tags (e.g., ['minimalist', 'ivory', 'streetwear'])
   final List<String> styleTags;
-  
+
   /// Material quality score (0-100)
   final double materialQuality;
-  
+
   /// Aesthetic alignment score (0-100)
   final double aestheticAlignment;
-  
+
   /// Number of sovereign talent assigned to this design (GDD §8.10)
   final int sovereignTalentCount;
-  
+
   /// Total expertise level of assigned talent (0-100 per talent)
   final double totalTalentExpertise;
 
@@ -70,10 +71,13 @@ class HypeCalculationInput {
 
   /// Validates all input values are within acceptable ranges
   bool get isValid {
-    return materialQuality >= 0 && materialQuality <= 100 &&
-           aestheticAlignment >= 0 && aestheticAlignment <= 100 &&
-           sovereignTalentCount >= 0 &&
-           totalTalentExpertise >= 0 && totalTalentExpertise <= 100;
+    return materialQuality >= 0 &&
+        materialQuality <= 100 &&
+        aestheticAlignment >= 0 &&
+        aestheticAlignment <= 100 &&
+        sovereignTalentCount >= 0 &&
+        totalTalentExpertise >= 0 &&
+        totalTalentExpertise <= 100;
   }
 }
 
@@ -81,20 +85,20 @@ class HypeCalculationInput {
 class HypeCalculationResult {
   /// Final calculated hype score
   final double totalScore;
-  
+
   /// Base score before any multipliers (material + aesthetic)
   final double baseScore;
-  
-  /// Tsunami multiplier applied (1.0, 1.5, or 2.5)
+
+  /// Tsunami multiplier applied (1.0 or 1.5)
   final double tsunamiMultiplier;
-  
+
   /// Sovereign talent bonus added
   final double talentBonus;
-  
+
   /// The matching tsunami tag (if any)
   final String? matchingTsunamiTag;
-  
-  /// Whether the match was a Crest (2.5x) or Surge (1.5x)
+
+  /// Whether the matching trend is currently ranked first
   final bool wasCrestMatch;
 
   const HypeCalculationResult({
@@ -106,7 +110,7 @@ class HypeCalculationResult {
     this.wasCrestMatch = false,
   });
 
-  /// Display multiplier as string (e.g., "2.5x", "1.5x", "1.0x")
+  /// Display multiplier as string (e.g., "1.5x", "1.0x")
   String get multiplierDisplay => '${tsunamiMultiplier.toStringAsFixed(1)}x';
 
   /// The bonus amount added by the tsunami multiplier
@@ -116,7 +120,7 @@ class HypeCalculationResult {
   Map<String, double> get breakdownPercentages {
     final double total = totalScore;
     if (total == 0) return <String, double>{};
-    
+
     return <String, double>{
       'base': (baseScore / total) * 100,
       'tsunami_bonus': (tsunamiBonus / total) * 100,
@@ -126,7 +130,7 @@ class HypeCalculationResult {
 }
 
 /// The Hype Score Calculator
-/// 
+///
 /// Implements the GDD v6 formula with Trend Tsunami integration.
 /// All calculations are deterministic and can be reproduced server-side
 /// for validation.
@@ -136,10 +140,10 @@ class HypeCalculator {
   const HypeCalculator({this.config = HypeCalculatorConfig.production});
 
   /// Calculate the final hype score with full breakdown
-  /// 
+  ///
   /// [input] - The design parameters
   /// [activeTsunamis] - Current trend waves from Riverpod provider
-  /// 
+  ///
   /// Returns [HypeCalculationResult] with score and component breakdown
   HypeCalculationResult calculate({
     required HypeCalculationInput input,
@@ -147,66 +151,62 @@ class HypeCalculator {
   }) {
     // Validate inputs
     if (!input.isValid) {
-      throw ArgumentError('Invalid hype calculation input: parameters out of range');
+      throw ArgumentError(
+          'Invalid hype calculation input: parameters out of range');
     }
 
-    // Step 1: Calculate base score from material and aesthetic
-    final double materialComponent = input.materialQuality * config.materialQualityWeight;
-    final double aestheticComponent = input.aestheticAlignment * config.aestheticAlignmentWeight;
-    final double baseScore = (materialComponent + aestheticComponent) * config.baseMultiplier;
-
-    // Step 2: Find the best tsunami multiplier for the design's tags
-    double tsunamiMultiplier = 1.0;
-    String? matchingTag;
-    bool wasCrest = false;
-
-    if (activeTsunamis.isNotEmpty) {
-      // Check for Crest match first (highest priority)
-      final TrendTsunami? crest = activeTsunamis.crestTag;
-      if (crest != null) {
-        final double? crestMatch = crest.getMultiplierForAnyTag(input.styleTags);
-        if (crestMatch != null) {
-          tsunamiMultiplier = crestMatch;
-          matchingTag = crest.tagName;
-          wasCrest = true;
-        }
-      }
-
-      // If no Crest match, check Surge tags
-      if (tsunamiMultiplier == 1.0) {
-        for (final TrendTsunami surge in activeTsunamis.surgeTags) {
-          final double? surgeMatch = surge.getMultiplierForAnyTag(input.styleTags);
-          if (surgeMatch != null) {
-            tsunamiMultiplier = surgeMatch;
-            matchingTag = surge.tagName;
-            wasCrest = false;
-            break; // Only first Surge match applies
-          }
-        }
-      }
-    }
-
-    // Step 3: Calculate sovereign talent bonus (GDD §8.10)
+    final TrendTsunami? matchingTrend = _matchingTrend(input, activeTsunamis);
+    final double tsunamiMultiplier =
+        _hasTrendMatch(input, activeTsunamis) ? 1.5 : 1.0;
+    final double adjustedAesthetic =
+        (input.aestheticAlignment * tsunamiMultiplier)
+            .clamp(0.0, 100.0)
+            .toDouble();
+    final double materialQualityNormalized = input.materialQuality / 100.0;
+    final double baseScore =
+        adjustedAesthetic * materialQualityNormalized * config.baseMultiplier;
     final double talentBonus = input.sovereignTalentCount > 0
-        ? input.totalTalentExpertise * config.talentBonusPerLevel * input.sovereignTalentCount
+        ? input.totalTalentExpertise *
+            config.talentBonusPerLevel *
+            input.sovereignTalentCount
         : 0.0;
-
-    // Step 4: Calculate final score
-    final double tsunamiAdjustedScore = baseScore * tsunamiMultiplier;
-    final double totalScore = tsunamiAdjustedScore + talentBonus;
+    final double totalScore =
+        (baseScore + talentBonus).clamp(0.0, 100.0).toDouble();
 
     return HypeCalculationResult(
       totalScore: totalScore.roundTo(2),
       baseScore: baseScore.roundTo(2),
       tsunamiMultiplier: tsunamiMultiplier,
       talentBonus: talentBonus.roundTo(2),
-      matchingTsunamiTag: matchingTag,
-      wasCrestMatch: wasCrest,
+      matchingTsunamiTag: matchingTrend?.tagName,
+      wasCrestMatch: matchingTrend?.rank == 1,
     );
   }
 
+  bool _hasTrendMatch(
+    HypeCalculationInput input,
+    List<TrendTsunami> activeTsunamis,
+  ) {
+    return activeTsunamis.activeOnly.any(
+      (TrendTsunami trend) =>
+          trend.getMultiplierForAnyTag(input.styleTags) != null,
+    );
+  }
+
+  TrendTsunami? _matchingTrend(
+    HypeCalculationInput input,
+    List<TrendTsunami> activeTsunamis,
+  ) {
+    for (final TrendTsunami trend in activeTsunamis.activeOnly) {
+      if (trend.getMultiplierForAnyTag(input.styleTags) != null) {
+        return trend;
+      }
+    }
+    return null;
+  }
+
   /// Quick calculate without full breakdown (for UI previews)
-  /// 
+  ///
   /// Returns just the final hype score number
   double calculateQuick({
     required HypeCalculationInput input,
@@ -219,7 +219,7 @@ class HypeCalculator {
   }
 
   /// Projected score with a hypothetical tag selection
-  /// 
+  ///
   /// Used in Atelier when user is selecting tags but hasn't confirmed
   double projectWithTags({
     required List<String> hypotheticalTags,
@@ -244,7 +244,10 @@ class HypeCalculator {
 /// Extension for rounding doubles to specific decimal places
 extension _DoubleRounding on double {
   double roundTo(int places) {
-    final double mod = 10.0 * places;
-    return (this * mod).round() / mod;
+    double factor = 1.0;
+    for (int i = 0; i < places; i++) {
+      factor *= 10.0;
+    }
+    return (this * factor).round() / factor;
   }
 }

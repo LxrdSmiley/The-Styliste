@@ -1,87 +1,44 @@
 # The Styliste
 
-**Portrait-first mobile hybrid idle + tycoon fashion empire simulator.**
+Portrait-first mobile hybrid idle and tycoon fashion empire simulator.
 
-Build a real-world fashion brand from the ground up. Choose your path — **Designer** (creative genius) or **Mogul** (ruthless entrepreneur) — and rise to global dominance.
+The Styliste is currently in alpha remediation. The repository contains broad
+feature coverage for the v6 GDD, but several gameplay, legal, security, and
+verification items are still alpha blockers. Treat the GDD and
+`IDE_DIRECTIVES.md` as the acceptance source for what is production-ready.
 
----
+## Current Status
 
-## ✨ What is The Styliste?
+- Alpha audit in progress.
+- Security hardening and schema drift repairs are being applied before gameplay polish.
+- Server-authoritative economy paths are required for capital, hype, rewards, and ownership transfer.
+- Several aspirational modules are disabled or unavailable in alpha until they have real implementation and tests.
 
-The Styliste is a premium, high-production-value mobile game where players create and scale a fashion empire. It blends deep creative design tools, complex business simulation, live social multiplayer, and realistic fashion industry mechanics.
-
-Core fantasy: *"I could do that better than Off-White, Supreme, or Gucci."*
-
-## 🎯 Key Features
-
-- **Dual Paths** — Designer (Atelier + physics) or Mogul (Ledger + markets) with full cross-path synergy
-- **Live Social Economy** — Global feed, partnerships, Maisons (guilds), followers, rival drama, and player reporting
-- **Deep Simulation** — Seasonal trends, celebrity endorsements, equity/IPO system, supply chain, talent management, regulations, Digital Product Passports
-- **Premium Craftsmanship** — Real-time cloth physics (GLSL Verlet), AR try-on, 3D world map, mini-games, and cinematic onboarding
-- **Retention & Virality** — Luxe mentor, daily streaks, seasonal/holiday events, stock ticker, and viral flex mechanics
-- **Fair Monetization** — Non-P2W IAP via Google Play Billing & Apple StoreKit (cosmetics, Season Pass, convenience)
-
-## 🛠️ Tech Stack
-
-- **Frontend**: Flutter (Dart) + Riverpod + go_router + Impeller
-- **Backend**: Supabase (PostgreSQL + Edge Functions) + Firebase Auth + App Check
-- **Monetization**: `in_app_purchase` package (Google Play Billing + Apple StoreKit)
-- **Graphics**: Custom GLSL shaders, 3D model viewer
-- **Other**: Hive, audioplayers, camera, Google Play Games Services, AdMob
-
-## 🚀 Getting Started
+## Priority Checks
 
 ```bash
-# Clone the repo
-git clone https://github.com/your-org/the-styliste.git
-cd the-styliste
-
-# Install dependencies
-flutter pub get
-
-# Run the app
-flutter run
+dart analyze
+flutter analyze
+flutter test
+supabase db reset
+supabase db lint
 ```
 
-## 📁 Project Structure
+## Tech Stack
 
-```
-lib/
-├── core/                 # Theme, router, services, providers
-├── features/             # 27+ feature modules (atelier, ledger, feed, equity, etc.)
-├── presentation/         # Widgets, screens, overlays
-├── shaders/              # GLSL (liquid_chrome, vantablack, shatter)
-└── main.dart
-```
+- Flutter, Dart, Riverpod, and go_router
+- Supabase PostgreSQL, RLS, and Edge Functions
+- Firebase Auth, Firebase Messaging, and App Check
+- Custom shaders and mobile-first UI surfaces
 
-## 📍 Current Status (2026-05-10)
+## Documents
 
-- ✅ All code implemented
-- 🔴 Alpha stage (internal testing phase)
-- 🔴 Ready for closed alpha testing
-
-Full status: See `PROJECT_STATUS.md`
-
-## 🗺️ Roadmap
-
-**Phase 0-4 Complete** — All core systems, features, and polish implemented.
-
-## 📜 Official Documents
-
-- [Game Design Document (GDD v6)](THE_STYLISTE_GDD_v6.md) — Single source of truth
+- [Game Design Document v6](THE_STYLISTE_GDD_v6.md)
+- [IDE Directives](IDE_DIRECTIVES.md)
+- [Manual Tasks](MANUAL_TASKS.md)
 - [Project Rules](PROJECT_RULES.md)
 - [Verification Protocol](VERIFICATION_PROTOCOL.md)
 
-## 🤝 Contributing
+## License
 
-Currently in closed alpha (internal testing). Public contributions will open post-alpha.
-
-## 📄 License
-
-Proprietary — All rights reserved. SkinTeethNerd Studios © 2026
-
----
-
-**Built with obsession for detail and love for fashion.**
-
-*“Every stitch matters.”*
+Proprietary. All rights reserved. SkinTeethNerd Studios (c) 2026.

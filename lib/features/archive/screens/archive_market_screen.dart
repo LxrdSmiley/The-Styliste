@@ -431,17 +431,33 @@ class _ListingCard extends StatelessWidget {
                 ),
               ),
 
-            // Design preview placeholder
             Expanded(
               child: Container(
                 color: Colors.black.withValues(alpha: 0.03),
-                child: Center(
-                  child: Icon(
-                    Icons.checkroom,
-                    size: 48.0,
-                    color: Colors.black.withValues(alpha: 0.2),
-                  ),
-                ),
+                child: listing.designImageUrl == null
+                    ? Center(
+                        child: Icon(
+                          Icons.checkroom,
+                          size: 48.0,
+                          color: Colors.black.withValues(alpha: 0.2),
+                        ),
+                      )
+                    : Image.network(
+                        listing.designImageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (
+                          BuildContext context,
+                          Object error,
+                          StackTrace? stackTrace,
+                        ) =>
+                            Center(
+                          child: Icon(
+                            Icons.broken_image_outlined,
+                            size: 42.0,
+                            color: Colors.black.withValues(alpha: 0.2),
+                          ),
+                        ),
+                      ),
               ),
             ),
 
@@ -751,6 +767,18 @@ class _ListingDetailSheet extends ConsumerWidget {
               color: Colors.black.withValues(alpha: 0.7),
             ),
           ),
+          if (breakdown.formattedTotal.isNotEmpty) ...<Widget>[
+            const SizedBox(height: 8.0),
+            Text(
+              'PROVENANCE BONUS: ${breakdown.formattedTotal}'
+              '${breakdown.capped ? ' (CAPPED)' : ''}',
+              style: const TextStyle(
+                fontFamily: 'JetBrainsMono',
+                fontSize: 9.0,
+                color: Color(0xFFD4AF37),
+              ),
+            ),
+          ],
           const SizedBox(height: 8.0),
           Row(
             children: <Widget>[
@@ -807,9 +835,7 @@ class _ListingDetailSheet extends ConsumerWidget {
           _transactionRow('YOU PAY', '\$${breakdown.buyerTotal}', isBold: true),
           const Divider(height: 16.0),
           _transactionRow(
-            'SELLER RECEIVES',
-            '\$${breakdown.sellerPayout} (70%)',
-          ),
+              'SELLER RECEIVES', '\$${breakdown.sellerPayout} (70%)'),
           const SizedBox(height: 4.0),
           _transactionRow(
             'PLATFORM TAX (BURNED)',

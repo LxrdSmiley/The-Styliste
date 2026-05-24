@@ -15,7 +15,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cron-secret",
 };
 
 interface EclipseEvent {
@@ -77,7 +77,21 @@ const ECLIPSE_EVENTS: EclipseEvent[] = [
   },
 ];
 
-serve(async (_req: Request): Promise<Response> => {
+serve(async (req: Request): Promise<Response> => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: CORS_HEADERS });
+  }
+
+  const expectedSecret = Deno.env.get("ECLIPSE_EVENT_TICK_SECRET");
+  const providedSecret = req.headers.get("x-cron-secret");
+
+  if (!expectedSecret || providedSecret !== expectedSecret) {
+    return new Response(
+      JSON.stringify({ error: "Forbidden" }),
+      { status: 403, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+    );
+  }
+
   try {
     const admin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",

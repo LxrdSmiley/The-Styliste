@@ -1,10 +1,10 @@
 // Directive N — Hybrid Notification Engine
 // GDD §8.14, §12.3.1 — The Retention & Telemetry Engine
-// 
+//
 // Architecture: Hybrid (Local + FCM)
 // - Local notifications: Daily check-ins, streak alerts (3 cascading: +24h, +48h, +72h)
 // - FCM: Trend Tsunami, resale alerts, rival attacks, stock movements
-// 
+//
 // Lifecycle Queue: Schedule on AppLifecycleState.paused, clear on resume
 // If player doesn't open for 3 days, stop pinging to avoid spam blocks
 
@@ -68,9 +68,7 @@ class NotificationService with WidgetsBindingObserver {
 
   Future<void> _requestPermissions() async {
     // iOS permission
-    await _fcm.requestPermission(
-      
-    );
+    await _fcm.requestPermission();
 
     // Android permission (handled in manifest)
     if (Platform.isAndroid) {
@@ -115,7 +113,8 @@ class NotificationService with WidgetsBindingObserver {
 
     if (androidPlugin == null) return;
 
-    final List<AndroidNotificationChannel> channels = <AndroidNotificationChannel>[
+    final List<AndroidNotificationChannel> channels =
+        <AndroidNotificationChannel>[
       const AndroidNotificationChannel(
         _channelDailyCheckIn,
         'Daily Check-In',
@@ -207,7 +206,7 @@ class NotificationService with WidgetsBindingObserver {
 
     for (int i = 0; i < delays.length; i++) {
       final DateTime scheduledTime = now.add(delays[i]);
-      
+
       await _scheduleCheckInNotification(
         id: 1000 + i,
         scheduledTime: scheduledTime,
@@ -229,15 +228,15 @@ class NotificationService with WidgetsBindingObserver {
     final String timeZoneName = await FlutterTimezone.getLocalTimezone();
     final tz.TZDateTime tzScheduledTime =
         tz.TZDateTime.from(scheduledTime, tz.getLocation(timeZoneName));
-    final String title = isFinal
-        ? 'Final Call — Your Empire Awaits'
-        : 'Daily Check-In Ready';
-    
+    final String title =
+        isFinal ? 'Final Call — Your Empire Awaits' : 'Daily Check-In Ready';
+
     final String body = isFinal
         ? 'Three days away. The fashion world moves fast — do not let your moment pass.'
         : _getCheckInMessage(streakDay);
 
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
       _channelDailyCheckIn,
       'Daily Check-In',
       channelDescription: 'Daily streak reminders',
@@ -277,8 +276,9 @@ class NotificationService with WidgetsBindingObserver {
 
   Future<void> _scheduleSingleFinalCheckIn() async {
     // App terminated — one final ping in 24h
-    final DateTime scheduledTime = DateTime.now().add(const Duration(hours: 24));
-    
+    final DateTime scheduledTime =
+        DateTime.now().add(const Duration(hours: 24));
+
     await _scheduleCheckInNotification(
       id: 9999,
       scheduledTime: scheduledTime,
@@ -318,7 +318,7 @@ class NotificationService with WidgetsBindingObserver {
     // Foreground FCM message received
     // Show local notification from FCM payload
     final Map<String, dynamic> data = message.data;
-    
+
     final String type = (data['type'] as String?) ?? 'general';
     final String title = message.notification?.title ?? 'The Styliste';
     final String body = message.notification?.body ?? '';
@@ -348,7 +348,7 @@ class NotificationService with WidgetsBindingObserver {
   void _onFCMMessageOpened(RemoteMessage message) {
     // App opened from FCM notification
     final Map<String, dynamic> data = message.data;
-    
+
     TelemetryService.instance.logEvent(
       eventType: 'notification',
       eventName: 'notification_opened',
@@ -392,7 +392,7 @@ class NotificationService with WidgetsBindingObserver {
   }) async {
     // This would normally come from FCM, but can be triggered locally for testing
     const String title = '🌊 Trend Tsunami Incoming';
-    final String body = 
+    final String body =
         'The "$theme" wave arrives in ${timeUntil.inHours}h. Prepare your designs.';
 
     await _showLocalNotification(
@@ -432,7 +432,8 @@ class NotificationService with WidgetsBindingObserver {
   }) async {
     final String effectiveChannel = channelId ?? _channelDailyCheckIn;
 
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    final AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
       effectiveChannel,
       effectiveChannel,
       importance: Importance.high,
@@ -501,7 +502,7 @@ class NotificationService with WidgetsBindingObserver {
       'Six days. One more and you hit the week milestone.',
       'A week of consistency. The fashion world is watching.',
     ];
-    
+
     if (streakDay < messages.length) {
       return messages[streakDay];
     }
@@ -515,7 +516,7 @@ class NotificationService with WidgetsBindingObserver {
         .select('current_streak')
         .eq('player_id', playerId)
         .maybeSingle();
-    
+
     return response?['current_streak'] as int? ?? 0;
   }
 

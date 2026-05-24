@@ -1,6 +1,6 @@
 // Directive M: The Aurelian Storefront — Fiat Bridge
 // GDD §9.8, §12.5 — Premium F2P monetization
-// 
+//
 // Aesthetic: Pure luxury. Deep Alabaster background.
 // Typography: SpaceGrotesk headers, JetBrainsMono fiat pricing.
 // The Sovereign Syndicate ($49.99): liquid_gold.frag shader backing.
@@ -19,33 +19,36 @@ import '../../hq/providers/hq_provider.dart';
 import '../providers/iap_provider.dart';
 
 /// The Aurelian Storefront — Premium fiat bridge
-/// 
+///
 /// Four luxury tiers:
 /// - Initiate's Cache ($0.99): Impulse buy
-/// - Artisan's Reserve ($4.99): Standard top-up  
+/// - Artisan's Reserve ($4.99): Standard top-up
 /// - Architect's Vault ($9.99): 10-pull enabler
 /// - Sovereign Syndicate ($49.99): Whale anchor with liquid gold shader
 class AurelianStorefrontScreen extends ConsumerStatefulWidget {
   const AurelianStorefrontScreen({super.key});
 
   @override
-  ConsumerState<AurelianStorefrontScreen> createState() => _AurelianStorefrontScreenState();
+  ConsumerState<AurelianStorefrontScreen> createState() =>
+      _AurelianStorefrontScreenState();
 }
 
-class _AurelianStorefrontScreenState extends ConsumerState<AurelianStorefrontScreen> {
+class _AurelianStorefrontScreenState
+    extends ConsumerState<AurelianStorefrontScreen> {
   int? _lastGrantedAmount;
 
   @override
   Widget build(BuildContext context) {
     final AsyncValue<Brand> brandAsync = ref.watch(hqBrandStreamProvider);
-    final AsyncValue<List<ProductDetails>> productsAsync = ref.watch(iapProductsProvider);
+    final AsyncValue<List<ProductDetails>> productsAsync =
+        ref.watch(iapProductsProvider);
     final IapState iapState = ref.watch(iapNotifierProvider);
 
     // Listen for successful purchases to trigger celebration
     ref.listen<IapState>(
       iapNotifierProvider,
       (IapState? previous, IapState next) {
-        if (previous?.purchasingProductId != null && 
+        if (previous?.purchasingProductId != null &&
             next.purchasingProductId == null &&
             next.errorMessage == null) {
           _onPurchaseSuccess();
@@ -99,10 +102,12 @@ class _AurelianStorefrontScreenState extends ConsumerState<AurelianStorefrontScr
                             vertical: 8.0,
                           ),
                           decoration: BoxDecoration(
-                            color: AurelianPalette.champagneGold.withValues(alpha: 0.1),
+                            color: AurelianPalette.champagneGold
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20.0),
                             border: Border.all(
-                              color: AurelianPalette.champagneGold.withValues(alpha: 0.3),
+                              color: AurelianPalette.champagneGold
+                                  .withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -131,7 +136,8 @@ class _AurelianStorefrontScreenState extends ConsumerState<AurelianStorefrontScr
                                   fontFamily: 'SpaceGrotesk',
                                   fontSize: 10.0,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF2A2A2A).withValues(alpha: 0.6),
+                                  color: const Color(0xFF2A2A2A)
+                                      .withValues(alpha: 0.6),
                                 ),
                               ),
                             ],
@@ -224,18 +230,20 @@ class _AurelianStorefrontScreenState extends ConsumerState<AurelianStorefrontScr
                       ),
                     );
                   }
-                  
+
                   // Sort products by tier order
                   final List<ProductDetails> sorted = _sortByTier(products);
-                  
+
                   return SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (BuildContext context, int index) {
                         final ProductDetails product = sorted[index];
                         final LuxeTier tier = _getTier(product.id);
-                        final bool isPurchasing = iapState.purchasingProductId == product.id;
-                        final bool anyPurchasing = iapState.purchasingProductId != null;
-                        
+                        final bool isPurchasing =
+                            iapState.purchasingProductId == product.id;
+                        final bool anyPurchasing =
+                            iapState.purchasingProductId != null;
+
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
                           child: _LuxeTierCard(
@@ -243,7 +251,9 @@ class _AurelianStorefrontScreenState extends ConsumerState<AurelianStorefrontScr
                             tier: tier,
                             isPurchasing: isPurchasing,
                             enabled: !anyPurchasing,
-                            onTap: () => ref.read(iapNotifierProvider.notifier).buyProduct(product),
+                            onTap: () => ref
+                                .read(iapNotifierProvider.notifier)
+                                .buyProduct(product),
                           ),
                         );
                       },
@@ -269,7 +279,8 @@ class _AurelianStorefrontScreenState extends ConsumerState<AurelianStorefrontScr
                       letterSpacing: 2.0,
                       color: const Color(0xFF2A2A2A).withValues(alpha: 0.3),
                       decoration: TextDecoration.underline,
-                      decorationColor: const Color(0xFF2A2A2A).withValues(alpha: 0.2),
+                      decorationColor:
+                          const Color(0xFF2A2A2A).withValues(alpha: 0.2),
                     ),
                   ),
                 ),
@@ -292,12 +303,13 @@ class _AurelianStorefrontScreenState extends ConsumerState<AurelianStorefrontScr
       'sovereign_syndicate': 3,
       'luxe_2800': 3,
     };
-    
-    return products..sort((ProductDetails a, ProductDetails b) {
-      final int orderA = tierOrder[a.id] ?? 99;
-      final int orderB = tierOrder[b.id] ?? 99;
-      return orderA.compareTo(orderB);
-    });
+
+    return products
+      ..sort((ProductDetails a, ProductDetails b) {
+        final int orderA = tierOrder[a.id] ?? 99;
+        final int orderB = tierOrder[b.id] ?? 99;
+        return orderA.compareTo(orderB);
+      });
   }
 
   LuxeTier _getTier(String productId) {
@@ -325,10 +337,10 @@ class _AurelianStorefrontScreenState extends ConsumerState<AurelianStorefrontScr
       await HapticFeedback.heavyImpact();
       await Future<void>.delayed(const Duration(milliseconds: 50));
     }
-    
+
     // Show granted amount (will be updated by brand stream)
     setState(() => _lastGrantedAmount = _getLastGrantedAmount());
-    
+
     // Clear after animation
     await Future<void>.delayed(const Duration(seconds: 3));
     if (mounted) {
@@ -367,10 +379,10 @@ class _AurelianStorefrontScreenState extends ConsumerState<AurelianStorefrontScr
 // =============================================================================
 
 enum LuxeTier {
-  initiate,    // $0.99 - 100 Luxe
-  artisan,     // $4.99 - 550 Luxe
-  architect,   // $9.99 - 1200 Luxe
-  sovereign,   // $49.99 - 6500 Luxe
+  initiate, // $0.99 - 100 Luxe
+  artisan, // $4.99 - 550 Luxe
+  architect, // $9.99 - 1200 Luxe
+  sovereign, // $49.99 - 6500 Luxe
 }
 
 extension LuxeTierExtension on LuxeTier {
@@ -512,9 +524,11 @@ class _LuxeTierCard extends StatelessWidget {
                             tier.displayName,
                             style: TextStyle(
                               fontFamily: 'SpaceGrotesk',
-                              fontSize: tier == LuxeTier.sovereign ? 16.0 : 13.0,
+                              fontSize:
+                                  tier == LuxeTier.sovereign ? 16.0 : 13.0,
                               fontWeight: FontWeight.w700,
-                              letterSpacing: tier == LuxeTier.sovereign ? 2.0 : 1.5,
+                              letterSpacing:
+                                  tier == LuxeTier.sovereign ? 2.0 : 1.5,
                               color: const Color(0xFF2A2A2A),
                             ),
                           ),
@@ -526,7 +540,8 @@ class _LuxeTierCard extends StatelessWidget {
                               fontFamily: 'JetBrainsMono',
                               fontSize: 9.0,
                               letterSpacing: 1.5,
-                              color: const Color(0xFF2A2A2A).withValues(alpha: 0.4),
+                              color: const Color(0xFF2A2A2A)
+                                  .withValues(alpha: 0.4),
                             ),
                           ),
                           const SizedBox(height: 16.0),
@@ -539,7 +554,8 @@ class _LuxeTierCard extends StatelessWidget {
                                 '◆ ${tier.tokenAmount}',
                                 style: TextStyle(
                                   fontFamily: 'JetBrainsMono',
-                                  fontSize: tier == LuxeTier.sovereign ? 32.0 : 24.0,
+                                  fontSize:
+                                      tier == LuxeTier.sovereign ? 32.0 : 24.0,
                                   fontWeight: FontWeight.w700,
                                   color: tier.accentColor,
                                 ),
@@ -551,7 +567,8 @@ class _LuxeTierCard extends StatelessWidget {
                                   fontFamily: 'SpaceGrotesk',
                                   fontSize: 11.0,
                                   fontWeight: FontWeight.w600,
-                                  color: tier.accentColor.withValues(alpha: 0.7),
+                                  color:
+                                      tier.accentColor.withValues(alpha: 0.7),
                                 ),
                               ),
                             ],
@@ -567,7 +584,8 @@ class _LuxeTierCard extends StatelessWidget {
                             height: 24.0,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.0,
-                              valueColor: AlwaysStoppedAnimation<Color>(tier.accentColor),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  tier.accentColor),
                             ),
                           )
                         : Container(
@@ -595,7 +613,8 @@ class _LuxeTierCard extends StatelessWidget {
                                 letterSpacing: 0.5,
                                 color: enabled
                                     ? const Color(0xFF2A2A2A)
-                                    : const Color(0xFF2A2A2A).withValues(alpha: 0.3),
+                                    : const Color(0xFF2A2A2A)
+                                        .withValues(alpha: 0.3),
                               ),
                             ),
                           ),

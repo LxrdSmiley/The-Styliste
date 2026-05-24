@@ -31,9 +31,12 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
 
   // Tier bins at bottom
   final List<_TierBin> _tierBins = <_TierBin>[
-    const _TierBin(label: 'TIER 1', color: Color(0xFFB87333), tier: 1), // Bronze
-    const _TierBin(label: 'TIER 2', color: AurelianPalette.champagneGold, tier: 2), // Gold
-    const _TierBin(label: 'TIER 3', color: Color(0xFF9966CC), tier: 3), // Violet
+    const _TierBin(
+        label: 'TIER 1', color: Color(0xFFB87333), tier: 1), // Bronze
+    const _TierBin(
+        label: 'TIER 2', color: AurelianPalette.champagneGold, tier: 2), // Gold
+    const _TierBin(
+        label: 'TIER 3', color: Color(0xFF9966CC), tier: 3), // Violet
   ];
 
   @override
@@ -42,9 +45,7 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
     _gameTimer = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 60),
-    )
-      ..forward()
-      .then((_) => _endGame());
+    )..forward().then((_) => _endGame());
 
     // Spawn garments periodically
     _spawnGarments();
@@ -54,11 +55,13 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
     Future<void>.delayed(const Duration(milliseconds: 1500), () {
       if (!_gameOver && mounted) {
         setState(() {
-          _garments.add(_FallingGarment(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            tier: math.Random().nextInt(3) + 1,
-            xPosition: math.Random().nextDouble() * 0.8 + 0.1,
-          ),);
+          _garments.add(
+            _FallingGarment(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              tier: math.Random().nextInt(3) + 1,
+              xPosition: math.Random().nextDouble() * 0.8 + 0.1,
+            ),
+          );
         });
         _spawnGarments();
       }
@@ -82,7 +85,7 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
         _missCount++;
       });
     }
-    }
+  }
 
   void _onMiss() {
     setState(() => _missCount++);
@@ -197,7 +200,8 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
                     onAcceptWithDetails: (DragTargetDetails<String> details) {
                       _onDrop(details.data, bin.tier);
                     },
-                    builder: (BuildContext context, List<String?> candidateData, List<dynamic> rejectedData) {
+                    builder: (BuildContext context, List<String?> candidateData,
+                        List<dynamic> rejectedData) {
                       return Container(
                         width: 100,
                         height: 80,
@@ -232,7 +236,9 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
                 child: Text(
                   _won ? 'SALE CLEARED!' : 'INVENTORY BACKUP',
                   style: TextStyle(
-                    color: _won ? AurelianPalette.champagneGold : AurelianPalette.danger,
+                    color: _won
+                        ? AurelianPalette.champagneGold
+                        : AurelianPalette.danger,
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                   ),

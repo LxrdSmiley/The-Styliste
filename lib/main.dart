@@ -52,8 +52,11 @@ Future<void> main() async {
   await FirebaseService.activateAppCheck();
 
   // Initialise Supabase (PROJECT_RULES §2 — source of truth for economy)
-  assert(_supabaseUrl.isNotEmpty, 'SUPABASE_URL must be set via --dart-define-from-file');
-  assert(_supabaseAnonKey.isNotEmpty, 'SUPABASE_ANON_KEY must be set via --dart-define-from-file');
+  if (_supabaseUrl.isEmpty || _supabaseAnonKey.isEmpty) {
+    throw StateError(
+      'SUPABASE_URL and SUPABASE_ANON_KEY must be set via --dart-define-from-file',
+    );
+  }
 
   await Supabase.initialize(
     url: _supabaseUrl,

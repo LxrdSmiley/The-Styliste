@@ -41,9 +41,9 @@ class Campaign with _$Campaign {
     @Default(0.0) double budget,
     @Default(0.0) double roiActual,
     @Default(0.0) double roiForecast,
-    @Default(0.0) double hypeLift,      // GDD §5.4: +30–100% hype
+    @Default(0.0) double hypeLift, // GDD §5.4: +30–100% hype
     @Default(0.0) double salesLift,
-    String? maisonPoolId,               // if pooled with Maison (40% cost reduction)
+    String? maisonPoolId, // if pooled with Maison (40% cost reduction)
     DateTime? launchedAt,
     DateTime? expiresAt,
   }) = _Campaign;

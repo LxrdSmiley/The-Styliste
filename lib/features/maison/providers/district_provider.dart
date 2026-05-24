@@ -7,7 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/providers/mock_auth_provider.dart';
+import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../models/fashion_district.dart';
 
@@ -78,8 +78,12 @@ Stream<List<DistrictWatermark>> maisonWatermarks(Ref ref, String maisonId) {
       .map((List<Map<String, dynamic>> data) {
         return data
             .map(
+<<<<<<< HEAD
+                (Map<String, dynamic> json) => DistrictWatermark.fromJson(json))
+=======
               (Map<String, dynamic> json) => DistrictWatermark.fromJson(json),
             )
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
             .toList();
       });
 }
@@ -90,8 +94,12 @@ Stream<List<DistrictWatermark>> allWatermarks(Ref ref) {
   final SupabaseClient supabase = Supabase.instance.client;
 
   return supabase.from(SupabaseConstants.tableDistrictLegacyWatermarks).stream(
+<<<<<<< HEAD
+      primaryKey: const <String>['id']).map((List<Map<String, dynamic>> data) {
+=======
     primaryKey: const <String>['id'],
   ).map((List<Map<String, dynamic>> data) {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     return data
         .map((Map<String, dynamic> json) => DistrictWatermark.fromJson(json))
         .toList();
@@ -199,7 +207,11 @@ final StateNotifierProvider<DistrictSiegeNotifier, DistrictSiegeState>
 
 /// Provider for the current player's maison ID
 final FutureProvider<String?> playerMaisonIdProvider =
+<<<<<<< HEAD
+    FutureProvider<String?>((FutureProviderRef<String?> ref) async {
+=======
     FutureProvider<String?>((Ref<AsyncValue<String?>> ref) async {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
   final String uid = ref.watch(activeUidProvider);
 
   // First get the player's maison membership
@@ -223,7 +235,11 @@ final Provider<AsyncValue<int>> maisonDistrictCountProvider =
     data: (List<FashionDistrict> districts) => maisonIdAsync.when(
       data: (String? maisonId) {
         if (maisonId != null) {
+<<<<<<< HEAD
+          return AsyncValue.data(
+=======
           return AsyncValue<int>.data(
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
             districts
                 .where((FashionDistrict d) => d.controllingMaisonId == maisonId)
                 .length,
@@ -254,12 +270,21 @@ final Provider<AsyncValue<Map<String, double>>> cityDominanceProvider =
         final Map<String, List<FashionDistrict>> byCity = districts.byCityGroup;
         final Map<String, double> dominance = <String, double>{};
 
+<<<<<<< HEAD
+      byCity.forEach((String city, List<FashionDistrict> cityDistricts) {
+        final int controlled =
+            cityDistricts.where((FashionDistrict d) => d.isControlled).length;
+        dominance[city] =
+            cityDistricts.isEmpty ? 0.0 : controlled / cityDistricts.length;
+      });
+=======
         byCity.forEach((String city, List<FashionDistrict> cityDistricts) {
           final int controlled =
               cityDistricts.where((FashionDistrict d) => d.isControlled).length;
           dominance[city] =
               cityDistricts.isEmpty ? 0.0 : controlled / cityDistricts.length;
         });
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
 
         return AsyncValue<Map<String, double>>.data(dominance);
       },

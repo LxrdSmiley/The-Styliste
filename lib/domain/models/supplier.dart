@@ -17,7 +17,7 @@ enum SupplierTier {
   @JsonValue('luxury')
   luxury,
   @JsonValue('black_market')
-  blackMarket,   // GDD §8.9.3 — emergency crisis sourcing
+  blackMarket, // GDD §8.9.3 — emergency crisis sourcing
 }
 
 enum SupplierCategory {
@@ -37,12 +37,12 @@ class Supplier with _$Supplier {
     required String name,
     required SupplierTier tier,
     required SupplierCategory category,
-    @Default(50) int quality,       // 0–100
-    @Default(50) int cost,          // 0–100 (higher = more expensive)
-    @Default(50) int reliability,   // 0–100
-    @Default(50) int prestige,      // 0–100
-    @Default(false) bool livingWageEnabled,       // GDD §8.9.4
-    @Default(false) bool blockchainTraceable,     // GDD §8.9.4
+    @Default(50) int quality, // 0–100
+    @Default(50) int cost, // 0–100 (higher = more expensive)
+    @Default(50) int reliability, // 0–100
+    @Default(50) int prestige, // 0–100
+    @Default(false) bool livingWageEnabled, // GDD §8.9.4
+    @Default(false) bool blockchainTraceable, // GDD §8.9.4
     @Default(false) bool ethicalSupplierBadge,
   }) = _Supplier;
 

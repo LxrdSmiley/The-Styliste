@@ -39,8 +39,9 @@ class MaisonDonateState {
   }) =>
       MaisonDonateState(
         isDonating: clearDonating ? false : (isDonating ?? this.isDonating),
-        optimisticDeduction:
-            clearDonating ? 0.0 : (optimisticDeduction ?? this.optimisticDeduction),
+        optimisticDeduction: clearDonating
+            ? 0.0
+            : (optimisticDeduction ?? this.optimisticDeduction),
         errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       );
 }
@@ -66,14 +67,14 @@ class MaisonDonateNotifier extends StateNotifier<MaisonDonateState> {
     await HapticFeedback.mediumImpact();
 
     try {
-      final FunctionResponse result = await SupabaseService.client.functions.invoke(
+      final FunctionResponse result =
+          await SupabaseService.client.functions.invoke(
         SupabaseConstants.fnMaisonDonate,
         body: <String, dynamic>{'amount': roundedAmount},
       );
 
       // Edge Function returns FunctionResponse — check for error payload.
-      final Map<String, dynamic>? data =
-          result.data as Map<String, dynamic>?;
+      final Map<String, dynamic>? data = result.data as Map<String, dynamic>?;
       if (data != null && data['error'] != null) {
         throw Exception(data['error'] as String);
       }

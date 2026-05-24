@@ -30,7 +30,9 @@ class IdleTicker extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
         Icon(
-          showBalance ? Icons.account_balance_wallet_outlined : Icons.trending_up,
+          showBalance
+              ? Icons.account_balance_wallet_outlined
+              : Icons.trending_up,
           color: AppColors.lime,
           size: 14.0,
         ),

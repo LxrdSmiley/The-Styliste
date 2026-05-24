@@ -74,9 +74,14 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
         playerId: widget.player.id,
         tarnishLevel: tarnish,
         kintsugiLevel: kintsugi,
+<<<<<<< HEAD
+        onKintsugiRequest: () => context.push(AppRouter.crisisKintsugi),
+        onApologyRequest: () => unawaited(_applyApology(context)),
+=======
         onKintsugiRequest: () =>
             unawaited(context.push(AppRouter.crisisKintsugi)),
         onApologyRequest: () => _applyApology(context),
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
         child: SafeArea(
           child: Column(
             children: <Widget>[
@@ -170,7 +175,8 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                       const _SectionTitle('POWER MOVES'),
                       const SizedBox(height: 16.0),
                       _PowerMovesGrid(
-                        onPublicApology: () => _applyApology(context),
+                        onPublicApology: () =>
+                            unawaited(_applyApology(context)),
                       ),
 
                       const SizedBox(height: 32.0),
@@ -209,6 +215,12 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
         decayRate: 2.5,
         activeInputs: const <HeatInput>[
           HeatInput(
+<<<<<<< HEAD
+              name: 'District Control', contribution: 12.0, isPositive: true),
+          HeatInput(name: 'Revenue Flow', contribution: 10.0, isPositive: true),
+          HeatInput(
+              name: 'Market Saturation', contribution: -3.0, isPositive: false),
+=======
             name: 'District Control',
             contribution: 12.0,
             isPositive: true,
@@ -219,13 +231,18 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
             contribution: -3.0,
             isPositive: false,
           ),
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
         ],
       ),
     );
   }
 
   Future<void> _applyApology(BuildContext context) async {
+<<<<<<< HEAD
+    HapticFeedback.heavyImpact();
+=======
     unawaited(HapticFeedback.heavyImpact());
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     final Map<String, dynamic> result =
         await Supabase.instance.client.rpc<Map<String, dynamic>>(
       'execute_power_move',
@@ -283,9 +300,13 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 _upgradeInfoItem(
+<<<<<<< HEAD
+                    'Current Capacity', '${state.warehouseCapacity}'),
+=======
                   'Current Capacity',
                   '${state.warehouseCapacity}',
                 ),
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
                 const Icon(Icons.arrow_forward, size: 16.0),
                 _upgradeInfoItem('New Capacity', '$newCapacity'),
               ],

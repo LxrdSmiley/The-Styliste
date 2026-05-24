@@ -15,7 +15,8 @@ class PowerMoveComboScreen extends ConsumerStatefulWidget {
   const PowerMoveComboScreen({super.key});
 
   @override
-  ConsumerState<PowerMoveComboScreen> createState() => _PowerMoveComboScreenState();
+  ConsumerState<PowerMoveComboScreen> createState() =>
+      _PowerMoveComboScreenState();
 }
 
 class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
@@ -125,11 +126,13 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List<Widget>.generate(4, (int index) {
                 return DragTarget<IconData>(
-                  onWillAcceptWithDetails: (_) => !_gameOver && !_showingSequence,
+                  onWillAcceptWithDetails: (_) =>
+                      !_gameOver && !_showingSequence,
                   onAcceptWithDetails: (DragTargetDetails<IconData> details) {
                     _onAccept(details.data);
                   },
-                  builder: (BuildContext context, List<IconData?> candidateData, List<dynamic> rejectedData) {
+                  builder: (BuildContext context, List<IconData?> candidateData,
+                      List<dynamic> rejectedData) {
                     final bool isFilled = index < _currentIndex;
                     return Container(
                       width: 60,
@@ -141,13 +144,16 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
                               : Colors.grey[800]!,
                         ),
                         color: isFilled
-                            ? AurelianPalette.champagneGold.withValues(alpha: 0.2)
+                            ? AurelianPalette.champagneGold
+                                .withValues(alpha: 0.2)
                             : Colors.transparent,
                       ),
                       child: Icon(
                         _showingSequence
                             ? _targetSequence[index]
-                            : (isFilled ? _targetSequence[index] : Icons.lock_outline),
+                            : (isFilled
+                                ? _targetSequence[index]
+                                : Icons.lock_outline),
                         color: isFilled || _showingSequence
                             ? AurelianPalette.champagneGold
                             : Colors.grey[800],
@@ -167,12 +173,14 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
                 children: _scrambled.map((IconData icon) {
                   return Draggable<IconData>(
                     data: icon,
-                    feedback: Icon(icon, color: AurelianPalette.ivory, size: 40),
+                    feedback:
+                        Icon(icon, color: AurelianPalette.ivory, size: 40),
                     childWhenDragging: Opacity(
                       opacity: 0.3,
                       child: Icon(icon, color: AurelianPalette.champagneGold),
                     ),
-                    child: Icon(icon, color: AurelianPalette.champagneGold, size: 40),
+                    child: Icon(icon,
+                        color: AurelianPalette.champagneGold, size: 40),
                   );
                 }).toList(),
               ),
@@ -183,7 +191,9 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
                     ? 'SYNERGY: ${(_achievedMultiplier).toStringAsFixed(1)}x'
                     : 'COMBO BROKEN',
                 style: TextStyle(
-                  color: _won ? AurelianPalette.champagneGold : AurelianPalette.danger,
+                  color: _won
+                      ? AurelianPalette.champagneGold
+                      : AurelianPalette.danger,
                   fontSize: 24,
                 ),
               ),

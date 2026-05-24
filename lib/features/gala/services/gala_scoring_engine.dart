@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/aurelian_theme.dart';
 
 /// Vote tiers with escalating power and haptic feedback
-/// 
+///
 /// Vote Weights:
 /// - Adore: 1 pt (unlimited soft cap at 100/day) — Light tick haptic
 /// - Iconic: 3 pts (10/day limit) — Medium pulse haptic
@@ -53,7 +53,7 @@ extension VoteTierExtension on VoteTier {
   int get dailyLimit {
     switch (this) {
       case VoteTier.adore:
-        return 100;  // Soft limit
+        return 100; // Soft limit
       case VoteTier.iconic:
         return 10;
       case VoteTier.sovereign:
@@ -109,14 +109,14 @@ extension VoteTierExtension on VoteTier {
 }
 
 /// Gala Scoring Engine
-/// 
+///
 /// Implements Kode Formula for calculating final vote points
 /// with talent multipliers.
 class GalaScoringEngine {
   /// Calculate final points using Kode Formula
-  /// 
+  ///
   /// Formula: final_points = base_points * (1 + (talent_multiplier - 1) * 0.5)
-  /// 
+  ///
   /// Example calculations:
   /// - Sovereign vote (10) × no talent (1.0) = 10 pts
   /// - Sovereign vote (10) × Sovereign talent (2.0 = +100%) = 15 pts
@@ -154,7 +154,7 @@ class GalaScoringEngine {
 }
 
 /// Prize distribution calculator
-/// 
+///
 /// Rank 1: 5000 Luxe (The Sovereign)
 /// Rank 2: 2000 Luxe
 /// Rank 3: 1000 Luxe
@@ -162,11 +162,11 @@ class GalaScoringEngine {
 /// Participation: 50 Luxe
 class GalaPrizeCalculator {
   static int calculatePrize(int rank) {
-    if (rank == 1) return 5000;  // The Sovereign
+    if (rank == 1) return 5000; // The Sovereign
     if (rank == 2) return 2000;
     if (rank == 3) return 1000;
     if (rank <= 10) return (500 - (rank - 4) * 50).clamp(100, 450);
-    return 50;  // Participation
+    return 50; // Participation
   }
 
   static bool isGalaSovereign(int rank) => rank == 1;

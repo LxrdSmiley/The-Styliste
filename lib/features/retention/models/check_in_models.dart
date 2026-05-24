@@ -141,7 +141,7 @@ class CheckInReward with _$CheckInReward {
 /// Streak Milestone Configuration
 class StreakMilestones {
   static const List<int> days = <int>[1, 3, 7, 14, 30, 60, 100];
-  
+
   static String getMessage(int day) {
     switch (day) {
       case 1:
@@ -162,7 +162,7 @@ class StreakMilestones {
         return 'Welcome back, darling.';
     }
   }
-  
+
   static String getRewardTitle(int day) {
     switch (day) {
       case 1:

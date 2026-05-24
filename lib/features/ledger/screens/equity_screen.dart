@@ -70,7 +70,8 @@ class _EquityContent extends StatelessWidget {
   final EquityState equityState;
 
   double get _stockPrice => brand.hypeScore * 1.5;
-  double get _marketShare => math.min(brand.totalRevenue / 1000000, 100); // Mock calculation
+  double get _marketShare =>
+      math.min(brand.totalRevenue / 1000000, 100); // Mock calculation
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +117,8 @@ class _EquityContent extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AurelianPalette.success.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(4),

@@ -13,7 +13,8 @@ import 'supabase_service.dart';
 
 // GDD §1.1 — Web OAuth 2.0 client ID from Google Play Console
 // Setup: Play Console → Setup → API → Linked APIs → Web client ID
-const String _playGamesWebClientId = String.fromEnvironment('PLAY_GAMES_CLIENT_ID');
+const String _playGamesWebClientId =
+    String.fromEnvironment('PLAY_GAMES_CLIENT_ID');
 
 /// AuthService — Platform game services authentication
 /// Maps platform IDs (Game Center / Play Games) to Supabase UUIDs
@@ -116,7 +117,7 @@ class AuthService {
       if (existing.isNotEmpty) {
         // Platform ID exists — return the linked Supabase user ID
         final String playerId = existing.first['player_id'] as String;
-        
+
         // Ensure current Supabase auth matches
         await _restoreSession(playerId);
         return playerId;
@@ -162,7 +163,6 @@ class AuthService {
       return false;
     }
   }
-
 
   /// Get platform display name (for UI)
   Future<String?> getPlatformName() async {

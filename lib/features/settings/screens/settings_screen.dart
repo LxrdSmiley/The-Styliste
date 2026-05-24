@@ -10,6 +10,9 @@ import '../../../core/theme/aurelian_theme.dart';
 
 const String _kExpertModeKey = 'expert_mode_enabled';
 const String _kNotificationsKey = 'notifications_enabled';
+const String _kReducedMotionKey = 'reduced_motion_enabled';
+const String _kHighContrastKey = 'high_contrast_enabled';
+const String _kTextScaleKey = 'accessibility_text_scale';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -21,6 +24,9 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _expertMode = false;
   bool _notifications = true;
+  bool _reducedMotion = false;
+  bool _highContrast = false;
+  double _textScale = 1.0;
   bool _loading = true;
 
   @override
@@ -34,6 +40,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _expertMode = prefs.getBool(_kExpertModeKey) ?? false;
       _notifications = prefs.getBool(_kNotificationsKey) ?? true;
+      _reducedMotion = prefs.getBool(_kReducedMotionKey) ?? false;
+      _highContrast = prefs.getBool(_kHighContrastKey) ?? false;
+      _textScale = prefs.getDouble(_kTextScaleKey) ?? 1.0;
       _loading = false;
     });
   }
@@ -48,6 +57,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kNotificationsKey, value);
     setState(() => _notifications = value);
+  }
+
+  Future<void> _setReducedMotion({required bool value}) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kReducedMotionKey, value);
+    setState(() => _reducedMotion = value);
+  }
+
+  Future<void> _setHighContrast({required bool value}) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kHighContrastKey, value);
+    setState(() => _highContrast = value);
+  }
+
+  Future<void> _setTextScale(double value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_kTextScaleKey, value);
+    setState(() => _textScale = value);
   }
 
   // GDD §3.6 — Luxe acknowledges the mode switch with a personalised line
@@ -66,7 +93,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         title: Row(
           children: <Widget>[
-            const Icon(Icons.auto_awesome, color: AurelianPalette.champagneGold, size: 20),
+            const Icon(Icons.auto_awesome,
+                color: AurelianPalette.champagneGold, size: 20),
             const SizedBox(width: 10),
             Text(
               newValue ? 'EXPERT MODE' : 'CASUAL MODE',
@@ -95,7 +123,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: () => Navigator.pop(ctx, false),
             child: const Text(
               'CANCEL',
-              style: TextStyle(color: AurelianPalette.textTertiary, fontFamily: 'SpaceGrotesk'),
+              style: TextStyle(
+                  color: AurelianPalette.textTertiary,
+                  fontFamily: 'SpaceGrotesk'),
             ),
           ),
           TextButton(
@@ -133,7 +163,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AurelianPalette.textPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: AurelianPalette.champagneGold, size: 20),
+          icon: const Icon(Icons.arrow_back_ios,
+              color: AurelianPalette.champagneGold, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
@@ -156,7 +187,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: AurelianPalette.champagneGold),
+              child: CircularProgressIndicator(
+                  color: AurelianPalette.champagneGold),
             )
           : ListView(
               padding: const EdgeInsets.symmetric(vertical: 24),
@@ -166,17 +198,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _SettingsTile(
                   icon: Icons.analytics_outlined,
                   title: 'Expert Mode',
-                  subtitle: 'Shows live demand variables, market formulas, and advanced\neconomic indicators in the Ledger.',
+                  subtitle:
+                      'Shows live demand variables, market formulas, and advanced\neconomic indicators in the Ledger.',
                   trailing: Switch(
                     value: _expertMode,
                     onChanged: _onExpertModeToggle,
                     activeThumbColor: AurelianPalette.champagneGold,
-                    activeTrackColor: AurelianPalette.champagneGold.withValues(alpha: 0.3),
+                    activeTrackColor:
+                        AurelianPalette.champagneGold.withValues(alpha: 0.3),
                     inactiveThumbColor: AurelianPalette.textTertiary,
-                    inactiveTrackColor: AurelianPalette.textTertiary.withValues(alpha: 0.2),
+                    inactiveTrackColor:
+                        AurelianPalette.textTertiary.withValues(alpha: 0.2),
                   ),
                 ),
                 _ExpertModeChip(active: _expertMode),
+                const SizedBox(height: 24),
+
+                const _SectionHeader(label: 'ACCESSIBILITY'),
+                _SettingsTile(
+                  icon: Icons.motion_photos_off_outlined,
+                  title: 'Reduced Motion',
+                  subtitle:
+                      'Limits decorative motion and animated transitions.',
+                  trailing: Switch(
+                    value: _reducedMotion,
+                    onChanged: (bool v) => _setReducedMotion(value: v),
+                    activeThumbColor: AurelianPalette.champagneGold,
+                    activeTrackColor:
+                        AurelianPalette.champagneGold.withValues(alpha: 0.3),
+                    inactiveThumbColor: AurelianPalette.textTertiary,
+                    inactiveTrackColor:
+                        AurelianPalette.textTertiary.withValues(alpha: 0.2),
+                  ),
+                ),
+                _SettingsTile(
+                  icon: Icons.contrast_outlined,
+                  title: 'High Contrast',
+                  subtitle:
+                      'Strengthens borders, labels, and critical status colors.',
+                  trailing: Switch(
+                    value: _highContrast,
+                    onChanged: (bool v) => _setHighContrast(value: v),
+                    activeThumbColor: AurelianPalette.champagneGold,
+                    activeTrackColor:
+                        AurelianPalette.champagneGold.withValues(alpha: 0.3),
+                    inactiveThumbColor: AurelianPalette.textTertiary,
+                    inactiveTrackColor:
+                        AurelianPalette.textTertiary.withValues(alpha: 0.2),
+                  ),
+                ),
+                _SettingsTile(
+                  icon: Icons.text_fields_outlined,
+                  title: 'Text Scale',
+                  subtitle:
+                      'Adjusts in-app reading comfort from compact to large.',
+                  trailing: SizedBox(
+                    width: 150,
+                    child: Slider(
+                      value: _textScale,
+                      min: 0.9,
+                      max: 1.3,
+                      divisions: 4,
+                      label: '${(_textScale * 100).round()}%',
+                      activeColor: AurelianPalette.champagneGold,
+                      inactiveColor:
+                          AurelianPalette.textTertiary.withValues(alpha: 0.25),
+                      onChanged: _setTextScale,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
 
                 // ── NOTIFICATIONS ─────────────────────────────────────────
@@ -184,14 +274,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _SettingsTile(
                   icon: Icons.notifications_outlined,
                   title: 'Push Notifications',
-                  subtitle: 'Idle income milestones, event alerts, and Maison activity.',
+                  subtitle:
+                      'Idle income milestones, event alerts, and Maison activity.',
                   trailing: Switch(
                     value: _notifications,
                     onChanged: (bool v) => _setNotifications(value: v),
                     activeThumbColor: AurelianPalette.champagneGold,
-                    activeTrackColor: AurelianPalette.champagneGold.withValues(alpha: 0.3),
+                    activeTrackColor:
+                        AurelianPalette.champagneGold.withValues(alpha: 0.3),
                     inactiveThumbColor: AurelianPalette.textTertiary,
-                    inactiveTrackColor: AurelianPalette.textTertiary.withValues(alpha: 0.2),
+                    inactiveTrackColor:
+                        AurelianPalette.textTertiary.withValues(alpha: 0.2),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -241,7 +334,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _SettingsLinkTile(
                   icon: Icons.accessibility_new_outlined,
                   title: 'Accessibility Statement',
-                  onTap: () => _launchUrl('https://thestyliste.app/accessibility'),
+                  onTap: () =>
+                      _launchUrl('https://thestyliste.app/accessibility'),
+                ),
+                _SettingsLinkTile(
+                  icon: Icons.campaign_outlined,
+                  title: 'Marketing & Advertising Policy',
+                  onTap: () => _launchUrl('https://thestyliste.app/marketing'),
                 ),
                 const SizedBox(height: 48),
 
@@ -251,7 +350,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     'THE STYLISTE  v1.0.0\nSkinTeethNerd Studios',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: AurelianPalette.textTertiary.withValues(alpha: 0.5),
+                      color:
+                          AurelianPalette.textTertiary.withValues(alpha: 0.5),
                       fontFamily: 'SpaceGrotesk',
                       fontSize: 11,
                       height: 1.6,

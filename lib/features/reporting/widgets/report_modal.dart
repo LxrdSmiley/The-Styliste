@@ -43,7 +43,9 @@ class _ReportModalState extends State<ReportModal> {
     });
 
     try {
-      await Supabase.instance.client.from('player_reports').insert(<String, dynamic>{
+      await Supabase.instance.client
+          .from('player_reports')
+          .insert(<String, dynamic>{
         'reporter_id': Supabase.instance.client.auth.currentUser!.id,
         'reported_player_id': widget.reportedPlayerId,
         'reported_id': widget.reportedPlayerId,
@@ -100,7 +102,8 @@ class _ReportModalState extends State<ReportModal> {
                     ChoiceChip(
                       label: Text(category.replaceAll('_', ' ').toUpperCase()),
                       selected: _selectedCategory == category,
-                      onSelected: (_) => setState(() => _selectedCategory = category),
+                      onSelected: (_) =>
+                          setState(() => _selectedCategory = category),
                     ),
                 ],
               ),
@@ -121,7 +124,8 @@ class _ReportModalState extends State<ReportModal> {
               ],
               const SizedBox(height: 16.0),
               FilledButton(
-                onPressed: _selectedCategory == null || _isSubmitting ? null : _submit,
+                onPressed:
+                    _selectedCategory == null || _isSubmitting ? null : _submit,
                 child: Text(_isSubmitting ? 'SUBMITTING' : 'SUBMIT'),
               ),
             ],
