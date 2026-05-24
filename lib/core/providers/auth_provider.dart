@@ -83,6 +83,21 @@ final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
             controller.add(null);
           }
         } catch (e) {
+          if (_isFirebaseProviderConfigError(e) &&
+              Supabase.instance.client.auth.currentUser == null) {
+            try {
+              await Supabase.instance.client.auth.signInAnonymously();
+              if (!controller.isClosed) {
+                controller.add(null);
+              }
+              return;
+            } catch (anonymousError) {
+              if (kDebugMode) {
+                debugPrint('supabase anonymous fallback error: $anonymousError');
+              }
+            }
+          }
+
           // Bridge errors are logged. We emit a value anyway to unblock the
           // app's loading gate, allowing local play/UI to render.
           if (kDebugMode) {
@@ -108,6 +123,16 @@ final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
     return controller.stream;
   },
 );
+
+bool _isFirebaseProviderConfigError(Object error) {
+  if (error is! AuthException) return false;
+
+  final String message = error.message.toLowerCase();
+  return message.contains('firebase') &&
+      (message.contains('not allowed') ||
+          message.contains('provider') ||
+          message.contains('oidc'));
+}
 
 // ---------------------------------------------------------------------------
 // Convenience providers

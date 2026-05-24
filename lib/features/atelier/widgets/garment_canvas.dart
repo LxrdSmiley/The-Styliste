@@ -96,19 +96,28 @@ class _GarmentCanvasState extends State<GarmentCanvas>
     if (_shaderReady) setState(() {});
   }
 
-  void _onPanUpdate(DragUpdateDetails details, Size canvasSize) {
+  void _setTouchPosition(Offset localPosition, Size canvasSize) {
     final Offset normalized = Offset(
-      (details.localPosition.dx / canvasSize.width).clamp(0.0, 1.0),
-      (details.localPosition.dy / canvasSize.height).clamp(0.0, 1.0),
+      (localPosition.dx / canvasSize.width).clamp(0.0, 1.0),
+      (localPosition.dy / canvasSize.height).clamp(0.0, 1.0),
     );
     _targetTouch = normalized;
+  }
+
+  void _startInteraction(Offset localPosition, Size canvasSize) {
+    _setTouchPosition(localPosition, canvasSize);
     if (!_touchActive) {
       _touchActive = true;
       widget.onInteractionActive?.call(true);
     }
   }
 
-  void _onPanEnd(DragEndDetails _) {
+  void _updateInteraction(Offset localPosition, Size canvasSize) {
+    _setTouchPosition(localPosition, canvasSize);
+  }
+
+  void _endInteraction() {
+    if (!_touchActive && _targetTouch == _kOffScreen) return;
     _targetTouch = _kOffScreen;
     _touchActive = false;
     widget.onInteractionActive?.call(false);
@@ -129,32 +138,110 @@ class _GarmentCanvasState extends State<GarmentCanvas>
           constraints.maxWidth,
           constraints.maxHeight,
         );
-        return GestureDetector(
-          onPanUpdate: (DragUpdateDetails d) => _onPanUpdate(d, canvasSize),
-          onPanEnd: _onPanEnd,
-          child: CustomPaint(
-            size: canvasSize,
-            painter: _shaderReady
-                ? _GarmentPainter(
-                    shader: _shader!,
-                    fabricTexture: _fabricTexture!,
-                    time: _stopwatch.elapsed.inMilliseconds / 1000.0,
-                    smoothTouch: _smoothTouch,
-                    dyeColor: widget.dyeColor,
-                  )
-                : null,
-            child: _shaderReady
-                ? null
-                : const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFC9A84C),
-                      strokeWidth: 1.5,
-                    ),
-                  ),
+        return SizedBox(
+          width: canvasSize.width,
+          height: canvasSize.height,
+          child: Listener(
+            onPointerDown: (PointerDownEvent event) =>
+                _startInteraction(event.localPosition, canvasSize),
+            onPointerMove: (PointerMoveEvent event) =>
+                _updateInteraction(event.localPosition, canvasSize),
+            onPointerUp: (_) => _endInteraction(),
+            onPointerCancel: (_) => _endInteraction(),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onPanStart: (DragStartDetails d) =>
+                  _startInteraction(d.localPosition, canvasSize),
+              onPanUpdate: (DragUpdateDetails d) =>
+                  _updateInteraction(d.localPosition, canvasSize),
+              onPanEnd: (_) => _endInteraction(),
+              onPanCancel: _endInteraction,
+              child: CustomPaint(
+                size: canvasSize,
+                painter: _shaderReady
+                    ? _GarmentPainter(
+                        shader: _shader!,
+                        fabricTexture: _fabricTexture!,
+                        time: _stopwatch.elapsed.inMilliseconds / 1000.0,
+                        smoothTouch: _smoothTouch,
+                        dyeColor: widget.dyeColor,
+                      )
+                    : null,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    if (!_shaderReady)
+                      const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFC9A84C),
+                          strokeWidth: 1.5,
+                        ),
+                      ),
+                    if (_shaderReady && !_touchActive)
+                      Center(
+                        child: Text(
+                          'HOLD OR DRAG TO SHAPE FABRIC',
+                          style: TextStyle(
+                            color: Colors.black.withValues(alpha: 0.22),
+                            fontSize: 10.0,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 2.0,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    if (_shaderReady && _touchActive)
+                      CustomPaint(
+                        painter: _TouchFeedbackPainter(
+                          touchPosition: _targetTouch,
+                          color: widget.dyeColor,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
           ),
         );
       },
     );
+  }
+}
+
+class _TouchFeedbackPainter extends CustomPainter {
+  const _TouchFeedbackPainter({
+    required this.touchPosition,
+    required this.color,
+  });
+
+  final Offset touchPosition;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (touchPosition.dx < 0.0) return;
+
+    final Offset center = Offset(
+      touchPosition.dx * size.width,
+      touchPosition.dy * size.height,
+    );
+    final Paint glowPaint = Paint()
+      ..color = color.withValues(alpha: 0.28)
+      ..style = PaintingStyle.fill;
+    final Paint ringPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.44)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+
+    canvas
+      ..drawCircle(center, 46.0, glowPaint)
+      ..drawCircle(center, 28.0, ringPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _TouchFeedbackPainter oldDelegate) {
+    return oldDelegate.touchPosition != touchPosition ||
+        oldDelegate.color != color;
   }
 }
 
@@ -187,23 +274,23 @@ class _GarmentPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     shader
-      ..setImageSampler(0, fabricTexture)           // uFabricTexture
-      ..setFloat(0, time)                           // uTime
-      ..setFloat(1, _density)                       // uDensity
-      ..setFloat(2, _stiffness)                     // uStiffness
-      ..setFloat(3, _elasticity)                    // uElasticity
-      ..setFloat(4, _friction)                      // uFriction
-      ..setFloat(5, _drapeCoeff)                    // uDrapeCoeff
-      ..setFloat(6, _bendResistance)                // uBendResistance
-      ..setFloat(7, size.width)                     // uResolution.x
-      ..setFloat(8, size.height)                    // uResolution.y
-      ..setFloat(9, 0.0)                            // uGravity.x
-      ..setFloat(10, -1.0)                          // uGravity.y (downward)
-      ..setFloat(11, smoothTouch.dx)                // uTouchPos.x
-      ..setFloat(12, smoothTouch.dy)                // uTouchPos.y
-      ..setFloat(13, dyeColor.r)                   // uDyeColor.r
-      ..setFloat(14, dyeColor.g)                   // uDyeColor.g
-      ..setFloat(15, dyeColor.b);                  // uDyeColor.b
+      ..setImageSampler(0, fabricTexture) // uFabricTexture
+      ..setFloat(0, time) // uTime
+      ..setFloat(1, _density) // uDensity
+      ..setFloat(2, _stiffness) // uStiffness
+      ..setFloat(3, _elasticity) // uElasticity
+      ..setFloat(4, _friction) // uFriction
+      ..setFloat(5, _drapeCoeff) // uDrapeCoeff
+      ..setFloat(6, _bendResistance) // uBendResistance
+      ..setFloat(7, size.width) // uResolution.x
+      ..setFloat(8, size.height) // uResolution.y
+      ..setFloat(9, 0.0) // uGravity.x
+      ..setFloat(10, -1.0) // uGravity.y (downward)
+      ..setFloat(11, smoothTouch.dx) // uTouchPos.x
+      ..setFloat(12, smoothTouch.dy) // uTouchPos.y
+      ..setFloat(13, dyeColor.r) // uDyeColor.r
+      ..setFloat(14, dyeColor.g) // uDyeColor.g
+      ..setFloat(15, dyeColor.b); // uDyeColor.b
 
     canvas.drawRect(
       Rect.fromLTWH(0.0, 0.0, size.width, size.height),

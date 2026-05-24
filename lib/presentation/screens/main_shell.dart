@@ -5,12 +5,14 @@
 // Atelier / Ledger remain pushed routes over the shell, not tabs.
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../domain/models/player.dart';
+import '../../features/hq/providers/hq_provider.dart';
 
-class MainShell extends StatelessWidget {
+class MainShell extends ConsumerWidget {
   const MainShell({
     required this.navigationShell,
     required this.player,
@@ -21,15 +23,15 @@ class MainShell extends StatelessWidget {
   final Player? player;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final int currentIndex = navigationShell.currentIndex;
-    final CareerPath? path = player?.path;
+    final CareerPath? path = ref.watch(careerPathProvider) ?? player?.path;
 
     // Override HQ icon/label based on player path when available.
     final IconData hqIcon = path == CareerPath.designer
         ? Icons.palette_outlined
         : Icons.bar_chart_outlined;
-    final String hqLabel = path == CareerPath.designer ? 'ATELIER' : 'LEDGER';
+    final String hqLabel = path == CareerPath.mogul ? 'LEDGER' : 'STUDIO';
 
     return Scaffold(
       backgroundColor: AppColors.obsidian,

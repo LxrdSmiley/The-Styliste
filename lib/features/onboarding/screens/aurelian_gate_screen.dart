@@ -311,18 +311,21 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
               ),
 
             // --- Layer 5: White Fade Overlay (for transition) ---
-            AnimatedBuilder(
-              animation: _fadeController,
-              builder: (BuildContext ctx, Widget? _) {
-                return Opacity(
-                  opacity: _fadeController.value,
-                  child: Container(
-                    width: size.width,
-                    height: size.height,
-                    color: Colors.white,
-                  ),
-                );
-              },
+            IgnorePointer(
+              ignoring: _fadeController.value == 0.0,
+              child: AnimatedBuilder(
+                animation: _fadeController,
+                builder: (BuildContext ctx, Widget? _) {
+                  return Opacity(
+                    opacity: _fadeController.value,
+                    child: Container(
+                      width: size.width,
+                      height: size.height,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),

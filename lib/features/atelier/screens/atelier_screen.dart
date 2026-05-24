@@ -78,7 +78,7 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
         ).future,
       );
       if (mounted) {
-        // Navigate to Drop Preview with Vex Critic integration
+        // Navigate to Drop Preview with Vex Critic integration.
         unawaited(
           context.push(
             AppRouter.atelierDropPreview,
@@ -86,15 +86,15 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
           ),
         );
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(() => _isMinting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Color(0xFF3A1C1C),
+          SnackBar(
+            backgroundColor: const Color(0xFF3A1C1C),
             content: Text(
-              'MINT FAILED — try again',
-              style: TextStyle(color: Colors.redAccent),
+              'Mint failed: $e',
+              style: const TextStyle(color: Colors.redAccent),
             ),
           ),
         );

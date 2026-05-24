@@ -14,12 +14,14 @@ import '../../../core/theme/aurelian_theme.dart';
 
 /// A point in Verlet space with position and previous position
 class VerletPoint {
-  VerletPoint(this.x, this.y, {this.pinned = false});
+  VerletPoint(this.x, this.y, {this.pinned = false})
+      : oldX = x,
+        oldY = y;
 
   double x;
   double y;
-  late double oldX;
-  late double oldY;
+  double oldX;
+  double oldY;
   final bool pinned;
 
   void update() {

@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -92,9 +93,9 @@ class _AscensionConfirmationScreenState
     // Step 3: Execute genesis RPC while animation plays
     try {
       final SupabaseClient supabase = Supabase.instance.client;
-      final String userId = supabase.auth.currentUser!.id;
+      final String userId = await _resolveSupabaseUserId(supabase);
 
-      final Map<String, dynamic> result = await supabase.rpc(
+      final Object? rpcResult = await supabase.rpc(
         'execute_sovereign_genesis',
         params: <String, dynamic>{
           'p_user_id': userId,
@@ -106,6 +107,7 @@ class _AscensionConfirmationScreenState
               state.avatarConfig?.toJson() ?? <String, dynamic>{},
         },
       );
+      final Map<String, dynamic> result = _firstRpcRow(rpcResult);
 
       if (result['success'] == true) {
         // Success: White-out will complete and navigate automatically
@@ -116,6 +118,69 @@ class _AscensionConfirmationScreenState
     } catch (e) {
       _handleGenesisError(e.toString());
     }
+  }
+
+  Future<String> _resolveSupabaseUserId(SupabaseClient supabase) async {
+    final String? existingSupabaseUserId = supabase.auth.currentUser?.id;
+    if (existingSupabaseUserId != null) return existingSupabaseUserId;
+
+    firebase_auth.User? firebaseUser =
+        firebase_auth.FirebaseAuth.instance.currentUser;
+    firebaseUser ??=
+        (await firebase_auth.FirebaseAuth.instance.signInAnonymously()).user;
+
+    final String? idToken = await firebaseUser?.getIdToken();
+    if (idToken == null || idToken.isEmpty) {
+      throw StateError('Authentication is not ready. Please restart the app.');
+    }
+
+    try {
+      await supabase.auth.signInWithIdToken(
+        provider: const OAuthProvider('firebase'),
+        idToken: idToken,
+      );
+    } on AuthException catch (e) {
+      if (!_isFirebaseProviderConfigError(e)) rethrow;
+
+      final AuthResponse anonymousResponse =
+          await supabase.auth.signInAnonymously();
+      final String? anonymousUserId =
+          anonymousResponse.user?.id ?? supabase.auth.currentUser?.id;
+      if (anonymousUserId == null) {
+        throw StateError(
+          'Supabase anonymous sign-in is not enabled for this project.',
+        );
+      }
+
+      return anonymousUserId;
+    }
+
+    final String? bridgedSupabaseUserId = supabase.auth.currentUser?.id;
+    if (bridgedSupabaseUserId == null) {
+      throw StateError('Supabase session was not established.');
+    }
+
+    return bridgedSupabaseUserId;
+  }
+
+  bool _isFirebaseProviderConfigError(AuthException error) {
+    final String message = error.message.toLowerCase();
+    return message.contains('firebase') &&
+        (message.contains('not allowed') ||
+            message.contains('provider') ||
+            message.contains('oidc'));
+  }
+
+  Map<String, dynamic> _firstRpcRow(Object? rpcResult) {
+    if (rpcResult is Map<String, dynamic>) return rpcResult;
+
+    if (rpcResult is List && rpcResult.isNotEmpty) {
+      final Object? firstRow = rpcResult.first;
+      if (firstRow is Map<String, dynamic>) return firstRow;
+      if (firstRow is Map) return Map<String, dynamic>.from(firstRow);
+    }
+
+    throw StateError('Genesis returned an unexpected response.');
   }
 
   void _handleGenesisError(String error) {
