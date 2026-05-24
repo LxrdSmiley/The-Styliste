@@ -75,6 +75,7 @@ dependencies:
   # --- 3D / Sensors ---
   flutter_3d_controller: 2.3.0
   sensors_plus: ^5.0.1
+  flame: ^1.37.0
 
 dev_dependencies:
   flutter_test:

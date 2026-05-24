@@ -117,14 +117,9 @@ class EquityNotifier extends StateNotifier<EquityState> {
   }
 
   /// Apply Hostile Takeover result: inject 5000 Capital if 100% ownership
-<<<<<<< HEAD
-  Future<Map<String, dynamic>> applyTakeoverResult(
-      {required double finalPct}) async {
-=======
   Future<Map<String, dynamic>> applyTakeoverResult({
     required double finalPct,
   }) async {
->>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     if (finalPct != 100.0) {
       return <String, dynamic>{
         'success': false,

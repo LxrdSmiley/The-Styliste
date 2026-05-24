@@ -106,8 +106,10 @@ class IapNotifier extends StateNotifier<IapState> {
     // Subscribe to purchase stream — processes results as they arrive.
     _ref.listen<AsyncValue<List<PurchaseDetails>>>(
       iapPurchaseStreamProvider,
-      (AsyncValue<List<PurchaseDetails>>? _,
-          AsyncValue<List<PurchaseDetails>> next) {
+      (
+        AsyncValue<List<PurchaseDetails>>? _,
+        AsyncValue<List<PurchaseDetails>> next,
+      ) {
         next.whenData((List<PurchaseDetails> purchases) {
           for (final PurchaseDetails purchase in purchases) {
             _handlePurchaseUpdate(purchase);

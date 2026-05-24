@@ -93,8 +93,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         title: Row(
           children: <Widget>[
-            const Icon(Icons.auto_awesome,
-                color: AurelianPalette.champagneGold, size: 20),
+            const Icon(
+              Icons.auto_awesome,
+              color: AurelianPalette.champagneGold,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Text(
               newValue ? 'EXPERT MODE' : 'CASUAL MODE',
@@ -124,8 +127,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text(
               'CANCEL',
               style: TextStyle(
-                  color: AurelianPalette.textTertiary,
-                  fontFamily: 'SpaceGrotesk'),
+                color: AurelianPalette.textTertiary,
+                fontFamily: 'SpaceGrotesk',
+              ),
             ),
           ),
           TextButton(
@@ -163,8 +167,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AurelianPalette.textPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,
-              color: AurelianPalette.champagneGold, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: AurelianPalette.champagneGold,
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
@@ -188,7 +195,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: _loading
           ? const Center(
               child: CircularProgressIndicator(
-                  color: AurelianPalette.champagneGold),
+                color: AurelianPalette.champagneGold,
+              ),
             )
           : ListView(
               padding: const EdgeInsets.symmetric(vertical: 24),

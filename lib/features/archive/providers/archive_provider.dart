@@ -34,9 +34,10 @@ final StreamProvider<List<ArchiveListing>> archiveListingsProvider =
 /// Filtered listings by price range
 final ProviderFamily<AsyncValue<List<ArchiveListing>>, ({int min, int max})>
     filteredListingsProvider =
-    ProviderFamily<AsyncValue<List<ArchiveListing>>, ({int min, int max})>(
-        (Ref<AsyncValue<List<ArchiveListing>>> ref,
-            ({int min, int max}) range) {
+    ProviderFamily<AsyncValue<List<ArchiveListing>>, ({int min, int max})>((
+  Ref<AsyncValue<List<ArchiveListing>>> ref,
+  ({int min, int max}) range,
+) {
   final AsyncValue<List<ArchiveListing>> allListings =
       ref.watch(archiveListingsProvider);
 
@@ -270,10 +271,12 @@ class ListingNotifier extends StateNotifier<ListingState> {
         listingId: result['listing_id'] as String?,
         message: result['message'] as String?,
         minimumPrice: result['message']?.toString().contains('Minimum') ?? false
-            ? int.tryParse(RegExp(r'\d+')
-                    .firstMatch(result['message'] as String)
-                    ?.group(0) ??
-                '0')
+            ? int.tryParse(
+                RegExp(r'\d+')
+                        .firstMatch(result['message'] as String)
+                        ?.group(0) ??
+                    '0',
+              )
             : null,
       );
 
@@ -348,8 +351,10 @@ final FutureProvider<MarketStats> marketStatsProvider =
   final List<Map<String, dynamic>> volumeData = await supabase
       .from('provenance_ledger')
       .select('sale_price, platform_tax')
-      .gte('transferred_at',
-          DateTime.now().subtract(const Duration(days: 1)).toIso8601String());
+      .gte(
+        'transferred_at',
+        DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
+      );
 
   int totalVolume = 0;
   int taxBurned = 0;

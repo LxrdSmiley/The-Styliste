@@ -41,11 +41,7 @@ class _AvatarCustomizerScreenState
         'Bold',
         'Youthful',
         'Refined',
-<<<<<<< HEAD
-        'Avant-Garde'
-=======
         'Avant-Garde',
->>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
       ],
     ),
     _CustomizationCategory(

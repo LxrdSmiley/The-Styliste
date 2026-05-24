@@ -102,8 +102,10 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
       totalTalentExpertise: _ref.read(rosterProvider).maybeWhen(
             data: (List<RosterTalent> roster) => roster
                 .where((RosterTalent t) => t.tier == TalentTier.sovereign)
-                .fold(0.0,
-                    (double sum, RosterTalent t) => sum + t.expertiseScore),
+                .fold(
+                  0.0,
+                  (double sum, RosterTalent t) => sum + t.expertiseScore,
+                ),
             orElse: () => 0.0,
           ),
     );
@@ -155,13 +157,17 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
+      final String? userId = supabase.auth.currentUser?.id;
+      if (userId == null) {
+        throw StateError('Not authenticated');
+      }
 
       // Step 1: Create feed post
       final Map<String, dynamic> feedPost = await supabase
           .from(SupabaseConstants.tableFeedPosts)
           .insert(<String, dynamic>{
-            'player_id': supabase.auth.currentUser!.id,
-            'type': 'design_drop',
+            'player_id': userId,
+            'type': 'design_flex',
             'content': <String, dynamic>{
               'design_id': state.design!.id,
               'design_name': state.design!.name,
@@ -177,7 +183,7 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
       await supabase
           .from(SupabaseConstants.tableGarmentDrops)
           .insert(<String, dynamic>{
-        'player_id': supabase.auth.currentUser!.id,
+        'player_id': userId,
         'design_id': state.design!.id,
         'style_tags': state.styleTags,
         'hype_score': state.hypeResult?.totalScore ?? 0.0,

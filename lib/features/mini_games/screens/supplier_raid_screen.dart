@@ -73,8 +73,10 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
                   if (!_gameOver && mounted) {
                     setState(() {
                       _rivalScore++;
-                      _rivalCards.removeWhere((_ResourceCard c) =>
-                          c.id == _rivalCards.firstOrNull?.id);
+                      _rivalCards.removeWhere(
+                        (_ResourceCard c) =>
+                            c.id == _rivalCards.firstOrNull?.id,
+                      );
                     });
                   }
                 });
@@ -256,9 +258,11 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
                       onAcceptWithDetails: (DragTargetDetails<String> details) {
                         _onPlayerClaim(details.data);
                       },
-                      builder: (BuildContext context,
-                          List<String?> candidateData,
-                          List<dynamic> rejectedData) {
+                      builder: (
+                        BuildContext context,
+                        List<String?> candidateData,
+                        List<dynamic> rejectedData,
+                      ) {
                         return const Center(
                           child: Icon(
                             Icons.add_business,
@@ -285,8 +289,10 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
                           child: ListView.builder(
                             itemCount: _rivalCards.length,
                             itemBuilder: (BuildContext context, int index) {
-                              return _buildCard(_rivalCards[index],
-                                  isPlayer: false);
+                              return _buildCard(
+                                _rivalCards[index],
+                                isPlayer: false,
+                              );
                             },
                           ),
                         ),

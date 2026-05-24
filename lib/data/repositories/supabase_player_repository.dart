@@ -32,7 +32,7 @@ class SupabasePlayerRepository implements PlayerRepository {
     await SupabaseService.client
         .from(SupabaseConstants.tablePlayers)
         .update(<String, dynamic>{
-      'last_active_at': timestamp.toIso8601String()
+      'last_active_at': timestamp.toIso8601String(),
     }).eq('id', playerId);
   }
 
@@ -42,6 +42,7 @@ class SupabasePlayerRepository implements PlayerRepository {
         .from(SupabaseConstants.tablePlayers)
         .stream(primaryKey: <String>['id'])
         .eq('id', playerId)
+        .where((List<Map<String, dynamic>> rows) => rows.isNotEmpty)
         .map((List<Map<String, dynamic>> rows) => Player.fromJson(rows.first));
   }
 

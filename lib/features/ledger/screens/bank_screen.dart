@@ -242,13 +242,9 @@ class _RevenueChartPainter extends CustomPainter {
       empty.paint(
         canvas,
         Offset(
-<<<<<<< HEAD
-            (size.width - empty.width) / 2, (size.height - empty.height) / 2),
-=======
           (size.width - empty.width) / 2,
           (size.height - empty.height) / 2,
         ),
->>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
       );
       return;
     }

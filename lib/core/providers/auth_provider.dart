@@ -70,6 +70,13 @@ final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
       (User? user) async {
         if (user == null) return;
         try {
+          if (Supabase.instance.client.auth.currentUser != null) {
+            if (!controller.isClosed) {
+              controller.add(null);
+            }
+            return;
+          }
+
           final String? idToken = await user.getIdToken();
           if (idToken == null) return;
 
@@ -91,7 +98,9 @@ final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
               return;
             } catch (anonymousError) {
               if (kDebugMode) {
-                debugPrint('supabase anonymous fallback error: $anonymousError');
+                debugPrint(
+                  'supabase anonymous fallback error: $anonymousError',
+                );
               }
             }
           }

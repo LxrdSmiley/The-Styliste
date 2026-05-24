@@ -12,7 +12,9 @@ import '../../domain/models/player.dart';
 import '../../features/ar_tryon/screens/ar_tryon_screen.dart';
 import '../../features/archive/screens/archive_market_screen.dart';
 import '../../features/ascension/screens/hall_of_sovereigns_screen.dart';
+import '../../features/atelier/models/drop_launch_payload.dart';
 import '../../features/atelier/screens/atelier_screen.dart';
+import '../../features/atelier/screens/drop_launch_scene_screen.dart';
 import '../../features/atelier/screens/drop_preview_screen.dart';
 import '../../features/crisis/screens/kintsugi_repair_screen.dart';
 import '../../features/events/screens/events_screen.dart';
@@ -55,6 +57,7 @@ abstract final class AppRouter {
   static const String feed = '/feed';
   static const String atelier = '/atelier';
   static const String atelierDropPreview = '/atelier/drop-preview';
+  static const String atelierDropLaunch = '/atelier/drop-launch';
   static const String ledger = '/ledger';
   static const String maison = '/maison';
   static const String bank = '/bank';
@@ -204,8 +207,18 @@ abstract final class AppRouter {
       GoRoute(
         path: atelierDropPreview,
         builder: (BuildContext context, GoRouterState state) {
-          final Design design = state.extra! as Design;
-          return DropPreviewScreen(design: design);
+          final Object? extra = state.extra;
+          if (extra is! Design) return const AtelierScreen();
+          return DropPreviewScreen(design: extra);
+        },
+      ),
+
+      // --- Atelier Drop Launch: cosmetic Flame scene (GDD §2, §4.1, §6.1) ---
+      GoRoute(
+        path: atelierDropLaunch,
+        builder: (BuildContext context, GoRouterState state) {
+          final DropLaunchPayload payload = state.extra! as DropLaunchPayload;
+          return DropLaunchSceneScreen(payload: payload);
         },
       ),
 

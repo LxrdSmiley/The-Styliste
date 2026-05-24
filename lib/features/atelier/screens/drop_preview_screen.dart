@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_router.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/design.dart';
 import '../../design/models/vex_review.dart';
-import '../../design/widgets/vex_review_card.dart';
+import '../models/drop_launch_payload.dart';
 import '../providers/drop_design_provider.dart';
 
 /// Available style tags for selection
@@ -72,33 +74,36 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
   }
 
   Future<void> _onDropToFeed() async {
+    final DropDesignState beforeDrop = ref.read(dropDesignProvider);
+    final double projectedHype = beforeDrop.hypeResult?.totalScore ?? 0.0;
+
     final VexReview? review =
         await ref.read(dropDesignProvider.notifier).executeDrop();
 
-    if (mounted && review != null) {
-      // Show Vex Review Card in modal
-      await showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext ctx) => Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.all(16.0),
-          child: VexReviewCard(
-            review: review,
-            onDismiss: () {
-              Navigator.of(ctx).pop();
-              context.pop(); // Return to HQ
-            },
-            onShare: () {
-              // Share functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Shared to feed!')),
-              );
-            },
+    if (!mounted) return;
+
+    final DropDesignState afterDrop = ref.read(dropDesignProvider);
+    if (afterDrop.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.obsidian,
+          content: Text(
+            afterDrop.error!,
+            style: const TextStyle(color: AurelianPalette.ivory),
           ),
         ),
       );
+      return;
     }
+
+    context.go(
+      AppRouter.atelierDropLaunch,
+      extra: DropLaunchPayload(
+        design: widget.design,
+        hypeScore: review?.hypeScore ?? projectedHype,
+        review: review,
+      ),
+    );
   }
 
   @override
@@ -126,33 +131,31 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
           ),
         ),
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            // --- Design Preview ---
-            Container(
-              height: 200.0,
-              decoration: BoxDecoration(
-                color: AurelianPalette.alabaster,
-                borderRadius: BorderRadius.circular(12.0),
-                border: Border.all(
-                  color: AurelianPalette.champagneGold.withValues(alpha: 0.3),
-                ),
+        children: <Widget>[
+          // --- Design Preview ---
+          Container(
+            height: 200.0,
+            decoration: BoxDecoration(
+              color: AurelianPalette.alabaster,
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(
+                color: AurelianPalette.champagneGold.withValues(alpha: 0.3),
               ),
-              child: Center(
-                child: Text(
-                  widget.design.name,
-                  style: const TextStyle(
-                    fontFamily: 'SpaceGrotesk',
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.w600,
-                    color: AurelianPalette.textPrimary,
-                  ),
+            ),
+            child: Center(
+              child: Text(
+                widget.design.name,
+                style: const TextStyle(
+                  fontFamily: 'SpaceGrotesk',
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.w600,
+                  color: AurelianPalette.textPrimary,
                 ),
               ),
             ),
+          ),
 
             const SizedBox(height: 24.0),
 
@@ -306,7 +309,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
               ),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 28.0),
 
             // --- Drop Button ---
             SizedBox(
@@ -334,11 +337,11 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                           fontWeight: FontWeight.w600,
                           letterSpacing: 2.0,
                         ),
-                      ),
+                ),
               ),
             ),
-          ],
-        ),
+            const SizedBox(height: 12.0),
+        ],
       ),
     );
   }

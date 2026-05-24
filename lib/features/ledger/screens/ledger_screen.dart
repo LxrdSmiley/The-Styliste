@@ -64,7 +64,9 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
 
     // Live balance from brand_state Realtime stream (source of truth).
     final double liveBalance = ref.watch(hqBrandStreamProvider).maybeWhen(
-        data: (Brand brand) => brand.totalRevenue, orElse: () => 0.0);
+          data: (Brand brand) => brand.totalRevenue,
+          orElse: () => 0.0,
+        );
 
     // Effective balance: use optimistic preview during upgrade in-flight.
     final double displayBalance = upgradeState.optimisticBalance ?? liveBalance;

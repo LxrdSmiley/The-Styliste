@@ -152,7 +152,8 @@ class HypeCalculator {
     // Validate inputs
     if (!input.isValid) {
       throw ArgumentError(
-          'Invalid hype calculation input: parameters out of range');
+        'Invalid hype calculation input: parameters out of range',
+      );
     }
 
     final TrendTsunami? matchingTrend = _matchingTrend(input, activeTsunamis);

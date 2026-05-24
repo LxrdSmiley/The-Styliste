@@ -247,11 +247,7 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
     if (index >= state.submissions.length - 3 &&
         state.hasMore &&
         !state.isLoading) {
-<<<<<<< HEAD
-      loadMore();
-=======
       unawaited(loadMore());
->>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     }
   }
 
@@ -267,13 +263,9 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .select('id, current_score, vote_count')
           .eq('event_id', _currentEventId!)
           .inFilter(
-<<<<<<< HEAD
-              'id', state.submissions.map((GalaSubmission s) => s.id).toList());
-=======
             'id',
             state.submissions.map((GalaSubmission s) => s.id).toList(),
           );
->>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
 
       final Map<String, Map<String, dynamic>> scoreMap =
           <String, Map<String, dynamic>>{

@@ -585,7 +585,8 @@ class _LuxeTierCard extends StatelessWidget {
                             child: CircularProgressIndicator(
                               strokeWidth: 2.0,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                  tier.accentColor),
+                                tier.accentColor,
+                              ),
                             ),
                           )
                         : Container(

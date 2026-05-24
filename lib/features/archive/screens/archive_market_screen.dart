@@ -739,6 +739,11 @@ class _ListingDetailSheet extends ConsumerWidget {
   }
 
   Widget _buildProvenanceSection() {
+    final ProvenanceBreakdown breakdown = ProvenanceCalculator.getBreakdown(
+      listing.transferCount,
+      listing.hasSovereignProvenance,
+    );
+
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -835,7 +840,9 @@ class _ListingDetailSheet extends ConsumerWidget {
           _transactionRow('YOU PAY', '\$${breakdown.buyerTotal}', isBold: true),
           const Divider(height: 16.0),
           _transactionRow(
-              'SELLER RECEIVES', '\$${breakdown.sellerPayout} (70%)'),
+            'SELLER RECEIVES',
+            '\$${breakdown.sellerPayout} (70%)',
+          ),
           const SizedBox(height: 4.0),
           _transactionRow(
             'PLATFORM TAX (BURNED)',

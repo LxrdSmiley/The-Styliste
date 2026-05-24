@@ -131,8 +131,11 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
                   onAcceptWithDetails: (DragTargetDetails<IconData> details) {
                     _onAccept(details.data);
                   },
-                  builder: (BuildContext context, List<IconData?> candidateData,
-                      List<dynamic> rejectedData) {
+                  builder: (
+                    BuildContext context,
+                    List<IconData?> candidateData,
+                    List<dynamic> rejectedData,
+                  ) {
                     final bool isFilled = index < _currentIndex;
                     return Container(
                       width: 60,
@@ -179,8 +182,11 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
                       opacity: 0.3,
                       child: Icon(icon, color: AurelianPalette.champagneGold),
                     ),
-                    child: Icon(icon,
-                        color: AurelianPalette.champagneGold, size: 40),
+                    child: Icon(
+                      icon,
+                      color: AurelianPalette.champagneGold,
+                      size: 40,
+                    ),
                   );
                 }).toList(),
               ),
