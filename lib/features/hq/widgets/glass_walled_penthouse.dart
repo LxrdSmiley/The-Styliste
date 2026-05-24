@@ -365,7 +365,7 @@ class _WindowFramePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Painter for subtle marble texture
@@ -407,5 +407,5 @@ class _MarbleTexturePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

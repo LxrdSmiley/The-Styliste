@@ -31,7 +31,6 @@ class VexReviewCard extends StatelessWidget {
   final VoidCallback? onDismiss;
   final VoidCallback? onShare;
 
-  static const Duration _animationDuration = Duration(milliseconds: 600);
   static const Duration _staggerDelay = Duration(milliseconds: 100);
 
   @override
@@ -447,7 +446,14 @@ class _SealPainter extends CustomPainter {
 
     // Center dot
     canvas.drawCircle(
+<<<<<<< HEAD
         center, 3.0, Paint()..color = AurelianPalette.champagneGold);
+=======
+      center,
+      3.0,
+      Paint()..color = AurelianPalette.champagneGold,
+    );
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
   }
 
   @override

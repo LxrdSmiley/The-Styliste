@@ -45,10 +45,11 @@ final ProviderFamily<AsyncValue<List<ArchiveListing>>, ({int min, int max})>
       final List<ArchiveListing> filtered = listings.where((ArchiveListing l) {
         return l.listingPrice >= range.min && l.listingPrice <= range.max;
       }).toList();
-      return AsyncValue.data(filtered);
+      return AsyncValue<List<ArchiveListing>>.data(filtered);
     },
-    loading: () => const AsyncValue.loading(),
-    error: (Object e, StackTrace s) => AsyncValue.error(e, s),
+    loading: () => const AsyncValue<List<ArchiveListing>>.loading(),
+    error: (Object e, StackTrace s) =>
+        AsyncValue<List<ArchiveListing>>.error(e, s),
   );
 });
 

@@ -368,7 +368,13 @@ class _DistrictDetailsSheet extends StatelessWidget {
               if (district.hasLegacyWatermark)
                 Container(
                   padding: const EdgeInsets.symmetric(
+<<<<<<< HEAD
                       horizontal: 12.0, vertical: 6.0),
+=======
+                    horizontal: 12.0,
+                    vertical: 6.0,
+                  ),
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
                   decoration: BoxDecoration(
                     color: AurelianPalette.champagneGold.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.0),
@@ -393,10 +399,21 @@ class _DistrictDetailsSheet extends StatelessWidget {
           // Status
           if (district.isControlled) ...<Widget>[
             _buildInfoRow(
+<<<<<<< HEAD
                 'Controller', district.controllingMaisonId ?? 'Unknown'),
             _buildInfoRow('Days Held', '${district.daysControlled} days'),
             _buildInfoRow(
                 'Defense Multiplier', district.defenseMultiplierDisplay),
+=======
+              'Controller',
+              district.controllingMaisonId ?? 'Unknown',
+            ),
+            _buildInfoRow('Days Held', '${district.daysControlled} days'),
+            _buildInfoRow(
+              'Defense Multiplier',
+              district.defenseMultiplierDisplay,
+            ),
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
           ] else ...<Widget>[
             Container(
               padding: const EdgeInsets.all(16.0),

@@ -54,13 +54,16 @@ AsyncValue<TrendTsunami?> crestTag(Ref ref) {
   return tsunamis.when(
     data: (List<TrendTsunami> waves) {
       try {
-        return AsyncValue.data(waves.firstWhere((TrendTsunami t) => t.isCrest));
+        return AsyncValue<TrendTsunami?>.data(
+          waves.firstWhere((TrendTsunami t) => t.isCrest),
+        );
       } on StateError {
-        return const AsyncValue.data(null);
+        return const AsyncValue<TrendTsunami?>.data(null);
       }
     },
-    loading: () => const AsyncValue.loading(),
-    error: (Object err, StackTrace stack) => AsyncValue.error(err, stack),
+    loading: () => const AsyncValue<TrendTsunami?>.loading(),
+    error: (Object err, StackTrace stack) =>
+        AsyncValue<TrendTsunami?>.error(err, stack),
   );
 }
 
@@ -71,10 +74,12 @@ AsyncValue<List<TrendTsunami>> surgeTags(Ref ref) {
       ref.watch(activeTsunamiProvider);
 
   return tsunamis.when(
-    data: (List<TrendTsunami> waves) =>
-        AsyncValue.data(waves.where((TrendTsunami t) => t.isSurge).toList()),
-    loading: () => const AsyncValue.loading(),
-    error: (Object err, StackTrace stack) => AsyncValue.error(err, stack),
+    data: (List<TrendTsunami> waves) => AsyncValue<List<TrendTsunami>>.data(
+      waves.where((TrendTsunami t) => t.isSurge).toList(),
+    ),
+    loading: () => const AsyncValue<List<TrendTsunami>>.loading(),
+    error: (Object err, StackTrace stack) =>
+        AsyncValue<List<TrendTsunami>>.error(err, stack),
   );
 }
 

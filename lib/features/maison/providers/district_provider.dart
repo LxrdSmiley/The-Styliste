@@ -78,7 +78,12 @@ Stream<List<DistrictWatermark>> maisonWatermarks(Ref ref, String maisonId) {
       .map((List<Map<String, dynamic>> data) {
         return data
             .map(
+<<<<<<< HEAD
                 (Map<String, dynamic> json) => DistrictWatermark.fromJson(json))
+=======
+              (Map<String, dynamic> json) => DistrictWatermark.fromJson(json),
+            )
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
             .toList();
       });
 }
@@ -89,7 +94,12 @@ Stream<List<DistrictWatermark>> allWatermarks(Ref ref) {
   final SupabaseClient supabase = Supabase.instance.client;
 
   return supabase.from(SupabaseConstants.tableDistrictLegacyWatermarks).stream(
+<<<<<<< HEAD
       primaryKey: const <String>['id']).map((List<Map<String, dynamic>> data) {
+=======
+    primaryKey: const <String>['id'],
+  ).map((List<Map<String, dynamic>> data) {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     return data
         .map((Map<String, dynamic> json) => DistrictWatermark.fromJson(json))
         .toList();
@@ -192,12 +202,16 @@ class DistrictSiegeNotifier extends StateNotifier<DistrictSiegeState> {
 final StateNotifierProvider<DistrictSiegeNotifier, DistrictSiegeState>
     districtSiegeProvider =
     StateNotifierProvider<DistrictSiegeNotifier, DistrictSiegeState>(
-  (Ref ref) => DistrictSiegeNotifier(),
+  (Ref<DistrictSiegeState> ref) => DistrictSiegeNotifier(),
 );
 
 /// Provider for the current player's maison ID
 final FutureProvider<String?> playerMaisonIdProvider =
+<<<<<<< HEAD
     FutureProvider<String?>((FutureProviderRef<String?> ref) async {
+=======
+    FutureProvider<String?>((Ref<AsyncValue<String?>> ref) async {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
   final String uid = ref.watch(activeUidProvider);
 
   // First get the player's maison membership
@@ -212,7 +226,7 @@ final FutureProvider<String?> playerMaisonIdProvider =
 
 /// Computed: Total districts controlled by a maison
 final Provider<AsyncValue<int>> maisonDistrictCountProvider =
-    Provider<AsyncValue<int>>((Ref ref) {
+    Provider<AsyncValue<int>>((Ref<AsyncValue<int>> ref) {
   final AsyncValue<List<FashionDistrict>> districtsAsync =
       ref.watch(globalDistrictsProvider);
   final AsyncValue<String?> maisonIdAsync = ref.watch(playerMaisonIdProvider);
@@ -221,48 +235,65 @@ final Provider<AsyncValue<int>> maisonDistrictCountProvider =
     data: (List<FashionDistrict> districts) => maisonIdAsync.when(
       data: (String? maisonId) {
         if (maisonId != null) {
+<<<<<<< HEAD
           return AsyncValue.data(
+=======
+          return AsyncValue<int>.data(
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
             districts
                 .where((FashionDistrict d) => d.controllingMaisonId == maisonId)
                 .length,
           );
         } else {
           // Solo player fallback
-          return const AsyncValue.data(0);
+          return const AsyncValue<int>.data(0);
         }
       },
-      loading: () => const AsyncValue.loading(),
-      error: (Object err, StackTrace stack) => AsyncValue.error(err, stack),
+      loading: () => const AsyncValue<int>.loading(),
+      error: (Object err, StackTrace stack) =>
+          AsyncValue<int>.error(err, stack),
     ),
-    loading: () => const AsyncValue.loading(),
-    error: (Object err, StackTrace stack) => AsyncValue.error(err, stack),
+    loading: () => const AsyncValue<int>.loading(),
+    error: (Object err, StackTrace stack) => AsyncValue<int>.error(err, stack),
   );
 });
 
 /// Computed: City dominance percentages
 final Provider<AsyncValue<Map<String, double>>> cityDominanceProvider =
-    Provider<AsyncValue<Map<String, double>>>((Ref ref) {
-  final AsyncValue<List<FashionDistrict>> districtsAsync =
-      ref.watch(globalDistrictsProvider);
+    Provider<AsyncValue<Map<String, double>>>(
+  (Ref<AsyncValue<Map<String, double>>> ref) {
+    final AsyncValue<List<FashionDistrict>> districtsAsync =
+        ref.watch(globalDistrictsProvider);
 
-  return districtsAsync.when(
-    data: (List<FashionDistrict> districts) {
-      final Map<String, List<FashionDistrict>> byCity = districts.byCityGroup;
-      final Map<String, double> dominance = <String, double>{};
+    return districtsAsync.when(
+      data: (List<FashionDistrict> districts) {
+        final Map<String, List<FashionDistrict>> byCity = districts.byCityGroup;
+        final Map<String, double> dominance = <String, double>{};
 
+<<<<<<< HEAD
       byCity.forEach((String city, List<FashionDistrict> cityDistricts) {
         final int controlled =
             cityDistricts.where((FashionDistrict d) => d.isControlled).length;
         dominance[city] =
             cityDistricts.isEmpty ? 0.0 : controlled / cityDistricts.length;
       });
+=======
+        byCity.forEach((String city, List<FashionDistrict> cityDistricts) {
+          final int controlled =
+              cityDistricts.where((FashionDistrict d) => d.isControlled).length;
+          dominance[city] =
+              cityDistricts.isEmpty ? 0.0 : controlled / cityDistricts.length;
+        });
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
 
-      return AsyncValue.data(dominance);
-    },
-    loading: () => const AsyncValue.loading(),
-    error: (Object err, StackTrace stack) => AsyncValue.error(err, stack),
-  );
-});
+        return AsyncValue<Map<String, double>>.data(dominance);
+      },
+      loading: () => const AsyncValue<Map<String, double>>.loading(),
+      error: (Object err, StackTrace stack) =>
+          AsyncValue<Map<String, double>>.error(err, stack),
+    );
+  },
+);
 
 /// Helper to calculate required bid to takeover a district
 ///

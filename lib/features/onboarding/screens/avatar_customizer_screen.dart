@@ -41,7 +41,11 @@ class _AvatarCustomizerScreenState
         'Bold',
         'Youthful',
         'Refined',
+<<<<<<< HEAD
         'Avant-Garde'
+=======
+        'Avant-Garde',
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
       ],
     ),
     _CustomizationCategory(
@@ -226,7 +230,8 @@ class _AvatarCustomizerScreenState
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Row(
-                children: List.generate(_categories.length, (int index) {
+                children:
+                    List<Widget>.generate(_categories.length, (int index) {
                   final bool isSelected = _selectedCategory == index;
                   final _CustomizationCategory category = _categories[index];
 

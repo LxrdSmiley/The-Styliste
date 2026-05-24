@@ -210,7 +210,11 @@ class VerletRibbonPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, _shadowBlur);
 
-    canvas.drawPath(path, shadowPaint);
+    canvas
+      ..save()
+      ..translate(_shadowOffset, _shadowOffset)
+      ..drawPath(path, shadowPaint)
+      ..restore();
 
     // Draw main ribbon stroke
     final Paint ribbonPaint = Paint()
@@ -288,7 +292,6 @@ class _AnimatedVerletRibbonState extends State<AnimatedVerletRibbon>
     } else {
       // First frame — initialize ribbon
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final Size size = MediaQuery.sizeOf(context);
         _ribbon.initialize(
           widget.startX,
           widget.startY,

@@ -332,5 +332,5 @@ class _SunDialCompactPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

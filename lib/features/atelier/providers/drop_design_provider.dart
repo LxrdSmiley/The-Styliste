@@ -255,37 +255,37 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
 final StateNotifierProvider<DropDesignNotifier, DropDesignState>
     dropDesignProvider =
     StateNotifierProvider<DropDesignNotifier, DropDesignState>(
-  (Ref ref) => DropDesignNotifier(ref),
+  (Ref<DropDesignState> ref) => DropDesignNotifier(ref),
 );
 
 /// Provider for just the Vex review (convenience)
 final Provider<AsyncValue<VexReview?>> currentVexReviewProvider =
-    Provider<AsyncValue<VexReview?>>((Ref ref) {
+    Provider<AsyncValue<VexReview?>>((Ref<AsyncValue<VexReview?>> ref) {
   final DropDesignState state = ref.watch(dropDesignProvider);
 
   if (state.error != null) {
-    return AsyncValue.error(state.error!, StackTrace.current);
+    return AsyncValue<VexReview?>.error(state.error!, StackTrace.current);
   }
 
-  return AsyncValue.data(state.vexReview);
+  return AsyncValue<VexReview?>.data(state.vexReview);
 });
 
 /// Provider for the projected hype score (for Atelier UI preview)
 final Provider<AsyncValue<double>> projectedHypeScoreProvider =
-    Provider<AsyncValue<double>>((Ref ref) {
+    Provider<AsyncValue<double>>((Ref<AsyncValue<double>> ref) {
   final DropDesignState state = ref.watch(dropDesignProvider);
 
   if (state.error != null) {
-    return AsyncValue.error(state.error!, StackTrace.current);
+    return AsyncValue<double>.error(state.error!, StackTrace.current);
   }
 
-  return AsyncValue.data(state.hypeResult?.totalScore ?? 0.0);
+  return AsyncValue<double>.data(state.hypeResult?.totalScore ?? 0.0);
 });
 
 /// Provider for tsunami multiplier (for UI badges)
 final Provider<AsyncValue<double>> tsunamiMultiplierProvider =
-    Provider<AsyncValue<double>>((Ref ref) {
+    Provider<AsyncValue<double>>((Ref<AsyncValue<double>> ref) {
   final DropDesignState state = ref.watch(dropDesignProvider);
 
-  return AsyncValue.data(state.hypeResult?.tsunamiMultiplier ?? 1.0);
+  return AsyncValue<double>.data(state.hypeResult?.tsunamiMultiplier ?? 1.0);
 });

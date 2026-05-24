@@ -16,8 +16,13 @@ import 'package:flutter/material.dart';
 /// - Minimalist: no axes, no tooltips, no padding baggage
 class EmpirePulseGraph extends StatefulWidget {
   const EmpirePulseGraph({
+<<<<<<< HEAD
     super.key,
     required this.dataPoints, // 7 values for 7 days, super.key,, super.key,
+=======
+    required this.dataPoints, // 7 values for 7 days
+    super.key,
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     this.height = 120.0,
     this.animate = true,
   });
@@ -156,7 +161,15 @@ class _EmpirePulsePainter extends CustomPainter {
   }
 
   List<Offset> _generatePoints(
+<<<<<<< HEAD
       Size size, double max, double min, double range) {
+=======
+    Size size,
+    double max,
+    double min,
+    double range,
+  ) {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     final List<Offset> points = <Offset>[];
     final double effectiveRange = range > 0 ? range : 1.0;
 
@@ -262,7 +275,15 @@ class _EmpirePulseStaticPainter extends CustomPainter {
   }
 
   List<Offset> _generatePoints(
+<<<<<<< HEAD
       Size size, double max, double min, double range) {
+=======
+    Size size,
+    double max,
+    double min,
+    double range,
+  ) {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     final List<Offset> points = <Offset>[];
     final double effectiveRange = range > 0 ? range : 1.0;
     final double paddingX = size.width * 0.05;
@@ -295,12 +316,22 @@ class _EmpirePulseStaticPainter extends CustomPainter {
       final double controlY2 = next.dy;
 
       path.cubicTo(
+<<<<<<< HEAD
           controlX1, controlY1, controlX2, controlY2, next.dx, next.dy);
+=======
+        controlX1,
+        controlY1,
+        controlX2,
+        controlY2,
+        next.dx,
+        next.dy,
+      );
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     }
 
     return path;
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

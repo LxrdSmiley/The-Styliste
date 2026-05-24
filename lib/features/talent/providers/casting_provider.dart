@@ -92,9 +92,10 @@ class CastingNotifier extends StateNotifier<CastingState> {
       );
 
       if (result['success'] == true) {
-        final List<dynamic> pullsJson = result['pulls'] as List<dynamic>;
+        final List<Object?> pullsJson = result['pulls'] as List<Object?>;
         final List<PullResult> pulls = pullsJson
-            .map((json) => PullResult.fromJson(json as Map<String, dynamic>))
+            .whereType<Map<String, dynamic>>()
+            .map((Map<String, dynamic> json) => PullResult.fromJson(json))
             .toList();
 
         final CastingResult castingResult = CastingResult(
@@ -186,12 +187,21 @@ final StreamProvider<List<RosterTalent>> playerRosterProvider =
   // Poll roster via RPC (no direct table stream needed for simplicity)
   return Stream<int>.periodic(const Duration(seconds: 5), (int i) => i)
       .asyncMap((int _) async {
+<<<<<<< HEAD
     final List<dynamic> result = await supabase.rpc(
+=======
+    final List<Object?> result = await supabase.rpc<List<Object?>>(
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
       'get_player_roster',
       params: <String, dynamic>{'p_player_id': userId},
     );
     return result
+<<<<<<< HEAD
         .map((json) => RosterTalent.fromJson(json as Map<String, dynamic>))
+=======
+        .whereType<Map<String, dynamic>>()
+        .map((Map<String, dynamic> json) => RosterTalent.fromJson(json))
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
         .toList();
   });
 });
@@ -222,9 +232,9 @@ final Provider<AsyncValue<int>> availableLuxeProvider =
     Provider<AsyncValue<int>>((Ref<AsyncValue<int>> ref) {
   final AsyncValue<Brand> brandAsync = ref.watch(hqBrandStreamProvider);
   return brandAsync.when(
-    data: (Brand brand) => AsyncValue.data(brand.luxeTokens),
-    loading: () => const AsyncValue.loading(),
-    error: (Object e, StackTrace s) => AsyncValue.error(e, s),
+    data: (Brand brand) => AsyncValue<int>.data(brand.luxeTokens),
+    loading: () => const AsyncValue<int>.loading(),
+    error: (Object e, StackTrace s) => AsyncValue<int>.error(e, s),
   );
 });
 

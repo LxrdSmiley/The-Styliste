@@ -739,11 +739,6 @@ class _ListingDetailSheet extends ConsumerWidget {
   }
 
   Widget _buildProvenanceSection() {
-    final ProvenanceBreakdown breakdown = ProvenanceCalculator.getBreakdown(
-      listing.transferCount,
-      listing.hasSovereignProvenance,
-    );
-
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(

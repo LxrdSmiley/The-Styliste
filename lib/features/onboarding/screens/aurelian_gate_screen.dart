@@ -63,15 +63,23 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
       duration: const Duration(milliseconds: 600),
     );
     _ribbon = VerletRibbon();
+<<<<<<< HEAD
     unawaited(_loadShader());
 
     // GDD §10.1 — Age-gate mechanism at onboarding
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_checkAgeGate(context));
+=======
+    _loadShader();
+
+    // GDD §10.1 — Age-gate mechanism at onboarding
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_checkAgeGate());
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     });
   }
 
-  Future<void> _checkAgeGate(BuildContext context) async {
+  Future<void> _checkAgeGate() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getBool('age_gate_passed') ?? false) return;
 
@@ -164,11 +172,17 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
 
     if (_phase != _GatePhase.complete) {
       // Charge interrupted — animate back to idle
+<<<<<<< HEAD
       unawaited(
         _chargeController.animateBack(
           0.0,
           duration: const Duration(milliseconds: 300),
         ),
+=======
+      _chargeController.animateBack(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
       );
       setState(() => _phase = _GatePhase.idle);
     }

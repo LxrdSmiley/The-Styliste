@@ -146,15 +146,21 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           results.map((Map<String, dynamic> json) {
         // Flatten joined data
         final Map<String, dynamic> flat = Map<String, dynamic>.from(json);
-        if (json['designs'] != null) {
-          flat['design_name'] = json['designs']['name'];
-          flat['design_image_url'] = json['designs']['image_url'];
+        final Map<String, dynamic>? design =
+            json['designs'] as Map<String, dynamic>?;
+        final Map<String, dynamic>? player =
+            json['players'] as Map<String, dynamic>?;
+        final Map<String, dynamic>? talent =
+            json['talent_pool'] as Map<String, dynamic>?;
+        if (design != null) {
+          flat['design_name'] = design['name'];
+          flat['design_image_url'] = design['image_url'];
         }
-        if (json['players'] != null) {
-          flat['player_name'] = json['players']['display_name'];
+        if (player != null) {
+          flat['player_name'] = player['display_name'];
         }
-        if (json['talent_pool'] != null) {
-          flat['talent'] = json['talent_pool'];
+        if (talent != null) {
+          flat['talent'] = talent;
         }
         return GalaSubmission.fromJson(flat);
       }).toList();
@@ -198,15 +204,21 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
       final List<GalaSubmission> newSubmissions =
           results.map((Map<String, dynamic> json) {
         final Map<String, dynamic> flat = Map<String, dynamic>.from(json);
-        if (json['designs'] != null) {
-          flat['design_name'] = json['designs']['name'];
-          flat['design_image_url'] = json['designs']['image_url'];
+        final Map<String, dynamic>? design =
+            json['designs'] as Map<String, dynamic>?;
+        final Map<String, dynamic>? player =
+            json['players'] as Map<String, dynamic>?;
+        final Map<String, dynamic>? talent =
+            json['talent_pool'] as Map<String, dynamic>?;
+        if (design != null) {
+          flat['design_name'] = design['name'];
+          flat['design_image_url'] = design['image_url'];
         }
-        if (json['players'] != null) {
-          flat['player_name'] = json['players']['display_name'];
+        if (player != null) {
+          flat['player_name'] = player['display_name'];
         }
-        if (json['talent_pool'] != null) {
-          flat['talent'] = json['talent_pool'];
+        if (talent != null) {
+          flat['talent'] = talent;
         }
         return GalaSubmission.fromJson(flat);
       }).toList();
@@ -235,7 +247,11 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
     if (index >= state.submissions.length - 3 &&
         state.hasMore &&
         !state.isLoading) {
+<<<<<<< HEAD
       loadMore();
+=======
+      unawaited(loadMore());
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     }
   }
 
@@ -251,7 +267,13 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .select('id, current_score, vote_count')
           .eq('event_id', _currentEventId!)
           .inFilter(
+<<<<<<< HEAD
               'id', state.submissions.map((GalaSubmission s) => s.id).toList());
+=======
+            'id',
+            state.submissions.map((GalaSubmission s) => s.id).toList(),
+          );
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
 
       final Map<String, Map<String, dynamic>> scoreMap =
           <String, Map<String, dynamic>>{
@@ -316,13 +338,16 @@ final FutureProviderFamily<List<LeaderboardEntry>, String>
   (Ref<AsyncValue<List<LeaderboardEntry>>> ref, String eventId) async {
     final SupabaseClient supabase = Supabase.instance.client;
 
-    final List<dynamic> results = await supabase.rpc(
+    final List<Object?> results = await supabase.rpc<List<Object?>>(
       'get_gala_leaderboard',
       params: <String, dynamic>{'p_event_id': eventId},
     );
 
     return results
-        .map((json) => LeaderboardEntry.fromJson(json as Map<String, dynamic>))
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (Map<String, dynamic> json) => LeaderboardEntry.fromJson(json),
+        )
         .toList();
   },
 );

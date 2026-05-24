@@ -350,7 +350,7 @@ class _ConcreteTexturePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // =============================================================================

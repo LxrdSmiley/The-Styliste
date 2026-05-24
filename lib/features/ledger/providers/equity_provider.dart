@@ -2,6 +2,8 @@
 // GDD §5.7 — Mogul Path: Corporate warfare, hostile takeovers, stock price
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show FunctionResponse, Session;
 
 import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/brand.dart';
@@ -115,8 +117,14 @@ class EquityNotifier extends StateNotifier<EquityState> {
   }
 
   /// Apply Hostile Takeover result: inject 5000 Capital if 100% ownership
+<<<<<<< HEAD
   Future<Map<String, dynamic>> applyTakeoverResult(
       {required double finalPct}) async {
+=======
+  Future<Map<String, dynamic>> applyTakeoverResult({
+    required double finalPct,
+  }) async {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     if (finalPct != 100.0) {
       return <String, dynamic>{
         'success': false,
@@ -127,7 +135,7 @@ class EquityNotifier extends StateNotifier<EquityState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      final session = SupabaseService.client.auth.currentSession;
+      final Session? session = SupabaseService.client.auth.currentSession;
       if (session == null) {
         state = state.copyWith(isLoading: false);
         return <String, dynamic>{
@@ -136,7 +144,8 @@ class EquityNotifier extends StateNotifier<EquityState> {
         };
       }
 
-      final response = await SupabaseService.client.functions.invoke(
+      final FunctionResponse response =
+          await SupabaseService.client.functions.invoke(
         'claim-mini-game-reward',
         body: <String, dynamic>{
           'game_key': 'hostile_takeover',
@@ -147,7 +156,7 @@ class EquityNotifier extends StateNotifier<EquityState> {
         },
       );
       final Map<String, dynamic> result =
-          Map<String, dynamic>.from(response.data as Map);
+          Map<String, dynamic>.from(response.data as Map<String, dynamic>);
 
       state = state.copyWith(isLoading: false);
       return result;

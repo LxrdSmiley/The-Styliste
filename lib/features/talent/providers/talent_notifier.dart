@@ -57,8 +57,14 @@ class TalentNotifier extends StateNotifier<TalentState> {
 
   /// Apply Staff Rally result
   /// Win = Reset stamina to 100%, Loss = 24h cooldown
+<<<<<<< HEAD
   Future<Map<String, dynamic>> applyStaffRallyResult(
       {required bool won}) async {
+=======
+  Future<Map<String, dynamic>> applyStaffRallyResult({
+    required bool won,
+  }) async {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
@@ -104,7 +110,7 @@ class TalentNotifier extends StateNotifier<TalentState> {
           },
         );
         final Map<String, dynamic> result =
-            Map<String, dynamic>.from(response.data as Map);
+            Map<String, dynamic>.from(response.data as Map<String, dynamic>);
 
         state = state.copyWith(isLoading: false);
         return result;

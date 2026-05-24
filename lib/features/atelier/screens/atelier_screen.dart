@@ -79,9 +79,11 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
       );
       if (mounted) {
         // Navigate to Drop Preview with Vex Critic integration
-        context.push(
-          AppRouter.atelierDropPreview,
-          extra: design,
+        unawaited(
+          context.push(
+            AppRouter.atelierDropPreview,
+            extra: design,
+          ),
         );
       }
     } catch (_) {

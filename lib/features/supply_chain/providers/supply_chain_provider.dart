@@ -36,19 +36,27 @@ final StreamProvider<SupplyChainState> supplyChainProvider =
 
 class LiquidationNotifier
     extends StateNotifier<AsyncValue<LiquidationResult?>> {
+<<<<<<< HEAD
   LiquidationNotifier() : super(const AsyncValue.data(null));
+=======
+  LiquidationNotifier()
+      : super(const AsyncValue<LiquidationResult?>.data(null));
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
 
   Future<void> liquidate() async {
     if (state.isLoading) return;
 
-    state = const AsyncValue.loading();
+    state = const AsyncValue<LiquidationResult?>.loading();
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       final String? userId = supabase.auth.currentUser?.id;
 
       if (userId == null) {
-        state = AsyncValue.error('Not authenticated', StackTrace.current);
+        state = AsyncValue<LiquidationResult?>.error(
+          'Not authenticated',
+          StackTrace.current,
+        );
         return;
       }
 
@@ -63,14 +71,14 @@ class LiquidationNotifier
         newRevenue: (result['new_revenue'] as num?)?.toDouble() ?? 0.0,
       );
 
-      state = AsyncValue.data(liquidationResult);
+      state = AsyncValue<LiquidationResult?>.data(liquidationResult);
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+      state = AsyncValue<LiquidationResult?>.error(e, stackTrace);
     }
   }
 
   void reset() {
-    state = const AsyncValue.data(null);
+    state = const AsyncValue<LiquidationResult?>.data(null);
   }
 
   // ===========================================================================
@@ -103,9 +111,17 @@ class LiquidationNotifier
       );
 
       final Map<String, dynamic> data =
+<<<<<<< HEAD
           Map<String, dynamic>.from(response.data as Map);
       final int reward =
           ((data['reward'] as Map?)?['currency'] as num?)?.toInt() ?? 0;
+=======
+          Map<String, dynamic>.from(response.data as Map<String, dynamic>);
+      final int reward =
+          ((data['reward'] as Map<String, dynamic>?)?['currency'] as num?)
+                  ?.toInt() ??
+              0;
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
 
       return <String, dynamic>{
         ...data,
@@ -131,19 +147,22 @@ final StateNotifierProvider<LiquidationNotifier, AsyncValue<LiquidationResult?>>
 // =============================================================================
 
 class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
-  LogisticsNotifier() : super(const AsyncValue.data(null));
+  LogisticsNotifier() : super(const AsyncValue<LogisticsUpgrade?>.data(null));
 
   Future<void> upgrade() async {
     if (state.isLoading) return;
 
-    state = const AsyncValue.loading();
+    state = const AsyncValue<LogisticsUpgrade?>.loading();
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       final String? userId = supabase.auth.currentUser?.id;
 
       if (userId == null) {
-        state = AsyncValue.error('Not authenticated', StackTrace.current);
+        state = AsyncValue<LogisticsUpgrade?>.error(
+          'Not authenticated',
+          StackTrace.current,
+        );
         return;
       }
 
@@ -160,14 +179,14 @@ class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
         message: result['message'] as String?,
       );
 
-      state = AsyncValue.data(upgrade);
+      state = AsyncValue<LogisticsUpgrade?>.data(upgrade);
     } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+      state = AsyncValue<LogisticsUpgrade?>.error(e, stackTrace);
     }
   }
 
   void reset() {
-    state = const AsyncValue.data(null);
+    state = const AsyncValue<LogisticsUpgrade?>.data(null);
   }
 
   // ===========================================================================
@@ -176,8 +195,14 @@ class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
 
   /// Apply Supplier Raid result
   /// Win = 15% discount for 14 days, Loss = immediate halt
+<<<<<<< HEAD
   Future<Map<String, dynamic>> applySupplierRaidResult(
       {required bool won}) async {
+=======
+  Future<Map<String, dynamic>> applySupplierRaidResult({
+    required bool won,
+  }) async {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       if (supabase.auth.currentUser == null) {
@@ -213,7 +238,7 @@ class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
         },
       );
 
-      return Map<String, dynamic>.from(response.data as Map);
+      return Map<String, dynamic>.from(response.data as Map<String, dynamic>);
     } catch (e) {
       return <String, dynamic>{
         'success': false,
@@ -243,8 +268,14 @@ final ProviderFamily<int, int> nextUpgradeCostProvider =
 // =============================================================================
 
 final FutureProvider<SupplyChainStats> supplyChainStatsProvider =
+<<<<<<< HEAD
     FutureProvider<SupplyChainStats>(
         (Ref<AsyncValue<SupplyChainStats>> ref) async {
+=======
+    FutureProvider<SupplyChainStats>((
+  Ref<AsyncValue<SupplyChainStats>> ref,
+) async {
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
   final SupabaseClient supabase = Supabase.instance.client;
 
   // Get total capacity across all players

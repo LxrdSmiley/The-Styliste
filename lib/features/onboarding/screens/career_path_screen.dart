@@ -57,7 +57,7 @@ class _CareerPathScreenState extends ConsumerState<CareerPathScreen> {
     // Navigate to Ascension Confirmation (Screen 7) for final review
     if (!mounted) return;
     unawaited(HapticFeedback.heavyImpact());
-    context.push(AppRouter.onboardingWhatsNext);
+    unawaited(context.push(AppRouter.onboardingWhatsNext));
   }
 
   @override

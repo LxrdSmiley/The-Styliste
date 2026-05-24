@@ -130,7 +130,7 @@ class AscensionNotifier extends StateNotifier<AscensionState> {
     if (state.isMemorializing || state.isHolding) return;
 
     // Initial haptic
-    HapticFeedback.heavyImpact();
+    unawaited(HapticFeedback.heavyImpact());
 
     // Start progress timer
     final DateTime startTime = DateTime.now();
@@ -144,14 +144,14 @@ class AscensionNotifier extends StateNotifier<AscensionState> {
 
         // Haptic heartbeat every second
         if (elapsed.inMilliseconds % _hapticInterval.inMilliseconds < 50) {
-          HapticFeedback.heavyImpact();
+          unawaited(HapticFeedback.heavyImpact());
         }
 
         state = state.copyWith(holdProgress: progress);
 
         if (progress >= 1.0) {
           timer.cancel();
-          _executeMemorialization();
+          unawaited(_executeMemorialization());
         }
       },
     );
@@ -220,7 +220,7 @@ class AscensionNotifier extends StateNotifier<AscensionState> {
 final StateNotifierProvider<AscensionNotifier, AscensionState>
     ascensionProvider =
     StateNotifierProvider<AscensionNotifier, AscensionState>(
-  (Ref ref) => AscensionNotifier(),
+  (Ref<AscensionState> ref) => AscensionNotifier(),
 );
 
 /// Stream of player's memorialized statues
@@ -255,16 +255,16 @@ Stream<List<SovereignStatue>> hallOfSovereigns(Ref ref) {
 
 /// Computed: Total sovereign multipliers for current user
 final Provider<AsyncValue<int>> currentSovereignMultipliersProvider =
-    Provider<AsyncValue<int>>((Ref ref) {
+    Provider<AsyncValue<int>>((Ref<AsyncValue<int>> ref) {
   // This would need to be connected to player provider
   // For now return loading
-  return const AsyncValue.loading();
+  return const AsyncValue<int>.loading();
 });
 
 /// Computed: Can current user memorialize?
 final Provider<AsyncValue<bool>> canMemorializeProvider =
-    Provider<AsyncValue<bool>>((Ref ref) {
+    Provider<AsyncValue<bool>>((Ref<AsyncValue<bool>> ref) {
   // This would need to check player rank
   // For now return loading
-  return const AsyncValue.loading();
+  return const AsyncValue<bool>.loading();
 });

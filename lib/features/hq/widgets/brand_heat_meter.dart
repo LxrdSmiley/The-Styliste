@@ -140,7 +140,7 @@ class _ObsidianCrackPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter CustomPainter) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Gold pulse overlay for iconic state
@@ -276,10 +276,20 @@ class BrandHeatBreakdownPanel extends StatelessWidget {
           // Stats
           _StatRow(label: 'Current', value: '$heatPercent°'),
           _StatRow(
+<<<<<<< HEAD
               label: 'Decay Rate',
               value: '-${decayRate.toStringAsFixed(1)}/hr'),
           _StatRow(
               label: 'Active Inputs', value: '${activeInputs.length} sources'),
+=======
+            label: 'Decay Rate',
+            value: '-${decayRate.toStringAsFixed(1)}/hr',
+          ),
+          _StatRow(
+            label: 'Active Inputs',
+            value: '${activeInputs.length} sources',
+          ),
+>>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
 
           const SizedBox(height: 12.0),
 

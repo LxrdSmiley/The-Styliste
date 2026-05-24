@@ -30,7 +30,7 @@ class _BrandRankBarState extends State<BrandRankBar> {
     if (widget.currentRank > oldWidget.currentRank) {
       setState(() => _rankUpTriggered = true);
       // Reset trigger after animation completes
-      Future.delayed(const Duration(milliseconds: 1500), () {
+      Future<void>.delayed(const Duration(milliseconds: 1500), () {
         if (mounted) setState(() => _rankUpTriggered = false);
       });
     }

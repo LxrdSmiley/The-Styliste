@@ -88,10 +88,13 @@ class _DailyCheckInWidgetState extends ConsumerState<DailyCheckInWidget>
     if (_isClaiming) return;
 
     setState(() => _isClaiming = true);
-    HapticFeedback.mediumImpact();
+    unawaited(HapticFeedback.mediumImpact());
 
     final String? playerId = Supabase.instance.client.auth.currentUser?.id;
-    if (playerId == null) return;
+    if (playerId == null) {
+      setState(() => _isClaiming = false);
+      return;
+    }
 
     try {
       final Map<String, dynamic> result =
