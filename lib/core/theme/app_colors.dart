@@ -32,9 +32,9 @@ abstract final class AppColors {
   static const Color info = Color(0xFF2196F3);
 
   // --- Feed / Social Colours ---
-  static const Color hype = Color(0xFFFF6B35);     // hype meter orange
-  static const Color heat = Color(0xFFFF3366);     // brand heat red
-  static const Color rival = Color(0xFFFF1744);    // rival red glow
+  static const Color hype = Color(0xFFFF6B35); // hype meter orange
+  static const Color heat = Color(0xFFFF3366); // brand heat red
+  static const Color rival = Color(0xFFFF1744); // rival red glow
 
   // --- Neutral Greys ---
   static const Color grey900 = Color(0xFF1A1A1A);
@@ -47,6 +47,8 @@ abstract final class AppColors {
 
   // --- Transparency helpers ---
   static const Color transparent = Colors.transparent;
-  static Color goldWithOpacity(double opacity) => gold.withValues(alpha: opacity);
-  static Color limeWithOpacity(double opacity) => lime.withValues(alpha: opacity);
+  static Color goldWithOpacity(double opacity) =>
+      gold.withValues(alpha: opacity);
+  static Color limeWithOpacity(double opacity) =>
+      lime.withValues(alpha: opacity);
 }

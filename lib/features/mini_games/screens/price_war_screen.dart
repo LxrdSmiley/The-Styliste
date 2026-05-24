@@ -148,7 +148,8 @@ class _PriceWarScreenState extends ConsumerState<PriceWarScreen>
                         animation: _sliderAnim,
                         builder: (BuildContext context, Widget? child) {
                           return Align(
-                            alignment: Alignment(-1.0 + (_sliderAnim.value * 2), 0),
+                            alignment:
+                                Alignment(-1.0 + (_sliderAnim.value * 2), 0),
                             child: Container(
                               width: 4,
                               height: 40,
@@ -164,7 +165,9 @@ class _PriceWarScreenState extends ConsumerState<PriceWarScreen>
                 Text(
                   _score >= 3 ? 'MARKET CAPTURED' : 'UNDERCUT BY RIVAL',
                   style: TextStyle(
-                    color: _score >= 3 ? AurelianPalette.champagneGold : AurelianPalette.danger,
+                    color: _score >= 3
+                        ? AurelianPalette.champagneGold
+                        : AurelianPalette.danger,
                     fontSize: 28,
                   ),
                 ),

@@ -8,14 +8,16 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 /// Empire Pulse Graph — CustomPainter cubic bezier curve
-/// 
+///
 /// Features:
 /// - Single glowing anti-aliased champagne-gold (#F7E7CE) curve
 /// - 7-day revenue data visualization
 /// - Breathing animation (live, responsive)
 /// - Minimalist: no axes, no tooltips, no padding baggage
 class EmpirePulseGraph extends StatefulWidget {
-  const EmpirePulseGraph({super.key, required this.dataPoints, // 7 values for 7 days, super.key,, super.key,
+  const EmpirePulseGraph({
+    super.key,
+    required this.dataPoints, // 7 values for 7 days, super.key,, super.key,
     this.height = 120.0,
     this.animate = true,
   });
@@ -39,7 +41,7 @@ class _EmpirePulseGraphState extends State<EmpirePulseGraph>
       vsync: this,
       duration: const Duration(milliseconds: 4000),
     );
-    
+
     if (widget.animate) {
       _breathingController.repeat(reverse: true);
     }
@@ -86,7 +88,7 @@ class _EmpirePulsePainter extends CustomPainter {
     final double maxValue = dataPoints.reduce(math.max);
     final double minValue = dataPoints.reduce(math.min);
     final double range = maxValue - minValue;
-    
+
     // Champagne-gold color with breathing opacity
     final double baseOpacity = 0.7 + (breathingValue * 0.3); // 0.7 → 1.0
     final Color champagneGold = Color.fromRGBO(
@@ -123,12 +125,13 @@ class _EmpirePulsePainter extends CustomPainter {
       );
 
     // Generate smooth curve through data points
-    final List<Offset> points = _generatePoints(size, maxValue, minValue, range);
+    final List<Offset> points =
+        _generatePoints(size, maxValue, minValue, range);
     final Path curvePath = _generateSmoothPath(points);
 
     // Draw glow beneath
     canvas.drawPath(curvePath, glowPaint);
-    
+
     // Draw main curve
     canvas.drawPath(curvePath, curvePaint);
 
@@ -137,7 +140,7 @@ class _EmpirePulsePainter extends CustomPainter {
       ..lineTo(size.width, size.height)
       ..lineTo(0.0, size.height)
       ..close();
-    
+
     final Paint fillPaint = Paint()
       ..shader = ui.Gradient.linear(
         const Offset(0.0, 0.0),
@@ -148,68 +151,73 @@ class _EmpirePulsePainter extends CustomPainter {
         ],
       )
       ..style = PaintingStyle.fill;
-    
+
     canvas.drawPath(fillPath, fillPaint);
   }
 
-  List<Offset> _generatePoints(Size size, double max, double min, double range) {
+  List<Offset> _generatePoints(
+      Size size, double max, double min, double range) {
     final List<Offset> points = <Offset>[];
     final double effectiveRange = range > 0 ? range : 1.0;
-    
+
     // Padding from edges
     final double paddingX = size.width * 0.05;
     final double paddingY = size.height * 0.15;
     final double graphWidth = size.width - (paddingX * 2);
     final double graphHeight = size.height - (paddingY * 2);
-    
+
     for (int i = 0; i < dataPoints.length; i++) {
       final double x = paddingX + (i / (dataPoints.length - 1)) * graphWidth;
       final double normalizedY = (dataPoints[i] - min) / effectiveRange;
       final double y = size.height - paddingY - (normalizedY * graphHeight);
       points.add(Offset(x, y));
     }
-    
+
     return points;
   }
 
   Path _generateSmoothPath(List<Offset> points) {
     if (points.length < 2) return Path();
-    
+
     final Path path = Path();
     path.moveTo(points.first.dx, points.first.dy);
-    
+
     // Cubic bezier curve through all points
     for (int i = 0; i < points.length - 1; i++) {
       final Offset current = points[i];
       final Offset next = points[i + 1];
-      
+
       // Control points for smooth curve
       final double controlX1 = current.dx + (next.dx - current.dx) * 0.5;
       final double controlY1 = current.dy;
       final double controlX2 = next.dx - (next.dx - current.dx) * 0.5;
       final double controlY2 = next.dy;
-      
+
       path.cubicTo(
-        controlX1, controlY1,
-        controlX2, controlY2,
-        next.dx, next.dy,
+        controlX1,
+        controlY1,
+        controlX2,
+        controlY2,
+        next.dx,
+        next.dy,
       );
     }
-    
+
     return path;
   }
 
   @override
   bool shouldRepaint(covariant _EmpirePulsePainter oldDelegate) {
     return oldDelegate.dataPoints != dataPoints ||
-           oldDelegate.breathingValue != breathingValue;
+        oldDelegate.breathingValue != breathingValue;
   }
 }
 
 /// Simplified static version for non-animated use
 class EmpirePulseStatic extends StatelessWidget {
   const EmpirePulseStatic({
-    required this.dataPoints, super.key,
+    required this.dataPoints,
+    super.key,
     this.height = 80.0,
   });
 
@@ -237,7 +245,7 @@ class _EmpirePulseStaticPainter extends CustomPainter {
     final double maxValue = dataPoints.reduce(math.max);
     final double minValue = dataPoints.reduce(math.min);
     final double range = maxValue - minValue;
-    
+
     const Color champagneGold = Color(0xFFF7E7CE);
 
     final Paint curvePaint = Paint()
@@ -246,36 +254,38 @@ class _EmpirePulseStaticPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
-    final List<Offset> points = _generatePoints(size, maxValue, minValue, range);
+    final List<Offset> points =
+        _generatePoints(size, maxValue, minValue, range);
     final Path curvePath = _generateSmoothPath(points);
 
     canvas.drawPath(curvePath, curvePaint);
   }
 
-  List<Offset> _generatePoints(Size size, double max, double min, double range) {
+  List<Offset> _generatePoints(
+      Size size, double max, double min, double range) {
     final List<Offset> points = <Offset>[];
     final double effectiveRange = range > 0 ? range : 1.0;
     final double paddingX = size.width * 0.05;
     final double paddingY = size.height * 0.15;
     final double graphWidth = size.width - (paddingX * 2);
     final double graphHeight = size.height - (paddingY * 2);
-    
+
     for (int i = 0; i < dataPoints.length; i++) {
       final double x = paddingX + (i / (dataPoints.length - 1)) * graphWidth;
       final double normalizedY = (dataPoints[i] - min) / effectiveRange;
       final double y = size.height - paddingY - (normalizedY * graphHeight);
       points.add(Offset(x, y));
     }
-    
+
     return points;
   }
 
   Path _generateSmoothPath(List<Offset> points) {
     if (points.length < 2) return Path();
-    
+
     final Path path = Path();
     path.moveTo(points.first.dx, points.first.dy);
-    
+
     for (int i = 0; i < points.length - 1; i++) {
       final Offset current = points[i];
       final Offset next = points[i + 1];
@@ -283,10 +293,11 @@ class _EmpirePulseStaticPainter extends CustomPainter {
       final double controlY1 = current.dy;
       final double controlX2 = next.dx - (next.dx - current.dx) * 0.5;
       final double controlY2 = next.dy;
-      
-      path.cubicTo(controlX1, controlY1, controlX2, controlY2, next.dx, next.dy);
+
+      path.cubicTo(
+          controlX1, controlY1, controlX2, controlY2, next.dx, next.dy);
     }
-    
+
     return path;
   }
 

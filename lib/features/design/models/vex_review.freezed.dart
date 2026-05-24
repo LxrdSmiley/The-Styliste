@@ -35,7 +35,7 @@ mixin _$VexReview {
   /// The matching tsunami tag (if any) — referenced in critique
   String? get matchingTsunamiTag => throw _privateConstructorUsedError;
 
-  /// Tsunami multiplier applied (1.0, 1.5, or 2.5)
+  /// Tsunami multiplier applied (1.0 or 1.5)
   double? get tsunamiMultiplier => throw _privateConstructorUsedError;
 
   /// Whether player opted in to receive this review
@@ -247,7 +247,7 @@ class _$VexReviewImpl extends _VexReview {
   @override
   final String? matchingTsunamiTag;
 
-  /// Tsunami multiplier applied (1.0, 1.5, or 2.5)
+  /// Tsunami multiplier applied (1.0 or 1.5)
   @override
   final double? tsunamiMultiplier;
 
@@ -351,7 +351,7 @@ abstract class _VexReview extends VexReview {
   @override
   String? get matchingTsunamiTag;
 
-  /// Tsunami multiplier applied (1.0, 1.5, or 2.5)
+  /// Tsunami multiplier applied (1.0 or 1.5)
   @override
   double? get tsunamiMultiplier;
 

@@ -31,9 +31,14 @@ class _VexVocabulary {
   ];
 
   static const List<String> tarnishedAdjectives = <String>[
-    'bland', 'uninspired', 'safe to the point of sedation',
-    'retrograde', 'nostalgic for an era that never existed',
-    'commercial', 'mass-market', 'algorithmic',
+    'bland',
+    'uninspired',
+    'safe to the point of sedation',
+    'retrograde',
+    'nostalgic for an era that never existed',
+    'commercial',
+    'mass-market',
+    'algorithmic',
   ];
 
   // --- Derivative Pool (40-70) ---
@@ -54,9 +59,15 @@ class _VexVocabulary {
   ];
 
   static const List<String> derivativeAdjectives = <String>[
-    'competent', 'workmanlike', 'professional',
-    'familiar', 'recognizable', 'accessible',
-    'polished', 'finished', 'complete',
+    'competent',
+    'workmanlike',
+    'professional',
+    'familiar',
+    'recognizable',
+    'accessible',
+    'polished',
+    'finished',
+    'complete',
   ];
 
   // --- Visionary Pool (70-90 or tsunami match) ---
@@ -78,9 +89,15 @@ class _VexVocabulary {
   ];
 
   static const List<String> visionaryAdjectives = <String>[
-    'bold', 'assured', 'definitive',
-    'contemporary', 'relevant', 'essential',
-    'striking', 'memorable', 'iconic',
+    'bold',
+    'assured',
+    'definitive',
+    'contemporary',
+    'relevant',
+    'essential',
+    'striking',
+    'memorable',
+    'iconic',
   ];
 
   // --- Sovereign Pool (90+ and crest match) ---
@@ -103,9 +120,15 @@ class _VexVocabulary {
   ];
 
   static const List<String> sovereignAdjectives = <String>[
-    'transcendent', 'sovereign', 'definitive',
-    'epochal', 'canonical', 'foundational',
-    'radiant', 'luminous', 'pure',
+    'transcendent',
+    'sovereign',
+    'definitive',
+    'epochal',
+    'canonical',
+    'foundational',
+    'radiant',
+    'luminous',
+    'pure',
   ];
 
   // --- Bridge phrases for natural flow ---
@@ -127,7 +150,7 @@ class _VexVocabulary {
 }
 
 /// The Vex AI Engine — procedural fashion critic
-/// 
+///
 /// Ingests HypeCalculationResult, outputs emotionally charged editorial review
 /// <100ms generation guaranteed through pre-computed vocabulary pools
 class VexAIEngine {
@@ -136,7 +159,7 @@ class VexAIEngine {
   VexAIEngine({Random? random}) : _random = random ?? Random();
 
   /// Generate a VexReview from hype calculation result
-  /// 
+  ///
   /// [result] — The hype calculation with tsunami multipliers
   /// [optedIn] — Whether player chose to face Vex's judgment
   VexReview generateReview({
@@ -224,7 +247,8 @@ class VexAIEngine {
 
     // Conclusion
     body.write(' ');
-    body.write(_VexVocabulary.conclusions[_random.nextInt(_VexVocabulary.conclusions.length)]);
+    body.write(_VexVocabulary
+        .conclusions[_random.nextInt(_VexVocabulary.conclusions.length)]);
 
     return body.toString();
   }
@@ -253,17 +277,15 @@ class VexAIEngine {
     final double multiplier = result.tsunamiMultiplier;
 
     if (result.wasCrestMatch) {
-      // Crest match (2.5x)
       final List<String> crestPhrases = <String>[
-        'You rode the crest of the $tag wave with devastating precision.',
+        'You rode the $tag wave with a ${multiplier.toStringAsFixed(1)}x alignment and devastating precision.',
         'The $tag tsunami crested, and you were poised perfectly to capture its full power.',
         'This is what it looks like when vision aligns with the $tag cultural moment.',
       ];
       return crestPhrases[_random.nextInt(crestPhrases.length)];
     } else {
-      // Surge match (1.5x)
       final List<String> surgePhrases = <String>[
-        'You caught the $tag surge and translated it into something personal.',
+        'You caught the $tag surge at ${multiplier.toStringAsFixed(1)}x and translated it into something personal.',
         'The $tag trend provided fertile ground for your specific vision.',
         'While others merely referenced $tag, you evolved it.',
       ];

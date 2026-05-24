@@ -1,6 +1,6 @@
 // Directive N — Daily Check-In Widget
 // GDD §8.12, §3.7 — The 30-Day Streak System
-// 
+//
 // Shows current streak, next milestone, and claim button
 // Luxe personalized messages per streak day
 
@@ -18,7 +18,7 @@ import '../../../core/theme/aurelian_theme.dart';
 import '../models/check_in_models.dart';
 
 /// Daily Check-In Widget — Streak display and claim button
-/// 
+///
 /// Shows:
 /// - Current streak counter (flame animation)
 /// - Next milestone preview
@@ -46,7 +46,7 @@ class _DailyCheckInWidgetState extends ConsumerState<DailyCheckInWidget>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
-    
+
     _loadCheckInState();
   }
 
@@ -72,9 +72,7 @@ class _DailyCheckInWidgetState extends ConsumerState<DailyCheckInWidget>
           if (response != null) {
             _state = CheckInState.fromJson(response);
           } else {
-            _state = const CheckInState(
-              
-            );
+            _state = const CheckInState();
           }
           _isLoading = false;
         });
@@ -96,7 +94,8 @@ class _DailyCheckInWidgetState extends ConsumerState<DailyCheckInWidget>
     if (playerId == null) return;
 
     try {
-      final Map<String, dynamic> result = await Supabase.instance.client.rpc<Map<String, dynamic>>(
+      final Map<String, dynamic> result =
+          await Supabase.instance.client.rpc<Map<String, dynamic>>(
         SupabaseConstants.fnRecordCheckIn,
         params: <String, dynamic>{'p_player_id': playerId},
       );
@@ -348,7 +347,9 @@ class _DailyCheckInWidgetState extends ConsumerState<DailyCheckInWidget>
                           fontSize: 12.0,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 2.0,
-                          color: canCheckIn ? Colors.white : const Color(0xFF999999),
+                          color: canCheckIn
+                              ? Colors.white
+                              : const Color(0xFF999999),
                         ),
                       ),
               ),
@@ -397,7 +398,7 @@ class _DailyCheckInWidgetState extends ConsumerState<DailyCheckInWidget>
 
   Widget _buildStreakBar(int streak, int nextMilestone) {
     final double progress = streak / nextMilestone;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[

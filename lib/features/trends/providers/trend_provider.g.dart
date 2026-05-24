@@ -11,7 +11,7 @@ String _$activeTsunamiHash() => r'edde5995b5cf2ea165f25e6fa83a164faacd0d23';
 /// Stream of active Trend Tsunamis from Supabase Realtime
 ///
 /// Emits a list of currently active (non-expired) trend waves.
-/// Each tsunami represents a style tag with a multiplier (2.5x for Crest, 1.5x for Surge)
+/// Each tsunami represents a style tag with a 1.5x alignment multiplier.
 ///
 /// Usage in UI:
 /// ```dart
@@ -41,7 +41,7 @@ final activeTsunamiProvider =
 typedef ActiveTsunamiRef = AutoDisposeStreamProviderRef<List<TrendTsunami>>;
 String _$crestTagHash() => r'0af361f59bc56fbab2c55d579875b53b2bed8516';
 
-/// Provider for just the Crest tag (rank 1, 2.5x multiplier)
+/// Provider for just the Crest tag (rank 1 display priority)
 ///
 /// Copied from [crestTag].
 @ProviderFor(crestTag)

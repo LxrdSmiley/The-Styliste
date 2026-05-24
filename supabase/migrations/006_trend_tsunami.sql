@@ -33,7 +33,7 @@ CREATE POLICY "Garment drops: insert own" ON public.garment_drops FOR INSERT WIT
 CREATE TABLE IF NOT EXISTS public.trend_tsunamis (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tag_name        TEXT NOT NULL,
-  multiplier      NUMERIC(3,2) NOT NULL CHECK (multiplier IN (2.5, 1.5)),
+  multiplier      NUMERIC(3,2) NOT NULL CHECK (multiplier = 1.5),
   rank            INT NOT NULL CHECK (rank IN (1, 2, 3)), -- 1=crest, 2-3=surge
   total_weight    NUMERIC(14,2) NOT NULL DEFAULT 0, -- weighted engagement score
   starts_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -75,7 +75,7 @@ CREATE POLICY "Tsunami archive: read all" ON public.trend_tsunami_archive FOR SE
 -- 1. Archives expired tsunamis
 -- 2. Aggregates garment_drops from last 48h weighted by feed engagement
 -- 3. Determines top 3 style tags by weighted score
--- 4. Inserts new Crest (2.5x) and Surge (1.5x) tags
+-- 4. Inserts new Crest/Surge tags with the GDD-correct 1.5x alignment bonus
 -- =============================================================================
 CREATE OR REPLACE FUNCTION public.calculate_global_trend_tsunami()
 RETURNS TABLE(
@@ -154,7 +154,7 @@ BEGIN
   SELECT 
     tag,
     CASE 
-      WHEN tag_rank = 1 THEN 2.5
+      WHEN tag_rank = 1 THEN 1.5
       ELSE 1.5
     END as multiplier,
     tag_rank as rank,
@@ -213,6 +213,6 @@ $$;
 COMMENT ON TABLE public.garment_drops IS 
   'Immutable ledger of completed designs dropped to feed. Stores style_tags as TEXT[] for fast aggregation.';
 COMMENT ON TABLE public.trend_tsunamis IS 
-  'Active 48-hour trend wave. Rank 1 = Crest (2.5x), Rank 2-3 = Surge (1.5x). Expires automatically.';
+  'Active 48-hour trend wave. Rank 1 = Crest display priority, Rank 2-3 = Surge. Matching tags receive a 1.5x alignment bonus.';
 COMMENT ON FUNCTION public.calculate_global_trend_tsunami() IS 
   'Aggregates garment_drops from last 48h weighted by hype + feed engagement. Calculates top 3 tags as new tsunami.';

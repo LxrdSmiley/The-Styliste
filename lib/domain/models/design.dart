@@ -35,7 +35,7 @@ class Design with _$Design {
     @Default(DesignStatus.draft) DesignStatus status,
     @Default(0.0) double hypeScore,
     @Default(false) bool isAlpha,
-    @Default(false) bool isDigitalTwin,    // GDD §8.9.14
+    @Default(false) bool isDigitalTwin, // GDD §8.9.14
     @Default(false) bool dppRegistered,
     @Default(<String, dynamic>{}) Map<String, dynamic> fabricData,
     @Default(0.0) double sellPotential,
@@ -50,4 +50,3 @@ class Design with _$Design {
 extension DesignExtension on Design {
   String get fabricTier => fabricData['tier'] as String? ?? 'standard_cotton';
 }
-

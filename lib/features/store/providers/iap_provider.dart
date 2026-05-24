@@ -25,17 +25,17 @@ const Set<String> kLuxeProductIds = <String>{
   'luxe_1200',
   'luxe_2800',
   // Directive M: The Aurelian Storefront tiered products
-  'initiates_cache',      // $0.99 — 100 Luxe (impulse buy)
-  'artisans_reserve',     // $4.99 — 550 Luxe (standard top-up)
-  'architects_vault',     // $9.99 — 1200 Luxe (10-pull enabler)
-  'sovereign_syndicate',  // $49.99 — 6500 Luxe (whale anchor)
+  'initiates_cache', // $0.99 — 100 Luxe (impulse buy)
+  'artisans_reserve', // $4.99 — 550 Luxe (standard top-up)
+  'architects_vault', // $9.99 — 1200 Luxe (10-pull enabler)
+  'sovereign_syndicate', // $49.99 — 6500 Luxe (whale anchor)
 };
 
 // Token grant amounts (mirrors server-side LUXE_PRODUCTS map — display only).
 const Map<String, int> kLuxeGrants = <String, int>{
   // Legacy
-  'luxe_100':  100,
-  'luxe_550':  550,
+  'luxe_100': 100,
+  'luxe_550': 550,
   'luxe_1200': 1200,
   'luxe_2800': 2800,
   // Directive M
@@ -54,8 +54,10 @@ final FutureProvider<List<ProductDetails>> iapProductsProvider =
     final ProductDetailsResponse response =
         await InAppPurchase.instance.queryProductDetails(kLuxeProductIds);
     return response.productDetails
-      ..sort((ProductDetails a, ProductDetails b) =>
-          (kLuxeGrants[a.id] ?? 0).compareTo(kLuxeGrants[b.id] ?? 0),);
+      ..sort(
+        (ProductDetails a, ProductDetails b) =>
+            (kLuxeGrants[a.id] ?? 0).compareTo(kLuxeGrants[b.id] ?? 0),
+      );
   },
 );
 
@@ -89,8 +91,9 @@ class IapState {
     bool clearError = false,
   }) =>
       IapState(
-        purchasingProductId:
-            clearPurchasing ? null : (purchasingProductId ?? this.purchasingProductId),
+        purchasingProductId: clearPurchasing
+            ? null
+            : (purchasingProductId ?? this.purchasingProductId),
         errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       );
 }
@@ -103,7 +106,8 @@ class IapNotifier extends StateNotifier<IapState> {
     // Subscribe to purchase stream — processes results as they arrive.
     _ref.listen<AsyncValue<List<PurchaseDetails>>>(
       iapPurchaseStreamProvider,
-      (AsyncValue<List<PurchaseDetails>>? _, AsyncValue<List<PurchaseDetails>> next) {
+      (AsyncValue<List<PurchaseDetails>>? _,
+          AsyncValue<List<PurchaseDetails>> next) {
         next.whenData((List<PurchaseDetails> purchases) {
           for (final PurchaseDetails purchase in purchases) {
             _handlePurchaseUpdate(purchase);
@@ -137,8 +141,7 @@ class IapNotifier extends StateNotifier<IapState> {
           },
         );
 
-        final Map<String, dynamic>? data =
-            result.data as Map<String, dynamic>?;
+        final Map<String, dynamic>? data = result.data as Map<String, dynamic>?;
         if (data != null && data['error'] != null) {
           throw Exception(data['error'] as String);
         }

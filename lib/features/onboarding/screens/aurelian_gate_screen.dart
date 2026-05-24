@@ -47,7 +47,6 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
   late final AnimationController _fadeController;
   late final VerletRibbon _ribbon;
   Timer? _hapticTimer;
-  DateTime? _pressStartTime;
 
   // Touch tracking for shader
   Offset _touchPosition = const Offset(0.5, 0.5);
@@ -64,11 +63,11 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
       duration: const Duration(milliseconds: 600),
     );
     _ribbon = VerletRibbon();
-    _loadShader();
-    
+    unawaited(_loadShader());
+
     // GDD §10.1 — Age-gate mechanism at onboarding
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAgeGate(context);
+      unawaited(_checkAgeGate(context));
     });
   }
 
@@ -76,7 +75,7 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getBool('age_gate_passed') ?? false) return;
 
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     final bool? passed = await showDialog<bool>(
       context: context,
@@ -88,7 +87,7 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
       await prefs.setBool('age_gate_passed', true);
     } else {
       // App exit for under-13
-      SystemNavigator.pop();
+      unawaited(SystemNavigator.pop());
     }
   }
 
@@ -148,11 +147,10 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
         details.globalPosition.dx / size.width,
         details.globalPosition.dy / size.height,
       );
-      _pressStartTime = DateTime.now();
     });
 
     _startHapticHeartbeat();
-    _chargeController.forward(from: 0.0);
+    unawaited(_chargeController.forward(from: 0.0));
 
     // Monitor charge progress
     _chargeController.addStatusListener(_onChargeStatusChanged);
@@ -166,7 +164,12 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
 
     if (_phase != _GatePhase.complete) {
       // Charge interrupted — animate back to idle
-      _chargeController.animateBack(0.0, duration: const Duration(milliseconds: 300));
+      unawaited(
+        _chargeController.animateBack(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+        ),
+      );
       setState(() => _phase = _GatePhase.idle);
     }
   }
@@ -176,18 +179,19 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
       setState(() => _phase = _GatePhase.complete);
       _stopHapticHeartbeat();
       _performTransition();
-    } else if (status == AnimationStatus.forward && _phase == _GatePhase.pressing) {
+    } else if (status == AnimationStatus.forward &&
+        _phase == _GatePhase.pressing) {
       setState(() => _phase = _GatePhase.charging);
     }
   }
 
   void _performTransition() {
     // Fade to white
-    _fadeController.forward().then((_) {
+    unawaited(_fadeController.forward().then((_) {
       if (mounted) {
         context.go(AppRouter.onboardingOriginScript);
       }
-    });
+    }));
   }
 
   // -----------------------------------------------------------------------------
@@ -335,7 +339,9 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
 
 class TickerBuilder extends StatefulWidget {
   const TickerBuilder({
-    required this.onTick, required this.child, super.key,
+    required this.onTick,
+    required this.child,
+    super.key,
   });
 
   final void Function(Duration elapsed) onTick;

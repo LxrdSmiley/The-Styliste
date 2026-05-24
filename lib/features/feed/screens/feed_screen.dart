@@ -34,8 +34,10 @@ class FeedScreen extends ConsumerWidget {
     final Map<String, int> hyypeOverrides = ref.watch(feedHypeOverrideProvider);
 
     // Always watch these — keeps streams alive for instant tab switch.
-    final AsyncValue<List<FeedPost>> globalAsync = ref.watch(feedStreamProvider);
-    final AsyncValue<Set<String>> followingAsync = ref.watch(followingIdsProvider);
+    final AsyncValue<List<FeedPost>> globalAsync =
+        ref.watch(feedStreamProvider);
+    final AsyncValue<Set<String>> followingAsync =
+        ref.watch(followingIdsProvider);
     final AsyncValue<List<FeedPost>> syndicateAsync =
         ref.watch(syndicateFeedProvider);
 
@@ -44,13 +46,14 @@ class FeedScreen extends ConsumerWidget {
     // RPC; live stream posts are prepended only if id not already present.
     List<FeedPost> syndicatePosts = <FeedPost>[];
     if (mode == FeedMode.syndicate) {
-      final Set<String> followingIds =
-          followingAsync.maybeWhen(data: (Set<String> s) => s, orElse: () => <String>{});
-      final List<FeedPost> rpcBatch =
-          syndicateAsync.maybeWhen(data: (List<FeedPost> p) => p, orElse: () => <FeedPost>[]);
+      final Set<String> followingIds = followingAsync.maybeWhen(
+          data: (Set<String> s) => s, orElse: () => <String>{});
+      final List<FeedPost> rpcBatch = syndicateAsync.maybeWhen(
+          data: (List<FeedPost> p) => p, orElse: () => <FeedPost>[]);
       final List<FeedPost> liveFiltered = globalAsync.maybeWhen(
-        data: (List<FeedPost> posts) =>
-            posts.where((FeedPost p) => followingIds.contains(p.playerId)).toList(),
+        data: (List<FeedPost> posts) => posts
+            .where((FeedPost p) => followingIds.contains(p.playerId))
+            .toList(),
         orElse: () => <FeedPost>[],
       );
 
@@ -119,7 +122,8 @@ class FeedScreen extends ConsumerWidget {
   ) {
     return async.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.gold, strokeWidth: 1.5),
+        child:
+            CircularProgressIndicator(color: AppColors.gold, strokeWidth: 1.5),
       ),
       error: (Object e, _) => _errorWidget('SIGNAL LOST'),
       data: (List<FeedPost> posts) => posts.isEmpty
@@ -136,7 +140,8 @@ class FeedScreen extends ConsumerWidget {
   ) {
     if (async.isLoading && posts.isEmpty) {
       return const Center(
-        child: CircularProgressIndicator(color: AppColors.lime, strokeWidth: 1.5),
+        child:
+            CircularProgressIndicator(color: AppColors.lime, strokeWidth: 1.5),
       );
     }
     if (async.hasError && posts.isEmpty) {
@@ -215,7 +220,7 @@ class FeedScreen extends ConsumerWidget {
       ...current,
       postId: (current[postId] ?? 0) + 1,
     };
-    ref.read(hyypePostProvider(postId));
+    ref.read(hypePostProvider(postId));
   }
 }
 
@@ -278,7 +283,9 @@ class _Pill extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 5.0),
         decoration: BoxDecoration(
-          color: selected ? selectedColor.withValues(alpha: 0.15) : Colors.transparent,
+          color: selected
+              ? selectedColor.withValues(alpha: 0.15)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(20.0),
         ),
         child: Text(
@@ -312,7 +319,8 @@ class _DesignFlexCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic> c = post.content;
-    final String brandName = (c['brand_name'] as String?) ?? 'Unknown Sovereign';
+    final String brandName =
+        (c['brand_name'] as String?) ?? 'Unknown Sovereign';
     final String designName = (c['design_name'] as String?) ?? 'UNTITLED ALPHA';
     final double hyypeScore = ((c['hype_score'] as num?)?.toDouble()) ?? 0.0;
     final String colorHex = (c['fabric_color_hex'] as String?) ?? 'FAF7F0';
@@ -347,7 +355,8 @@ class _MogulFlexCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Map<String, dynamic> c = post.content;
-    final String brandName = (c['brand_name'] as String?) ?? 'Unknown Sovereign';
+    final String brandName =
+        (c['brand_name'] as String?) ?? 'Unknown Sovereign';
     final String city = (c['city'] as String?) ?? '—';
     final String storeType = (c['store_type'] as String?) ?? '—';
     final int newTier = (c['new_tier'] as int?) ?? 1;
@@ -492,7 +501,8 @@ class _FeedCard extends StatelessWidget {
                     vertical: 4.0,
                   ),
                   decoration: BoxDecoration(
-                    border: Border.all(color: accentColor.withValues(alpha: 0.4)),
+                    border:
+                        Border.all(color: accentColor.withValues(alpha: 0.4)),
                     borderRadius: BorderRadius.circular(2.0),
                   ),
                   child: Text(
@@ -533,7 +543,7 @@ class _SystemEclipseCard extends StatelessWidget {
   final FeedPost post;
 
   static const Color _crimson = Color(0xFFC0392B);
-  static const Color _silver  = Color(0xFFB0BEC5);
+  static const Color _silver = Color(0xFFB0BEC5);
 
   @override
   Widget build(BuildContext context) {
@@ -542,9 +552,11 @@ class _SystemEclipseCard extends StatelessWidget {
     final String description =
         (c['description'] as String?) ?? 'A global market shift is underway.';
     final String paletteKey = (c['palette'] as String?) ?? 'crimson';
-    final double buffMultiplier = ((c['buff_multiplier'] as num?)?.toDouble()) ?? 1.0;
+    final double buffMultiplier =
+        ((c['buff_multiplier'] as num?)?.toDouble()) ?? 1.0;
     final int durationMinutes = (c['duration_minutes'] as int?) ?? 60;
-    final String scope = ((c['affected_scope'] as String?) ?? 'global').toUpperCase();
+    final String scope =
+        ((c['affected_scope'] as String?) ?? 'global').toUpperCase();
 
     final Color accent = paletteKey == 'silver'
         ? _silver
@@ -632,7 +644,8 @@ class _SystemEclipseCard extends StatelessWidget {
             children: <Widget>[
               _StatChip(label: multiplierLabel, color: accent),
               const SizedBox(width: 6.0),
-              _StatChip(label: scope, color: AppColors.ivory.withValues(alpha: 0.4)),
+              _StatChip(
+                  label: scope, color: AppColors.ivory.withValues(alpha: 0.4)),
               const SizedBox(width: 6.0),
               _StatChip(
                 label: '${durationMinutes}MIN',

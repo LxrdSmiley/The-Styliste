@@ -73,7 +73,8 @@ class _BrandRankBarState extends State<BrandRankBar> {
           borderRadius: const BorderRadius.all(Radius.circular(4.0)),
           child: LinearProgressIndicator(
             value: widget.xpProgress,
-            backgroundColor: AurelianPalette.textTertiary.withValues(alpha: 0.2),
+            backgroundColor:
+                AurelianPalette.textTertiary.withValues(alpha: 0.2),
             valueColor: AlwaysStoppedAnimation<Color>(
               isNearRankUp
                   ? AurelianPalette.champagneGold
@@ -82,31 +83,31 @@ class _BrandRankBarState extends State<BrandRankBar> {
             minHeight: 4.0,
           ),
         )
-        // Shimmer sweep animates on every build when value changes
-        .animate(
-          key: ValueKey<double>(widget.xpProgress),
-        )
-        .shimmer(
-          duration: const Duration(milliseconds: 900),
-          color: AurelianPalette.champagneGold.withValues(alpha: 0.4),
-          size: 0.5,
-        )
-        // Additional high-intensity shimmer specifically on rank-up (DIR-015)
-        .animate(target: _rankUpTriggered ? 1.0 : 0.0)
-        .shimmer(
-          duration: const Duration(milliseconds: 1200),
-          color: Colors.white.withValues(alpha: 0.8),
-          size: 0.8,
-        )
-        .boxShadow(
-          begin: const BoxShadow(color: Colors.transparent),
-          end: const BoxShadow(
-            color: AurelianPalette.champagneGold,
-            blurRadius: 12,
-            spreadRadius: 2,
-          ),
-          curve: Curves.elasticOut,
-        ),
+            // Shimmer sweep animates on every build when value changes
+            .animate(
+              key: ValueKey<double>(widget.xpProgress),
+            )
+            .shimmer(
+              duration: const Duration(milliseconds: 900),
+              color: AurelianPalette.champagneGold.withValues(alpha: 0.4),
+              size: 0.5,
+            )
+            // Additional high-intensity shimmer specifically on rank-up (DIR-015)
+            .animate(target: _rankUpTriggered ? 1.0 : 0.0)
+            .shimmer(
+              duration: const Duration(milliseconds: 1200),
+              color: Colors.white.withValues(alpha: 0.8),
+              size: 0.8,
+            )
+            .boxShadow(
+              begin: const BoxShadow(color: Colors.transparent),
+              end: const BoxShadow(
+                color: AurelianPalette.champagneGold,
+                blurRadius: 12,
+                spreadRadius: 2,
+              ),
+              curve: Curves.elasticOut,
+            ),
       ],
     );
   }

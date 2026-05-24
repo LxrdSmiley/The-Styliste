@@ -9,7 +9,7 @@ part 'talent.freezed.dart';
 part 'talent.g.dart';
 
 /// Talent tiers in ascending rarity
-/// 
+///
 /// Drop rates:
 /// - Rising Star: 60% (1 prestige on dupe)
 /// - Established: 30% (5 prestige on dupe)
@@ -39,7 +39,7 @@ extension TalentTierExtension on TalentTier {
         return 'Sovereign';
     }
   }
-  
+
   /// Tier color for UI
   Color get tierColor {
     switch (this) {
@@ -53,7 +53,7 @@ extension TalentTierExtension on TalentTier {
         return const Color(0xFFD4AF37); // Deep gold
     }
   }
-  
+
   /// Base drop rate percentage
   double get baseDropRate {
     switch (this) {
@@ -67,7 +67,7 @@ extension TalentTierExtension on TalentTier {
         return 0.5;
     }
   }
-  
+
   /// Prestige tokens earned on duplicate pull
   int get prestigeValue {
     switch (this) {
@@ -81,13 +81,13 @@ extension TalentTierExtension on TalentTier {
         return 50;
     }
   }
-  
+
   /// Cost in Luxe Tokens for casting pull
   static int get castingCost => 100;
-  
+
   /// Ten-pull cost (no discount per Alabaster Standard)
   static int get castingCostTen => 1000;
-  
+
   /// Pity threshold for guaranteed Sovereign
   static int get pityThreshold => 90;
 }
@@ -107,7 +107,7 @@ class Talent with _$Talent {
     @Default(<String>[]) List<String> signatureStyle,
     @Default(true) bool isActive,
   }) = _Talent;
-  
+
   factory Talent.fromJson(Map<String, dynamic> json) => _$TalentFromJson(json);
 }
 
@@ -135,8 +135,9 @@ class RosterTalent with _$RosterTalent {
     @Default('casting_call') String acquisitionSource,
     @Default(false) bool isFavorite,
   }) = _RosterTalent;
-  
-  factory RosterTalent.fromJson(Map<String, dynamic> json) => _$RosterTalentFromJson(json);
+
+  factory RosterTalent.fromJson(Map<String, dynamic> json) =>
+      _$RosterTalentFromJson(json);
 }
 
 extension RosterTalentExtension on RosterTalent {
@@ -153,12 +154,14 @@ class PullResult with _$PullResult {
     required String talentId,
     required String name,
     required TalentTier tier,
-    required bool isDupe, String? portraitUrl,
+    required bool isDupe,
+    String? portraitUrl,
     @Default(0) int prestigeValue,
     double? baseHypeMultiplier,
   }) = _PullResult;
-  
-  factory PullResult.fromJson(Map<String, dynamic> json) => _$PullResultFromJson(json);
+
+  factory PullResult.fromJson(Map<String, dynamic> json) =>
+      _$PullResultFromJson(json);
 }
 
 /// Complete casting pull result (single or ten)
@@ -171,8 +174,9 @@ class CastingResult with _$CastingResult {
     @Default(0) int prestigeEarned,
     String? message,
   }) = _CastingResult;
-  
-  factory CastingResult.fromJson(Map<String, dynamic> json) => _$CastingResultFromJson(json);
+
+  factory CastingResult.fromJson(Map<String, dynamic> json) =>
+      _$CastingResultFromJson(json);
 }
 
 /// Pity state tracking
@@ -186,14 +190,15 @@ class PityState with _$PityState {
     @Default(0) int totalPulls,
     DateTime? lastPullAt,
   }) = _PityState;
-  
-  factory PityState.fromJson(Map<String, dynamic> json) => _$PityStateFromJson(json);
-  
+
+  factory PityState.fromJson(Map<String, dynamic> json) =>
+      _$PityStateFromJson(json);
+
   /// Calculate progress to pity (0.0 - 1.0)
-  double get pityProgress => 
-    pullsSinceSovereign / TalentTierExtension.pityThreshold;
-  
+  double get pityProgress =>
+      pullsSinceSovereign / TalentTierExtension.pityThreshold;
+
   /// Pulls remaining until guaranteed Sovereign
-  int get pullsUntilPity => 
-    TalentTierExtension.pityThreshold - pullsSinceSovereign;
+  int get pullsUntilPity =>
+      TalentTierExtension.pityThreshold - pullsSinceSovereign;
 }

@@ -37,9 +37,7 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
     _gameTimer = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 30),
-    )
-      ..forward()
-      .then((_) => _endGame());
+    )..forward().then((_) => _endGame());
 
     // Spawn cards periodically
     _spawnCards();
@@ -50,28 +48,33 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
       if (!_gameOver && mounted) {
         setState(() {
           // Add to player side
-          _playerCards.add(_ResourceCard(
-            id: 'p_${DateTime.now().millisecondsSinceEpoch}',
-            type: math.Random().nextInt(4),
-            side: 'player',
-          ),);
+          _playerCards.add(
+            _ResourceCard(
+              id: 'p_${DateTime.now().millisecondsSinceEpoch}',
+              type: math.Random().nextInt(4),
+              side: 'player',
+            ),
+          );
 
           // Add to rival side (after delay)
           Future<void>.delayed(const Duration(milliseconds: 800), () {
             if (!_gameOver && mounted) {
               setState(() {
-                _rivalCards.add(_ResourceCard(
-                  id: 'r_${DateTime.now().millisecondsSinceEpoch}',
-                  type: math.Random().nextInt(4),
-                  side: 'rival',
-                ),);
+                _rivalCards.add(
+                  _ResourceCard(
+                    id: 'r_${DateTime.now().millisecondsSinceEpoch}',
+                    type: math.Random().nextInt(4),
+                    side: 'rival',
+                  ),
+                );
 
                 // Rival auto-claims after 3 seconds
                 Future<void>.delayed(const Duration(milliseconds: 3000), () {
                   if (!_gameOver && mounted) {
                     setState(() {
                       _rivalScore++;
-                      _rivalCards.removeWhere((_ResourceCard c) => c.id == _rivalCards.firstOrNull?.id);
+                      _rivalCards.removeWhere((_ResourceCard c) =>
+                          c.id == _rivalCards.firstOrNull?.id);
                     });
                   }
                 });
@@ -107,7 +110,9 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
     }
 
     // Wire to SupplyChainProvider for economic impact
-    ref.read(logisticsUpgradeProvider.notifier).applySupplierRaidResult(won: _won);
+    ref
+        .read(logisticsUpgradeProvider.notifier)
+        .applySupplierRaidResult(won: _won);
 
     Future<void>.delayed(const Duration(seconds: 2), () {
       if (mounted) {
@@ -239,7 +244,8 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
                   Container(
                     width: 100,
                     decoration: BoxDecoration(
-                      color: AurelianPalette.champagneGold.withValues(alpha: 0.1),
+                      color:
+                          AurelianPalette.champagneGold.withValues(alpha: 0.1),
                       border: Border.all(
                         color: AurelianPalette.champagneGold,
                         width: 2,
@@ -250,7 +256,9 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
                       onAcceptWithDetails: (DragTargetDetails<String> details) {
                         _onPlayerClaim(details.data);
                       },
-                      builder: (BuildContext context, List<String?> candidateData, List<dynamic> rejectedData) {
+                      builder: (BuildContext context,
+                          List<String?> candidateData,
+                          List<dynamic> rejectedData) {
                         return const Center(
                           child: Icon(
                             Icons.add_business,
@@ -277,7 +285,8 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
                           child: ListView.builder(
                             itemCount: _rivalCards.length,
                             itemBuilder: (BuildContext context, int index) {
-                              return _buildCard(_rivalCards[index], isPlayer: false);
+                              return _buildCard(_rivalCards[index],
+                                  isPlayer: false);
                             },
                           ),
                         ),
@@ -294,7 +303,9 @@ class _SupplierRaidScreenState extends ConsumerState<SupplierRaidScreen>
                 child: Text(
                   _won ? 'SUPPLIERS SECURED!' : 'RIVAL DOMINANCE',
                   style: TextStyle(
-                    color: _won ? AurelianPalette.champagneGold : AurelianPalette.danger,
+                    color: _won
+                        ? AurelianPalette.champagneGold
+                        : AurelianPalette.danger,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),

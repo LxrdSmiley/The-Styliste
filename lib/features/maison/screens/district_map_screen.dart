@@ -11,7 +11,7 @@ import '../models/fashion_district.dart';
 import '../providers/district_provider.dart';
 
 /// Abstract district map — the Alabaster War Room
-/// 
+///
 /// Features:
 /// - Ivory background with delicate city connection lines
 /// - 9 district nodes (pulsing if controlled)
@@ -21,17 +21,18 @@ class DistrictMapScreen extends ConsumerWidget {
   const DistrictMapScreen({super.key});
 
   // District positions on the abstract map (0-1000 coordinate space)
-  static const Map<String, Map<String, double>> _districtPositions = <String, Map<String, double>>{
+  static const Map<String, Map<String, double>> _districtPositions =
+      <String, Map<String, double>>{
     // New York (left cluster)
     'SoHo': <String, double>{'x': 150, 'y': 300},
     'Meatpacking': <String, double>{'x': 200, 'y': 400},
     'Williamsburg': <String, double>{'x': 280, 'y': 250},
-    
+
     // Tokyo (center cluster)
     'Ginza': <String, double>{'x': 500, 'y': 300},
     'Harajuku': <String, double>{'x': 480, 'y': 420},
     'Shibuya': <String, double>{'x': 550, 'y': 380},
-    
+
     // Paris (right cluster)
     'Le Marais': <String, double>{'x': 750, 'y': 280},
     'Saint-Germain': <String, double>{'x': 780, 'y': 380},
@@ -39,7 +40,8 @@ class DistrictMapScreen extends ConsumerWidget {
   };
 
   // City labels
-  static const Map<String, Map<String, double>> _cityLabels = <String, Map<String, double>>{
+  static const Map<String, Map<String, double>> _cityLabels =
+      <String, Map<String, double>>{
     'NEW YORK': <String, double>{'x': 200, 'y': 180},
     'TOKYO': <String, double>{'x': 510, 'y': 220},
     'PARIS': <String, double>{'x': 750, 'y': 200},
@@ -47,7 +49,7 @@ class DistrictMapScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<FashionDistrict>> districtsAsync = 
+    final AsyncValue<List<FashionDistrict>> districtsAsync =
         ref.watch(globalDistrictsProvider);
 
     return Scaffold(
@@ -73,7 +75,8 @@ class DistrictMapScreen extends ConsumerWidget {
           districts: districts,
         ),
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AurelianPalette.champagneGold),
+          child:
+              CircularProgressIndicator(color: AurelianPalette.champagneGold),
         ),
         error: (Object err, StackTrace stack) => const Center(
           child: Text(
@@ -111,7 +114,8 @@ class _DistrictMapView extends StatelessWidget {
             ),
 
             // --- City labels ---
-            ...DistrictMapScreen._cityLabels.entries.map((MapEntry<String, Map<String, double>> entry) {
+            ...DistrictMapScreen._cityLabels.entries
+                .map((MapEntry<String, Map<String, double>> entry) {
               return Positioned(
                 left: entry.value['x']! - 40,
                 top: entry.value['y']!,
@@ -130,7 +134,7 @@ class _DistrictMapView extends StatelessWidget {
 
             // --- District nodes ---
             ...districts.map((FashionDistrict district) {
-              final Map<String, double>? pos = 
+              final Map<String, double>? pos =
                   DistrictMapScreen._districtPositions[district.name];
               if (pos == null) return const SizedBox.shrink();
 
@@ -151,7 +155,7 @@ class _DistrictMapView extends StatelessWidget {
             // --- Aurelian Watermarks (30-day legacy) ---
             ...districts.where((FashionDistrict d) => d.hasLegacyWatermark).map(
               (FashionDistrict district) {
-                final Map<String, double>? pos = 
+                final Map<String, double>? pos =
                     DistrictMapScreen._districtPositions[district.name];
                 if (pos == null) return const SizedBox.shrink();
 
@@ -194,7 +198,7 @@ class _DistrictNode extends StatelessWidget {
         height: 60.0,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: isControlled 
+          color: isControlled
               ? AurelianPalette.softRose.withValues(alpha: 0.2)
               : AurelianPalette.alabaster,
           border: Border.all(
@@ -259,7 +263,7 @@ class _DistrictNode extends StatelessWidget {
   }
 
   void _showDistrictDetails(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: AurelianPalette.ivory,
       shape: const RoundedRectangleBorder(
@@ -363,7 +367,8 @@ class _DistrictDetailsSheet extends StatelessWidget {
               ),
               if (district.hasLegacyWatermark)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12.0, vertical: 6.0),
                   decoration: BoxDecoration(
                     color: AurelianPalette.champagneGold.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8.0),
@@ -387,9 +392,11 @@ class _DistrictDetailsSheet extends StatelessWidget {
 
           // Status
           if (district.isControlled) ...<Widget>[
-            _buildInfoRow('Controller', district.controllingMaisonId ?? 'Unknown'),
+            _buildInfoRow(
+                'Controller', district.controllingMaisonId ?? 'Unknown'),
             _buildInfoRow('Days Held', '${district.daysControlled} days'),
-            _buildInfoRow('Defense Multiplier', district.defenseMultiplierDisplay),
+            _buildInfoRow(
+                'Defense Multiplier', district.defenseMultiplierDisplay),
           ] else ...<Widget>[
             Container(
               padding: const EdgeInsets.all(16.0),

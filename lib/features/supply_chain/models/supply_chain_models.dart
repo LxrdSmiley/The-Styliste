@@ -124,4 +124,3 @@ class LogisticsUpgrade with _$LogisticsUpgrade {
   /// Capacity increase amount
   int get capacityIncrease => (newCapacity / 1.5 * 0.5).round();
 }
-

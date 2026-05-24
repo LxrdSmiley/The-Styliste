@@ -18,7 +18,7 @@ typedef OnHoldCancel = void Function();
 typedef OnHoldProgress = void Function(double progress);
 
 /// HoldToConfirmWidget — Biometric-style confirmation button
-/// 
+///
 /// Usage:
 /// ```dart
 /// HoldToConfirmWidget(
@@ -29,7 +29,8 @@ typedef OnHoldProgress = void Function(double progress);
 /// ```
 class HoldToConfirmWidget extends StatefulWidget {
   const HoldToConfirmWidget({
-    required this.label, super.key,
+    required this.label,
+    super.key,
     this.subLabel,
     this.onComplete,
     this.onCancel,
@@ -99,10 +100,12 @@ class _HoldToConfirmWidgetState extends State<HoldToConfirmWidget>
         if (_startTime == null) return;
 
         final Duration elapsed = DateTime.now().difference(_startTime!);
-        final double newProgress = elapsed.inMilliseconds / widget.duration.inMilliseconds;
+        final double newProgress =
+            elapsed.inMilliseconds / widget.duration.inMilliseconds;
 
         // Haptic heartbeat
-        if (elapsed.inMilliseconds % widget.hapticInterval.inMilliseconds < 50) {
+        if (elapsed.inMilliseconds % widget.hapticInterval.inMilliseconds <
+            50) {
           HapticFeedback.heavyImpact();
         }
 
@@ -156,7 +159,8 @@ class _HoldToConfirmWidgetState extends State<HoldToConfirmWidget>
 
   @override
   Widget build(BuildContext context) {
-    final Color bgColor = widget.backgroundColor ?? AurelianPalette.champagneGold;
+    final Color bgColor =
+        widget.backgroundColor ?? AurelianPalette.champagneGold;
     final Color fgColor = widget.foregroundColor ?? AurelianPalette.textPrimary;
     final double opacity = 0.3 + (_progress * 0.7);
 
@@ -167,9 +171,8 @@ class _HoldToConfirmWidgetState extends State<HoldToConfirmWidget>
       child: AnimatedBuilder(
         animation: _pulseController,
         builder: (BuildContext context, Widget? child) {
-          final double scale = _isHolding 
-              ? 1.0 + (_pulseController.value * 0.05) 
-              : 1.0;
+          final double scale =
+              _isHolding ? 1.0 + (_pulseController.value * 0.05) : 1.0;
 
           return Transform.scale(
             scale: scale,

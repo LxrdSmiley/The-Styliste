@@ -84,8 +84,7 @@ class SupabaseEconomyRepository implements EconomyRepository {
         .stream(primaryKey: <String>['brand_id'])
         .eq('brand_id', brandId)
         .map(
-          (List<Map<String, dynamic>> rows) =>
-              BrandEquity.fromJson(rows.first),
+          (List<Map<String, dynamic>> rows) => BrandEquity.fromJson(rows.first),
         );
   }
 }

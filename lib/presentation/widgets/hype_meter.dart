@@ -15,9 +15,8 @@ class HypeMeter extends StatelessWidget {
   Widget build(BuildContext context) {
     final double normalised = (hypeValue / 100.0).clamp(0.0, 1.0);
     final bool isPeak = normalised >= 0.9;
-    final Color meterColor = isPeak
-        ? AurelianPalette.champagneGold
-        : AurelianPalette.softRose;
+    final Color meterColor =
+        isPeak ? AurelianPalette.champagneGold : AurelianPalette.softRose;
 
     final Widget bar = ClipRRect(
       borderRadius: const BorderRadius.all(Radius.circular(4.0)),
@@ -69,9 +68,7 @@ class HypeMeter extends StatelessWidget {
                   color: AurelianPalette.champagneGold.withValues(alpha: 0.6),
                   size: 0.6,
                 )
-            : bar
-                .animate(key: ValueKey<double>(hypeValue))
-                .shimmer(
+            : bar.animate(key: ValueKey<double>(hypeValue)).shimmer(
                   duration: const Duration(milliseconds: 700),
                   color: AurelianPalette.softRose.withValues(alpha: 0.3),
                   size: 0.4,

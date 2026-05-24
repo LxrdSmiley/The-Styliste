@@ -48,7 +48,8 @@ abstract final class SupabaseConstants {
 
   // --- Phase 7: Maison District Warfare (GDD v6) ---
   static const String tableFashionDistricts = 'fashion_districts';
-  static const String tableDistrictLegacyWatermarks = 'district_legacy_watermarks';
+  static const String tableDistrictLegacyWatermarks =
+      'district_legacy_watermarks';
   static const String tableDistrictTakeoverLog = 'district_takeover_log';
 
   // --- Phase 8: Aurelian Ascension (GDD v6 §3.5) ---
@@ -71,25 +72,26 @@ abstract final class SupabaseConstants {
   static const String fnTrendDecay = 'trend-decay';
 
   // --- RPC Functions ---
-  static const String fnCalculateTrendTsunami = 'calculate_global_trend_tsunami';
+  static const String fnCalculateTrendTsunami =
+      'calculate_global_trend_tsunami';
   static const String fnUnlockJointVenture = 'unlock_joint_venture';
   static const String fnExecuteMemorialization = 'execute_memorialization';
   static const String fnGetSovereignMultiplier = 'get_sovereign_multiplier';
   static const String fnExecuteSovereignGenesis = 'execute_sovereign_genesis';
-  
+
   // --- Directive H: Crisis Engine RPCs ---
   static const String fnApplyKintsugiRepair = 'apply_kintsugi_repair';
   static const String fnApplyPublicApology = 'apply_public_apology';
   static const String fnTriggerScandal = 'trigger_scandal';
-  
+
   // --- Directive I: Sovereign Talent RPCs ---
   static const String fnExecuteCastingPull = 'execute_casting_pull';
-  
+
   // --- Directive J: Aurelian Gala RPCs ---
   static const String fnSubmitToGala = 'submit_to_gala';
   static const String fnCastGalaVote = 'cast_gala_vote';
   static const String fnGetGalaLeaderboard = 'get_gala_leaderboard';
-  
+
   // --- Directive K: The Archive RPCs ---
   static const String fnExecuteArchivePurchase = 'execute_archive_purchase';
   static const String fnListOnArchive = 'list_on_archive';
@@ -97,23 +99,23 @@ abstract final class SupabaseConstants {
 
   // --- Archive Tables ---
   static const String tableProvenanceLedger = 'provenance_ledger';
-  
+
   // --- Directive L: Supply Chain RPCs ---
   static const String fnProcessIdleIncome = 'process_idle_income';
   static const String fnExecuteLiquidation = 'execute_liquidation';
   static const String fnUpgradeLogistics = 'upgrade_logistics';
-  
+
   // --- Directive M: The Aurelian Storefront RPCs ---
   static const String fnVerifyAndGrantLuxe = 'verify_and_grant_luxe';
   static const String fnRecordFailedTransaction = 'record_failed_transaction';
-  
+
   // --- Directive N: Telemetry & Retention RPCs ---
   static const String fnRecordCheckIn = 'record_check_in';
   static const String fnLogTelemetryEvent = 'log_telemetry_event';
   static const String fnBatchLogTelemetry = 'batch_log_telemetry';
   static const String fnDetectEconomyAnomaly = 'detect_economy_anomaly';
   static const String fnRegisterFcmToken = 'register_fcm_token';
-  
+
   // --- Tables ---
   static const String tableFiatTransactions = 'fiat_transactions';
   static const String tableTelemetryEvents = 'telemetry_events';

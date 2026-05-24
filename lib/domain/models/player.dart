@@ -65,7 +65,7 @@ extension HqCityApi on HqCity {
       };
 }
 
-@Freezed(fromJson: true, toJson: true)
+@freezed
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Player with _$Player {
   const factory Player({
@@ -92,9 +92,6 @@ class Player with _$Player {
   const Player._();
 
   factory Player.fromJson(Map<String, dynamic> json) => _$PlayerFromJson(json);
-
-  @override
-  Map<String, dynamic> toJson() => _$PlayerToJson(this);
 
   /// Can unlock Joint Venture at Rank 50
   bool get canUnlockJointVenture => brandRank >= 50 && !isJointVenture;

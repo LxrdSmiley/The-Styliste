@@ -8,11 +8,10 @@ part 'trend_tsunami.freezed.dart';
 part 'trend_tsunami.g.dart';
 
 /// Represents a single tag within the active Trend Tsunami
-/// 
+///
 /// The Trend Tsunami is a 48-hour wave of aesthetic dominance calculated
-/// from global player behavior. Tags are ranked:
-/// - Rank 1 (Crest): 2.5x multiplier
-/// - Rank 2-3 (Surge): 1.5x multiplier
+/// from global player behavior. Matching tags receive a 1.5x multiplier.
+/// Rank 1 is the Crest for display priority; ranks 2-3 are Surge tags.
 @freezed
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class TrendTsunami with _$TrendTsunami {
@@ -32,8 +31,8 @@ class TrendTsunami with _$TrendTsunami {
   factory TrendTsunami.fromJson(Map<String, Object?> json) =>
       _$TrendTsunamiFromJson(json);
 
-  /// Returns true if this tag is the Crest (rank 1, 2.5x multiplier)
-  bool get isCrest => rank == 1 && multiplier == 2.5;
+  /// Returns true if this tag is the Crest (rank 1 display priority)
+  bool get isCrest => rank == 1 && multiplier == 1.5;
 
   /// Returns true if this tag is a Surge tag (rank 2-3, 1.5x multiplier)
   bool get isSurge => rank > 1 && multiplier == 1.5;
@@ -62,7 +61,7 @@ class TrendTsunami with _$TrendTsunami {
   /// Returns true if this tsunami has expired
   bool get isExpired => DateTime.now().toUtc().isAfter(expiresAt);
 
-  /// Returns the multiplier as a display string (e.g., "2.5x", "1.5x")
+  /// Returns the multiplier as a display string (e.g., "1.5x")
   String get multiplierDisplay => '${multiplier.toStringAsFixed(1)}x';
 
   /// Check if a given tag matches this tsunami tag

@@ -42,7 +42,8 @@ class AscensionState {
     bool clearError = false,
   }) {
     return AscensionState(
-      isUnlockingJointVenture: isUnlockingJointVenture ?? this.isUnlockingJointVenture,
+      isUnlockingJointVenture:
+          isUnlockingJointVenture ?? this.isUnlockingJointVenture,
       isMemorializing: isMemorializing ?? this.isMemorializing,
       holdProgress: holdProgress ?? this.holdProgress,
       lastResult: lastResult ?? this.lastResult,
@@ -72,7 +73,8 @@ class AscensionResult {
       sovereignCount: json['sovereign_count'] as int?,
       statueTier: json['statue_tier'] != null
           ? StatueTier.values.firstWhere(
-              (StatueTier t) => t.name == (json['statue_tier'] as String).toLowerCase(),
+              (StatueTier t) =>
+                  t.name == (json['statue_tier'] as String).toLowerCase(),
               orElse: () => StatueTier.quartz,
             )
           : null,
@@ -136,8 +138,9 @@ class AscensionNotifier extends StateNotifier<AscensionState> {
       const Duration(milliseconds: 50),
       (Timer timer) {
         final Duration elapsed = DateTime.now().difference(startTime);
-        final double progress = (elapsed.inMilliseconds / _holdDuration.inMilliseconds)
-            .clamp(0.0, 1.0);
+        final double progress =
+            (elapsed.inMilliseconds / _holdDuration.inMilliseconds)
+                .clamp(0.0, 1.0);
 
         // Haptic heartbeat every second
         if (elapsed.inMilliseconds % _hapticInterval.inMilliseconds < 50) {

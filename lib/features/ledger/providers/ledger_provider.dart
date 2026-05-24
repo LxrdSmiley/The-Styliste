@@ -7,7 +7,7 @@ import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/providers/mock_auth_provider.dart';
+import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/store.dart';
 
@@ -23,8 +23,7 @@ final StreamProvider<List<Store>> ledgerStoresStreamProvider =
       .stream(primaryKey: <String>['id'])
       .eq('player_id', uid)
       .map(
-        (List<Map<String, dynamic>> rows) =>
-            rows.map(Store.fromJson).toList(),
+        (List<Map<String, dynamic>> rows) => rows.map(Store.fromJson).toList(),
       );
 });
 
@@ -58,7 +57,9 @@ class UpgradeStoreState {
       UpgradeStoreState(
         upgradingStoreId:
             clearUpgrading ? null : (upgradingStoreId ?? this.upgradingStoreId),
-        optimisticBalance: clearUpgrading ? null : (optimisticBalance ?? this.optimisticBalance),
+        optimisticBalance: clearUpgrading
+            ? null
+            : (optimisticBalance ?? this.optimisticBalance),
         errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       );
 }
@@ -150,20 +151,22 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
   }
 
   /// Apply Power Move Combo: store multiplier for next liquidation
-  Future<Map<String, dynamic>> applyPowerMoveCombo({required double multiplier}) async {
+  Future<Map<String, dynamic>> applyPowerMoveCombo(
+      {required double multiplier}) async {
     try {
       await SupabaseService.client
           .from(SupabaseConstants.tableBrandState)
           .update(<String, dynamic>{
-            'pending_power_move_multiplier': multiplier,
-            'power_move_expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
-          })
-          .eq('player_id', SupabaseService.client.auth.currentUser!.id);
+        'pending_power_move_multiplier': multiplier,
+        'power_move_expires_at':
+            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+      }).eq('player_id', SupabaseService.client.auth.currentUser!.id);
 
       return <String, dynamic>{
         'success': true,
         'multiplier': multiplier,
-        'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+        'expires_at':
+            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
       };
     } catch (e) {
       return <String, dynamic>{
@@ -174,7 +177,8 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
   }
 
   /// Apply Hostile Takeover result: inject 5000 Capital if 100% ownership
-  Future<Map<String, dynamic>> applyTakeoverResult({required double finalPct}) async {
+  Future<Map<String, dynamic>> applyTakeoverResult(
+      {required double finalPct}) async {
     if (finalPct != 100.0) {
       return <String, dynamic>{
         'success': false,

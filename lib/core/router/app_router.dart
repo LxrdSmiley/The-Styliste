@@ -43,9 +43,11 @@ abstract final class AppRouter {
   // --- Route names ---
   static const String onboardingAurelianGate = '/onboarding/aurelian-gate';
   static const String onboardingOriginScript = '/onboarding/origin-script';
-  static const String onboardingSovereignRegistry = '/onboarding/sovereign-registry';
+  static const String onboardingSovereignRegistry =
+      '/onboarding/sovereign-registry';
   static const String onboardingBrandSelection = '/onboarding/brand-selection';
-  static const String onboardingAvatarCustomiser = '/onboarding/avatar-customiser';
+  static const String onboardingAvatarCustomiser =
+      '/onboarding/avatar-customiser';
   static const String onboardingCareerPath = '/onboarding/career-path';
   static const String onboardingWhatsNext = '/onboarding/whats-next';
 
@@ -64,19 +66,19 @@ abstract final class AppRouter {
   static const String arTryon = '/ar-tryon';
   static const String shop = '/shop';
   static const String hallOfSovereigns = '/hall-of-sovereigns';
-  
+
   // --- Directive H: Crisis Engine ---
   static const String crisisKintsugi = '/crisis/kintsugi';
-  
+
   // --- Directive I: Sovereign Talent ---
   static const String castingRoom = '/casting-room';
-  
+
   // --- Directive J: Aurelian Gala ---
   static const String galaRunway = '/gala/runway';
-  
+
   // --- Directive K: The Archive ---
   static const String archiveMarket = '/archive/market';
-  
+
   // --- Directive M: The Aurelian Storefront ---
   static const String aurelianStorefront = '/store/aurelian-storefront';
 
@@ -145,8 +147,11 @@ abstract final class AppRouter {
       // StatefulShellRoute keeps HQ, Feed, Maison branch trees alive across switches.
       // Atelier / Ledger are GoRoutes pushed on top of the shell.
       StatefulShellRoute.indexedStack(
-        builder: (BuildContext context, GoRouterState state,
-            StatefulNavigationShell navigationShell,) {
+        builder: (
+          BuildContext context,
+          GoRouterState state,
+          StatefulNavigationShell navigationShell,
+        ) {
           return MainShell(
             navigationShell: navigationShell,
             player: null, // Shell reads player internally from HqScreen stream.
@@ -243,7 +248,7 @@ abstract final class AppRouter {
         builder: (BuildContext context, GoRouterState state) =>
             const DistrictMapScreen(),
       ),
-      
+
       // --- Directive O: Mogul Terminals ---
       GoRoute(
         path: bank,
@@ -262,35 +267,35 @@ abstract final class AppRouter {
         builder: (BuildContext context, GoRouterState state) =>
             const HallOfSovereignsScreen(),
       ),
-      
+
       // --- Directive H: Crisis Engine Routes ---
       GoRoute(
         path: crisisKintsugi,
         builder: (BuildContext context, GoRouterState state) =>
             const KintsugiRepairScreen(),
       ),
-      
+
       // --- Directive I: Sovereign Talent Routes ---
       GoRoute(
         path: castingRoom,
         builder: (BuildContext context, GoRouterState state) =>
             const CastingRoomScreen(),
       ),
-      
+
       // --- Directive J: Aurelian Gala Routes ---
       GoRoute(
         path: galaRunway,
         builder: (BuildContext context, GoRouterState state) =>
             const GalaRunwayScreen(),
       ),
-      
+
       // --- Directive K: The Archive Routes ---
       GoRoute(
         path: archiveMarket,
         builder: (BuildContext context, GoRouterState state) =>
             const ArchiveMarketScreen(),
       ),
-      
+
       // --- Directive M: The Aurelian Storefront Routes ---
       GoRoute(
         path: aurelianStorefront,

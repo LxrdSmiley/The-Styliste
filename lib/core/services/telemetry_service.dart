@@ -1,6 +1,6 @@
 // Directive N — Telemetry Service
 // GDD §8.15, §9.9 — Analytics and anomaly detection engine
-// 
+//
 // Every notification, every check-in, every economic spike logged
 // Server-authoritative with client-side batching for performance
 
@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
-
 
 // =============================================================================
 // Telemetry Service — Singleton
@@ -26,7 +25,7 @@ class TelemetryService {
   final Uuid _uuid = const Uuid();
   final List<TelemetryEvent> _eventBuffer = <TelemetryEvent>[];
   final List<TelemetryEvent> _pendingQueue = <TelemetryEvent>[];
-  
+
   Timer? _flushTimer;
   bool _initialized = false;
   String? _currentSessionId;
@@ -268,15 +267,17 @@ class TelemetryService {
     try {
       final List<Map<String, dynamic>> eventsData = _pendingQueue
           .where((TelemetryEvent e) => e.playerId == playerId)
-          .map((TelemetryEvent e) => <String, dynamic>{
-                'player_id': e.playerId,
-                'event_type': e.eventType,
-                'event_name': e.eventName,
-                'payload': e.payload,
-                'session_id': e.sessionId,
-                'device_info': e.deviceInfo,
-                'occurred_at': e.occurredAt.toIso8601String(),
-              },)
+          .map(
+            (TelemetryEvent e) => <String, dynamic>{
+              'player_id': e.playerId,
+              'event_type': e.eventType,
+              'event_name': e.eventName,
+              'payload': e.payload,
+              'session_id': e.sessionId,
+              'device_info': e.deviceInfo,
+              'occurred_at': e.occurredAt.toIso8601String(),
+            },
+          )
           .toList();
 
       if (eventsData.isEmpty) return;
@@ -293,9 +294,9 @@ class TelemetryService {
       // Clear sent events from pending queue
       _pendingQueue.removeWhere(
         (TelemetryEvent e) => eventsData.any(
-          (Map<String, dynamic> d) => 
-            d['event_name'] == e.eventName && 
-            d['occurred_at'] == e.occurredAt.toIso8601String(),
+          (Map<String, dynamic> d) =>
+              d['event_name'] == e.eventName &&
+              d['occurred_at'] == e.occurredAt.toIso8601String(),
         ),
       );
     } catch (e) {
@@ -326,7 +327,8 @@ class TelemetryEvent {
     required this.eventType,
     required this.eventName,
     required this.payload,
-    required this.occurredAt, this.sessionId,
+    required this.occurredAt,
+    this.sessionId,
     this.deviceInfo,
   });
 
@@ -343,7 +345,7 @@ class TelemetryEvent {
 // =============================================================================
 // SQL RPC for Batch Logging (add to telemetry migration)
 // =============================================================================
-// 
+//
 // CREATE OR REPLACE FUNCTION batch_log_telemetry(p_events JSONB[])
 // RETURNS VOID
 // LANGUAGE plpgsql
@@ -351,7 +353,7 @@ class TelemetryEvent {
 // AS $$
 // BEGIN
 //   INSERT INTO telemetry_events (player_id, event_type, event_name, payload, session_id, device_info, occurred_at)
-//   SELECT 
+//   SELECT
 //     (event->>'player_id')::UUID,
 //     event->>'event_type',
 //     event->>'event_name',

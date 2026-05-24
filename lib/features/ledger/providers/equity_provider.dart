@@ -20,8 +20,8 @@ class EquityState {
     this.activeTakeover,
   });
 
-  final double stockPrice;      // Derived from Hype Score * 1.5
-  final double marketShare;     // Percentage of global market
+  final double stockPrice; // Derived from Hype Score * 1.5
+  final double marketShare; // Percentage of global market
   final bool isLoading;
   final String? errorMessage;
   final TakeoverState? activeTakeover;
@@ -40,9 +40,8 @@ class EquityState {
       marketShare: marketShare ?? this.marketShare,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-      activeTakeover: clearTakeover
-          ? null
-          : (activeTakeover ?? this.activeTakeover),
+      activeTakeover:
+          clearTakeover ? null : (activeTakeover ?? this.activeTakeover),
     );
   }
 }
@@ -59,8 +58,8 @@ class TakeoverState {
   final String targetBrandId;
   final String targetName;
   final double targetStockPrice;
-  final double ownershipPct;  // 0-100
-  final int round;            // 1-5
+  final double ownershipPct; // 0-100
+  final int round; // 1-5
 }
 
 // =============================================================================
@@ -89,7 +88,7 @@ class EquityNotifier extends StateNotifier<EquityState> {
         targetBrandId: targetBrandId,
         targetName: targetName,
         targetStockPrice: targetStockPrice,
-        ownershipPct: 50.0,  // Starts at 50% (tug-of-war)
+        ownershipPct: 50.0, // Starts at 50% (tug-of-war)
         round: 1,
       ),
     );
@@ -116,7 +115,8 @@ class EquityNotifier extends StateNotifier<EquityState> {
   }
 
   /// Apply Hostile Takeover result: inject 5000 Capital if 100% ownership
-  Future<Map<String, dynamic>> applyTakeoverResult({required double finalPct}) async {
+  Future<Map<String, dynamic>> applyTakeoverResult(
+      {required double finalPct}) async {
     if (finalPct != 100.0) {
       return <String, dynamic>{
         'success': false,

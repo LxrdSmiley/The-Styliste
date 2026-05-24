@@ -142,7 +142,8 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .order('current_score', ascending: false)
           .range(_offset, _offset + _pageSize - 1);
 
-      final List<GalaSubmission> submissions = results.map((Map<String, dynamic> json) {
+      final List<GalaSubmission> submissions =
+          results.map((Map<String, dynamic> json) {
         // Flatten joined data
         final Map<String, dynamic> flat = Map<String, dynamic>.from(json);
         if (json['designs'] != null) {
@@ -194,7 +195,8 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .order('current_score', ascending: false)
           .range(_offset, _offset + _pageSize - 1);
 
-      final List<GalaSubmission> newSubmissions = results.map((Map<String, dynamic> json) {
+      final List<GalaSubmission> newSubmissions =
+          results.map((Map<String, dynamic> json) {
         final Map<String, dynamic> flat = Map<String, dynamic>.from(json);
         if (json['designs'] != null) {
           flat['design_name'] = json['designs']['name'];
@@ -230,7 +232,9 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
     state = state.copyWith(currentIndex: index);
 
     // Load more when approaching end
-    if (index >= state.submissions.length - 3 && state.hasMore && !state.isLoading) {
+    if (index >= state.submissions.length - 3 &&
+        state.hasMore &&
+        !state.isLoading) {
       loadMore();
     }
   }
@@ -246,13 +250,16 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
           .from('gala_submissions')
           .select('id, current_score, vote_count')
           .eq('event_id', _currentEventId!)
-          .inFilter('id', state.submissions.map((GalaSubmission s) => s.id).toList());
+          .inFilter(
+              'id', state.submissions.map((GalaSubmission s) => s.id).toList());
 
-      final Map<String, Map<String, dynamic>> scoreMap = <String, Map<String, dynamic>>{
+      final Map<String, Map<String, dynamic>> scoreMap =
+          <String, Map<String, dynamic>>{
         for (final Map<String, dynamic> r in results) r['id'] as String: r,
       };
 
-      final List<GalaSubmission> updated = state.submissions.map((GalaSubmission sub) {
+      final List<GalaSubmission> updated =
+          state.submissions.map((GalaSubmission sub) {
         final Map<String, dynamic>? update = scoreMap[sub.id];
         if (update != null) {
           return sub.copyWith(
@@ -303,7 +310,8 @@ final FutureProviderFamily<VoteLimits, String> voteLimitsProvider =
 // Leaderboard Provider
 // =============================================================================
 
-final FutureProviderFamily<List<LeaderboardEntry>, String> galaLeaderboardProvider =
+final FutureProviderFamily<List<LeaderboardEntry>, String>
+    galaLeaderboardProvider =
     FutureProviderFamily<List<LeaderboardEntry>, String>(
   (Ref<AsyncValue<List<LeaderboardEntry>>> ref, String eventId) async {
     final SupabaseClient supabase = Supabase.instance.client;
@@ -360,7 +368,8 @@ class VoteCastingNotifier extends StateNotifier<VoteCastingState> {
     // Execute haptic first (immediate feedback)
     await tier.executeHaptic();
 
-    state = state.copyWith(isCasting: true, clearError: true, clearResult: true);
+    state =
+        state.copyWith(isCasting: true, clearError: true, clearResult: true);
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
@@ -393,7 +402,8 @@ class VoteCastingNotifier extends StateNotifier<VoteCastingState> {
   }
 }
 
-final StateNotifierProvider<VoteCastingNotifier, VoteCastingState> voteCastingProvider =
+final StateNotifierProvider<VoteCastingNotifier, VoteCastingState>
+    voteCastingProvider =
     StateNotifierProvider<VoteCastingNotifier, VoteCastingState>(
   (Ref<VoteCastingState> ref) => VoteCastingNotifier(),
 );
@@ -437,15 +447,18 @@ class SubmissionNotifier extends StateNotifier<SubmissionState> {
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
+      final String playerId = supabase.auth.currentUser!.id;
 
-      final Map<String, dynamic> result = await supabase.rpc(
+      final List<dynamic> rows = await supabase.rpc<List<dynamic>>(
         'submit_to_gala',
         params: <String, dynamic>{
-          'p_event_id': eventId,
+          'p_player_id': playerId,
           'p_design_id': designId,
-          'p_talent_id': talentId,
+          'p_event_id': eventId,
         },
       );
+      final Map<String, dynamic> result =
+          (rows.first as Map<dynamic, dynamic>).cast<String, dynamic>();
 
       if (result['success'] == true) {
         state = state.copyWith(
@@ -467,7 +480,8 @@ class SubmissionNotifier extends StateNotifier<SubmissionState> {
   }
 }
 
-final StateNotifierProvider<SubmissionNotifier, SubmissionState> submissionProvider =
+final StateNotifierProvider<SubmissionNotifier, SubmissionState>
+    submissionProvider =
     StateNotifierProvider<SubmissionNotifier, SubmissionState>(
   (Ref<SubmissionState> ref) => SubmissionNotifier(),
 );

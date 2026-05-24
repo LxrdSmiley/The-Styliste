@@ -5,6 +5,8 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,7 +21,7 @@ import '../../hq/providers/hq_provider.dart';
 import '../services/tarnish_calculator.dart';
 
 /// Kintsugi Repair Ritual Screen
-/// 
+///
 /// Visual experience:
 /// - Liquid gold shader fills fractures
 /// - Heavy haptics throughout
@@ -29,7 +31,8 @@ class KintsugiRepairScreen extends ConsumerStatefulWidget {
   const KintsugiRepairScreen({super.key});
 
   @override
-  ConsumerState<KintsugiRepairScreen> createState() => _KintsugiRepairScreenState();
+  ConsumerState<KintsugiRepairScreen> createState() =>
+      _KintsugiRepairScreenState();
 }
 
 class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
@@ -52,7 +55,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
-    
+
     _loadShader();
   }
 
@@ -83,20 +86,20 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
 
   Future<void> _executeRepair() async {
     if (_isRepairing) return;
-    
+
     setState(() => _isRepairing = true);
-    
+
     // Haptic ramp-up
     await _hapticRampUp();
-    
+
     // Start fill animation
-    _fillController.forward();
-    
+    unawaited(_fillController.forward());
+
     // Execute RPC
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       final String userId = supabase.auth.currentUser!.id;
-      
+
       final Map<String, dynamic> result = await supabase.rpc(
         SupabaseConstants.fnApplyKintsugiRepair,
         params: <String, dynamic>{
@@ -104,14 +107,14 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
           'p_prestige_token_cost': 10,
         },
       );
-      
+
       if (result['success'] == true) {
         final int newLevel = result['new_kintsugi_level'] as int;
         final int capitalSpent = result['capital_spent'] as int;
-        
+
         // Wait for animation to complete
         await Future<void>.delayed(const Duration(milliseconds: 2500));
-        
+
         if (mounted) {
           _showSuccessDialog(newLevel, capitalSpent);
         }
@@ -122,7 +125,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
       _handleError(e.toString());
     }
   }
-  
+
   void _handleError(String error) {
     _fillController.stop();
     _fillController.reset();
@@ -137,7 +140,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
       await HapticFeedback.heavyImpact();
       await Future<void>.delayed(const Duration(milliseconds: 300));
     }
-    
+
     // Continuous vibration during repair
     for (int i = 0; i < 10; i++) {
       await HapticFeedback.vibrate();
@@ -146,7 +149,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
   }
 
   void _showSuccessDialog(int newLevel, int capitalSpent) {
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext ctx) => AlertDialog(
@@ -225,7 +228,8 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
   Widget build(BuildContext context) {
     final AsyncValue<Brand> brandAsync = ref.watch(hqBrandStreamProvider);
     final double capitalCost = brandAsync.when(
-      data: (Brand b) => TarnishCalculator.calculateKintsugiCapitalCost(b.totalRevenue),
+      data: (Brand b) =>
+          TarnishCalculator.calculateKintsugiCapitalCost(b.totalRevenue),
       loading: () => 0.0,
       error: (_, __) => 0.0,
     );
@@ -237,16 +241,19 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
           // --- Liquid Gold Shader Background ---
           if (_shader != null)
             AnimatedBuilder(
-              animation: Listenable.merge(<Listenable>[_fillController, _pulseController]),
+              animation: Listenable.merge(
+                  <Listenable>[_fillController, _pulseController]),
               builder: (BuildContext context, Widget? child) {
                 _shader!
                   ..setFloat(0, _fillController.value * 3.0) // uTime
-                  ..setFloat(1, MediaQuery.of(context).size.width) // uResolution.x
-                  ..setFloat(2, MediaQuery.of(context).size.height) // uResolution.y
+                  ..setFloat(
+                      1, MediaQuery.of(context).size.width) // uResolution.x
+                  ..setFloat(
+                      2, MediaQuery.of(context).size.height) // uResolution.y
                   ..setFloat(3, 0.5) // uTouch.x (center)
                   ..setFloat(4, 0.5) // uTouch.y (center)
                   ..setFloat(5, 0.5 + _pulseController.value * 0.5); // uCharge
-                
+
                 return CustomPaint(
                   size: Size.infinite,
                   painter: _ShaderPainter(shader: _shader!),
@@ -255,7 +262,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
             )
           else if (_isLoading)
             const Center(child: CircularProgressIndicator()),
-          
+
           // --- Fracture Fill Animation Overlay ---
           AnimatedBuilder(
             animation: _fillController,
@@ -268,7 +275,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
               );
             },
           ),
-          
+
           // --- Content ---
           SafeArea(
             child: Padding(
@@ -296,9 +303,9 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
                       color: AurelianPalette.textSecondary,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 48.0),
-                  
+
                   // Cost breakdown
                   Container(
                     padding: const EdgeInsets.all(20.0),
@@ -324,7 +331,7 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
                       ],
                     ),
                   ),
-                  
+
                   if (_errorMessage != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 16.0),
@@ -337,9 +344,9 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
                         textAlign: TextAlign.center,
                       ),
                     ),
-                  
+
                   const SizedBox(height: 32.0),
-                  
+
                   // Execute button
                   GestureDetector(
                     onTap: _isRepairing ? null : _executeRepair,
@@ -399,9 +406,9 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16.0),
-                  
+
                   // Cancel button
                   TextButton(
                     onPressed: _isRepairing ? null : () => context.pop(),
@@ -458,7 +465,9 @@ class _CostRow extends StatelessWidget {
             fontFamily: 'JetBrainsMono',
             fontSize: 16.0,
             fontWeight: FontWeight.w600,
-            color: isAccent ? const Color(0xFFD4AF37) : AurelianPalette.textPrimary,
+            color: isAccent
+                ? const Color(0xFFD4AF37)
+                : AurelianPalette.textPrimary,
           ),
         ),
       ],
@@ -499,33 +508,30 @@ class FractureFillPainter extends CustomPainter {
       ..color = const Color(0xFF6B6B6B)
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
-    
+
     final Paint goldFillPaint = Paint()
       ..color = const Color(0xFFD4AF37).withValues(alpha: progress)
       ..strokeWidth = 2.0 + progress * 2.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-    
+
     // Draw sample fractures being filled
     final List<Offset> fractures = <Offset>[
       Offset(size.width * 0.2, size.height * 0.3),
       Offset(size.width * 0.7, size.height * 0.6),
       Offset(size.width * 0.4, size.height * 0.8),
     ];
-    
+
     for (final Offset start in fractures) {
       // Grey fracture line
       final Path fracture = Path()
         ..moveTo(start.dx, start.dy)
         ..lineTo(start.dx + 50, start.dy + 30)
         ..lineTo(start.dx + 80, start.dy + 20);
-      
+
       canvas.drawPath(fracture, fracturePaint);
-      
+
       // Gold fill (animated along path)
-      final double fillLength = 130 * progress;
-      final Path fillPath = Path();
-      
       // Simplified: draw gold segment at start
       if (progress > 0) {
         canvas.drawLine(

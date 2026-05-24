@@ -13,7 +13,7 @@ import '../../crisis/widgets/tarnish_overlay.dart';
 import '../theme/aurelian_hq_theme.dart';
 
 /// Glass-Walled Penthouse background with parallax depth
-/// 
+///
 /// Features:
 /// - Sensor-driven parallax (or simulated slow pan if sensors unavailable)
 /// - Rank-based window size and floor height
@@ -22,7 +22,9 @@ import '../theme/aurelian_hq_theme.dart';
 /// - Directive H: Integrated tarnish degradation overlay
 class GlassWalledPenthouse extends StatefulWidget {
   const GlassWalledPenthouse({
-    required this.rank, required this.child, super.key,
+    required this.rank,
+    required this.child,
+    super.key,
     this.playerId,
     this.tarnishLevel = 0,
     this.kintsugiLevel = 0,
@@ -32,9 +34,9 @@ class GlassWalledPenthouse extends StatefulWidget {
 
   final int rank;
   final Widget child;
-  final String? playerId;      // For seeded fracture generation
-  final int tarnishLevel;      // 0-100
-  final int kintsugiLevel;     // Permanent gold veins
+  final String? playerId; // For seeded fracture generation
+  final int tarnishLevel; // 0-100
+  final int kintsugiLevel; // Permanent gold veins
   final VoidCallback? onKintsugiRequest;
   final VoidCallback? onApologyRequest;
 
@@ -52,21 +54,22 @@ class _GlassWalledPenthouseState extends State<GlassWalledPenthouse>
   @override
   void initState() {
     super.initState();
-    
+
     // Simulated parallax animation (120 second cycle)
     _parallaxController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 120),
     )..repeat();
-    
+
     _parallaxController.addListener(_updateParallax);
-    
+
     // Attempt to get real accelerometer data
     _initSensors();
   }
-  
+
   void _initSensors() {
-    _accelerometerSubscription = accelerometerEventStream().listen((AccelerometerEvent event) {
+    _accelerometerSubscription =
+        accelerometerEventStream().listen((AccelerometerEvent event) {
       setState(() {
         // Map G-force to ±5% shift
         _parallaxX = (event.x / 9.8).clamp(-1.0, 1.0) * 0.05;
@@ -74,7 +77,7 @@ class _GlassWalledPenthouseState extends State<GlassWalledPenthouse>
       });
     });
   }
-  
+
   void _updateParallax() {
     // Gentle sine wave motion (simulated window view shift)
     final double time = _parallaxController.value * 2 * math.pi;
@@ -95,7 +98,7 @@ class _GlassWalledPenthouseState extends State<GlassWalledPenthouse>
   Widget build(BuildContext context) {
     final MaterialTier tier = AurelianHQTheme.materialTier(widget.rank);
     final double windowScale = AurelianHQTheme.windowScale(widget.rank);
-    
+
     return Container(
       decoration: const BoxDecoration(
         gradient: AurelianHQTheme.penthouseGradient,
@@ -107,23 +110,23 @@ class _GlassWalledPenthouseState extends State<GlassWalledPenthouse>
             parallaxX: _parallaxX * 2.0,
             parallaxY: _parallaxY * 2.0,
           ),
-          
+
           // --- Layer 2: Window frames ---
           _WindowFrameLayer(
             parallaxX: _parallaxX,
             parallaxY: _parallaxY,
             scale: windowScale,
           ),
-          
+
           // --- Layer 3: Sunlight streaming through ---
           _SunlightLayer(
             parallaxX: _parallaxX * 0.5,
             parallaxY: _parallaxY * 0.5,
           ),
-          
+
           // --- Layer 4: Marble surface reflections ---
           _MarbleReflectionLayer(tier: tier),
-          
+
           // --- Layer 5: Floor number indicator ---
           Positioned(
             top: 60.0,
@@ -138,7 +141,7 @@ class _GlassWalledPenthouseState extends State<GlassWalledPenthouse>
               ),
             ),
           ),
-          
+
           // --- Content layer with Tarnish Overlay (Directive H) ---
           TarnishOverlay(
             tarnishLevel: widget.tarnishLevel,
@@ -288,7 +291,7 @@ class _SkylinePainter extends CustomPainter {
     final Paint paint = Paint()
       ..color = const Color(0xFFD0D0D0)
       ..style = PaintingStyle.fill;
-    
+
     // Simple stylized building silhouettes
     final Path path = Path()
       ..moveTo(0.0, size.height)
@@ -307,7 +310,7 @@ class _SkylinePainter extends CustomPainter {
       ..lineTo(size.width * 0.9, size.height * 0.65)
       ..lineTo(size.width, size.height * 0.65)
       ..lineTo(size.width, size.height);
-    
+
     canvas.drawPath(path, paint);
   }
 
@@ -323,7 +326,7 @@ class _WindowFramePainter extends CustomPainter {
       ..color = const Color(0x40FFFFFF) // 25% white
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
-    
+
     // Main window frame (floor-to-ceiling)
     final Rect windowRect = Rect.fromLTWH(
       size.width * 0.05,
@@ -331,33 +334,33 @@ class _WindowFramePainter extends CustomPainter {
       size.width * 0.9,
       size.height * 0.6,
     );
-    
+
     canvas.drawRect(windowRect, framePaint);
-    
+
     // Window mullions (dividers)
     final Paint mullionPaint = Paint()
       ..color = const Color(0x30FFFFFF)
       ..strokeWidth = 1.0;
-    
+
     // Vertical mullion
     canvas.drawLine(
       Offset(size.width * 0.5, size.height * 0.1),
       Offset(size.width * 0.5, size.height * 0.7),
       mullionPaint,
     );
-    
+
     // Horizontal mullion
     canvas.drawLine(
       Offset(size.width * 0.05, size.height * 0.4),
       Offset(size.width * 0.95, size.height * 0.4),
       mullionPaint,
     );
-    
+
     // Glass reflection hint
     final Paint glassPaint = Paint()
       ..color = const Color(0x08F7E7CE) // 3% champagne
       ..style = PaintingStyle.fill;
-    
+
     canvas.drawRect(windowRect, glassPaint);
   }
 
@@ -373,27 +376,33 @@ class _MarbleTexturePainter extends CustomPainter {
       ..color = const Color(0x15E8D4B8) // 8% champagne
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
-    
+
     // Subtle marble veins
     final Path path = Path()
       ..moveTo(0.0, size.height * 0.5)
       ..cubicTo(
-        size.width * 0.3, size.height * 0.3,
-        size.width * 0.6, size.height * 0.7,
-        size.width, size.height * 0.4,
+        size.width * 0.3,
+        size.height * 0.3,
+        size.width * 0.6,
+        size.height * 0.7,
+        size.width,
+        size.height * 0.4,
       );
-    
+
     canvas.drawPath(path, veinPaint);
-    
+
     // Second vein
     final Path path2 = Path()
       ..moveTo(size.width * 0.2, size.height)
       ..cubicTo(
-        size.width * 0.4, size.height * 0.6,
-        size.width * 0.7, size.height * 0.8,
-        size.width * 0.9, 0.0,
+        size.width * 0.4,
+        size.height * 0.6,
+        size.width * 0.7,
+        size.height * 0.8,
+        size.width * 0.9,
+        0.0,
       );
-    
+
     canvas.drawPath(path2, veinPaint);
   }
 

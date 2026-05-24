@@ -31,8 +31,9 @@ class SupabasePlayerRepository implements PlayerRepository {
   Future<void> updateLastActive(String playerId, DateTime timestamp) async {
     await SupabaseService.client
         .from(SupabaseConstants.tablePlayers)
-        .update(<String, dynamic>{'last_active_at': timestamp.toIso8601String()})
-        .eq('id', playerId);
+        .update(<String, dynamic>{
+      'last_active_at': timestamp.toIso8601String()
+    }).eq('id', playerId);
   }
 
   @override
@@ -74,8 +75,7 @@ class SupabasePlayerRepository implements PlayerRepository {
 
     // Step 2: initialise brand_state row with path-appropriate idle rate.
     // Designer starts with hype-weighted idle; Mogul with revenue-weighted idle.
-    final double startingIdleRate =
-        path == CareerPath.designer ? 0.5 : 1.0;
+    final double startingIdleRate = path == CareerPath.designer ? 0.5 : 1.0;
 
     await SupabaseService.client
         .from(SupabaseConstants.tableBrandState)
@@ -98,4 +98,3 @@ class SupabasePlayerRepository implements PlayerRepository {
     return newPlayer;
   }
 }
-

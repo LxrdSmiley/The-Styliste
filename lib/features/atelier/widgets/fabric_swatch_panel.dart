@@ -34,7 +34,8 @@ class FabricSwatchPanel extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(width: 16.0),
         itemBuilder: (BuildContext context, int index) {
           final ({Color color, String label}) swatch = _swatches[index];
-          final bool isSelected = swatch.color.toARGB32() == selectedColor.toARGB32();
+          final bool isSelected =
+              swatch.color.toARGB32() == selectedColor.toARGB32();
           return GestureDetector(
             onTap: () => onSwatchSelected(swatch.color),
             child: AnimatedContainer(

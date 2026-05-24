@@ -64,7 +64,7 @@ class _GarmentCanvasState extends State<GarmentCanvas>
       'lib/shaders/cloth_physics.frag',
     );
 
-    // 1×1 ivory placeholder texture — blended with uDyeColor via mix() in shader.
+    // 1×1 ivory fallback texture — blended with uDyeColor via mix() in shader.
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas c = Canvas(recorder);
     c.drawRect(
@@ -187,23 +187,23 @@ class _GarmentPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     shader
-      ..setImageSampler(0, fabricTexture)           // uFabricTexture
-      ..setFloat(0, time)                           // uTime
-      ..setFloat(1, _density)                       // uDensity
-      ..setFloat(2, _stiffness)                     // uStiffness
-      ..setFloat(3, _elasticity)                    // uElasticity
-      ..setFloat(4, _friction)                      // uFriction
-      ..setFloat(5, _drapeCoeff)                    // uDrapeCoeff
-      ..setFloat(6, _bendResistance)                // uBendResistance
-      ..setFloat(7, size.width)                     // uResolution.x
-      ..setFloat(8, size.height)                    // uResolution.y
-      ..setFloat(9, 0.0)                            // uGravity.x
-      ..setFloat(10, -1.0)                          // uGravity.y (downward)
-      ..setFloat(11, smoothTouch.dx)                // uTouchPos.x
-      ..setFloat(12, smoothTouch.dy)                // uTouchPos.y
-      ..setFloat(13, dyeColor.r)                   // uDyeColor.r
-      ..setFloat(14, dyeColor.g)                   // uDyeColor.g
-      ..setFloat(15, dyeColor.b);                  // uDyeColor.b
+      ..setImageSampler(0, fabricTexture) // uFabricTexture
+      ..setFloat(0, time) // uTime
+      ..setFloat(1, _density) // uDensity
+      ..setFloat(2, _stiffness) // uStiffness
+      ..setFloat(3, _elasticity) // uElasticity
+      ..setFloat(4, _friction) // uFriction
+      ..setFloat(5, _drapeCoeff) // uDrapeCoeff
+      ..setFloat(6, _bendResistance) // uBendResistance
+      ..setFloat(7, size.width) // uResolution.x
+      ..setFloat(8, size.height) // uResolution.y
+      ..setFloat(9, 0.0) // uGravity.x
+      ..setFloat(10, -1.0) // uGravity.y (downward)
+      ..setFloat(11, smoothTouch.dx) // uTouchPos.x
+      ..setFloat(12, smoothTouch.dy) // uTouchPos.y
+      ..setFloat(13, dyeColor.r) // uDyeColor.r
+      ..setFloat(14, dyeColor.g) // uDyeColor.g
+      ..setFloat(15, dyeColor.b); // uDyeColor.b
 
     canvas.drawRect(
       Rect.fromLTWH(0.0, 0.0, size.width, size.height),

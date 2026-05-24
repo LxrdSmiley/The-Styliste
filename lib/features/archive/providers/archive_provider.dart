@@ -16,7 +16,8 @@ import '../services/provenance_calculator.dart';
 
 /// Active market listings (real-time)
 final StreamProvider<List<ArchiveListing>> archiveListingsProvider =
-    StreamProvider<List<ArchiveListing>>((Ref<AsyncValue<List<ArchiveListing>>> ref) {
+    StreamProvider<List<ArchiveListing>>(
+        (Ref<AsyncValue<List<ArchiveListing>>> ref) {
   final SupabaseClient supabase = Supabase.instance.client;
 
   return supabase
@@ -32,9 +33,12 @@ final StreamProvider<List<ArchiveListing>> archiveListingsProvider =
 
 /// Filtered listings by price range
 final ProviderFamily<AsyncValue<List<ArchiveListing>>, ({int min, int max})>
-    filteredListingsProvider = ProviderFamily<AsyncValue<List<ArchiveListing>>,
-        ({int min, int max})>((Ref<AsyncValue<List<ArchiveListing>>> ref, ({int min, int max}) range) {
-  final AsyncValue<List<ArchiveListing>> allListings = ref.watch(archiveListingsProvider);
+    filteredListingsProvider =
+    ProviderFamily<AsyncValue<List<ArchiveListing>>, ({int min, int max})>(
+        (Ref<AsyncValue<List<ArchiveListing>>> ref,
+            ({int min, int max}) range) {
+  final AsyncValue<List<ArchiveListing>> allListings =
+      ref.watch(archiveListingsProvider);
 
   return allListings.when(
     data: (List<ArchiveListing> listings) {
@@ -50,7 +54,8 @@ final ProviderFamily<AsyncValue<List<ArchiveListing>>, ({int min, int max})>
 
 /// User's own listings
 final FutureProvider<List<ArchiveListing>> myListingsProvider =
-    FutureProvider<List<ArchiveListing>>((Ref<AsyncValue<List<ArchiveListing>>> ref) async {
+    FutureProvider<List<ArchiveListing>>(
+        (Ref<AsyncValue<List<ArchiveListing>>> ref) async {
   final SupabaseClient supabase = Supabase.instance.client;
   final String? userId = supabase.auth.currentUser?.id;
 
@@ -71,7 +76,8 @@ final FutureProvider<List<ArchiveListing>> myListingsProvider =
 // =============================================================================
 
 /// Provenance history for specific design
-final FutureProviderFamily<List<ProvenanceRecord>, String> provenanceLedgerProvider =
+final FutureProviderFamily<List<ProvenanceRecord>, String>
+    provenanceLedgerProvider =
     FutureProviderFamily<List<ProvenanceRecord>, String>(
   (Ref<AsyncValue<List<ProvenanceRecord>>> ref, String designId) async {
     final SupabaseClient supabase = Supabase.instance.client;
@@ -128,7 +134,8 @@ class PurchaseNotifier extends StateNotifier<PurchaseState> {
   Future<void> purchase(String listingId) async {
     if (state.isPurchasing) return;
 
-    state = state.copyWith(isPurchasing: true, clearError: true, clearResult: true);
+    state =
+        state.copyWith(isPurchasing: true, clearError: true, clearResult: true);
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
@@ -231,7 +238,8 @@ class ListingNotifier extends StateNotifier<ListingState> {
   }) async {
     if (state.isLoading) return;
 
-    state = state.copyWith(isCreating: true, clearError: true, clearResult: true);
+    state =
+        state.copyWith(isCreating: true, clearError: true, clearResult: true);
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
@@ -261,7 +269,10 @@ class ListingNotifier extends StateNotifier<ListingState> {
         listingId: result['listing_id'] as String?,
         message: result['message'] as String?,
         minimumPrice: result['message']?.toString().contains('Minimum') ?? false
-            ? int.tryParse(RegExp(r'\d+').firstMatch(result['message'] as String)?.group(0) ?? '0')
+            ? int.tryParse(RegExp(r'\d+')
+                    .firstMatch(result['message'] as String)
+                    ?.group(0) ??
+                '0')
             : null,
       );
 
@@ -336,7 +347,8 @@ final FutureProvider<MarketStats> marketStatsProvider =
   final List<Map<String, dynamic>> volumeData = await supabase
       .from('provenance_ledger')
       .select('sale_price, platform_tax')
-      .gte('transferred_at', DateTime.now().subtract(const Duration(days: 1)).toIso8601String());
+      .gte('transferred_at',
+          DateTime.now().subtract(const Duration(days: 1)).toIso8601String());
 
   int totalVolume = 0;
   int taxBurned = 0;

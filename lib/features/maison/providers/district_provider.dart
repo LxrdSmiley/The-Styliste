@@ -7,14 +7,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/providers/mock_auth_provider.dart';
+import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../models/fashion_district.dart';
 
 part 'district_provider.g.dart';
 
 /// Real-time stream of all 9 fashion districts
-/// 
+///
 /// Updates automatically when:
 /// - Takeover occurs
 /// - Control changes
@@ -77,7 +77,8 @@ Stream<List<DistrictWatermark>> maisonWatermarks(Ref ref, String maisonId) {
       .eq('maison_id', maisonId)
       .map((List<Map<String, dynamic>> data) {
         return data
-            .map((Map<String, dynamic> json) => DistrictWatermark.fromJson(json))
+            .map(
+                (Map<String, dynamic> json) => DistrictWatermark.fromJson(json))
             .toList();
       });
 }
@@ -87,14 +88,12 @@ Stream<List<DistrictWatermark>> maisonWatermarks(Ref ref, String maisonId) {
 Stream<List<DistrictWatermark>> allWatermarks(Ref ref) {
   final SupabaseClient supabase = Supabase.instance.client;
 
-  return supabase
-      .from(SupabaseConstants.tableDistrictLegacyWatermarks)
-      .stream(primaryKey: const <String>['id'])
-      .map((List<Map<String, dynamic>> data) {
-        return data
-            .map((Map<String, dynamic> json) => DistrictWatermark.fromJson(json))
-            .toList();
-      });
+  return supabase.from(SupabaseConstants.tableDistrictLegacyWatermarks).stream(
+      primaryKey: const <String>['id']).map((List<Map<String, dynamic>> data) {
+    return data
+        .map((Map<String, dynamic> json) => DistrictWatermark.fromJson(json))
+        .toList();
+  });
 }
 
 /// Siege operation state
@@ -136,7 +135,7 @@ class DistrictSiegeNotifier extends StateNotifier<DistrictSiegeState> {
   DistrictSiegeNotifier() : super(const DistrictSiegeState());
 
   /// Initiate a siege on a district
-  /// 
+  ///
   /// [maisonId] — Attacking maison
   /// [districtId] — Target district
   /// [capitalBid] — Capital to commit (must have treasury >= bid)
@@ -197,7 +196,8 @@ final StateNotifierProvider<DistrictSiegeNotifier, DistrictSiegeState>
 );
 
 /// Provider for the current player's maison ID
-final FutureProvider<String?> playerMaisonIdProvider = FutureProvider<String?>((FutureProviderRef<String?> ref) async {
+final FutureProvider<String?> playerMaisonIdProvider =
+    FutureProvider<String?>((FutureProviderRef<String?> ref) async {
   final String uid = ref.watch(activeUidProvider);
 
   // First get the player's maison membership
@@ -222,7 +222,9 @@ final Provider<AsyncValue<int>> maisonDistrictCountProvider =
       data: (String? maisonId) {
         if (maisonId != null) {
           return AsyncValue.data(
-            districts.where((FashionDistrict d) => d.controllingMaisonId == maisonId).length,
+            districts
+                .where((FashionDistrict d) => d.controllingMaisonId == maisonId)
+                .length,
           );
         } else {
           // Solo player fallback
@@ -249,8 +251,10 @@ final Provider<AsyncValue<Map<String, double>>> cityDominanceProvider =
       final Map<String, double> dominance = <String, double>{};
 
       byCity.forEach((String city, List<FashionDistrict> cityDistricts) {
-        final int controlled = cityDistricts.where((FashionDistrict d) => d.isControlled).length;
-        dominance[city] = cityDistricts.isEmpty ? 0.0 : controlled / cityDistricts.length;
+        final int controlled =
+            cityDistricts.where((FashionDistrict d) => d.isControlled).length;
+        dominance[city] =
+            cityDistricts.isEmpty ? 0.0 : controlled / cityDistricts.length;
       });
 
       return AsyncValue.data(dominance);
@@ -261,7 +265,7 @@ final Provider<AsyncValue<Map<String, double>>> cityDominanceProvider =
 });
 
 /// Helper to calculate required bid to takeover a district
-/// 
+///
 /// Returns the minimum capital needed (considering defender power + defense multiplier)
 int calculateRequiredBid({
   required int defenderTreasury,
@@ -270,15 +274,18 @@ int calculateRequiredBid({
   required int daysDefenderHeld,
 }) {
   // Defense multiplier: +5% per day, max 2.5x
-  final double defenseMultiplier = (1.0 + (daysDefenderHeld * 0.05)).clamp(1.0, 2.5);
+  final double defenseMultiplier =
+      (1.0 + (daysDefenderHeld * 0.05)).clamp(1.0, 2.5);
 
   // Defender effective power
-  final double defenderPower = defenderTreasury * defenseMultiplier * (1.0 + defenderHype / 1000);
+  final double defenderPower =
+      defenderTreasury * defenseMultiplier * (1.0 + defenderHype / 1000);
 
   // Attacker needs bid where: bid * (1 + attackerHype/1000) > defenderPower
   // Solving for bid: bid > defenderPower / (1 + attackerHype/1000)
   final double attackerMultiplier = 1.0 + (attackerHype / 1000);
-  final double requiredBid = (defenderPower / attackerMultiplier) + 1; // +1 to ensure victory
+  final double requiredBid =
+      (defenderPower / attackerMultiplier) + 1; // +1 to ensure victory
 
   return requiredBid.ceil();
 }

@@ -15,7 +15,8 @@ class HostileTakeoverScreen extends ConsumerStatefulWidget {
   const HostileTakeoverScreen({super.key});
 
   @override
-  ConsumerState<HostileTakeoverScreen> createState() => _HostileTakeoverScreenState();
+  ConsumerState<HostileTakeoverScreen> createState() =>
+      _HostileTakeoverScreenState();
 }
 
 class _HostileTakeoverScreenState extends ConsumerState<HostileTakeoverScreen>
@@ -149,7 +150,8 @@ class _HostileTakeoverScreenState extends ConsumerState<HostileTakeoverScreen>
                     AnimatedBuilder(
                       animation: _gameTimer,
                       builder: (BuildContext context, Widget? child) {
-                        final int secondsLeft = (30 - (_gameTimer.value * 30)).ceil();
+                        final int secondsLeft =
+                            (30 - (_gameTimer.value * 30)).ceil();
                         return Text(
                           '00:${secondsLeft.toString().padLeft(2, '0')}',
                           style: const TextStyle(
@@ -183,7 +185,9 @@ class _HostileTakeoverScreenState extends ConsumerState<HostileTakeoverScreen>
                     : 'TAP TO ACQUIRE SHARES',
                 style: TextStyle(
                   color: _gameOver
-                      ? (_won ? AurelianPalette.champagneGold : AurelianPalette.danger)
+                      ? (_won
+                          ? AurelianPalette.champagneGold
+                          : AurelianPalette.danger)
                       : AurelianPalette.ivory,
                   letterSpacing: 2.0,
                 ),

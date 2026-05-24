@@ -34,7 +34,8 @@ final StreamProvider<SupplyChainState> supplyChainProvider =
 // Liquidation State Notifier
 // =============================================================================
 
-class LiquidationNotifier extends StateNotifier<AsyncValue<LiquidationResult?>> {
+class LiquidationNotifier
+    extends StateNotifier<AsyncValue<LiquidationResult?>> {
   LiquidationNotifier() : super(const AsyncValue.data(null));
 
   Future<void> liquidate() async {
@@ -103,7 +104,8 @@ class LiquidationNotifier extends StateNotifier<AsyncValue<LiquidationResult?>> 
 
       final Map<String, dynamic> data =
           Map<String, dynamic>.from(response.data as Map);
-      final int reward = ((data['reward'] as Map?)?['currency'] as num?)?.toInt() ?? 0;
+      final int reward =
+          ((data['reward'] as Map?)?['currency'] as num?)?.toInt() ?? 0;
 
       return <String, dynamic>{
         ...data,
@@ -174,7 +176,8 @@ class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
 
   /// Apply Supplier Raid result
   /// Win = 15% discount for 14 days, Loss = immediate halt
-  Future<Map<String, dynamic>> applySupplierRaidResult({required bool won}) async {
+  Future<Map<String, dynamic>> applySupplierRaidResult(
+      {required bool won}) async {
     try {
       final SupabaseClient supabase = Supabase.instance.client;
       if (supabase.auth.currentUser == null) {
@@ -240,7 +243,8 @@ final ProviderFamily<int, int> nextUpgradeCostProvider =
 // =============================================================================
 
 final FutureProvider<SupplyChainStats> supplyChainStatsProvider =
-    FutureProvider<SupplyChainStats>((Ref<AsyncValue<SupplyChainStats>> ref) async {
+    FutureProvider<SupplyChainStats>(
+        (Ref<AsyncValue<SupplyChainStats>> ref) async {
   final SupabaseClient supabase = Supabase.instance.client;
 
   // Get total capacity across all players
@@ -254,7 +258,8 @@ final FutureProvider<SupplyChainStats> supplyChainStatsProvider =
 
   for (final Map<String, dynamic> row in stats) {
     final int capacity = (row['warehouse_capacity'] as num?)?.toInt() ?? 5000;
-    final int inventory = (row['current_inventory_value'] as num?)?.toInt() ?? 0;
+    final int inventory =
+        (row['current_inventory_value'] as num?)?.toInt() ?? 0;
 
     totalCapacity += capacity;
     totalInventory += inventory;
@@ -266,7 +271,8 @@ final FutureProvider<SupplyChainStats> supplyChainStatsProvider =
     totalCapacity: totalCapacity,
     totalInventory: totalInventory,
     fullWarehouses: fullWarehouses,
-    globalFillPercent: totalCapacity > 0 ? (totalInventory / totalCapacity) * 100 : 0.0,
+    globalFillPercent:
+        totalCapacity > 0 ? (totalInventory / totalCapacity) * 100 : 0.0,
   );
 });
 

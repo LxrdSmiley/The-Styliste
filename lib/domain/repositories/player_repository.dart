@@ -11,7 +11,7 @@ abstract interface class PlayerRepository {
 
   /// Phase 1b — Initial state commitment.
   /// Writes Player row + initialises brand_state row in a single atomic call.
-  /// Uses mock UID until Firebase Auth is wired in Phase 2.
+  /// Uses the Supabase auth UUID established by the Firebase/Supabase bridge.
   Future<Player> createPlayerProfile({
     required String uid,
     required String brandName,

@@ -1,11 +1,9 @@
 // Directive G — Screen 5: Avatar Customizer
 // GDD §1.1 — Founder's visage customization
-// 3D base with horizontal scrolling chips for Face/Body/Hair/Fit
-// AI_UNCERTAINTY: flutter_3d_controller integration pending
+// Founder preview with horizontal scrolling chips for Face/Body/Hair/Fit
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,9 +13,9 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
 
 /// Avatar Customizer Screen — Founder's identity
-/// 
+///
 /// Features:
-/// - 3D stichless_mannequin.glb display (placeholder for now)
+/// - Founder preview driven by selected Face/Body/Hair/Fit values
 /// - Bottom sheet customization UI
 /// - 4 categories: Face, Body, Hair, Starting Fit
 /// - Horizontal scrolling chips for each
@@ -25,17 +23,26 @@ class AvatarCustomizerScreen extends ConsumerStatefulWidget {
   const AvatarCustomizerScreen({super.key});
 
   @override
-  ConsumerState<AvatarCustomizerScreen> createState() => _AvatarCustomizerScreenState();
+  ConsumerState<AvatarCustomizerScreen> createState() =>
+      _AvatarCustomizerScreenState();
 }
 
-class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen> {
+class _AvatarCustomizerScreenState
+    extends ConsumerState<AvatarCustomizerScreen> {
   int _selectedCategory = 0;
-  
-  final List<_CustomizationCategory> _categories = const <_CustomizationCategory>[
+
+  final List<_CustomizationCategory> _categories =
+      const <_CustomizationCategory>[
     _CustomizationCategory(
       name: 'FACE',
       icon: Icons.face,
-      options: <String>['Classic', 'Bold', 'Youthful', 'Refined', 'Avant-Garde'],
+      options: <String>[
+        'Classic',
+        'Bold',
+        'Youthful',
+        'Refined',
+        'Avant-Garde'
+      ],
     ),
     _CustomizationCategory(
       name: 'BODY',
@@ -67,7 +74,7 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
   void _selectOption(int categoryIndex, int optionIndex) {
     HapticFeedback.lightImpact();
     final OnboardingNotifier notifier = ref.read(onboardingProvider.notifier);
-    
+
     switch (categoryIndex) {
       case 0:
         notifier.updateAvatarFace(optionIndex);
@@ -86,7 +93,8 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
 
   @override
   Widget build(BuildContext context) {
-    final AvatarConfig? currentConfig = ref.watch(onboardingProvider).avatarConfig;
+    final AvatarConfig? currentConfig =
+        ref.watch(onboardingProvider).avatarConfig;
     final int faceIndex = currentConfig?.faceIndex ?? 0;
     final int bodyIndex = currentConfig?.bodyIndex ?? 0;
     final int hairIndex = currentConfig?.hairIndex ?? 0;
@@ -97,7 +105,7 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
       body: SafeArea(
         child: Stack(
           children: <Widget>[
-            // --- 3D Model / Avatar Preview (full screen behind) ---
+            // --- Avatar Preview (full screen behind) ---
             Positioned.fill(
               child: _AvatarPreview(
                 faceIndex: faceIndex,
@@ -106,7 +114,7 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
                 fitIndex: fitIndex,
               ),
             ),
-            
+
             // --- Header overlay ---
             Positioned(
               top: 0.0,
@@ -114,7 +122,7 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
               right: 0.0,
               child: _buildHeader(),
             ),
-            
+
             // --- Bottom customization sheet ---
             Positioned(
               bottom: 0.0,
@@ -211,9 +219,9 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
                 borderRadius: BorderRadius.circular(2.0),
               ),
             ),
-            
+
             const SizedBox(height: 24.0),
-            
+
             // Category tabs
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -221,7 +229,7 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
                 children: List.generate(_categories.length, (int index) {
                   final bool isSelected = _selectedCategory == index;
                   final _CustomizationCategory category = _categories[index];
-                  
+
                   return Expanded(
                     child: GestureDetector(
                       onTap: () {
@@ -235,13 +243,15 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
                         padding: const EdgeInsets.symmetric(vertical: 12.0),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AurelianPalette.champagneGold.withValues(alpha: 0.2)
+                              ? AurelianPalette.champagneGold
+                                  .withValues(alpha: 0.2)
                               : AurelianPalette.alabaster,
                           borderRadius: BorderRadius.circular(12.0),
                           border: Border.all(
                             color: isSelected
                                 ? AurelianPalette.champagneGold
-                                : AurelianPalette.textTertiary.withValues(alpha: 0.2),
+                                : AurelianPalette.textTertiary
+                                    .withValues(alpha: 0.2),
                           ),
                         ),
                         child: Icon(
@@ -257,9 +267,9 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
                 }),
               ),
             ),
-            
+
             const SizedBox(height: 24.0),
-            
+
             // Category label
             Text(
               _categories[_selectedCategory].name,
@@ -271,9 +281,9 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
                 color: AurelianPalette.textTertiary,
               ),
             ),
-            
+
             const SizedBox(height: 16.0),
-            
+
             // Options list
             SizedBox(
               height: 80.0,
@@ -282,10 +292,12 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
                 scrollDirection: Axis.horizontal,
                 itemCount: _categories[_selectedCategory].options.length,
                 itemBuilder: (BuildContext context, int index) {
-                  final String option = _categories[_selectedCategory].options[index];
-                  final int currentSelection = _getCurrentSelection(_selectedCategory);
+                  final String option =
+                      _categories[_selectedCategory].options[index];
+                  final int currentSelection =
+                      _getCurrentSelection(_selectedCategory);
                   final bool isSelected = currentSelection == index;
-                  
+
                   return Padding(
                     padding: const EdgeInsets.only(right: 12.0),
                     child: _OptionChip(
@@ -297,9 +309,9 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
                 },
               ),
             ),
-            
+
             const SizedBox(height: 24.0),
-            
+
             // Continue button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -313,7 +325,8 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
                     borderRadius: BorderRadius.circular(16.0),
                     boxShadow: <BoxShadow>[
                       BoxShadow(
-                        color: AurelianPalette.champagneGold.withValues(alpha: 0.3),
+                        color: AurelianPalette.champagneGold
+                            .withValues(alpha: 0.3),
                         blurRadius: 16.0,
                         spreadRadius: 2.0,
                         offset: const Offset(0.0, 8.0),
@@ -344,7 +357,7 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16.0),
           ],
         ),
@@ -369,7 +382,7 @@ class _AvatarCustomizerScreenState extends ConsumerState<AvatarCustomizerScreen>
 }
 
 // =============================================================================
-// 3D Avatar Preview (Placeholder)
+// Avatar Preview
 // =============================================================================
 
 class _AvatarPreview extends StatefulWidget {
@@ -410,10 +423,86 @@ class _AvatarPreviewState extends State<_AvatarPreview>
 
   @override
   Widget build(BuildContext context) {
-    // Flutter3DViewer for avatar preview
-    return Flutter3DViewer(
-      src: 'assets/models/stichless_mannequin.glb',
-      controller: Flutter3DController(),
+    final List<Color> palette = <Color>[
+      AurelianPalette.champagneGold,
+      AurelianPalette.softRose,
+      AurelianPalette.textSecondary,
+      AurelianPalette.textPrimary,
+      AurelianPalette.alabaster,
+    ];
+    final Color accent = palette[widget.fitIndex % palette.length];
+
+    return AnimatedBuilder(
+      animation: _rotateController,
+      builder: (BuildContext context, Widget? child) {
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: <Color>[
+                AurelianPalette.ivory,
+                accent.withValues(alpha: 0.12),
+              ],
+            ),
+          ),
+          child: Center(
+            child: Transform.rotate(
+              angle: (_rotateController.value - 0.5) * 0.12,
+              child: Container(
+                width: 220,
+                height: 360,
+                decoration: BoxDecoration(
+                  color: AurelianPalette.alabaster.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(110),
+                  border: Border.all(
+                    color: accent.withValues(alpha: 0.55),
+                    width: 2,
+                  ),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: accent.withValues(alpha: 0.2),
+                      blurRadius: 40,
+                      spreadRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.face_retouching_natural,
+                      size: 72,
+                      color: AurelianPalette.textPrimary.withValues(
+                        alpha: 0.72 + widget.faceIndex * 0.04,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Icon(
+                      Icons.accessibility_new,
+                      size: 124,
+                      color: accent.withValues(
+                        alpha: 0.45 + widget.bodyIndex * 0.05,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'FIT ${widget.fitIndex + 1} / HAIR ${widget.hairIndex + 1}',
+                      style: TextStyle(
+                        fontFamily: 'JetBrainsMono',
+                        fontSize: 10,
+                        letterSpacing: 2,
+                        color: AurelianPalette.textSecondary
+                            .withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -469,7 +558,9 @@ class _OptionChip extends StatelessWidget {
             fontSize: 11.0,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             letterSpacing: 1.5,
-            color: isSelected ? const Color(0xFF2A2A2A) : AurelianPalette.textSecondary,
+            color: isSelected
+                ? const Color(0xFF2A2A2A)
+                : AurelianPalette.textSecondary,
           ),
         ),
       ),

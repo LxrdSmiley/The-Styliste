@@ -30,10 +30,12 @@ abstract final class GameConstants {
   static const int lateGameMinRank = 66;
 
   // --- Maison City Dominance (GDD §6.3.3) ---
-  static const double domainCaptureThreshold = 0.51;   // 51% market share
-  static const double dominanceMaintainFloor = 0.45;   // grace period triggers below 45%
+  static const double domainCaptureThreshold = 0.51; // 51% market share
+  static const double dominanceMaintainFloor =
+      0.45; // grace period triggers below 45%
   static const int dominanceGracePeriodDays = 7;
-  static const double rivalChallengeThreshold = 0.30;  // 30%+ share to declare challenge
+  static const double rivalChallengeThreshold =
+      0.30; // 30%+ share to declare challenge
 
   // --- Brand Heat Tiers (GDD §8.9.7) ---
   static const int heatCold = 25;
@@ -58,8 +60,9 @@ abstract final class GameConstants {
   static const int flashSaleDuration = 60;
 
   // --- Supply Chain (GDD §5.1) ---
-  static const double dealFailurePenaltyRevenue = -0.30;   // -30% idle revenue 24h
-  static const double qualityDropHypePenalty = -0.15;      // -15% sell rate
+  static const double dealFailurePenaltyRevenue =
+      -0.30; // -30% idle revenue 24h
+  static const double qualityDropHypePenalty = -0.15; // -15% sell rate
   static const double maison10MemberDiscountQualifier = 10.0;
 
   // --- Follower Acquisition (GDD §8.11.1) ---
@@ -72,6 +75,7 @@ abstract final class GameConstants {
 
   // --- AR Viral Moment (GDD §4.4) ---
   static const int arViralReactionThreshold = 100;
-  static const double arViralFollowerBoost = 0.15;   // +15% global followers for 6h
+  static const double arViralFollowerBoost =
+      0.15; // +15% global followers for 6h
   static const int arViralBoostDurationHours = 6;
 }

@@ -2,6 +2,8 @@
 // GDD §3.0 — Empire Pulse Graph, Power Move Slots, Territory Heatmap
 // Kode Addendum: CustomPainter charts, .select() optimization, no fl_chart
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +24,7 @@ import '../widgets/empire_pulse_painter.dart';
 import '../widgets/glass_walled_penthouse.dart';
 
 /// Golden Hour HQ: Architect View
-/// 
+///
 /// Features:
 /// - Glass-Walled Penthouse parallax background
 /// - Empire Pulse Graph (CustomPainter cubic bezier, no fl_chart)
@@ -41,7 +43,6 @@ class HqArchitectView extends ConsumerStatefulWidget {
 
 class _HqArchitectViewState extends ConsumerState<HqArchitectView>
     with AutomaticKeepAliveClientMixin {
-  
   @override
   bool get wantKeepAlive => true;
 
@@ -55,7 +56,7 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
+
     // Kode Addendum: Use .select() for optimized rebuilds
     final int heat = ref.watch(brandHeatPercentProvider);
     final int multipliers = ref.watch(sovereignMultipliersProvider);
@@ -64,7 +65,8 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
     final int kintsugi = ref.watch(kintsugiLevelProvider);
     final AsyncValue<Brand> brandAsync = ref.watch(hqBrandStreamProvider);
     // Directive L: Supply Chain monitoring
-    final AsyncValue<SupplyChainState> supplyChainAsync = ref.watch(supplyChainProvider);
+    final AsyncValue<SupplyChainState> supplyChainAsync =
+        ref.watch(supplyChainProvider);
 
     return Scaffold(
       body: GlassWalledPenthouse(
@@ -73,7 +75,7 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
         tarnishLevel: tarnish,
         kintsugiLevel: kintsugi,
         onKintsugiRequest: () => context.push(AppRouter.crisisKintsugi),
-        onApologyRequest: () => _applyApology(context),
+        onApologyRequest: () => unawaited(_applyApology(context)),
         child: SafeArea(
           child: Column(
             children: <Widget>[
@@ -116,14 +118,16 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                           // Logistics upgrade button
                           supplyChainAsync.when(
                             data: (SupplyChainState state) => GestureDetector(
-                              onTap: () => _showLogisticsUpgrade(context, state),
+                              onTap: () =>
+                                  _showLogisticsUpgrade(context, state),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12.0,
                                   vertical: 6.0,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF7E7CE).withValues(alpha: 0.3),
+                                  color: const Color(0xFFF7E7CE)
+                                      .withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(12.0),
                                   border: Border.all(
                                     color: const Color(0xFFE8D4B8),
@@ -165,7 +169,8 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                       const _SectionTitle('POWER MOVES'),
                       const SizedBox(height: 16.0),
                       _PowerMovesGrid(
-                        onPublicApology: () => _applyApology(context),
+                        onPublicApology: () =>
+                            unawaited(_applyApology(context)),
                       ),
 
                       const SizedBox(height: 32.0),
@@ -195,16 +200,18 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
   }
 
   void _showHeatBreakdown(BuildContext context, int heat) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (BuildContext ctx) => BrandHeatBreakdownPanel(
         heatPercent: heat,
         decayRate: 2.5,
         activeInputs: const <HeatInput>[
-          HeatInput(name: 'District Control', contribution: 12.0, isPositive: true),
+          HeatInput(
+              name: 'District Control', contribution: 12.0, isPositive: true),
           HeatInput(name: 'Revenue Flow', contribution: 10.0, isPositive: true),
-          HeatInput(name: 'Market Saturation', contribution: -3.0, isPositive: false),
+          HeatInput(
+              name: 'Market Saturation', contribution: -3.0, isPositive: false),
         ],
       ),
     );
@@ -212,15 +219,19 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
 
   Future<void> _applyApology(BuildContext context) async {
     HapticFeedback.heavyImpact();
-    final Map<String, dynamic> result = await Supabase.instance.client
-        .rpc<Map<String, dynamic>>('execute_power_move', params: <String, dynamic>{
-          'p_move_key': 'public_apology',
-          'p_player_id': Supabase.instance.client.auth.currentUser!.id,
-        },);
+    final Map<String, dynamic> result =
+        await Supabase.instance.client.rpc<Map<String, dynamic>>(
+      'execute_power_move',
+      params: <String, dynamic>{
+        'p_move_key': 'public_apology',
+        'p_player_id': Supabase.instance.client.auth.currentUser!.id,
+      },
+    );
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'] as String? ?? 'Public apology issued'),
+          content:
+              Text(result['message'] as String? ?? 'Public apology issued'),
           backgroundColor: const Color(0xFFF7E7CE),
         ),
       );
@@ -228,10 +239,12 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
   }
 
   void _showLogisticsUpgrade(BuildContext context, SupplyChainState state) {
-    final int upgradeCost = SupplyChainState.calculateUpgradeCost(state.logisticsLevel);
-    final int newCapacity = SupplyChainState.calculateNewCapacity(state.warehouseCapacity);
-    
-    showModalBottomSheet(
+    final int upgradeCost =
+        SupplyChainState.calculateUpgradeCost(state.logisticsLevel);
+    final int newCapacity =
+        SupplyChainState.calculateNewCapacity(state.warehouseCapacity);
+
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
       builder: (BuildContext ctx) => Container(
@@ -262,7 +275,8 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                _upgradeInfoItem('Current Capacity', '${state.warehouseCapacity}'),
+                _upgradeInfoItem(
+                    'Current Capacity', '${state.warehouseCapacity}'),
                 const Icon(Icons.arrow_forward, size: 16.0),
                 _upgradeInfoItem('New Capacity', '$newCapacity'),
               ],
@@ -365,7 +379,7 @@ class _ArchitectHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MaterialTier tier = AurelianHQTheme.materialTier(player.brandRank);
-    
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 8.0),
       child: Row(
@@ -409,7 +423,8 @@ class _ArchitectHeader extends StatelessWidget {
             ],
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             decoration: BoxDecoration(
               color: const Color(0xFFF7E7CE).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20.0),
@@ -466,7 +481,13 @@ class _EmpirePulseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Recent 7-day pulse data
     final List<double> pulseData = <double>[
-      12500.0, 13200.0, 14800.0, 14100.0, 15900.0, 17200.0, 18500.0,
+      12500.0,
+      13200.0,
+      14800.0,
+      14100.0,
+      15900.0,
+      17200.0,
+      18500.0,
     ];
 
     return GestureDetector(
@@ -529,62 +550,6 @@ class _EmpirePulseCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _CashFlowRibbon extends StatelessWidget {
-  const _CashFlowRibbon({required this.revenue});
-
-  final int revenue;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: <Color>[
-            Color(0xFFF7E7CE),
-            Color(0xFFE8D4B8),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          const Row(
-            children: <Widget>[
-              Icon(
-                Icons.trending_up,
-                size: 20.0,
-                color: Color(0xFF2A2A2A),
-              ),
-              SizedBox(width: 12.0),
-              Text(
-                'TOTAL REVENUE',
-                style: TextStyle(
-                  fontFamily: 'SpaceGrotesk',
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 2.0,
-                  color: Color(0xFF2A2A2A),
-                ),
-              ),
-            ],
-          ),
-          Text(
-            '\$${revenue.toStringAsFixed(0)}',
-            style: const TextStyle(
-              fontFamily: 'JetBrainsMono',
-              fontSize: 18.0,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF2A2A2A),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -791,4 +756,3 @@ class _SovereignBadge extends StatelessWidget {
     );
   }
 }
-

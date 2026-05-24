@@ -9,12 +9,10 @@
 
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart'
-    hide OAuthProvider;
+import 'package:firebase_auth/firebase_auth.dart' hide OAuthProvider;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'
-    hide User;
+import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
 // ---------------------------------------------------------------------------
 // Firebase Auth instance
@@ -128,4 +126,3 @@ final Provider<bool> isAccountLinkedProvider = Provider<bool>(
     );
   },
 );
-

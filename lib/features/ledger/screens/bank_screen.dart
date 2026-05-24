@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants/supabase_constants.dart';
-import '../../../core/providers/mock_auth_provider.dart';
+import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/brand.dart';
@@ -241,7 +241,8 @@ class _RevenueChartPainter extends CustomPainter {
       )..layout(maxWidth: size.width);
       empty.paint(
         canvas,
-        Offset((size.width - empty.width) / 2, (size.height - empty.height) / 2),
+        Offset(
+            (size.width - empty.width) / 2, (size.height - empty.height) / 2),
       );
       return;
     }
@@ -342,7 +343,8 @@ class _TransactionList extends ConsumerWidget {
           );
         }
 
-        final List<Map<String, dynamic>> transactions = snapshot.data ?? <Map<String, dynamic>>[];
+        final List<Map<String, dynamic>> transactions =
+            snapshot.data ?? <Map<String, dynamic>>[];
 
         if (transactions.isEmpty) {
           return const Center(
@@ -365,7 +367,8 @@ class _TransactionList extends ConsumerWidget {
               description: tx['description'] as String? ?? 'Unknown',
               amount: tx['amount'] as int? ?? 0,
               isPositive: tx['is_positive'] as bool? ?? true,
-              date: DateTime.tryParse(tx['date'] as String? ?? '') ?? DateTime.now(),
+              date: DateTime.tryParse(tx['date'] as String? ?? '') ??
+                  DateTime.now(),
             );
           },
         );
@@ -469,7 +472,9 @@ class _TransactionRow extends StatelessWidget {
               '${isPositive ? '+' : '-'}◆ ${NumberFormat.compact().format(amount)}',
               textAlign: TextAlign.right,
               style: TextStyle(
-                color: isPositive ? AurelianPalette.success : AurelianPalette.danger,
+                color: isPositive
+                    ? AurelianPalette.success
+                    : AurelianPalette.danger,
                 fontFamily: 'JetBrainsMono',
                 fontSize: 11,
               ),

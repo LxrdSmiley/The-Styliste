@@ -48,7 +48,8 @@ class ArchiveListing with _$ArchiveListing {
       );
 
   /// Get provenance description
-  String get provenanceDescription => ProvenanceCalculator.getProvenanceDescription(
+  String get provenanceDescription =>
+      ProvenanceCalculator.getProvenanceDescription(
         transferCount,
         hasSovereignProvenance,
       );
@@ -86,7 +87,8 @@ class ArchiveListing with _$ArchiveListing {
   int get priceFloor => ArchivePriceFloor.calculate(hypeScore);
 
   /// Check if listing price meets floor
-  bool get meetsPriceFloor => ArchivePriceFloor.isValid(listingPrice, hypeScore);
+  bool get meetsPriceFloor =>
+      ArchivePriceFloor.isValid(listingPrice, hypeScore);
 
   /// Get transaction breakdown (30% tax)
   TransactionBreakdown get transactionBreakdown =>
@@ -107,7 +109,12 @@ class ProvenanceRecord with _$ProvenanceRecord {
   const factory ProvenanceRecord({
     required String id,
     required String designId,
-    required String previousOwnerId, required String newOwnerId, required int salePrice, required int platformTax, required int sellerPayout, String? listingId,
+    required String previousOwnerId,
+    required String newOwnerId,
+    required int salePrice,
+    required int platformTax,
+    required int sellerPayout,
+    String? listingId,
     DateTime? transferredAt,
     // Enriched fields
     String? previousOwnerName,

@@ -32,7 +32,8 @@ class ShopScreen extends ConsumerWidget {
             SnackBar(
               content: Text(
                 next.errorMessage!,
-                style: const TextStyle(color: AppColors.ivory, letterSpacing: 1.5),
+                style:
+                    const TextStyle(color: AppColors.ivory, letterSpacing: 1.5),
               ),
               backgroundColor: AppColors.obsidianCard,
             ),
@@ -284,7 +285,9 @@ class _LuxePackCard extends StatelessWidget {
                     Text(
                       '◆ $grantAmount',
                       style: TextStyle(
-                        color: enabled ? AppColors.gold : AppColors.gold.withValues(alpha: 0.3),
+                        color: enabled
+                            ? AppColors.gold
+                            : AppColors.gold.withValues(alpha: 0.3),
                         fontSize: 20.0,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,

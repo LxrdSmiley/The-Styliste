@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 /// Aurelian Radiance Palette — the foundation of all Alabaster Standard UI
-/// 
+///
 /// Ivory (#FFFFF0) — Primary backgrounds, pure light
 /// Champagne Gold (#F7E7CE) — Accents, luxury highlights, interactive elements
 /// Soft Rose (#FFB7C5) — Decorative flourishes, ribbon physics, gentle contrast
@@ -27,13 +27,13 @@ abstract final class AurelianPalette {
   // --- Semantic Colors (Aurelian tinted) ---
   static const Color success = Color(0xFF7EB89C); // Muted sage
   static const Color warning = Color(0xFFE8C96A); // Gold amber
-  static const Color danger = Color(0xFFE08E8E);  // Rose red
-  static const Color info = Color(0xFF9AB8C9);    // Soft blue-grey
+  static const Color danger = Color(0xFFE08E8E); // Rose red
+  static const Color info = Color(0xFF9AB8C9); // Soft blue-grey
 
   // --- Text Colors ---
-  static const Color textPrimary = Color(0xFF2A2825);   // Warm dark
+  static const Color textPrimary = Color(0xFF2A2825); // Warm dark
   static const Color textSecondary = Color(0xFF6B6560); // Muted warm grey
-  static const Color textTertiary = Color(0xFF9B9590);  // Light warm grey
+  static const Color textTertiary = Color(0xFF9B9590); // Light warm grey
 
   // --- Transparency Helpers ---
   static Color ivoryWithOpacity(double opacity) =>
@@ -45,7 +45,7 @@ abstract final class AurelianPalette {
 }
 
 /// Aurelian Typography — Light-etched, fashion-forward letterforms
-/// 
+///
 /// Primary: Space Grotesk (geometric, editorial)
 /// Fallback: System sans-serif
 abstract final class AurelianTypography {

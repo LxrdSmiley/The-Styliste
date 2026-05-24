@@ -57,9 +57,9 @@ class Store with _$Store {
     required StoreCity city,
     @Default(1) int tier,
     @Default(0.0) @_SafeDouble() double revenuePerHour,
-    @Default(100) int loyalty,          // 0–100
-    @Default(0.0) @_SafeDouble() double marketShare,   // 0.0–1.0
-    String? maisonId,                   // null if solo-owned
+    @Default(100) int loyalty, // 0–100
+    @Default(0.0) @_SafeDouble() double marketShare, // 0.0–1.0
+    String? maisonId, // null if solo-owned
     DateTime? openedAt,
   }) = _Store;
 

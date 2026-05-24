@@ -8,9 +8,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-
 /// Sun-Dial Hype Meter — Circular dial with solar sweep animation
-/// 
+///
 /// Features:
 /// - Circular dial (no pulse, slow solar sweep)
 /// - Fills with white → champagne-gold as hype rises
@@ -18,7 +17,9 @@ import 'package:flutter/services.dart';
 /// - No axes, no tooltips — pure elegance
 class SunDialHypeMeter extends StatefulWidget {
   const SunDialHypeMeter({
-    required this.hypeScore, required this.maxHype, super.key,
+    required this.hypeScore,
+    required this.maxHype,
+    super.key,
     this.size = 200.0,
     this.onThresholdCrossed,
   });
@@ -41,17 +42,17 @@ class _SunDialHypeMeterState extends State<SunDialHypeMeter>
   @override
   void initState() {
     super.initState();
-    
+
     _sweepController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     );
-    
+
     _sweepAnimation = CurvedAnimation(
       parent: _sweepController,
       curve: Curves.easeOutCubic,
     );
-    
+
     _animateToValue();
   }
 
@@ -64,19 +65,20 @@ class _SunDialHypeMeterState extends State<SunDialHypeMeter>
   }
 
   void _animateToValue() {
-    final double targetPercent = (widget.hypeScore / widget.maxHype).clamp(0.0, 1.0);
-    
+    final double targetPercent =
+        (widget.hypeScore / widget.maxHype).clamp(0.0, 1.0);
+
     // Check for threshold crossing (25%, 50%, 75%, 100%)
     final int previousThreshold = (_previousPercent * 4).floor();
     final int newThreshold = (targetPercent * 4).floor();
-    
+
     if (newThreshold > previousThreshold && widget.onThresholdCrossed != null) {
       HapticFeedback.heavyImpact();
       widget.onThresholdCrossed!();
     }
-    
+
     _previousPercent = targetPercent;
-    
+
     _sweepController.animateTo(targetPercent);
   }
 
@@ -190,7 +192,7 @@ class _SunDialPainter extends CustomPainter {
     // Draw the sweep arc
     const double startAngle = -math.pi / 2; // 12 o'clock
     final double sweepAngle = progress * 2 * math.pi;
-    
+
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       startAngle,
@@ -206,11 +208,11 @@ class _SunDialPainter extends CustomPainter {
         centerX + math.cos(endAngle) * radius,
         centerY + math.sin(endAngle) * radius,
       );
-      
+
       final Paint glowPaint = Paint()
         ..color = fillColor.withValues(alpha: 0.4)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0);
-      
+
       canvas.drawCircle(glowCenter, 12.0, glowPaint);
     }
 
@@ -218,7 +220,7 @@ class _SunDialPainter extends CustomPainter {
     final Paint tickPaint = Paint()
       ..color = const Color(0xFFD0D0D0)
       ..strokeWidth = 2.0;
-    
+
     for (int i = 0; i < 12; i++) {
       final double angle = (i * 30) * (math.pi / 180) - (math.pi / 2);
       final Offset start = Offset(
@@ -236,7 +238,7 @@ class _SunDialPainter extends CustomPainter {
     final Paint centerGlowPaint = Paint()
       ..color = fillColor.withValues(alpha: 0.15)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20.0);
-    
+
     canvas.drawCircle(center, radius * 0.6, centerGlowPaint);
   }
 
@@ -268,7 +270,9 @@ class _SunDialPainter extends CustomPainter {
 /// Compact version for small spaces
 class SunDialCompact extends StatelessWidget {
   const SunDialCompact({
-    required this.hypeScore, required this.maxHype, super.key,
+    required this.hypeScore,
+    required this.maxHype,
+    super.key,
     this.size = 80.0,
   });
 
@@ -279,7 +283,7 @@ class SunDialCompact extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double progress = (hypeScore / maxHype).clamp(0.0, 1.0);
-    
+
     return CustomPaint(
       size: Size(size, size),
       painter: _SunDialCompactPainter(progress: progress),

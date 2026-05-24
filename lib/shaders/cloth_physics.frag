@@ -9,7 +9,7 @@
 // Phase 4 additions:
 //   uTouchPos  — lerp-smoothed touch coordinate (normalized 0–1); (-1,-1) = no touch.
 //   uDyeColor  — selected fabric dye RGB. Blended with texture via mix() over alpha
-//                so a 1×1 black placeholder texture renders the dye, not pure black.
+//                so a 1×1 black fallback texture renders the dye, not pure black.
 //
 // Uniform slot map (determines Dart setFloat index — DO NOT reorder):
 //   uFabricTexture → setImageSampler(0)
@@ -78,7 +78,7 @@ void main() {
   vec4 texSample = texture(uFabricTexture, clamp(displaced, 0.0, 1.0));
 
   // Blend dye color with texture sample using texture alpha as mix weight.
-  // When uFabricTexture is a 1×1 black placeholder (alpha=1), mix() still
+  // When uFabricTexture is a 1×1 black fallback texture (alpha=1), mix() still
   // correctly blends toward uDyeColor rather than rendering pure black.
   vec3 blended = mix(uDyeColor, texSample.rgb, texSample.a * 0.35);
   vec4 fabricColor = vec4(blended, 1.0);
