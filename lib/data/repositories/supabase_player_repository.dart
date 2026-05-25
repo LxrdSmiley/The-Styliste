@@ -42,6 +42,7 @@ class SupabasePlayerRepository implements PlayerRepository {
         .from(SupabaseConstants.tablePlayers)
         .stream(primaryKey: <String>['id'])
         .eq('id', playerId)
+        .where((List<Map<String, dynamic>> rows) => rows.isNotEmpty)
         .map((List<Map<String, dynamic>> rows) => Player.fromJson(rows.first));
   }
 

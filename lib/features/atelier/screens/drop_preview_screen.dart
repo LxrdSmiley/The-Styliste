@@ -10,7 +10,7 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/design.dart';
 import '../../design/models/vex_review.dart';
-import '../../design/widgets/vex_review_card.dart';
+import '../models/drop_launch_payload.dart';
 import '../providers/drop_design_provider.dart';
 
 /// Available style tags for selection
@@ -73,6 +73,9 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
   }
 
   Future<void> _onDropToFeed() async {
+    final DropDesignState beforeDrop = ref.read(dropDesignProvider);
+    final double projectedHype = beforeDrop.hypeResult?.totalScore ?? 0.0;
+
     final VexReview? review =
         await ref.read(dropDesignProvider.notifier).executeDrop();
 
@@ -100,6 +103,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
           ),
         ),
       );
+      return;
     }
 
     if (!mounted) return;
@@ -131,33 +135,31 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
           ),
         ),
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            // --- Design Preview ---
-            Container(
-              height: 200.0,
-              decoration: BoxDecoration(
-                color: AurelianPalette.alabaster,
-                borderRadius: BorderRadius.circular(12.0),
-                border: Border.all(
-                  color: AurelianPalette.champagneGold.withValues(alpha: 0.3),
-                ),
+        children: <Widget>[
+          // --- Design Preview ---
+          Container(
+            height: 200.0,
+            decoration: BoxDecoration(
+              color: AurelianPalette.alabaster,
+              borderRadius: BorderRadius.circular(12.0),
+              border: Border.all(
+                color: AurelianPalette.champagneGold.withValues(alpha: 0.3),
               ),
-              child: Center(
-                child: Text(
-                  widget.design.name,
-                  style: const TextStyle(
-                    fontFamily: 'SpaceGrotesk',
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.w600,
-                    color: AurelianPalette.textPrimary,
-                  ),
+            ),
+            child: Center(
+              child: Text(
+                widget.design.name,
+                style: const TextStyle(
+                  fontFamily: 'SpaceGrotesk',
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.w600,
+                  color: AurelianPalette.textPrimary,
                 ),
               ),
             ),
+          ),
 
             const SizedBox(height: 24.0),
 
@@ -311,7 +313,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
               ),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 28.0),
 
             // --- Drop Button ---
             SizedBox(
@@ -339,11 +341,11 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                           fontWeight: FontWeight.w600,
                           letterSpacing: 2.0,
                         ),
-                      ),
+                ),
               ),
             ),
-          ],
-        ),
+            const SizedBox(height: 12.0),
+        ],
       ),
     );
   }

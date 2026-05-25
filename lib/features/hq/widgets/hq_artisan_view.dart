@@ -1,12 +1,11 @@
 // Directive F — Golden Hour HQ: Artisan (Designer) View
-// GDD §3.0 — Sun-Dial Hype Meter, 3D Garment Preview, Recent Drops, Quick Sketch
-// Kode Addendum: CustomPainter charts, .select() optimization, 3D lifecycle mgmt
+// GDD §3.0 — Sun-Dial Hype Meter, Native Garment Preview, Recent Drops, Quick Sketch
+// Kode Addendum: CustomPainter charts, .select() optimization
 
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_3d_controller/flutter_3d_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -25,7 +24,7 @@ import '../widgets/sun_dial_hype_meter.dart';
 /// Features:
 /// - Glass-Walled Penthouse parallax background (rank-evolving)
 /// - Sun-Dial Hype Meter (CustomPainter, no fl_chart)
-/// - 3D Garment Preview (with lifecycle management)
+/// - Native Garment Preview (no WebView asset dependency)
 /// - Brand Heat Meter (.select() optimized)
 /// - Quick Sketch CTA
 /// - Recent Drops grid
@@ -39,42 +38,9 @@ class HqArtisanView extends ConsumerStatefulWidget {
 }
 
 class _HqArtisanViewState extends ConsumerState<HqArtisanView>
-    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-  // Kode Addendum: 3D controller lifecycle management
-  final Flutter3DController _modelController = Flutter3DController();
-  // When navigating away, pause/dispose to maintain 120Hz sub-menu performance
-  bool _is3DPaused = false;
-
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true; // Preserve state when switching tabs
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Pause 3D when app backgrounds to save GPU
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      setState(() => _is3DPaused = true);
-    } else if (state == AppLifecycleState.resumed) {
-      setState(() => _is3DPaused = false);
-    }
-  }
-
-  void _onNavigateAway() {
-    // Kode Addendum: Pause 3D before navigation
-    setState(() => _is3DPaused = true);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,14 +104,11 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
 
                       const SizedBox(height: 32.0),
 
-                      // --- 3D Garment Preview ---
+                      // --- Native Garment Preview ---
                       const _SectionTitle('LATEST CREATION'),
                       const SizedBox(height: 16.0),
                       _GarmentPreviewCard(
-                        isPaused: _is3DPaused,
-                        controller: _modelController,
                         onTap: () {
-                          _onNavigateAway();
                           unawaited(context.push(AppRouter.atelier));
                         },
                       ),
@@ -155,7 +118,6 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
                       // --- Quick Sketch CTA ---
                       _QuickSketchButton(
                         onTap: () {
-                          _onNavigateAway();
                           unawaited(context.push(AppRouter.atelier));
                         },
                       ),
@@ -322,13 +284,9 @@ class _SectionTitle extends StatelessWidget {
 
 class _GarmentPreviewCard extends StatelessWidget {
   const _GarmentPreviewCard({
-    required this.isPaused,
-    required this.controller,
     required this.onTap,
   });
 
-  final bool isPaused;
-  final Flutter3DController controller;
   final VoidCallback onTap;
 
   @override
@@ -356,24 +314,11 @@ class _GarmentPreviewCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16.0),
           child: Stack(
             children: <Widget>[
-              // 3D Model Viewer
-              Flutter3DViewer(
-                src: 'assets/models/stichless_mannequin.glb',
-                controller: controller,
-              ),
-
-              // Pause indicator
-              if (isPaused)
-                Container(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  child: const Center(
-                    child: Icon(
-                      Icons.pause_circle_filled,
-                      size: 48.0,
-                      color: Color(0xFFF7E7CE),
-                    ),
-                  ),
+              const Positioned.fill(
+                child: CustomPaint(
+                  painter: _NativeGarmentPreviewPainter(),
                 ),
+              ),
 
               // Enter Atelier prompt
               Positioned(
@@ -417,6 +362,102 @@ class _GarmentPreviewCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _NativeGarmentPreviewPainter extends CustomPainter {
+  const _NativeGarmentPreviewPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Rect bounds = Offset.zero & size;
+    final Paint backdrop = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: <Color>[
+          Color(0xFFFEFBF5),
+          Color(0xFFF3E7D2),
+          Color(0xFFE9DDC8),
+        ],
+      ).createShader(bounds);
+
+    canvas.drawRect(bounds, backdrop);
+
+    final Paint haloPaint = Paint()
+      ..color = const Color(0xFFF7E7CE).withValues(alpha: 0.28)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.5, size.height * 0.48),
+        width: size.width * 0.42,
+        height: size.height * 0.64,
+      ),
+      haloPaint,
+    );
+
+    final Path dressPath = Path()
+      ..moveTo(size.width * 0.46, size.height * 0.18)
+      ..quadraticBezierTo(
+        size.width * 0.50,
+        size.height * 0.23,
+        size.width * 0.54,
+        size.height * 0.18,
+      )
+      ..lineTo(size.width * 0.66, size.height * 0.36)
+      ..quadraticBezierTo(
+        size.width * 0.61,
+        size.height * 0.60,
+        size.width * 0.63,
+        size.height * 0.82,
+      )
+      ..lineTo(size.width * 0.37, size.height * 0.82)
+      ..quadraticBezierTo(
+        size.width * 0.39,
+        size.height * 0.60,
+        size.width * 0.34,
+        size.height * 0.36,
+      )
+      ..close();
+
+    final Paint dressFill = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: <Color>[
+          Color(0xFFFFFFFF),
+          Color(0xFFF7E7CE),
+          Color(0xFFE8D4B8),
+        ],
+      ).createShader(bounds)
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(dressPath, dressFill);
+
+    final Paint outlinePaint = Paint()
+      ..color = const Color(0xFF2A2A2A).withValues(alpha: 0.12)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    canvas.drawPath(dressPath, outlinePaint);
+
+    final Paint highlightPaint = Paint()
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+    final Path highlightPath = Path()
+      ..moveTo(size.width * 0.43, size.height * 0.34)
+      ..quadraticBezierTo(
+        size.width * 0.51,
+        size.height * 0.52,
+        size.width * 0.57,
+        size.height * 0.72,
+      );
+    canvas.drawPath(highlightPath, highlightPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _NativeGarmentPreviewPainter oldDelegate) {
+    return false;
   }
 }
 

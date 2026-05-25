@@ -34,7 +34,7 @@ Prioritize memory efficiency for portrait-mode mobile hardware.
 
 ## 5. Agent Interaction Protocol
 
-**Reference the GDD:** Always check the THE_STYLISTE_GDD_v4.md for the "what" (creative vision, mentor dialogue, brand vibes).
+**Reference the GDD:** Always check the THE_STYLISTE_GDD_v6.md for the "what" (creative vision, mentor dialogue, brand vibes).
 
 **Follow the Rules:** Always check this file for the "how" (technical stack, performance limits).
 

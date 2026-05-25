@@ -107,6 +107,10 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
                   0.0,
                   (double sum, RosterTalent t) => sum + t.expertiseScore,
                 ),
+                .fold(
+                  0.0,
+                  (double sum, RosterTalent t) => sum + t.expertiseScore,
+                ),
             orElse: () => 0.0,
           ),
     );

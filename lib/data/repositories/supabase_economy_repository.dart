@@ -29,6 +29,7 @@ class SupabaseEconomyRepository implements EconomyRepository {
         .from(SupabaseConstants.tableBrandState)
         .stream(primaryKey: <String>['player_id'])
         .eq('player_id', playerId)
+        .where((List<Map<String, dynamic>> rows) => rows.isNotEmpty)
         .map((List<Map<String, dynamic>> rows) => Brand.fromJson(rows.first));
   }
 
@@ -83,6 +84,7 @@ class SupabaseEconomyRepository implements EconomyRepository {
         .from(SupabaseConstants.tableBrandsEquity)
         .stream(primaryKey: <String>['brand_id'])
         .eq('brand_id', brandId)
+        .where((List<Map<String, dynamic>> rows) => rows.isNotEmpty)
         .map(
           (List<Map<String, dynamic>> rows) => BrandEquity.fromJson(rows.first),
         );

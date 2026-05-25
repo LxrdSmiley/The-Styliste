@@ -151,6 +151,9 @@ class _SunDialPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final double safeProgress = progress.isFinite
+        ? progress.clamp(0.0, 1.0).toDouble()
+        : 0.0;
     final double centerX = size.width / 2;
     final double centerY = size.height / 2;
     final double radius = (size.width / 2) - 20.0;
@@ -168,15 +171,19 @@ class _SunDialPainter extends CustomPainter {
     // Determine color based on progress
     // 0-50%: White → Light champagne
     // 50-100%: Light champagne → Deep gold
-    final Color fillColor = _interpolateColor(progress);
+    final Color fillColor = _interpolateColor(safeProgress);
+    const double startAngle = -math.pi / 2; // 12 o'clock
+    final double sweepAngle = safeProgress * 2 * math.pi;
 
     // Filled arc (the solar sweep)
     final Paint fillPaint = Paint()
       ..color = fillColor
       ..strokeWidth = 12.0
       ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke
-      ..shader = ui.Gradient.sweep(
+      ..style = PaintingStyle.stroke;
+
+    if (sweepAngle > 0.0) {
+      fillPaint.shader = ui.Gradient.sweep(
         center,
         <Color>[
           Colors.white,
@@ -185,24 +192,24 @@ class _SunDialPainter extends CustomPainter {
         ],
         <double>[0.0, 0.5, 1.0],
         TileMode.clamp,
-        -math.pi / 2, // Start at top
-        (-math.pi / 2) + (progress * 2 * math.pi), // End based on progress
+        startAngle,
+        startAngle + sweepAngle,
       );
+    }
 
     // Draw the sweep arc
-    const double startAngle = -math.pi / 2; // 12 o'clock
-    final double sweepAngle = progress * 2 * math.pi;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      startAngle,
-      sweepAngle,
-      false,
-      fillPaint,
-    );
+    if (sweepAngle > 0.0) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweepAngle,
+        false,
+        fillPaint,
+      );
+    }
 
     // Glow effect at the leading edge
-    if (progress > 0) {
+    if (safeProgress > 0) {
       final double endAngle = startAngle + sweepAngle;
       final Offset glowCenter = Offset(
         centerX + math.cos(endAngle) * radius,

@@ -23,6 +23,11 @@ abstract final class SupabaseConstants {
   // --- Social Tables ---
   static const String tableFollows = 'follows';
   static const String tableFeedPosts = 'feed_posts';
+  static const String tablePostReactions = 'post_reactions';
+  static const String tableFeedComments = 'feed_comments';
+  static const String tableFeedDerivatives = 'feed_derivatives';
+  static const String tableDirectMessages = 'direct_messages';
+  static const String tableCollabRequests = 'collab_requests';
   static const String tablePartnerships = 'partnerships';
 
   // --- Maison Tables ---
