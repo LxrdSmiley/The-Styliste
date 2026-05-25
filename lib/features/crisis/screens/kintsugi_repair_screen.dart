@@ -5,8 +5,6 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -242,17 +240,25 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
           if (_shader != null)
             AnimatedBuilder(
               animation: Listenable.merge(
-                  <Listenable>[_fillController, _pulseController]),
+                <Listenable>[_fillController, _pulseController],
+              ),
               builder: (BuildContext context, Widget? child) {
                 _shader!
                   ..setFloat(0, _fillController.value * 3.0) // uTime
                   ..setFloat(
-                      1, MediaQuery.of(context).size.width) // uResolution.x
+                    1,
+                    MediaQuery.of(context).size.width,
+                  ) // uResolution.x
                   ..setFloat(
-                      2, MediaQuery.of(context).size.height) // uResolution.y
+                    2,
+                    MediaQuery.of(context).size.height,
+                  ) // uResolution.y
                   ..setFloat(3, 0.5) // uTouch.x (center)
                   ..setFloat(4, 0.5) // uTouch.y (center)
-                  ..setFloat(5, 0.5 + _pulseController.value * 0.5); // uCharge
+                  ..setFloat(
+                    5,
+                    0.5 + _pulseController.value * 0.5,
+                  ); // uCharge
 
                 return CustomPaint(
                   size: Size.infinite,

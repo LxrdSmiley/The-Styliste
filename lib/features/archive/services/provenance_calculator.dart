@@ -30,7 +30,9 @@ class ProvenanceCalculator {
   /// [transferCount]: Number of times garment has changed hands
   /// [hasSovereignProvenance]: True if any previous owner was Rank 100
   static double calculateMultiplier(
-      int transferCount, bool hasSovereignProvenance) {
+    int transferCount,
+    bool hasSovereignProvenance,
+  ) {
     // Base multiplier
     double multiplier = 1.0;
 
@@ -51,7 +53,10 @@ class ProvenanceCalculator {
 
   /// Calculate effective hype score with provenance
   static int calculateEffectiveHype(
-      int baseHype, int transferCount, bool hasSovereignProvenance) {
+    int baseHype,
+    int transferCount,
+    bool hasSovereignProvenance,
+  ) {
     final double multiplier =
         calculateMultiplier(transferCount, hasSovereignProvenance);
     return (baseHype * multiplier).round();
@@ -59,7 +64,9 @@ class ProvenanceCalculator {
 
   /// Get formatted provenance description for UI
   static String getProvenanceDescription(
-      int transferCount, bool hasSovereignProvenance) {
+    int transferCount,
+    bool hasSovereignProvenance,
+  ) {
     final List<String> parts = <String>[];
 
     if (transferCount > 0) {
@@ -68,7 +75,8 @@ class ProvenanceCalculator {
         parts.add('$cappedCount+ previous owners (max provenance)');
       } else {
         parts.add(
-            '$transferCount previous ${transferCount == 1 ? 'owner' : 'owners'}');
+          '$transferCount previous ${transferCount == 1 ? 'owner' : 'owners'}',
+        );
       }
     }
 
@@ -85,7 +93,9 @@ class ProvenanceCalculator {
 
   /// Get detailed provenance breakdown
   static ProvenanceBreakdown getBreakdown(
-      int transferCount, bool hasSovereignProvenance) {
+    int transferCount,
+    bool hasSovereignProvenance,
+  ) {
     final double transferBonus =
         (math.min(transferCount, _maxTransferCount) * _perOwnerBonus)
             .clamp(0.0, _maxTransferBonus);

@@ -32,7 +32,7 @@ class SupabasePlayerRepository implements PlayerRepository {
     await SupabaseService.client
         .from(SupabaseConstants.tablePlayers)
         .update(<String, dynamic>{
-      'last_active_at': timestamp.toIso8601String()
+      'last_active_at': timestamp.toIso8601String(),
     }).eq('id', playerId);
   }
 

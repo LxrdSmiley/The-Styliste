@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/design.dart';
 import '../../design/models/vex_review.dart';
@@ -75,7 +76,9 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
     final VexReview? review =
         await ref.read(dropDesignProvider.notifier).executeDrop();
 
-    if (mounted && review != null) {
+    if (!mounted) return;
+
+    if (review != null) {
       // Show Vex Review Card in modal
       await showDialog<void>(
         context: context,
@@ -87,7 +90,6 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
             review: review,
             onDismiss: () {
               Navigator.of(ctx).pop();
-              context.pop(); // Return to HQ
             },
             onShare: () {
               // Share functionality
@@ -99,6 +101,9 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
         ),
       );
     }
+
+    if (!mounted) return;
+    context.go(AppRouter.atelierDropLaunch);
   }
 
   @override

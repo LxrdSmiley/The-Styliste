@@ -46,7 +46,8 @@ abstract final class FirebaseService {
 
     if (kDebugMode) {
       debugPrint(
-          'Firebase App Check debug provider active for local development.');
+        'Firebase App Check debug provider active for local development.',
+      );
     }
   }
 }

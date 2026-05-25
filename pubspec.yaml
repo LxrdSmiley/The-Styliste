@@ -32,6 +32,9 @@ dependencies:
   # --- Utilities: URL ---
   url_launcher: ^6.3.0
 
+  # --- Cosmetic Game Scenes ---
+  flame: ^1.37.0
+
   # --- Monetization ---
   in_app_purchase: ^3.2.0
 

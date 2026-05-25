@@ -31,7 +31,8 @@ Stream<List<TrendTsunami>> activeTsunami(Ref ref) {
 
   // Subscribe to trend_tsunamis table with realtime
   return supabase.from(SupabaseConstants.tableTrendTsunamis).stream(
-      primaryKey: const <String>['id']).map((List<Map<String, dynamic>> data) {
+    primaryKey: const <String>['id'],
+  ).map((List<Map<String, dynamic>> data) {
     final DateTime now = DateTime.now().toUtc();
 
     return data

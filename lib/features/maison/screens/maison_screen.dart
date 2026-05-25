@@ -119,7 +119,9 @@ class _PlayerMaisonCard extends StatelessWidget {
     final Stream<List<Map<String, dynamic>>> stream = SupabaseService.client
         .from(SupabaseConstants.tableMaisonMembers)
         .stream(primaryKey: <String>['maison_id', 'player_id']).eq(
-            'player_id', uid);
+      'player_id',
+      uid,
+    );
 
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: stream,

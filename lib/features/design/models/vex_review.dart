@@ -167,5 +167,6 @@ extension VexReviewListExtension on List<VexReview> {
   /// Sort by verdict tier descending (sovereign first)
   List<VexReview> get byVerdictTierDesc => this
     ..sort(
-        (VexReview a, VexReview b) => b.verdict.tier.compareTo(a.verdict.tier));
+      (VexReview a, VexReview b) => b.verdict.tier.compareTo(a.verdict.tier),
+    );
 }

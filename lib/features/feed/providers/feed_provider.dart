@@ -14,6 +14,27 @@ import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/feed_post.dart';
 
+class PendingAlphaDrop {
+  const PendingAlphaDrop({
+    required this.feedPostId,
+    required this.designId,
+    required this.designName,
+    required this.hypeScore,
+    this.brandName,
+    this.fabricColorHex,
+  });
+
+  final String feedPostId;
+  final String designId;
+  final String designName;
+  final double hypeScore;
+  final String? brandName;
+  final String? fabricColorHex;
+}
+
+final StateProvider<PendingAlphaDrop?> pendingAlphaDropProvider =
+    StateProvider<PendingAlphaDrop?>((Ref<PendingAlphaDrop?> ref) => null);
+
 // ---------------------------------------------------------------------------
 // Feed mode — GLOBAL (all players) vs. SYNDICATE (following only).
 // ---------------------------------------------------------------------------

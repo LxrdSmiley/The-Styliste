@@ -10,6 +10,7 @@ import '../../../domain/models/design.dart';
 import '../../design/models/vex_review.dart';
 import '../../design/services/hype_calculator.dart';
 import '../../design/services/vex_ai_engine.dart';
+import '../../feed/providers/feed_provider.dart';
 import '../../talent/models/talent.dart';
 import '../../talent/providers/casting_provider.dart';
 import '../../trends/models/trend_tsunami.dart';
@@ -102,8 +103,10 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
       totalTalentExpertise: _ref.read(rosterProvider).maybeWhen(
             data: (List<RosterTalent> roster) => roster
                 .where((RosterTalent t) => t.tier == TalentTier.sovereign)
-                .fold(0.0,
-                    (double sum, RosterTalent t) => sum + t.expertiseScore),
+                .fold(
+                  0.0,
+                  (double sum, RosterTalent t) => sum + t.expertiseScore,
+                ),
             orElse: () => 0.0,
           ),
     );
@@ -155,33 +158,66 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
+      final String playerId = supabase.auth.currentUser!.id;
+      final Design design = state.design!;
+      final VexReview? review = state.vexReview;
+      final double hypeScore = state.hypeResult?.totalScore ?? 0.0;
+      final String? fabricColorHex = design.fabricData['color_hex'] as String?;
+      Map<String, dynamic>? playerProfile;
+      try {
+        playerProfile = await supabase
+            .from(SupabaseConstants.tablePlayers)
+            .select('brand_name, brand_rank')
+            .eq('id', playerId)
+            .maybeSingle();
+      } catch (_) {
+        playerProfile = null;
+      }
+      final String? brandName = playerProfile?['brand_name'] as String?;
+      final Object? brandRank = playerProfile?['brand_rank'];
+
+      final Map<String, dynamic> content = <String, dynamic>{
+        'event': 'alpha_dropped',
+        'design_id': design.id,
+        'design_name': design.name,
+        'style_tags': state.styleTags,
+        'trend_tags': state.styleTags,
+        'hype_score': hypeScore,
+        'fabric_tier': design.fabricTier,
+        if (fabricColorHex != null) 'fabric_color_hex': fabricColorHex,
+        if (brandName != null && brandName.isNotEmpty) 'brand_name': brandName,
+        if (brandRank is num) 'brand_rank': brandRank,
+        if (review != null) ...<String, dynamic>{
+          'vex_review': review.toJson(),
+          'vex_headline': review.headline,
+          'vex_quote': review.quotableLine,
+          'vex_caption': review.body,
+          'vex_verdict': review.verdict.name,
+        },
+      };
 
       // Step 1: Create feed post
       final Map<String, dynamic> feedPost = await supabase
           .from(SupabaseConstants.tableFeedPosts)
           .insert(<String, dynamic>{
-            'player_id': supabase.auth.currentUser!.id,
-            'type': 'design_drop',
-            'content': <String, dynamic>{
-              'design_id': state.design!.id,
-              'design_name': state.design!.name,
-              'style_tags': state.styleTags,
-              'hype_score': state.hypeResult?.totalScore ?? 0.0,
-            },
-            'hype': state.hypeResult?.totalScore ?? 0.0,
+            'player_id': playerId,
+            'type': 'design_flex',
+            'content': content,
+            'hype': hypeScore,
           })
           .select()
           .single();
+      final String feedPostId = feedPost['id'] as String;
 
       // Step 2: Create garment_drop record
       await supabase
           .from(SupabaseConstants.tableGarmentDrops)
           .insert(<String, dynamic>{
-        'player_id': supabase.auth.currentUser!.id,
-        'design_id': state.design!.id,
+        'player_id': playerId,
+        'design_id': design.id,
         'style_tags': state.styleTags,
-        'hype_score': state.hypeResult?.totalScore ?? 0.0,
-        'feed_post_id': feedPost['id'],
+        'hype_score': hypeScore,
+        'feed_post_id': feedPostId,
         'dropped_at': DateTime.now().toIso8601String(),
       });
 
@@ -191,7 +227,16 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
           .update(<String, dynamic>{
         'status': 'dropped',
         'dropped_at': DateTime.now().toIso8601String(),
-      }).eq('id', state.design!.id);
+      }).eq('id', design.id);
+
+      _ref.read(pendingAlphaDropProvider.notifier).state = PendingAlphaDrop(
+        feedPostId: feedPostId,
+        designId: design.id,
+        designName: design.name,
+        hypeScore: hypeScore,
+        brandName: brandName,
+        fabricColorHex: fabricColorHex,
+      );
 
       // Final state transition
       state = state.copyWith(

@@ -32,11 +32,20 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
   // Tier bins at bottom
   final List<_TierBin> _tierBins = <_TierBin>[
     const _TierBin(
-        label: 'TIER 1', color: Color(0xFFB87333), tier: 1), // Bronze
+      label: 'TIER 1',
+      color: Color(0xFFB87333),
+      tier: 1,
+    ), // Bronze
     const _TierBin(
-        label: 'TIER 2', color: AurelianPalette.champagneGold, tier: 2), // Gold
+      label: 'TIER 2',
+      color: AurelianPalette.champagneGold,
+      tier: 2,
+    ), // Gold
     const _TierBin(
-        label: 'TIER 3', color: Color(0xFF9966CC), tier: 3), // Violet
+      label: 'TIER 3',
+      color: Color(0xFF9966CC),
+      tier: 3,
+    ), // Violet
   ];
 
   @override
@@ -200,8 +209,11 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
                     onAcceptWithDetails: (DragTargetDetails<String> details) {
                       _onDrop(details.data, bin.tier);
                     },
-                    builder: (BuildContext context, List<String?> candidateData,
-                        List<dynamic> rejectedData) {
+                    builder: (
+                      BuildContext context,
+                      List<String?> candidateData,
+                      List<dynamic> rejectedData,
+                    ) {
                       return Container(
                         width: 100,
                         height: 80,

@@ -75,12 +75,8 @@ class _AscensionConfirmationScreenState
     // Validate all required fields
     if (!state.isReadyToCommit) {
       setState(
-<<<<<<< HEAD
-          () => _errorMessage = 'Please complete all choices before sealing.');
-=======
         () => _errorMessage = 'Please complete all choices before sealing.',
       );
->>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
       return;
     }
 
@@ -91,11 +87,7 @@ class _AscensionConfirmationScreenState
 
     // Step 2: Start white-out animation
     setState(() => _showWhiteOut = true);
-<<<<<<< HEAD
-    _whiteOutController.forward();
-=======
     unawaited(_whiteOutController.forward());
->>>>>>> b82f5aa0df7cf605d44fb4b2ee0b34ca518f7b9e
 
     // Step 3: Execute genesis RPC while animation plays
     try {

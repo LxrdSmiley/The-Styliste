@@ -4,9 +4,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/aurelian_theme.dart';
+import '../../legal/legal_documents.dart';
+import '../../legal/screens/legal_document_screen.dart';
 
 const String _kExpertModeKey = 'expert_mode_enabled';
 const String _kNotificationsKey = 'notifications_enabled';
@@ -93,8 +94,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         title: Row(
           children: <Widget>[
-            const Icon(Icons.auto_awesome,
-                color: AurelianPalette.champagneGold, size: 20),
+            const Icon(
+              Icons.auto_awesome,
+              color: AurelianPalette.champagneGold,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Text(
               newValue ? 'EXPERT MODE' : 'CASUAL MODE',
@@ -124,8 +128,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Text(
               'CANCEL',
               style: TextStyle(
-                  color: AurelianPalette.textTertiary,
-                  fontFamily: 'SpaceGrotesk'),
+                color: AurelianPalette.textTertiary,
+                fontFamily: 'SpaceGrotesk',
+              ),
             ),
           ),
           TextButton(
@@ -148,11 +153,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+  void _openLegalDocument(LegalDocument document) {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) =>
+            LegalDocumentScreen(document: document),
+      ),
+    );
   }
 
   @override
@@ -163,8 +170,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AurelianPalette.textPrimary,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,
-              color: AurelianPalette.champagneGold, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: AurelianPalette.champagneGold,
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
@@ -188,7 +198,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: _loading
           ? const Center(
               child: CircularProgressIndicator(
-                  color: AurelianPalette.champagneGold),
+                color: AurelianPalette.champagneGold,
+              ),
             )
           : ListView(
               padding: const EdgeInsets.symmetric(vertical: 24),
@@ -291,57 +302,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 // ── LEGAL ──────────────────────────────────────────────────
                 const _SectionHeader(label: 'LEGAL'),
-                _SettingsLinkTile(
-                  icon: Icons.privacy_tip_outlined,
-                  title: 'Privacy Policy',
-                  onTap: () => _launchUrl('https://thestyliste.app/privacy'),
-                ),
-                _SettingsLinkTile(
-                  icon: Icons.gavel_outlined,
-                  title: 'Terms of Service',
-                  onTap: () => _launchUrl('https://thestyliste.app/terms'),
-                ),
-                _SettingsLinkTile(
-                  icon: Icons.description_outlined,
-                  title: 'EULA',
-                  onTap: () => _launchUrl('https://thestyliste.app/eula'),
-                ),
-                _SettingsLinkTile(
-                  icon: Icons.group_outlined,
-                  title: 'Community Guidelines',
-                  onTap: () => _launchUrl('https://thestyliste.app/community'),
-                ),
-                _SettingsLinkTile(
-                  icon: Icons.cookie_outlined,
-                  title: 'Cookie Policy',
-                  onTap: () => _launchUrl('https://thestyliste.app/cookies'),
-                ),
-                _SettingsLinkTile(
-                  icon: Icons.copyright_outlined,
-                  title: 'DMCA / Copyright',
-                  onTap: () => _launchUrl('https://thestyliste.app/dmca'),
-                ),
-                _SettingsLinkTile(
-                  icon: Icons.receipt_long_outlined,
-                  title: 'Refund Policy',
-                  onTap: () => _launchUrl('https://thestyliste.app/refunds'),
-                ),
-                _SettingsLinkTile(
-                  icon: Icons.child_care_outlined,
-                  title: 'Children\'s Privacy',
-                  onTap: () => _launchUrl('https://thestyliste.app/coppa'),
-                ),
-                _SettingsLinkTile(
-                  icon: Icons.accessibility_new_outlined,
-                  title: 'Accessibility Statement',
-                  onTap: () =>
-                      _launchUrl('https://thestyliste.app/accessibility'),
-                ),
-                _SettingsLinkTile(
-                  icon: Icons.campaign_outlined,
-                  title: 'Marketing & Advertising Policy',
-                  onTap: () => _launchUrl('https://thestyliste.app/marketing'),
-                ),
+                for (final LegalDocument document in LegalDocuments.all)
+                  _SettingsLinkTile(
+                    icon: document.icon,
+                    title: document.title,
+                    subtitle: document.summary,
+                    onTap: () => _openLegalDocument(document),
+                  ),
                 const SizedBox(height: 48),
 
                 // ── VERSION ────────────────────────────────────────────────
@@ -444,11 +411,13 @@ class _SettingsLinkTile extends StatelessWidget {
   const _SettingsLinkTile({
     required this.icon,
     required this.title,
+    required this.subtitle,
     required this.onTap,
   });
 
   final IconData icon;
   final String title;
+  final String subtitle;
   final VoidCallback onTap;
 
   @override
@@ -464,7 +433,7 @@ class _SettingsLinkTile extends StatelessWidget {
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Icon(icon, color: AurelianPalette.champagneGold, size: 22),
         title: Text(
           title,
@@ -473,6 +442,15 @@ class _SettingsLinkTile extends StatelessWidget {
             fontFamily: 'SpaceGrotesk',
             fontSize: 14,
             fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            color: AurelianPalette.textTertiary.withValues(alpha: 0.66),
+            fontFamily: 'SpaceGrotesk',
+            fontSize: 11,
+            height: 1.35,
           ),
         ),
         trailing: const Icon(
