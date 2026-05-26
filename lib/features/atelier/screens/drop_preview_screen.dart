@@ -10,22 +10,9 @@ import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/design.dart';
 import '../../design/models/vex_review.dart';
-import '../models/drop_launch_payload.dart';
+import '../../design/widgets/vex_review_card.dart';
+import '../constants/style_tags.dart';
 import '../providers/drop_design_provider.dart';
-
-/// Available style tags for selection
-const List<String> kAvailableStyleTags = <String>[
-  'minimalist',
-  'streetwear',
-  'couture',
-  'avant-garde',
-  'sustainable',
-  'ivory',
-  'monochrome',
-  'oversized',
-  'tailored',
-  'deconstructed',
-];
 
 class DropPreviewScreen extends ConsumerStatefulWidget {
   const DropPreviewScreen({required this.design, super.key});
@@ -42,8 +29,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize with default tags
-    _selectedTags.addAll(<String>['minimalist', 'ivory']);
+    _selectedTags.addAll(_readMintedStyleTags(widget.design));
 
     // Initialize drop flow
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,32 +40,31 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
     });
   }
 
-  void _onTagToggle(String tag) {
-    setState(() {
-      if (_selectedTags.contains(tag)) {
-        _selectedTags.remove(tag);
-      } else {
-        if (_selectedTags.length < 3) {
-          _selectedTags.add(tag);
-        }
-      }
-    });
-
-    // Re-initialize with new tags
-    ref.read(dropDesignProvider.notifier).initDropFlow(
-          design: widget.design,
-          styleTags: _selectedTags.toList(),
-        );
+  List<String> _readMintedStyleTags(Design design) {
+    final Object? rawTags = design.fabricData['style_tags'];
+    if (rawTags is List) {
+      final List<String> tags = rawTags
+          .map((Object? value) => value?.toString().trim() ?? '')
+          .where((String tag) => tag.isNotEmpty)
+          .take(3)
+          .toList(growable: false);
+      if (tags.isNotEmpty) return tags;
+    }
+    return kDefaultStyleTags;
   }
 
   Future<void> _onDropToFeed() async {
-    final DropDesignState beforeDrop = ref.read(dropDesignProvider);
-    final double projectedHype = beforeDrop.hypeResult?.totalScore ?? 0.0;
-
     final VexReview? review =
         await ref.read(dropDesignProvider.notifier).executeDrop();
 
     if (!mounted) return;
+    final String? error = ref.read(dropDesignProvider).error;
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+      return;
+    }
 
     if (review != null) {
       // Show Vex Review Card in modal
@@ -94,16 +79,9 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
             onDismiss: () {
               Navigator.of(ctx).pop();
             },
-            onShare: () {
-              // Share functionality
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Shared to feed!')),
-              );
-            },
           ),
         ),
       );
-      return;
     }
 
     if (!mounted) return;
@@ -163,9 +141,9 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
 
             const SizedBox(height: 24.0),
 
-            // --- Style Tags Selection ---
+            // --- Minted Style Signals ---
             const Text(
-              'STYLE TAGS (Select up to 3)',
+              'MINTED STYLE SIGNALS',
               style: TextStyle(
                 fontFamily: 'SpaceGrotesk',
                 fontSize: 10.0,
@@ -178,26 +156,16 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
             Wrap(
               spacing: 8.0,
               runSpacing: 8.0,
-              children: kAvailableStyleTags.map((String tag) {
-                final bool isSelected = _selectedTags.contains(tag);
-                return ChoiceChip(
+              children: _selectedTags.map((String tag) {
+                return Chip(
                   label: Text(tag),
-                  selected: isSelected,
-                  onSelected: (_) => _onTagToggle(tag),
-                  selectedColor:
-                      AurelianPalette.champagneGold.withValues(alpha: 0.3),
-                  backgroundColor: AurelianPalette.ivoryDark,
-                  side: BorderSide(
-                    color: isSelected
-                        ? AurelianPalette.champagneGold
-                        : AurelianPalette.textTertiary.withValues(alpha: 0.3),
-                  ),
-                  labelStyle: TextStyle(
+                  backgroundColor:
+                      AurelianPalette.champagneGold.withValues(alpha: 0.18),
+                  side: BorderSide(color: AurelianPalette.champagneGold),
+                  labelStyle: const TextStyle(
                     fontFamily: 'SpaceGrotesk',
                     fontSize: 12.0,
-                    color: isSelected
-                        ? AurelianPalette.textPrimary
-                        : AurelianPalette.textSecondary,
+                    color: AurelianPalette.textPrimary,
                   ),
                 );
               }).toList(),

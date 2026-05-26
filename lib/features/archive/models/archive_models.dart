@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // Directive K — Archive Models
 // GDD §8.9.9, §12.4.3 — P2P market with provenance tracking
 
@@ -11,9 +13,9 @@ part 'archive_models.g.dart';
 
 /// Archive Listing — P2P market entry
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ArchiveListing with _$ArchiveListing {
   const ArchiveListing._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory ArchiveListing({
     required String id,
     required String sellerId,
@@ -103,9 +105,9 @@ class ArchiveListing with _$ArchiveListing {
 
 /// Provenance Record — Single ownership transfer
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ProvenanceRecord with _$ProvenanceRecord {
   const ProvenanceRecord._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory ProvenanceRecord({
     required String id,
     required String designId,
@@ -142,8 +144,8 @@ class ProvenanceRecord with _$ProvenanceRecord {
 
 /// Transaction Result — Purchase outcome
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PurchaseResult with _$PurchaseResult {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory PurchaseResult({
     required bool success,
     String? transactionId,
@@ -158,8 +160,8 @@ class PurchaseResult with _$PurchaseResult {
 
 /// Listing Result — Create listing outcome
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class ListingResult with _$ListingResult {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory ListingResult({
     required bool success,
     String? listingId,
@@ -173,8 +175,8 @@ class ListingResult with _$ListingResult {
 
 /// Market Statistics
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class MarketStats with _$MarketStats {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory MarketStats({
     @Default(0) int totalActiveListings,
     @Default(0) int totalVolume24h,

@@ -1,7 +1,7 @@
 // GDD §6.1 — Feed Riverpod providers (Phase 6 + 7).
 // feedStreamProvider: Realtime stream of global feed_posts (newest first).
 // feedHypeOverrideProvider: immutable optimistic hype delta map (postId → delta).
-// hypePostProvider: fires increment_post_hype RPC.
+// hypePostProvider: compatibility shim for the feed-react Edge Function.
 // Phase 7 additions:
 //   feedModeProvider: GLOBAL | SYNDICATE toggle state.
 //   followingIdsProvider: Realtime stream of the player's follow graph → Set<String>.
@@ -13,6 +13,19 @@ import '../../../core/constants/supabase_constants.dart';
 import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/feed_post.dart';
+
+int _safeInt(Object? value, {int fallback = 0}) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? fallback;
+  return fallback;
+}
+
+double _safeDouble(Object? value, {double fallback = 0.0}) {
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? fallback;
+  return fallback;
+}
 
 class PendingAlphaDrop {
   const PendingAlphaDrop({
@@ -34,6 +47,65 @@ class PendingAlphaDrop {
 
 final StateProvider<PendingAlphaDrop?> pendingAlphaDropProvider =
     StateProvider<PendingAlphaDrop?>((Ref<PendingAlphaDrop?> ref) => null);
+
+class FeedReactionResult {
+  const FeedReactionResult({
+    required this.success,
+    required this.postId,
+    required this.reactionType,
+    required this.hype,
+    required this.likes,
+    required this.message,
+  });
+
+  final bool success;
+  final String postId;
+  final String reactionType;
+  final double hype;
+  final int likes;
+  final String message;
+
+  factory FeedReactionResult.fromJson(Map<String, dynamic> json) {
+    return FeedReactionResult(
+      success: json['success'] == true,
+      postId: json['post_id'] as String? ?? '',
+      reactionType: json['reaction_type'] as String? ?? '',
+      hype: _safeDouble(json['hype']),
+      likes: _safeInt(json['likes']),
+      message: json['message'] as String? ?? '',
+    );
+  }
+}
+
+class FeedComment {
+  const FeedComment({
+    required this.id,
+    required this.postId,
+    required this.playerId,
+    required this.body,
+    required this.createdAt,
+    this.brandName,
+  });
+
+  final String id;
+  final String postId;
+  final String playerId;
+  final String body;
+  final DateTime createdAt;
+  final String? brandName;
+
+  factory FeedComment.fromJson(Map<String, dynamic> json) {
+    return FeedComment(
+      id: json['id'] as String? ?? '',
+      postId: json['post_id'] as String? ?? '',
+      playerId: json['player_id'] as String? ?? '',
+      body: json['body'] as String? ?? '',
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+          DateTime.now(),
+      brandName: json['brand_name'] as String?,
+    );
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Feed mode — GLOBAL (all players) vs. SYNDICATE (following only).
@@ -69,6 +141,51 @@ final StreamProvider<List<FeedPost>> feedStreamProvider =
 final StateProvider<Map<String, int>> feedHypeOverrideProvider =
     StateProvider<Map<String, int>>((_) => <String, int>{});
 
+final StateProvider<Map<String, int>> feedLikeOverrideProvider =
+    StateProvider<Map<String, int>>((_) => <String, int>{});
+
+final Provider<FeedActions> feedActionsProvider =
+    Provider<FeedActions>((Ref<FeedActions> ref) => FeedActions(ref));
+
+class FeedActions {
+  const FeedActions(this._ref);
+
+  final Ref _ref;
+
+  Future<FeedReactionResult> react({
+    required String postId,
+    required String reactionType,
+  }) async {
+    final Map<String, dynamic> response = await SupabaseService.invokeFunction(
+      SupabaseConstants.fnFeedReact,
+      body: <String, dynamic>{
+        'post_id': postId,
+        'reaction_type': reactionType,
+      },
+    );
+    return FeedReactionResult.fromJson(response);
+  }
+
+  Future<FeedComment> comment({
+    required String postId,
+    required String body,
+  }) async {
+    final Map<String, dynamic> response = await SupabaseService.invokeFunction(
+      SupabaseConstants.fnFeedComment,
+      body: <String, dynamic>{
+        'post_id': postId,
+        'body': body,
+      },
+    );
+    final Object? comment = response['comment'];
+    final FeedComment parsed = FeedComment.fromJson(
+      comment is Map<String, dynamic> ? comment : response,
+    );
+    _ref.invalidate(feedCommentsProvider(postId));
+    return parsed;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Hype RPC — atomic Postgres increment. Family-parameterised by postId.
 // ---------------------------------------------------------------------------
@@ -76,15 +193,26 @@ final StateProvider<Map<String, int>> feedHypeOverrideProvider =
 final FutureProviderFamily<void, String> hypePostProvider =
     FutureProvider.family<void, String>(
   (Ref<AsyncValue<void>> ref, String postId) async {
-    final String uid = ref.read(activeUidProvider);
+    await ref.read(feedActionsProvider).react(
+          postId: postId,
+          reactionType: 'hype',
+        );
+  },
+);
 
-    await SupabaseService.client.rpc<Map<String, dynamic>>(
-      'increment_post_hype',
-      params: <String, dynamic>{
-        'p_post_id': postId,
-        'p_player_id': uid,
-      },
-    );
+final FutureProviderFamily<List<FeedComment>, String> feedCommentsProvider =
+    FutureProvider.family<List<FeedComment>, String>(
+  (Ref<AsyncValue<List<FeedComment>>> ref, String postId) async {
+    final List<dynamic> rows = await SupabaseService.client
+        .from(SupabaseConstants.tableFeedComments)
+        .select('id, post_id, player_id, brand_name, body, created_at')
+        .eq('post_id', postId)
+        .order('created_at');
+
+    return rows
+        .cast<Map<String, dynamic>>()
+        .map(FeedComment.fromJson)
+        .toList(growable: false);
   },
 );
 

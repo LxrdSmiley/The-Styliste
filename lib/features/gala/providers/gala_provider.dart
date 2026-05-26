@@ -10,6 +10,25 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/gala_models.dart';
 import '../services/gala_scoring_engine.dart';
 
+Map<String, dynamic> _firstRpcRow(Object? response) {
+  if (response is Map<String, dynamic>) {
+    return response;
+  }
+  if (response is Map) {
+    return Map<String, dynamic>.from(response);
+  }
+  if (response is List && response.isNotEmpty) {
+    final Object? first = response.first;
+    if (first is Map<String, dynamic>) {
+      return first;
+    }
+    if (first is Map) {
+      return Map<String, dynamic>.from(first);
+    }
+  }
+  throw const FormatException('RPC returned no result row.');
+}
+
 // =============================================================================
 // Active Gala Event Stream
 // =============================================================================
@@ -136,7 +155,7 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
             *,
             designs!inner(name, image_url),
             players!inner(display_name),
-            talent_pool!inner(name, tier, base_hype_multiplier)
+            talent_pool(name, tier, base_hype_multiplier)
           ''')
           .eq('event_id', eventId)
           .order('current_score', ascending: false)
@@ -195,7 +214,7 @@ class GalaFeedNotifier extends StateNotifier<GalaFeedState> {
             *,
             designs!inner(name, image_url),
             players!inner(display_name),
-            talent_pool!inner(name, tier, base_hype_multiplier)
+            talent_pool(name, tier, base_hype_multiplier)
           ''')
           .eq('event_id', _currentEventId!)
           .order('current_score', ascending: false)
@@ -308,13 +327,22 @@ final FutureProviderFamily<VoteLimits, String> voteLimitsProvider =
 
     if (userId == null) throw Exception('Not authenticated');
 
-    final Map<String, dynamic> result = await supabase
+    final String voteDate = DateTime.now().toIso8601String().split('T').first;
+    final Map<String, dynamic>? result = await supabase
         .from('gala_vote_limits')
         .select()
         .eq('player_id', userId)
         .eq('event_id', eventId)
-        .eq('vote_date', DateTime.now().toIso8601String().split('T').first)
-        .single();
+        .eq('vote_date', voteDate)
+        .maybeSingle();
+
+    if (result == null) {
+      return VoteLimits(
+        playerId: userId,
+        eventId: eventId,
+        voteDate: DateTime.parse(voteDate),
+      );
+    }
 
     return VoteLimits.fromJson(result);
   },
@@ -391,13 +419,14 @@ class VoteCastingNotifier extends StateNotifier<VoteCastingState> {
     try {
       final SupabaseClient supabase = Supabase.instance.client;
 
-      final Map<String, dynamic> result = await supabase.rpc(
+      final Object? response = await supabase.rpc(
         'cast_gala_vote',
         params: <String, dynamic>{
           'p_submission_id': submissionId,
           'p_vote_tier': tier.name.toLowerCase(),
         },
       );
+      final Map<String, dynamic> result = _firstRpcRow(response);
 
       final VoteResult voteResult = VoteResult(
         success: result['success'] as bool,
@@ -466,7 +495,7 @@ class SubmissionNotifier extends StateNotifier<SubmissionState> {
       final SupabaseClient supabase = Supabase.instance.client;
       final String playerId = supabase.auth.currentUser!.id;
 
-      final List<dynamic> rows = await supabase.rpc<List<dynamic>>(
+      final Object? response = await supabase.rpc(
         'submit_to_gala',
         params: <String, dynamic>{
           'p_player_id': playerId,
@@ -474,8 +503,7 @@ class SubmissionNotifier extends StateNotifier<SubmissionState> {
           'p_event_id': eventId,
         },
       );
-      final Map<String, dynamic> result =
-          (rows.first as Map<dynamic, dynamic>).cast<String, dynamic>();
+      final Map<String, dynamic> result = _firstRpcRow(response);
 
       if (result['success'] == true) {
         state = state.copyWith(

@@ -1,6 +1,8 @@
 // PROJECT_RULES §2 — Supabase client singleton
 // All DB queries and Edge Function calls route through this service.
 
+import 'dart:convert';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract final class SupabaseService {
@@ -24,6 +26,25 @@ abstract final class SupabaseService {
     if (response.data == null) {
       throw Exception('Edge function $functionName returned null data.');
     }
-    return Map<String, dynamic>.from(response.data as Map<dynamic, dynamic>);
+    final Object data = response.data as Object;
+    if (data is Map<String, dynamic>) {
+      return data;
+    }
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+    if (data is String) {
+      final Object? decoded = jsonDecode(data);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+      if (decoded is Map) {
+        return Map<String, dynamic>.from(decoded);
+      }
+    }
+
+    throw FormatException(
+      'Edge function $functionName returned ${data.runtimeType}, expected JSON object.',
+    );
   }
 }

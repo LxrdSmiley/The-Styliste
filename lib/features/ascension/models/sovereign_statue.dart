@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // GDD v6 §3.5 — Sovereign Statue Model
 // Hall of Sovereigns: 3D memorialized brands with tier-based materials
 // Alabaster Standard: Quartz → Gold → Alabaster progression
@@ -89,9 +91,9 @@ extension StatueTierExtension on StatueTier {
 /// Created at Rank 100 ascension. Permanent record of player's
 /// fashion empire achievement with 3D statue representation.
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class SovereignStatue with _$SovereignStatue {
   const SovereignStatue._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory SovereignStatue({
     required String id,
     required String playerId,

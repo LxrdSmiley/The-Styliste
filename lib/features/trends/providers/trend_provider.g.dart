@@ -39,7 +39,7 @@ final activeTsunamiProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef ActiveTsunamiRef = AutoDisposeStreamProviderRef<List<TrendTsunami>>;
-String _$crestTagHash() => r'0af361f59bc56fbab2c55d579875b53b2bed8516';
+String _$crestTagHash() => r'b11bcaf53632def399b2d6bc8fdffd9c5a28c05c';
 
 /// Provider for just the Crest tag (rank 1 display priority)
 ///
@@ -58,7 +58,7 @@ final crestTagProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef CrestTagRef = AutoDisposeProviderRef<AsyncValue<TrendTsunami?>>;
-String _$surgeTagsHash() => r'f8f7bccfc98438896cdc229e9fc96f9cfeaf15c5';
+String _$surgeTagsHash() => r'fa42bdd341471cc02e8ef942adcb6da45e122ed6';
 
 /// Provider for Surge tags (rank 2-3, 1.5x multiplier)
 ///
@@ -105,8 +105,7 @@ class _SystemHash {
 /// Usage:
 /// ```dart
 /// final multiplier = ref.watch(tsunamiMultiplierProvider(['minimalist', 'ivory']));
-/// // Returns 2.5 if 'minimalist' is the Crest tag
-/// // Returns 1.5 if 'ivory' is a Surge tag
+/// // Returns 1.5 if any active trend matches
 /// // Returns 1.0 if no match
 /// ```
 ///
@@ -119,8 +118,7 @@ const tsunamiMultiplierProvider = TsunamiMultiplierFamily();
 /// Usage:
 /// ```dart
 /// final multiplier = ref.watch(tsunamiMultiplierProvider(['minimalist', 'ivory']));
-/// // Returns 2.5 if 'minimalist' is the Crest tag
-/// // Returns 1.5 if 'ivory' is a Surge tag
+/// // Returns 1.5 if any active trend matches
 /// // Returns 1.0 if no match
 /// ```
 ///
@@ -131,8 +129,7 @@ class TsunamiMultiplierFamily extends Family<double> {
   /// Usage:
   /// ```dart
   /// final multiplier = ref.watch(tsunamiMultiplierProvider(['minimalist', 'ivory']));
-  /// // Returns 2.5 if 'minimalist' is the Crest tag
-  /// // Returns 1.5 if 'ivory' is a Surge tag
+  /// // Returns 1.5 if any active trend matches
   /// // Returns 1.0 if no match
   /// ```
   ///
@@ -144,8 +141,7 @@ class TsunamiMultiplierFamily extends Family<double> {
   /// Usage:
   /// ```dart
   /// final multiplier = ref.watch(tsunamiMultiplierProvider(['minimalist', 'ivory']));
-  /// // Returns 2.5 if 'minimalist' is the Crest tag
-  /// // Returns 1.5 if 'ivory' is a Surge tag
+  /// // Returns 1.5 if any active trend matches
   /// // Returns 1.0 if no match
   /// ```
   ///
@@ -187,8 +183,7 @@ class TsunamiMultiplierFamily extends Family<double> {
 /// Usage:
 /// ```dart
 /// final multiplier = ref.watch(tsunamiMultiplierProvider(['minimalist', 'ivory']));
-/// // Returns 2.5 if 'minimalist' is the Crest tag
-/// // Returns 1.5 if 'ivory' is a Surge tag
+/// // Returns 1.5 if any active trend matches
 /// // Returns 1.0 if no match
 /// ```
 ///
@@ -199,8 +194,7 @@ class TsunamiMultiplierProvider extends AutoDisposeProvider<double> {
   /// Usage:
   /// ```dart
   /// final multiplier = ref.watch(tsunamiMultiplierProvider(['minimalist', 'ivory']));
-  /// // Returns 2.5 if 'minimalist' is the Crest tag
-  /// // Returns 1.5 if 'ivory' is a Surge tag
+  /// // Returns 1.5 if any active trend matches
   /// // Returns 1.0 if no match
   /// ```
   ///

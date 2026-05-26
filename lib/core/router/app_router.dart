@@ -12,7 +12,6 @@ import '../../domain/models/player.dart';
 import '../../features/ar_tryon/screens/ar_tryon_screen.dart';
 import '../../features/archive/screens/archive_market_screen.dart';
 import '../../features/ascension/screens/hall_of_sovereigns_screen.dart';
-import '../../features/atelier/models/drop_launch_payload.dart';
 import '../../features/atelier/screens/atelier_screen.dart';
 import '../../features/atelier/screens/drop_launch_scene_screen.dart';
 import '../../features/atelier/screens/drop_preview_screen.dart';
@@ -214,13 +213,6 @@ abstract final class AppRouter {
       ),
 
       // --- Atelier Drop Launch: cosmetic Flame scene (GDD §2, §4.1, §6.1) ---
-      GoRoute(
-        path: atelierDropLaunch,
-        builder: (BuildContext context, GoRouterState state) {
-          final DropLaunchPayload payload = state.extra! as DropLaunchPayload;
-          return DropLaunchSceneScreen(payload: payload);
-        },
-      ),
       GoRoute(
         path: atelierDropLaunch,
         builder: (BuildContext context, GoRouterState state) =>

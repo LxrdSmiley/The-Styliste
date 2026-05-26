@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // GDD §5.1 — Supplier entity
 // Tiered: Local → Regional → International → Luxury
 // Rated on Quality, Cost, Reliability, Prestige
@@ -30,8 +32,8 @@ enum SupplierCategory {
 }
 
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Supplier with _$Supplier {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory Supplier({
     required String id,
     required String name,
@@ -51,8 +53,8 @@ class Supplier with _$Supplier {
 }
 
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class SupplyChainContract with _$SupplyChainContract {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory SupplyChainContract({
     required String id,
     required String playerId,

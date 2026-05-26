@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // GDD §5.5–5.6 — Equity / IPO / stock system
 // IPO unlocks at Brand Rank 60. Hostile takeover at 51%+ ownership.
 // All equity mutations are server-authoritative (PROJECT_RULES §3).
@@ -15,8 +17,8 @@ enum ShareType {
 }
 
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class BrandEquity with _$BrandEquity {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory BrandEquity({
     required String brandId,
     @Default(0) int totalShares,
@@ -32,8 +34,8 @@ class BrandEquity with _$BrandEquity {
 }
 
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class EquityPosition with _$EquityPosition {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory EquityPosition({
     required String id,
     required String holderId,

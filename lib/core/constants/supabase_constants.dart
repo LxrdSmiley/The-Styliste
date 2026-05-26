@@ -69,6 +69,9 @@ abstract final class SupabaseConstants {
   // --- Edge Function Names ---
   static const String fnCalculateIdleIncome = 'calculate-idle-income';
   static const String fnMintDesign = 'mint-design';
+  static const String fnDropDesign = 'drop-design';
+  static const String fnFeedReact = 'feed-react';
+  static const String fnFeedComment = 'feed-comment';
   static const String fnProcessTransaction = 'process-transaction';
   static const String fnMaisonDonate = 'maison-donate';
   static const String fnValidateIap = 'validate-iap';

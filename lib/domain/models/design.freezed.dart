@@ -25,12 +25,15 @@ mixin _$Design {
   String get name => throw _privateConstructorUsedError;
   DesignSessionType get sessionType => throw _privateConstructorUsedError;
   DesignStatus get status => throw _privateConstructorUsedError;
+  @_SafeDouble()
   double get hypeScore => throw _privateConstructorUsedError;
   bool get isAlpha => throw _privateConstructorUsedError;
   bool get isDigitalTwin => throw _privateConstructorUsedError; // GDD §8.9.14
   bool get dppRegistered => throw _privateConstructorUsedError;
   Map<String, dynamic> get fabricData => throw _privateConstructorUsedError;
+  @_SafeDouble()
   double get sellPotential => throw _privateConstructorUsedError;
+  @_SafeDouble()
   double get culturalImpact => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get droppedAt => throw _privateConstructorUsedError;
@@ -55,13 +58,13 @@ abstract class $DesignCopyWith<$Res> {
       String name,
       DesignSessionType sessionType,
       DesignStatus status,
-      double hypeScore,
+      @_SafeDouble() double hypeScore,
       bool isAlpha,
       bool isDigitalTwin,
       bool dppRegistered,
       Map<String, dynamic> fabricData,
-      double sellPotential,
-      double culturalImpact,
+      @_SafeDouble() double sellPotential,
+      @_SafeDouble() double culturalImpact,
       DateTime? createdAt,
       DateTime? droppedAt});
 }
@@ -170,13 +173,13 @@ abstract class _$$DesignImplCopyWith<$Res> implements $DesignCopyWith<$Res> {
       String name,
       DesignSessionType sessionType,
       DesignStatus status,
-      double hypeScore,
+      @_SafeDouble() double hypeScore,
       bool isAlpha,
       bool isDigitalTwin,
       bool dppRegistered,
       Map<String, dynamic> fabricData,
-      double sellPotential,
-      double culturalImpact,
+      @_SafeDouble() double sellPotential,
+      @_SafeDouble() double culturalImpact,
       DateTime? createdAt,
       DateTime? droppedAt});
 }
@@ -280,13 +283,13 @@ class _$DesignImpl implements _Design {
       required this.name,
       required this.sessionType,
       this.status = DesignStatus.draft,
-      this.hypeScore = 0.0,
+      @_SafeDouble() this.hypeScore = 0.0,
       this.isAlpha = false,
       this.isDigitalTwin = false,
       this.dppRegistered = false,
       final Map<String, dynamic> fabricData = const <String, dynamic>{},
-      this.sellPotential = 0.0,
-      this.culturalImpact = 0.0,
+      @_SafeDouble() this.sellPotential = 0.0,
+      @_SafeDouble() this.culturalImpact = 0.0,
       this.createdAt,
       this.droppedAt})
       : _fabricData = fabricData;
@@ -307,6 +310,7 @@ class _$DesignImpl implements _Design {
   final DesignStatus status;
   @override
   @JsonKey()
+  @_SafeDouble()
   final double hypeScore;
   @override
   @JsonKey()
@@ -329,9 +333,11 @@ class _$DesignImpl implements _Design {
 
   @override
   @JsonKey()
+  @_SafeDouble()
   final double sellPotential;
   @override
   @JsonKey()
+  @_SafeDouble()
   final double culturalImpact;
   @override
   final DateTime? createdAt;
@@ -416,13 +422,13 @@ abstract class _Design implements Design {
       required final String name,
       required final DesignSessionType sessionType,
       final DesignStatus status,
-      final double hypeScore,
+      @_SafeDouble() final double hypeScore,
       final bool isAlpha,
       final bool isDigitalTwin,
       final bool dppRegistered,
       final Map<String, dynamic> fabricData,
-      final double sellPotential,
-      final double culturalImpact,
+      @_SafeDouble() final double sellPotential,
+      @_SafeDouble() final double culturalImpact,
       final DateTime? createdAt,
       final DateTime? droppedAt}) = _$DesignImpl;
 
@@ -439,6 +445,7 @@ abstract class _Design implements Design {
   @override
   DesignStatus get status;
   @override
+  @_SafeDouble()
   double get hypeScore;
   @override
   bool get isAlpha;
@@ -449,8 +456,10 @@ abstract class _Design implements Design {
   @override
   Map<String, dynamic> get fabricData;
   @override
+  @_SafeDouble()
   double get sellPotential;
   @override
+  @_SafeDouble()
   double get culturalImpact;
   @override
   DateTime? get createdAt;

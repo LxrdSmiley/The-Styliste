@@ -33,7 +33,6 @@ class VexReviewCard extends StatelessWidget {
 
   static const Duration _animationDuration = Duration(milliseconds: 500);
   static const Duration _staggerDelay = Duration(milliseconds: 100);
-  static const Duration _animationDuration = Duration(milliseconds: 600);
 
   @override
   Widget build(BuildContext context) {

@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // GDD §3 — Player entity: core identity and progression state
 // Freezed + JsonSerializable for type-safe serialization (PROJECT_RULES §3)
 
@@ -66,8 +68,8 @@ extension HqCityApi on HqCity {
 }
 
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Player with _$Player {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory Player({
     required String id,
     required String brandName,

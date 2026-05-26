@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // GDD §5.4 — Marketing campaign entity
 // Campaign Builder: presets + custom, budget sliders, ROI forecasts
 
@@ -31,8 +33,8 @@ enum CampaignStatus {
 }
 
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Campaign with _$Campaign {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory Campaign({
     required String id,
     required String playerId,

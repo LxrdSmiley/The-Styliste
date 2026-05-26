@@ -6,22 +6,6 @@ part of 'player.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-const _$CareerPathEnumMap = {
-  CareerPath.designer: 'designer',
-  CareerPath.mogul: 'mogul',
-};
-
-const _$HqCityEnumMap = {
-  HqCity.newYork: 'new_york',
-  HqCity.paris: 'paris',
-  HqCity.tokyo: 'tokyo',
-  HqCity.london: 'london',
-  HqCity.milan: 'milan',
-  HqCity.seoul: 'seoul',
-  HqCity.nairobi: 'nairobi',
-  HqCity.saoPaulo: 'sao_paulo',
-};
-
 _$PlayerImpl _$$PlayerImplFromJson(Map<String, dynamic> json) => _$PlayerImpl(
       id: json['id'] as String,
       brandName: json['brand_name'] as String,
@@ -64,3 +48,19 @@ Map<String, dynamic> _$$PlayerImplToJson(_$PlayerImpl instance) =>
       'last_active_at': instance.lastActiveAt?.toIso8601String(),
       'luxe_trust_score': instance.luxeTrustScore,
     };
+
+const _$CareerPathEnumMap = {
+  CareerPath.designer: 'designer',
+  CareerPath.mogul: 'mogul',
+};
+
+const _$HqCityEnumMap = {
+  HqCity.newYork: 'new_york',
+  HqCity.paris: 'paris',
+  HqCity.tokyo: 'tokyo',
+  HqCity.london: 'london',
+  HqCity.milan: 'milan',
+  HqCity.seoul: 'seoul',
+  HqCity.nairobi: 'nairobi',
+  HqCity.saoPaulo: 'sao_paulo',
+};

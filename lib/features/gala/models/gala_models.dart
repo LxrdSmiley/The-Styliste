@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // Directive J — Gala Models
 // GDD §6.9, §12.3.3 — Weekly PvP event data structures
 
@@ -11,9 +13,9 @@ part 'gala_models.g.dart';
 
 /// Gala Event — Weekly themed competition
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class GalaEvent with _$GalaEvent {
   const GalaEvent._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory GalaEvent({
     required String id,
     required String themeTitle,
@@ -55,9 +57,9 @@ class GalaEvent with _$GalaEvent {
 
 /// Gala Submission — Player's entry with votes
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class GalaSubmission with _$GalaSubmission {
   const GalaSubmission._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory GalaSubmission({
     required String id,
     required String eventId,
@@ -98,9 +100,9 @@ class GalaSubmission with _$GalaSubmission {
 
 /// Vote cast by a player
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class GalaVote with _$GalaVote {
   const GalaVote._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory GalaVote({
     required String id,
     required String submissionId,
@@ -122,9 +124,9 @@ class GalaVote with _$GalaVote {
 
 /// Daily vote limits for a player
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class VoteLimits with _$VoteLimits {
   const VoteLimits._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory VoteLimits({
     required String playerId,
     required String eventId,
@@ -169,9 +171,9 @@ class VoteLimits with _$VoteLimits {
 
 /// Leaderboard entry
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LeaderboardEntry with _$LeaderboardEntry {
   const LeaderboardEntry._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory LeaderboardEntry({
     required int rank,
     required String submissionId,
@@ -200,8 +202,8 @@ class LeaderboardEntry with _$LeaderboardEntry {
 
 /// Submission result after voting
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class VoteResult with _$VoteResult {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory VoteResult({
     required bool success,
     required double finalPoints,

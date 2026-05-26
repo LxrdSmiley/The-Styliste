@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // GDD §5.2 — Store entity (Physical Flagship + Online E-Commerce)
 // Mogul path core asset. Revenue is server-computed.
 // Phase 5: _SafeDouble converter on NUMERIC fields — Postgres may return int
@@ -48,8 +50,8 @@ enum StoreCity {
 }
 
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Store with _$Store {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory Store({
     required String id,
     required String playerId,

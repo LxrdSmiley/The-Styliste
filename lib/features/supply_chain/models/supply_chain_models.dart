@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // Directive L — Supply Chain Models
 // GDD §12.1.2 — Buffer Stock Engine data structures
 
@@ -10,9 +12,9 @@ part 'supply_chain_models.g.dart';
 
 /// Supply Chain State — Warehouse inventory tracking
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class SupplyChainState with _$SupplyChainState {
   const SupplyChainState._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory SupplyChainState({
     @Default(5000) int warehouseCapacity,
     @Default(0) int currentInventoryValue,
@@ -71,9 +73,9 @@ class SupplyChainState with _$SupplyChainState {
 
 /// Liquidation Result — Inventory to Capital conversion
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LiquidationResult with _$LiquidationResult {
   const LiquidationResult._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory LiquidationResult({
     @Default(0) int liquidatedAmount,
     @Default(0) int newInventory,
@@ -92,9 +94,9 @@ class LiquidationResult with _$LiquidationResult {
 
 /// Logistics Upgrade — Warehouse expansion
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LogisticsUpgrade with _$LogisticsUpgrade {
   const LogisticsUpgrade._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory LogisticsUpgrade({
     @Default(false) bool success,
     @Default(1) int newLevel,

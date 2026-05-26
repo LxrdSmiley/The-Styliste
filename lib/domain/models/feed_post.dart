@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // GDD §6.1 — FeedPost entity: Global Live Feed row.
 // Phase 6: Freezed model with _SafeDouble on hype (Postgres NUMERIC).
 // `type` is the discriminator: 'design_flex' | 'mogul_flex'.
@@ -19,8 +21,8 @@ class _SafeDouble implements JsonConverter<double, Object?> {
 }
 
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class FeedPost with _$FeedPost {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory FeedPost({
     required String id,
     required String playerId,

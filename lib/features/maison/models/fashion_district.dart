@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // GDD v6 — Maison District Warfare Models
 // 9 districts across 3 cities, 30-day Aurelian Watermarks
 // Alabaster Standard: Hybrid Capital+Hype power formula
@@ -9,13 +11,13 @@ part 'fashion_district.g.dart';
 
 /// A fashion district — hyper-localized territory for Maison control
 ///
-/// 9 districts total: 3 cities × 3 districts each
+/// 9 districts total: 3 cities Ã— 3 districts each
 /// - NYC: SoHo, Meatpacking, Williamsburg
 /// - Tokyo: Ginza, Harajuku, Shibuya
 /// - Paris: Le Marais, Saint-Germain, Montmartre
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class FashionDistrict with _$FashionDistrict {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory FashionDistrict({
     required String id,
     required String name,
@@ -70,8 +72,8 @@ class FashionDistrict with _$FashionDistrict {
 
 /// Permanent legacy watermark for 30-day district control
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DistrictWatermark with _$DistrictWatermark {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory DistrictWatermark({
     required String id,
     required String maisonId,
@@ -85,8 +87,8 @@ class DistrictWatermark with _$DistrictWatermark {
 
 /// Takeover attempt result from RPC
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class TakeoverResult with _$TakeoverResult {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory TakeoverResult({
     required bool success,
     required String message,
@@ -100,8 +102,8 @@ class TakeoverResult with _$TakeoverResult {
 
 /// District with extended info for UI (includes maison name, member hype, etc.)
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DistrictDetails with _$DistrictDetails {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory DistrictDetails({
     required FashionDistrict district,
     String? controllingMaisonName,

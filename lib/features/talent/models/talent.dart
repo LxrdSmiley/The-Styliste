@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // Directive I — Talent Models
 // GDD §8.10 — Sovereign Talent casting system
 // Alabaster Standard: Type-safe, Freezed, with tier extensions
@@ -94,8 +96,8 @@ extension TalentTierExtension on TalentTier {
 
 /// Talent model — represents a celebrity/model/designer in the gacha pool
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Talent with _$Talent {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory Talent({
     required String id,
     required String name,
@@ -120,8 +122,8 @@ extension TalentExtension on Talent {
 /// RosterTalent model — represents a talent in player's roster
 /// Includes talent details plus roster-specific fields
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class RosterTalent with _$RosterTalent {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory RosterTalent({
     required String talentId,
     required String name,
@@ -148,8 +150,8 @@ extension RosterTalentExtension on RosterTalent {
 
 /// Single pull result from casting
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PullResult with _$PullResult {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory PullResult({
     required String talentId,
     required String name,
@@ -166,8 +168,8 @@ class PullResult with _$PullResult {
 
 /// Complete casting pull result (single or ten)
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CastingResult with _$CastingResult {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory CastingResult({
     required List<PullResult> pulls,
     @Default(0) int luxeSpent,
@@ -181,9 +183,9 @@ class CastingResult with _$CastingResult {
 
 /// Pity state tracking
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class PityState with _$PityState {
   const PityState._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory PityState({
     @Default('standard') String bannerId,
     @Default(0) int pullsSinceSovereign,

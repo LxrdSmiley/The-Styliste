@@ -275,6 +275,7 @@ class __$$PlayerImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
+
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class _$PlayerImpl extends _Player {
   const _$PlayerImpl(

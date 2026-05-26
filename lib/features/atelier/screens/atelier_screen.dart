@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../domain/models/design.dart';
+import '../constants/style_tags.dart';
 import '../providers/mint_design_provider.dart';
 import '../widgets/fabric_swatch_panel.dart';
 import '../widgets/garment_canvas.dart';
@@ -27,6 +28,7 @@ class AtelierScreen extends ConsumerStatefulWidget {
 
 class _AtelierScreenState extends ConsumerState<AtelierScreen> {
   Color _selectedDye = AppColors.ivory;
+  final Set<String> _selectedStyleTags = <String>{...kDefaultStyleTags};
   int _interactionSeconds = 0;
   bool _touchActive = false;
   bool _isMinting = false;
@@ -59,6 +61,20 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
 
   bool get _mintUnlocked => _interactionSeconds >= _gateSeconds;
 
+  void _onTagToggle(String tag) {
+    setState(() {
+      if (_selectedStyleTags.contains(tag)) {
+        if (_selectedStyleTags.length > 1) {
+          _selectedStyleTags.remove(tag);
+        }
+        return;
+      }
+      if (_selectedStyleTags.length < 3) {
+        _selectedStyleTags.add(tag);
+      }
+    });
+  }
+
   // ---------------------------------------------------------------------------
   // Mint Alpha
   // ---------------------------------------------------------------------------
@@ -70,14 +86,18 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
     try {
       final Design design = await ref.read(
         mintDesignProvider(
-          _selectedDye
-              .toARGB32()
-              .toRadixString(16)
-              .padLeft(8, '0')
-              .substring(2),
+          MintDesignInput(
+            fabricColorHex: _selectedDye
+                .toARGB32()
+                .toRadixString(16)
+                .padLeft(8, '0')
+                .substring(2),
+            styleTags: _selectedStyleTags.toList(growable: false),
+          ),
         ).future,
       );
       if (mounted) {
+        setState(() => _isMinting = false);
         // Navigate to Drop Preview with Vex Critic integration.
         unawaited(
           context.push(
@@ -154,7 +174,46 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 32.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                Text(
+                  'STYLE SIGNALS',
+                  style: TextStyle(
+                    color: AppColors.ivory.withValues(alpha: 0.45),
+                    fontSize: 9.0,
+                    letterSpacing: 2.0,
+                  ),
+                ),
+                const SizedBox(height: 8.0),
+                Wrap(
+                  spacing: 8.0,
+                  runSpacing: 8.0,
+                  children: kAvailableStyleTags.map((String tag) {
+                    final bool selected = _selectedStyleTags.contains(tag);
+                    return ChoiceChip(
+                      label: Text(tag.toUpperCase()),
+                      selected: selected,
+                      onSelected: (_) => _onTagToggle(tag),
+                      selectedColor: AppColors.gold.withValues(alpha: 0.18),
+                      backgroundColor: AppColors.obsidianCard,
+                      side: BorderSide(
+                        color: selected
+                            ? AppColors.gold
+                            : AppColors.grey700.withValues(alpha: 0.7),
+                      ),
+                      labelStyle: TextStyle(
+                        color: selected
+                            ? AppColors.gold
+                            : AppColors.ivory.withValues(alpha: 0.62),
+                        fontSize: 9.0,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.2,
+                      ),
+                      visualDensity: VisualDensity.compact,
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16.0),
                 // Progress bar — fills as player interacts.
                 if (!_mintUnlocked)
                   Column(

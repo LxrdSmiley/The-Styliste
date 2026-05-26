@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // Directive N — Check-In Models
 // GDD §8.12 — Daily Streak System data structures
 
@@ -8,9 +10,9 @@ part 'check_in_models.g.dart';
 
 /// Check-In State — Player's daily streak tracking
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CheckInState with _$CheckInState {
   const CheckInState._();
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory CheckInState({
     @Default(0) int currentStreak,
     DateTime? lastCheckIn,
@@ -125,8 +127,8 @@ class CheckInState with _$CheckInState {
 
 /// Check-In Reward Model
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CheckInReward with _$CheckInReward {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory CheckInReward({
     required int day,
     required String type,

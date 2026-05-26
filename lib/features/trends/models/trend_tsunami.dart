@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // GDD v6 §3 — Trend Tsunami Domain Model
 // 48-hour live player-driven trend meta
 // Alabaster Standard implementation
@@ -13,8 +15,8 @@ part 'trend_tsunami.g.dart';
 /// from global player behavior. Matching tags receive a 1.5x multiplier.
 /// Rank 1 is the Crest for display priority; ranks 2-3 are Surge tags.
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class TrendTsunami with _$TrendTsunami {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory TrendTsunami({
     required String id,
     required String tagName,

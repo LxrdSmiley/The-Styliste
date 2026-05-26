@@ -3,18 +3,20 @@
 // Alabaster Standard: Vex opt-in toggle, procedural critique, editorial snap animation
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/design.dart';
 import '../../design/models/vex_review.dart';
 import '../../design/services/hype_calculator.dart';
 import '../../design/services/vex_ai_engine.dart';
 import '../../feed/providers/feed_provider.dart';
-import '../../talent/models/talent.dart';
-import '../../talent/providers/casting_provider.dart';
-import '../../trends/models/trend_tsunami.dart';
-import '../../trends/providers/trend_provider.dart';
+
+double _safeDouble(Object? value, {double fallback = 0.0}) {
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? fallback;
+  return fallback;
+}
 
 /// State for the drop design flow
 class DropDesignState {
@@ -67,7 +69,6 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
   DropDesignNotifier(this._ref) : super(const DropDesignState());
 
   final Ref _ref;
-  final HypeCalculator _calculator = const HypeCalculator();
   final VexAIEngine _vexEngine = vexEngine;
 
   /// Initialize the drop flow with a minted design
@@ -78,49 +79,14 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
     required Design design,
     required List<String> styleTags,
   }) {
-    // Get active tsunamis for hype calculation
-    final AsyncValue<List<TrendTsunami>> tsunamisAsync =
-        _ref.read(activeTsunamiProvider);
-
-    final List<TrendTsunami> activeTsunamis = tsunamisAsync.when(
-      data: (List<TrendTsunami> t) => t,
-      loading: () => <TrendTsunami>[],
-      error: (_, __) => <TrendTsunami>[],
+    final HypeCalculationResult hypeResult = HypeCalculationResult(
+      totalScore: design.hypeScore,
+      baseScore: design.hypeScore,
+      tsunamiMultiplier: 1.0,
+      talentBonus: 0.0,
     );
 
-    // Calculate projected hype score
-    final HypeCalculationInput input = HypeCalculationInput(
-      styleTags: styleTags,
-      materialQuality: _getMaterialQuality(design),
-      aestheticAlignment:
-          _getAestheticAlignment(design, styleTags, activeTsunamis),
-      sovereignTalentCount: _ref.read(rosterProvider).maybeWhen(
-            data: (List<RosterTalent> roster) => roster
-                .where((RosterTalent t) => t.tier == TalentTier.sovereign)
-                .length,
-            orElse: () => 0,
-          ),
-      totalTalentExpertise: _ref.read(rosterProvider).maybeWhen(
-            data: (List<RosterTalent> roster) => roster
-                .where((RosterTalent t) => t.tier == TalentTier.sovereign)
-                .fold(
-                  0.0,
-                  (double sum, RosterTalent t) => sum + t.expertiseScore,
-                ),
-                .fold(
-                  0.0,
-                  (double sum, RosterTalent t) => sum + t.expertiseScore,
-                ),
-            orElse: () => 0.0,
-          ),
-    );
-
-    final HypeCalculationResult hypeResult = _calculator.calculate(
-      input: input,
-      activeTsunamis: activeTsunamis,
-    );
-
-    // Generate preview Vex review (only if opted in)
+    // Generate preview Vex review from the server-authoritative minted hype.
     final VexReview? previewReview =
         state.vexOptedIn ? _vexEngine.generateReview(result: hypeResult) : null;
 
@@ -161,77 +127,29 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
     state = state.copyWith(isDropping: true, clearError: true);
 
     try {
-      final SupabaseClient supabase = Supabase.instance.client;
-      final String playerId = supabase.auth.currentUser!.id;
       final Design design = state.design!;
       final VexReview? review = state.vexReview;
-      final double hypeScore = state.hypeResult?.totalScore ?? 0.0;
-      final String? fabricColorHex = design.fabricData['color_hex'] as String?;
-      Map<String, dynamic>? playerProfile;
-      try {
-        playerProfile = await supabase
-            .from(SupabaseConstants.tablePlayers)
-            .select('brand_name, brand_rank')
-            .eq('id', playerId)
-            .maybeSingle();
-      } catch (_) {
-        playerProfile = null;
-      }
-      final String? brandName = playerProfile?['brand_name'] as String?;
-      final Object? brandRank = playerProfile?['brand_rank'];
-
-      final Map<String, dynamic> content = <String, dynamic>{
-        'event': 'alpha_dropped',
-        'design_id': design.id,
-        'design_name': design.name,
-        'style_tags': state.styleTags,
-        'trend_tags': state.styleTags,
-        'hype_score': hypeScore,
-        'fabric_tier': design.fabricTier,
-        if (fabricColorHex != null) 'fabric_color_hex': fabricColorHex,
-        if (brandName != null && brandName.isNotEmpty) 'brand_name': brandName,
-        if (brandRank is num) 'brand_rank': brandRank,
-        if (review != null) ...<String, dynamic>{
-          'vex_review': review.toJson(),
-          'vex_headline': review.headline,
-          'vex_quote': review.quotableLine,
-          'vex_caption': review.body,
-          'vex_verdict': review.verdict.name,
+      final Map<String, dynamic> response = await SupabaseService.invokeFunction(
+        SupabaseConstants.fnDropDesign,
+        body: <String, dynamic>{
+          'design_id': design.id,
+          'style_tags': state.styleTags,
+          if (review != null) ...<String, dynamic>{
+            'vex_review': review.toJson(),
+            'vex_quote': review.quotableLine,
+            'vex_caption': review.body,
+          },
         },
-      };
-
-      // Step 1: Create feed post
-      final Map<String, dynamic> feedPost = await supabase
-          .from(SupabaseConstants.tableFeedPosts)
-          .insert(<String, dynamic>{
-            'player_id': playerId,
-            'type': 'design_flex',
-            'content': content,
-            'hype': hypeScore,
-          })
-          .select()
-          .single();
-      final String feedPostId = feedPost['id'] as String;
-
-      // Step 2: Create garment_drop record
-      await supabase
-          .from(SupabaseConstants.tableGarmentDrops)
-          .insert(<String, dynamic>{
-        'player_id': playerId,
-        'design_id': design.id,
-        'style_tags': state.styleTags,
-        'hype_score': hypeScore,
-        'feed_post_id': feedPostId,
-        'dropped_at': DateTime.now().toIso8601String(),
-      });
-
-      // Step 3: Update design status to 'dropped'
-      await supabase
-          .from(SupabaseConstants.tableDesigns)
-          .update(<String, dynamic>{
-        'status': 'dropped',
-        'dropped_at': DateTime.now().toIso8601String(),
-      }).eq('id', design.id);
+      );
+      final String feedPostId = response['feed_post_id'] as String;
+      final double hypeScore = _safeDouble(
+        response['hype_score'],
+        fallback: design.hypeScore,
+      );
+      final String? brandName = response['brand_name'] as String?;
+      final String? fabricColorHex =
+          response['fabric_color_hex'] as String? ??
+              design.fabricData['color_hex'] as String?;
 
       _ref.read(pendingAlphaDropProvider.notifier).state = PendingAlphaDrop(
         feedPostId: feedPostId,
@@ -276,28 +194,6 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
     state = const DropDesignState();
   }
 
-  double _getMaterialQuality(Design design) {
-    // Map fabric tier to quality score per GDD §4.1
-    return switch (design.fabricTier) {
-      'alabaster_silk' => 95.0,
-      'organic_cotton' => 60.0,
-      'standard_cotton' => 35.0,
-      'synthetic' => 15.0,
-      _ => 50.0,
-    };
-  }
-
-  double _getAestheticAlignment(
-    Design design,
-    List<String> styleTags,
-    List<TrendTsunami> tsunamis,
-  ) {
-    // Base alignment from tag overlap with active tsunamis
-    if (tsunamis.isEmpty) return 50.0;
-    final double tsunamiScore = tsunamis.getMultiplierForTags(styleTags);
-    // Scale: 1.0 = 50, 1.5 = 75, 2.5 = 95
-    return ((tsunamiScore - 1.0) / 1.5 * 45.0 + 50.0).clamp(0.0, 100.0);
-  }
 }
 
 /// StateNotifierProvider for drop design flow

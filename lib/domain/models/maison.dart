@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 // GDD §6.3 — Maison (guild) entity
 // 5–20 members; shared treasury, supply-chain, city dominance
 
@@ -20,8 +22,8 @@ enum MaisonRole {
 }
 
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class Maison with _$Maison {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory Maison({
     required String id,
     required String name,
@@ -37,8 +39,8 @@ class Maison with _$Maison {
 }
 
 @freezed
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class MaisonMember with _$MaisonMember {
+  @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
   const factory MaisonMember({
     required String maisonId,
     required String playerId,
