@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/providers/auth_provider.dart';
 import 'core/router/app_router.dart';
+import 'core/services/supabase_service.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 
@@ -30,10 +31,11 @@ class TheStyliste extends ConsumerWidget {
     // On error: surface a minimal danger-coloured message for debugging.
     return anonSignIn.when(
       loading: () => const _ObsidianGate(),
-      error: (Object e, _) => _ObsidianGate(errorMessage: e.toString()),
+      error: (Object e, _) => _ObsidianGate(errorMessage: _authErrorMessage(e)),
       data: (_) => supabaseBridge.when(
         loading: () => const _ObsidianGate(),
-        error: (Object e, _) => _ObsidianGate(errorMessage: e.toString()),
+        error: (Object e, _) =>
+            _ObsidianGate(errorMessage: _authErrorMessage(e)),
         data: (_) => MaterialApp.router(
           title: 'The Styliste',
           debugShowCheckedModeBanner: false,
@@ -65,7 +67,7 @@ class _ObsidianGate extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32.0),
                   child: Text(
-                    'Auth error: $errorMessage',
+                    errorMessage!,
                     style: const TextStyle(
                       color: AppColors.danger,
                       fontSize: 12.0,
@@ -78,4 +80,10 @@ class _ObsidianGate extends StatelessWidget {
       ),
     );
   }
+}
+
+String _authErrorMessage(Object error) {
+  return SupabaseService.isRecoverableAuthError(error)
+      ? SupabaseSessionExpiredException.safeMessage
+      : 'Auth error: $error';
 }

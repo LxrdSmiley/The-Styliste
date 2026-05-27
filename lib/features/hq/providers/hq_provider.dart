@@ -3,8 +3,10 @@
 // Both providers derive their UID from activeUidProvider (Supabase auth UUID).
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/providers/active_player_provider.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../data/repositories/supabase_economy_repository.dart';
 import '../../../data/repositories/supabase_player_repository.dart';
 import '../../../domain/models/brand.dart';
@@ -14,6 +16,13 @@ import '../../../domain/models/player.dart';
 /// Rebuilds HQ when brand_rank, xp, or onboarding_complete changes.
 final StreamProvider<Player> hqPlayerStreamProvider =
     StreamProvider<Player>((Ref<AsyncValue<Player>> ref) {
+  final AsyncValue<Session> session =
+      ref.watch(supabaseRealtimeSessionProvider);
+  if (session.isLoading) return const Stream<Player>.empty();
+  if (session.hasError) {
+    return Stream<Player>.error(_safeSessionError(session.error!));
+  }
+
   final String uid = ref.watch(activeUidProvider);
   // Guard: if uid is empty the auth gate hasn't resolved yet — emit nothing.
   if (uid.isEmpty) return const Stream<Player>.empty();
@@ -25,6 +34,13 @@ final StreamProvider<Player> hqPlayerStreamProvider =
 /// Real-time updates drive the HQ idle ticker and heat display.
 final StreamProvider<Brand> hqBrandStreamProvider =
     StreamProvider<Brand>((Ref<AsyncValue<Brand>> ref) {
+  final AsyncValue<Session> session =
+      ref.watch(supabaseRealtimeSessionProvider);
+  if (session.isLoading) return const Stream<Brand>.empty();
+  if (session.hasError) {
+    return Stream<Brand>.error(_safeSessionError(session.error!));
+  }
+
   final String uid = ref.watch(activeUidProvider);
   if (uid.isEmpty) return const Stream<Brand>.empty();
 
@@ -116,3 +132,9 @@ final Provider<int> kintsugiLevelProvider = Provider<int>((Ref<int> ref) {
 final Provider<bool> isLockdownProvider = Provider<bool>((Ref<bool> ref) {
   return ref.watch(tarnishLevelProvider) >= 100;
 });
+
+Object _safeSessionError(Object error) {
+  return SupabaseService.isRecoverableAuthError(error)
+      ? const SupabaseSessionExpiredException()
+      : error;
+}

@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../domain/models/player.dart';
 import '../providers/hq_provider.dart';
@@ -33,7 +34,7 @@ class HqScreen extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Text(
-              'Profile error: $e',
+              _profileErrorMessage(e),
               style: const TextStyle(color: AppColors.danger, fontSize: 12.0),
               textAlign: TextAlign.center,
             ),
@@ -50,4 +51,10 @@ class HqScreen extends ConsumerWidget {
       },
     );
   }
+}
+
+String _profileErrorMessage(Object error) {
+  return SupabaseService.isRecoverableAuthError(error)
+      ? SupabaseSessionExpiredException.safeMessage
+      : 'Profile error: $error';
 }

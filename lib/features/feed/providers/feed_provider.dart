@@ -8,6 +8,7 @@
 //   syndicateFeedProvider: one-shot RPC batch for initial SYNDICATE load.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/providers/active_player_provider.dart';
@@ -122,6 +123,13 @@ final StateProvider<FeedMode> feedModeProvider =
 
 final StreamProvider<List<FeedPost>> feedStreamProvider =
     StreamProvider<List<FeedPost>>((Ref<AsyncValue<List<FeedPost>>> ref) {
+  final AsyncValue<Session> session =
+      ref.watch(supabaseRealtimeSessionProvider);
+  if (session.isLoading) return const Stream<List<FeedPost>>.empty();
+  if (session.hasError) {
+    return Stream<List<FeedPost>>.error(_safeSessionError(session.error!));
+  }
+
   return SupabaseService.client
       .from(SupabaseConstants.tableFeedPosts)
       .stream(primaryKey: <String>['id'])
@@ -156,6 +164,7 @@ class FeedActions {
     required String postId,
     required String reactionType,
   }) async {
+    await SupabaseService.ensureFreshSession();
     final Map<String, dynamic> response = await SupabaseService.invokeFunction(
       SupabaseConstants.fnFeedReact,
       body: <String, dynamic>{
@@ -170,6 +179,7 @@ class FeedActions {
     required String postId,
     required String body,
   }) async {
+    await SupabaseService.ensureFreshSession();
     final Map<String, dynamic> response = await SupabaseService.invokeFunction(
       SupabaseConstants.fnFeedComment,
       body: <String, dynamic>{
@@ -203,6 +213,9 @@ final FutureProviderFamily<void, String> hypePostProvider =
 final FutureProviderFamily<List<FeedComment>, String> feedCommentsProvider =
     FutureProvider.family<List<FeedComment>, String>(
   (Ref<AsyncValue<List<FeedComment>>> ref, String postId) async {
+    ref.watch(supabaseAuthRevisionProvider);
+    await SupabaseService.ensureFreshSession();
+
     final List<dynamic> rows = await SupabaseService.client
         .from(SupabaseConstants.tableFeedComments)
         .select('id, post_id, player_id, brand_name, body, created_at')
@@ -223,7 +236,16 @@ final FutureProviderFamily<List<FeedComment>, String> feedCommentsProvider =
 
 final StreamProvider<Set<String>> followingIdsProvider =
     StreamProvider<Set<String>>((Ref<AsyncValue<Set<String>>> ref) {
+  final AsyncValue<Session> session =
+      ref.watch(supabaseRealtimeSessionProvider);
+  if (session.isLoading) return const Stream<Set<String>>.empty();
+  if (session.hasError) {
+    return Stream<Set<String>>.error(_safeSessionError(session.error!));
+  }
+
   final String uid = ref.watch(activeUidProvider);
+  if (uid.isEmpty) return const Stream<Set<String>>.empty();
+
   return SupabaseService.client
       .from(SupabaseConstants.tableFollows)
       .stream(primaryKey: <String>['follower_id', 'following_id'])
@@ -242,9 +264,18 @@ final StreamProvider<Set<String>> followingIdsProvider =
 
 final FutureProvider<List<FeedPost>> syndicateFeedProvider =
     FutureProvider<List<FeedPost>>((Ref<AsyncValue<List<FeedPost>>> ref) async {
+  ref.watch(supabaseAuthRevisionProvider);
+  await SupabaseService.ensureFreshSession();
+
   final List<dynamic> rows = await SupabaseService.client.rpc<List<dynamic>>(
     'get_syndicate_feed',
     params: <String, dynamic>{'p_limit': 50},
   );
   return rows.cast<Map<String, dynamic>>().map(FeedPost.fromJson).toList();
 });
+
+Object _safeSessionError(Object error) {
+  return SupabaseService.isRecoverableAuthError(error)
+      ? const SupabaseSessionExpiredException()
+      : error;
+}
