@@ -19,9 +19,9 @@ The Styliste blends fashion creation, idle progression, business strategy, and s
 
 The player starts as an emerging fashion force and chooses how to build power:
 
-- **Designer / Artisan path** â€” create drops, master aesthetics, chase Hype Score, and dominate the Global Feed.
-- **Architect / Mogul path** â€” build stores, control districts, manage capital, and expand a luxury empire.
-- **Maison path** â€” join or build elite fashion houses for prestige, co-drops, collective power, and social status.
+- **Designer / Artisan path** create drops, master aesthetics, chase Hype Score, and dominate the Global Feed.
+- **Architect / Mogul path** build stores, control districts, manage capital, and expand a luxury empire.
+- **Maison path** join or build elite fashion houses for prestige, co-drops, collective power, and social status.
 
 The core fantasy is simple:
 
@@ -70,14 +70,14 @@ Post to Global Feed â†’ Gain reactions â†’ Compete for status â†’
 
 ## Key Features
 
-- **Atelier** â€” create fashion pieces, experiment with style, fabric, color, and trend alignment.
-- **Hype Score** â€” the main public performance score for drops.
-- **Global Feed** â€” full-screen fashion-social arena where drops, flexes, and market reactions appear.
-- **Vex Reviews** â€” editorial critic-style feedback that can boost or expose a drop.
-- **Maison System** â€” prestige groups for co-drops, social power, and collective dominance.
-- **Mogul Systems** â€” capital, stores, districts, cashflow, and luxury business strategy.
-- **Trend Tsunami** â€” rotating fashion meta shifts that reward smart timing and adaptation.
-- **Server-Authoritative Economy** â€” rewards, ownership, capital, and progression must be validated through backend logic.
+- **Atelier** create fashion pieces, experiment with style, fabric, color, and trend alignment.
+- **Hype Score** the main public performance score for drops.
+- **Global Feed** full-screen fashion-social arena where drops, flexes, and market reactions appear.
+- **Vex Reviews** editorial critic-style feedback that can boost or expose a drop.
+- **Maison System** prestige groups for co-drops, social power, and collective dominance.
+- **Mogul Systems** capital, stores, districts, cashflow, and luxury business strategy.
+- **Trend Tsunami** rotating fashion meta shifts that reward smart timing and adaptation.
+- **Server-Authoritative Economy** rewards, ownership, capital, and progression must be validated through backend logic.
 
 ## Current Status
 
@@ -124,17 +124,17 @@ supabase db lint
 
 ## Tech Stack
 
-- **Flutter / Dart** â€” mobile client and UI.
-- **Riverpod** â€” state management.
-- **go_router** â€” app routing.
-- **Flame** â€” lightweight embedded game-feel scenes.
-- **Supabase PostgreSQL** â€” authoritative database.
-- **Supabase RLS** â€” data access protection.
-- **Supabase Edge Functions / TypeScript** â€” server-authoritative gameplay logic.
-- **Firebase Auth** â€” authentication.
-- **Firebase Messaging** â€” push notifications.
-- **Firebase App Check** â€” abuse protection.
-- **Custom shaders** â€” luxury visual effects and mobile-first polish.
+- **Flutter / Dart** mobile client and UI.
+- **Riverpod** state management.
+- **go_router** app routing.
+- **Flame** lightweight embedded game-feel scenes.
+- **Supabase PostgreSQL** authoritative database.
+- **Supabase RLS** data access protection.
+- **Supabase Edge Functions / TypeScript** server-authoritative gameplay logic.
+- **Firebase Auth** authentication.
+- **Firebase Messaging** push notifications.
+- **Firebase App Check** abuse protection.
+- **Custom shaders** luxury visual effects and mobile-first polish.
 
 ## Documents
 
