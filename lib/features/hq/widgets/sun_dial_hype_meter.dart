@@ -151,9 +151,8 @@ class _SunDialPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double safeProgress = progress.isFinite
-        ? progress.clamp(0.0, 1.0).toDouble()
-        : 0.0;
+    final double safeProgress =
+        progress.isFinite ? progress.clamp(0.0, 1.0).toDouble() : 0.0;
     final double centerX = size.width / 2;
     final double centerY = size.height / 2;
     final double radius = (size.width / 2) - 20.0;

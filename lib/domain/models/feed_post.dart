@@ -2,8 +2,10 @@
 
 // GDD §6.1 — FeedPost entity: Global Live Feed row.
 // Phase 6: Freezed model with _SafeDouble on hype (Postgres NUMERIC).
-// `type` is the discriminator: 'design_flex' | 'mogul_flex'.
-// Legacy compatibility: older rows may use 'design_drop'.
+// `type` is the discriminator:
+// - design_flex = current Designer Alpha Drop
+// - design_drop = legacy Designer Alpha Drop
+// - mogul_flex = Mogul/Architect post
 // `content` is a flexible JSONB map — never assume any key is present.
 
 import 'package:freezed_annotation/freezed_annotation.dart';

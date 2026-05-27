@@ -129,7 +129,8 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
     try {
       final Design design = state.design!;
       final VexReview? review = state.vexReview;
-      final Map<String, dynamic> response = await SupabaseService.invokeFunction(
+      final Map<String, dynamic> response =
+          await SupabaseService.invokeFunction(
         SupabaseConstants.fnDropDesign,
         body: <String, dynamic>{
           'design_id': design.id,
@@ -147,9 +148,8 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
         fallback: design.hypeScore,
       );
       final String? brandName = response['brand_name'] as String?;
-      final String? fabricColorHex =
-          response['fabric_color_hex'] as String? ??
-              design.fabricData['color_hex'] as String?;
+      final String? fabricColorHex = response['fabric_color_hex'] as String? ??
+          design.fabricData['color_hex'] as String?;
 
       _ref.read(pendingAlphaDropProvider.notifier).state = PendingAlphaDrop(
         feedPostId: feedPostId,
@@ -193,7 +193,6 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
   void reset() {
     state = const DropDesignState();
   }
-
 }
 
 /// StateNotifierProvider for drop design flow

@@ -1,12 +1,6 @@
-// GDD §6.1 — Global Live Feed: real-time posts, social flex (Phase 6 + 7).
-// Phase 7: GLOBAL | SYNDICATE toggle.
-//   GLOBAL: Realtime .stream() (all players).
-//   SYNDICATE: one-shot get_syndicate_feed RPC (initial batch) merged with
-//   live global stream filtered by followingIdsProvider Set<String>.
-//   Strict id-based deduplication prevents duplicates on RPC/stream race.
-// Two card types: 'design_flex' (Gold) | 'mogul_flex' (Lime).
-// All JSONB content values use safe ?? fallbacks — Realtime can deliver
-// partial payloads; UI must never null-crash.
+// GDD 6.1 - Global Live Feed: full-screen vertical fashion-social feed.
+// Provider contract stays unchanged: Supabase feed rows flow through Riverpod,
+// then render as one bounded PageView page per post.
 
 import 'dart:async';
 
@@ -16,25 +10,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../domain/models/feed_post.dart';
 import '../providers/feed_provider.dart';
+import '../widgets/alpha_drop_feed_card.dart';
+import '../widgets/mogul_power_feed_card.dart';
 
-/// Parse a 6-char hex string (no #) into a Color with full opacity.
-Color _hexToColor(String hex) {
-  try {
-    final String clean = hex.replaceAll('#', '').padLeft(6, '0');
-    return Color(int.parse('FF$clean', radix: 16));
-  } catch (_) {
-    return AppColors.ivory;
-  }
-}
-
-class FeedScreen extends ConsumerWidget {
+class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FeedScreen> createState() => _FeedScreenState();
+}
+
+class _FeedScreenState extends ConsumerState<FeedScreen> {
+  Timer? _arrivalBannerTimer;
+  String? _lastArrivalBannerPostId;
+  bool _showArrivalBanner = false;
+
+  @override
+  void dispose() {
+    _arrivalBannerTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final FeedMode mode = ref.watch(feedModeProvider);
     final Map<String, int> hypeOverrides = ref.watch(feedHypeOverrideProvider);
     final Map<String, int> likeOverrides = ref.watch(feedLikeOverrideProvider);
+    final PendingAlphaDrop? pendingAlphaDrop =
+        ref.watch(pendingAlphaDropProvider);
     final AsyncValue<List<FeedPost>> globalAsync =
         ref.watch(feedStreamProvider);
     final AsyncValue<Set<String>> followingAsync =
@@ -42,9 +45,8 @@ class FeedScreen extends ConsumerWidget {
     final AsyncValue<List<FeedPost>> syndicateAsync =
         ref.watch(syndicateFeedProvider);
 
-    // Build deduplicated SYNDICATE list: RPC batch + live filtered stream.
-    // Deduplication: LinkedHashMap insertion order preserves newest-first from
-    // RPC; live stream posts are prepended only if id not already present.
+    _scheduleArrivalBanner(pendingAlphaDrop);
+
     List<FeedPost> syndicatePosts = <FeedPost>[];
     if (mode == FeedMode.syndicate) {
       final Set<String> followingIds = followingAsync.maybeWhen(
@@ -62,7 +64,6 @@ class FeedScreen extends ConsumerWidget {
         orElse: () => <FeedPost>[],
       );
 
-      // Merge: live-filtered first (newer), then RPC batch, deduplicate by id.
       final Map<String, FeedPost> seen = <String, FeedPost>{};
       for (final FeedPost p in <FeedPost>[...liveFiltered, ...rpcBatch]) {
         seen.putIfAbsent(p.id, () => p);
@@ -79,18 +80,17 @@ class FeedScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // ── Header + toggle ──────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 12.0),
+              padding: const EdgeInsets.fromLTRB(18.0, 14.0, 18.0, 10.0),
               child: Row(
                 children: <Widget>[
                   const Text(
-                    'FEED',
+                    'GLOBAL FEED',
                     style: TextStyle(
                       color: AppColors.ivory,
-                      fontSize: 13.0,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 4.0,
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 3.2,
                     ),
                   ),
                   const Spacer(),
@@ -102,23 +102,25 @@ class FeedScreen extends ConsumerWidget {
                 ],
               ),
             ),
-
-            // ── Feed list ─────────────────────────────────────────────────
             Expanded(
-              child: mode == FeedMode.global
-                  ? _buildGlobal(
-                      globalAsync,
-                      hypeOverrides,
-                      likeOverrides,
-                      ref,
-                    )
-                  : _buildSyndicate(
-                      syndicatePosts,
-                      activeAsync,
-                      hypeOverrides,
-                      likeOverrides,
-                      ref,
-                    ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: <Widget>[
+                  mode == FeedMode.global
+                      ? _buildGlobal(
+                          globalAsync,
+                          hypeOverrides,
+                          likeOverrides,
+                        )
+                      : _buildSyndicate(
+                          syndicatePosts,
+                          activeAsync,
+                          hypeOverrides,
+                          likeOverrides,
+                        ),
+                  _ArrivalBanner(visible: _showArrivalBanner),
+                ],
+              ),
             ),
           ],
         ),
@@ -126,30 +128,47 @@ class FeedScreen extends ConsumerWidget {
     );
   }
 
+  void _scheduleArrivalBanner(PendingAlphaDrop? pendingAlphaDrop) {
+    if (pendingAlphaDrop == null ||
+        pendingAlphaDrop.feedPostId == _lastArrivalBannerPostId) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || pendingAlphaDrop.feedPostId == _lastArrivalBannerPostId) {
+        return;
+      }
+      _lastArrivalBannerPostId = pendingAlphaDrop.feedPostId;
+      setState(() => _showArrivalBanner = true);
+      _arrivalBannerTimer?.cancel();
+      _arrivalBannerTimer = Timer(const Duration(seconds: 4), () {
+        if (mounted) setState(() => _showArrivalBanner = false);
+      });
+    });
+  }
+
   Widget _buildGlobal(
     AsyncValue<List<FeedPost>> async,
-    Map<String, int> overrides,
+    Map<String, int> hypeOverrides,
     Map<String, int> likeOverrides,
-    WidgetRef ref,
   ) {
     return async.when(
       loading: () => const Center(
         child:
             CircularProgressIndicator(color: AppColors.gold, strokeWidth: 1.5),
       ),
-      error: (Object e, _) => _errorWidget('SIGNAL LOST'),
+      error: (Object e, _) => _statusWidget('SIGNAL LOST'),
       data: (List<FeedPost> posts) => posts.isEmpty
-          ? _emptyWidget('NO SIGNALS YET\nBE THE FIRST TO FLEX')
-          : _postList(posts, overrides, likeOverrides, ref),
+          ? _statusWidget('NO SIGNALS YET\nBE THE FIRST TO FLEX')
+          : _postPager(posts, hypeOverrides, likeOverrides),
     );
   }
 
   Widget _buildSyndicate(
     List<FeedPost> posts,
     AsyncValue<List<FeedPost>> async,
-    Map<String, int> overrides,
+    Map<String, int> hypeOverrides,
     Map<String, int> likeOverrides,
-    WidgetRef ref,
   ) {
     if (async.isLoading && posts.isEmpty) {
       return const Center(
@@ -158,85 +177,72 @@ class FeedScreen extends ConsumerWidget {
       );
     }
     if (async.hasError && posts.isEmpty) {
-      return _errorWidget('SYNDICATE SIGNAL LOST');
+      return _statusWidget('SYNDICATE SIGNAL LOST');
     }
     if (posts.isEmpty) {
-      return _emptyWidget('FOLLOW PLAYERS TO\nBUILD YOUR SYNDICATE');
+      return _statusWidget('FOLLOW PLAYERS TO\nBUILD YOUR SYNDICATE');
     }
-    return _postList(posts, overrides, likeOverrides, ref);
+    return _postPager(posts, hypeOverrides, likeOverrides);
   }
 
-  Widget _postList(
+  Widget _postPager(
     List<FeedPost> posts,
-    Map<String, int> overrides,
+    Map<String, int> hypeOverrides,
     Map<String, int> likeOverrides,
-    WidgetRef ref,
   ) {
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 32.0),
+    return PageView.builder(
+      scrollDirection: Axis.vertical,
       itemCount: posts.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 10.0),
       itemBuilder: (BuildContext context, int index) {
         final FeedPost post = posts[index];
-        final int localDelta = overrides[post.id] ?? 0;
+        final int localHypeDelta = hypeOverrides[post.id] ?? 0;
         final int localLikeDelta = likeOverrides[post.id] ?? 0;
-        final double displayHype = post.hype + localDelta;
+        final double displayHype = post.hype + localHypeDelta;
         final int displayLikes = post.likes + localLikeDelta;
 
-        if (post.type == 'design_flex') {
-          return _DesignFlexCard(
+        if (_isDesignerAlphaDrop(post.type)) {
+          return AlphaDropFeedCard(
             post: post,
             displayHype: displayHype,
             displayLikes: displayLikes,
-            onHype: () => _onHype(context, ref, post.id),
-            onLike: () => _onLike(context, ref, post.id),
+            onHype: () => _onHype(context, post.id),
+            onLike: () => _onLike(context, post.id),
             onComment: () => _showCommentSheet(context, post),
           );
         }
-        if (post.type == 'system_eclipse') {
-          return _SystemEclipseCard(post: post);
-        }
-        return _MogulFlexCard(
+
+        return MogulPowerFeedCard(
           post: post,
           displayHype: displayHype,
           displayLikes: displayLikes,
-          onHype: () => _onHype(context, ref, post.id),
-          onLike: () => _onLike(context, ref, post.id),
+          onHype: () => _onHype(context, post.id),
+          onLike: () => _onLike(context, post.id),
           onComment: () => _showCommentSheet(context, post),
         );
       },
     );
   }
 
-  static Widget _errorWidget(String label) {
-    return Center(
-      child: Text(
-        label,
-        style: TextStyle(
-          color: AppColors.ivory.withValues(alpha: 0.3),
-          letterSpacing: 3.0,
-          fontSize: 11.0,
-        ),
-      ),
-    );
+  static bool _isDesignerAlphaDrop(String type) {
+    return type == 'design_flex' || type == 'design_drop';
   }
 
-  static Widget _emptyWidget(String label) {
+  static Widget _statusWidget(String label) {
     return Center(
       child: Text(
         label,
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: AppColors.ivory.withValues(alpha: 0.25),
+          color: AppColors.ivory.withValues(alpha: 0.28),
           fontSize: 11.0,
-          letterSpacing: 2.0,
-          height: 2.0,
+          letterSpacing: 2.4,
+          height: 1.8,
         ),
       ),
     );
   }
 
-  void _onHype(BuildContext context, WidgetRef ref, String postId) {
+  void _onHype(BuildContext context, String postId) {
     final Map<String, int> current = ref.read(feedHypeOverrideProvider);
     ref.read(feedHypeOverrideProvider.notifier).state = <String, int>{
       ...current,
@@ -245,7 +251,6 @@ class FeedScreen extends ConsumerWidget {
     unawaited(
       _react(
         context: context,
-        ref: ref,
         postId: postId,
         reactionType: 'hype',
         overrideProvider: feedHypeOverrideProvider,
@@ -253,7 +258,7 @@ class FeedScreen extends ConsumerWidget {
     );
   }
 
-  void _onLike(BuildContext context, WidgetRef ref, String postId) {
+  void _onLike(BuildContext context, String postId) {
     final Map<String, int> current = ref.read(feedLikeOverrideProvider);
     ref.read(feedLikeOverrideProvider.notifier).state = <String, int>{
       ...current,
@@ -262,7 +267,6 @@ class FeedScreen extends ConsumerWidget {
     unawaited(
       _react(
         context: context,
-        ref: ref,
         postId: postId,
         reactionType: 'like',
         overrideProvider: feedLikeOverrideProvider,
@@ -272,7 +276,6 @@ class FeedScreen extends ConsumerWidget {
 
   Future<void> _react({
     required BuildContext context,
-    required WidgetRef ref,
     required String postId,
     required String reactionType,
     required StateProvider<Map<String, int>> overrideProvider,
@@ -280,22 +283,19 @@ class FeedScreen extends ConsumerWidget {
     try {
       final FeedReactionResult result = await ref
           .read(feedActionsProvider)
-          .react(
-            postId: postId,
-            reactionType: reactionType,
-          );
+          .react(postId: postId, reactionType: reactionType);
       if (result.success) {
-        _clearReactionOverride(ref, postId, overrideProvider);
+        _clearReactionOverride(postId, overrideProvider);
         return;
       }
-      _rollbackReaction(ref, postId, overrideProvider);
+      _rollbackReaction(postId, overrideProvider);
       if (context.mounted && result.message == 'ALREADY_REACTED') {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Already ${reactionType}d.')),
         );
       }
     } catch (e) {
-      _rollbackReaction(ref, postId, overrideProvider);
+      _rollbackReaction(postId, overrideProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Could not $reactionType: $e')),
@@ -305,7 +305,6 @@ class FeedScreen extends ConsumerWidget {
   }
 
   void _rollbackReaction(
-    WidgetRef ref,
     String postId,
     StateProvider<Map<String, int>> provider,
   ) {
@@ -318,14 +317,12 @@ class FeedScreen extends ConsumerWidget {
   }
 
   void _clearReactionOverride(
-    WidgetRef ref,
     String postId,
     StateProvider<Map<String, int>> provider,
   ) {
     final Map<String, int> current = ref.read(provider);
-    ref.read(provider.notifier).state = <String, int>{
-      ...current,
-    }..remove(postId);
+    ref.read(provider.notifier).state = <String, int>{...current}
+      ..remove(postId);
   }
 
   void _showCommentSheet(BuildContext context, FeedPost post) {
@@ -343,9 +340,6 @@ class FeedScreen extends ConsumerWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// GLOBAL | SYNDICATE segmented toggle pill
-// ---------------------------------------------------------------------------
 class _ModeToggle extends StatelessWidget {
   const _ModeToggle({required this.mode, required this.onChanged});
 
@@ -409,6 +403,8 @@ class _ModeSegment extends StatelessWidget {
         ),
         child: Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: selected
                 ? selectedColor
@@ -423,418 +419,72 @@ class _ModeSegment extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Designer Alpha card — Gold accents.
-// ---------------------------------------------------------------------------
-class _DesignFlexCard extends StatelessWidget {
-  const _DesignFlexCard({
-    required this.post,
-    required this.displayHype,
-    required this.displayLikes,
-    required this.onHype,
-    required this.onLike,
-    required this.onComment,
-  });
+class _ArrivalBanner extends StatelessWidget {
+  const _ArrivalBanner({required this.visible});
 
-  final FeedPost post;
-  final double displayHype;
-  final int displayLikes;
-  final VoidCallback onHype;
-  final VoidCallback onLike;
-  final VoidCallback onComment;
+  final bool visible;
 
   @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic> c = post.content;
-    final String brandName =
-        (c['brand_name'] as String?) ?? 'Unknown Sovereign';
-    final String designName = (c['design_name'] as String?) ?? 'UNTITLED ALPHA';
-    final double hypeScore = ((c['hype_score'] as num?)?.toDouble()) ?? 0.0;
-    final String colorHex = (c['fabric_color_hex'] as String?) ?? 'FAF7F0';
-
-    return _FeedCard(
-      accentColor: AppColors.gold,
-      typeLabel: 'ALPHA DROP',
-      brandName: brandName,
-      bodyLine: '$designName — ${hypeScore.toStringAsFixed(1)} HYPE',
-      colorDot: _hexToColor(colorHex),
-      displayHype: displayHype,
-      displayLikes: displayLikes,
-      createdAt: post.createdAt,
-      onHype: onHype,
-      onLike: onLike,
-      onComment: onComment,
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Mogul store upgrade card — Lime accents.
-// ---------------------------------------------------------------------------
-class _MogulFlexCard extends StatelessWidget {
-  const _MogulFlexCard({
-    required this.post,
-    required this.displayHype,
-    required this.displayLikes,
-    required this.onHype,
-    required this.onLike,
-    required this.onComment,
-  });
-
-  final FeedPost post;
-  final double displayHype;
-  final int displayLikes;
-  final VoidCallback onHype;
-  final VoidCallback onLike;
-  final VoidCallback onComment;
-
-  @override
-  Widget build(BuildContext context) {
-    final Map<String, dynamic> c = post.content;
-    final String brandName =
-        (c['brand_name'] as String?) ?? 'Unknown Sovereign';
-    final String city = (c['city'] as String?) ?? '—';
-    final String storeType = (c['store_type'] as String?) ?? '—';
-    final int newTier = (c['new_tier'] as int?) ?? 1;
-
-    return _FeedCard(
-      accentColor: AppColors.lime,
-      typeLabel: 'MOGUL FLEX',
-      brandName: brandName,
-      bodyLine:
-          '${city.toUpperCase().replaceAll('_', ' ')} ${storeType.toUpperCase()} → T$newTier',
-      displayHype: displayHype,
-      displayLikes: displayLikes,
-      createdAt: post.createdAt,
-      onHype: onHype,
-      onLike: onLike,
-      onComment: onComment,
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Shared card shell — keeps both card types visually consistent.
-// ---------------------------------------------------------------------------
-class _FeedCard extends StatelessWidget {
-  const _FeedCard({
-    required this.accentColor,
-    required this.typeLabel,
-    required this.brandName,
-    required this.bodyLine,
-    required this.displayHype,
-    required this.displayLikes,
-    required this.onHype,
-    required this.onLike,
-    required this.onComment,
-    this.colorDot,
-    this.createdAt,
-  });
-
-  final Color accentColor;
-  final String typeLabel;
-  final String brandName;
-  final String bodyLine;
-  final double displayHype;
-  final int displayLikes;
-  final VoidCallback onHype;
-  final VoidCallback onLike;
-  final VoidCallback onComment;
-  final Color? colorDot;
-  final DateTime? createdAt;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14.0),
-      decoration: BoxDecoration(
-        color: AppColors.obsidianCard,
-        borderRadius: BorderRadius.circular(4.0),
-        border: Border(
-          left: BorderSide(color: accentColor, width: 2.0),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          // Type + timestamp row
-          Row(
-            children: <Widget>[
-              Text(
-                typeLabel,
-                style: TextStyle(
-                  color: accentColor,
-                  fontSize: 9.0,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 2.5,
+    return IgnorePointer(
+      child: AnimatedSlide(
+        offset: visible ? Offset.zero : const Offset(0.0, -0.3),
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+        child: AnimatedOpacity(
+          opacity: visible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 220),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18.0, 10.0, 18.0, 0.0),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 12.0,
                 ),
-              ),
-              const Spacer(),
-              if (createdAt != null)
-                Text(
-                  _timeAgo(createdAt!),
-                  style: TextStyle(
-                    color: AppColors.ivory.withValues(alpha: 0.3),
-                    fontSize: 9.0,
-                  ),
-                ),
-            ],
-          ),
-
-          const SizedBox(height: 6.0),
-
-          // Brand name
-          Text(
-            brandName,
-            style: const TextStyle(
-              color: AppColors.ivory,
-              fontSize: 13.0,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.0,
-            ),
-          ),
-
-          const SizedBox(height: 4.0),
-
-          // Body line + optional color dot
-          Row(
-            children: <Widget>[
-              if (colorDot != null) ...<Widget>[
-                Container(
-                  width: 10.0,
-                  height: 10.0,
-                  decoration: BoxDecoration(
-                    color: colorDot,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 6.0),
-              ],
-              Expanded(
-                child: Text(
-                  bodyLine,
-                  style: TextStyle(
-                    color: AppColors.ivory.withValues(alpha: 0.6),
-                    fontSize: 11.0,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 10.0),
-
-          // Engagement row
-          Row(
-            children: <Widget>[
-              Text(
-                '${displayHype.toStringAsFixed(0)} HYPE',
-                style: TextStyle(
-                  color: accentColor.withValues(alpha: 0.8),
-                  fontSize: 10.0,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.5,
-                ),
-              ),
-              const Spacer(),
-              _FeedActionButton(
-                label: 'HYPE',
-                color: accentColor,
-                onTap: onHype,
-              ),
-              const SizedBox(width: 6.0),
-              _FeedActionButton(
-                label: 'LIKE $displayLikes',
-                color: AppColors.ivory.withValues(alpha: 0.72),
-                onTap: onLike,
-              ),
-              const SizedBox(width: 6.0),
-              _FeedActionButton(
-                label: 'COMMENT',
-                color: AppColors.ivory.withValues(alpha: 0.72),
-                onTap: onComment,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  static String _timeAgo(DateTime dt) {
-    final Duration diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
-  }
-}
-
-// ---------------------------------------------------------------------------
-// System Eclipse card — global server event broadcast.
-// Palette key: crimson = deep red (#C0392B), silver = #B0BEC5, gold = existing.
-// No hype button — system-originated; player_id may be null.
-// ---------------------------------------------------------------------------
-class _FeedActionButton extends StatelessWidget {
-  const _FeedActionButton({
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 26.0,
-        constraints: const BoxConstraints(minWidth: 54.0),
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 9.0),
-        decoration: BoxDecoration(
-          border: Border.all(color: color.withValues(alpha: 0.42)),
-          borderRadius: BorderRadius.circular(2.0),
-        ),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: color,
-            fontSize: 8.0,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.2,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SystemEclipseCard extends StatelessWidget {
-  const _SystemEclipseCard({required this.post});
-
-  final FeedPost post;
-
-  static const Color _crimson = Color(0xFFC0392B);
-  static const Color _silver = Color(0xFFB0BEC5);
-
-  @override
-  Widget build(BuildContext context) {
-    final Map<String, dynamic> c = post.content;
-    final String name = (c['name'] as String?) ?? 'ECLIPSE EVENT';
-    final String description =
-        (c['description'] as String?) ?? 'A global market shift is underway.';
-    final String paletteKey = (c['palette'] as String?) ?? 'crimson';
-    final double buffMultiplier =
-        ((c['buff_multiplier'] as num?)?.toDouble()) ?? 1.0;
-    final int durationMinutes = (c['duration_minutes'] as int?) ?? 60;
-    final String scope =
-        ((c['affected_scope'] as String?) ?? 'global').toUpperCase();
-
-    final Color accent = paletteKey == 'silver'
-        ? _silver
-        : paletteKey == 'gold'
-            ? AppColors.gold
-            : _crimson;
-
-    final bool isBuff = buffMultiplier > 1.0;
-    final String multiplierLabel = isBuff
-        ? '+${((buffMultiplier - 1.0) * 100).toStringAsFixed(0)}%'
-        : '-${((1.0 - buffMultiplier) * 100).toStringAsFixed(0)}%';
-
-    return Container(
-      padding: const EdgeInsets.all(14.0),
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(4.0),
-        border: Border.all(color: accent.withValues(alpha: 0.35)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          // Type badge row
-          Row(
-            children: <Widget>[
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
                 decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(2.0),
-                ),
-                child: Text(
-                  'SYSTEM EVENT',
-                  style: TextStyle(
-                    color: accent,
-                    fontSize: 8.0,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2.5,
+                  color: AppColors.obsidianSurface.withValues(alpha: 0.94),
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(
+                    color: AppColors.gold.withValues(alpha: 0.52),
                   ),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: AppColors.gold.withValues(alpha: 0.14),
+                      blurRadius: 22.0,
+                    ),
+                  ],
+                ),
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'YOUR ALPHA DROP IS LIVE',
+                      style: TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 11.0,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                    SizedBox(height: 3.0),
+                    Text(
+                      'The market is reacting.',
+                      style: TextStyle(
+                        color: AppColors.ivory,
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const Spacer(),
-              if (post.createdAt != null)
-                Text(
-                  _FeedCard._timeAgo(post.createdAt!),
-                  style: TextStyle(
-                    color: AppColors.ivory.withValues(alpha: 0.3),
-                    fontSize: 9.0,
-                  ),
-                ),
-            ],
-          ),
-
-          const SizedBox(height: 8.0),
-
-          // Event name
-          Text(
-            name,
-            style: TextStyle(
-              color: accent,
-              fontSize: 14.0,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 2.0,
             ),
           ),
-
-          const SizedBox(height: 4.0),
-
-          // Description
-          Text(
-            description,
-            style: TextStyle(
-              color: AppColors.ivory.withValues(alpha: 0.65),
-              fontSize: 10.0,
-              height: 1.5,
-              letterSpacing: 0.3,
-            ),
-          ),
-
-          const SizedBox(height: 10.0),
-
-          // Stats row: multiplier | scope | duration
-          Row(
-            children: <Widget>[
-              _StatChip(label: multiplierLabel, color: accent),
-              const SizedBox(width: 6.0),
-              _StatChip(
-                label: scope,
-                color: AppColors.ivory.withValues(alpha: 0.4),
-              ),
-              const SizedBox(width: 6.0),
-              _StatChip(
-                label: '${durationMinutes}MIN',
-                color: AppColors.ivory.withValues(alpha: 0.4),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -877,9 +527,7 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-      }
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -979,8 +627,7 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
                             Text(
                               comment.body,
                               style: TextStyle(
-                                color:
-                                    AppColors.ivory.withValues(alpha: 0.76),
+                                color: AppColors.ivory.withValues(alpha: 0.76),
                                 fontSize: 12.0,
                                 height: 1.35,
                               ),
@@ -1018,8 +665,6 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
                             ),
                           ),
                           focusedBorder: const OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(4.0)),
                             borderSide: BorderSide(color: AppColors.gold),
                           ),
                         ),
@@ -1045,33 +690,6 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StatChip extends StatelessWidget {
-  const _StatChip({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7.0, vertical: 2.0),
-      decoration: BoxDecoration(
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-        borderRadius: BorderRadius.circular(2.0),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 8.0,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.5,
         ),
       ),
     );
