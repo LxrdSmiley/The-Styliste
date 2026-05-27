@@ -54,7 +54,8 @@ class HqScreen extends ConsumerWidget {
 }
 
 String _profileErrorMessage(Object error) {
-  return SupabaseService.isRecoverableAuthError(error)
-      ? SupabaseSessionExpiredException.safeMessage
-      : 'Profile error: $error';
+  return SupabaseService.playerSafeErrorMessage(
+    error,
+    fallback: 'Profile unavailable. Please try again.',
+  );
 }

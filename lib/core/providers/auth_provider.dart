@@ -70,16 +70,12 @@ final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
     final StreamSubscription<User?> subscription =
         FirebaseAuth.instance.idTokenChanges().listen(
       (User? user) async {
-        if (user == null) return;
+        if (user == null) {
+          await SupabaseService.cleanupRealtimeChannels();
+          return;
+        }
         try {
-          final bool forceFirebaseRefresh = !SupabaseService.hasFreshSession;
-          final String? idToken = await user.getIdToken(forceFirebaseRefresh);
-          if (idToken == null) return;
-
-          await Supabase.instance.client.auth.signInWithIdToken(
-            provider: const OAuthProvider('firebase'),
-            idToken: idToken,
-          );
+          await _syncSupabaseSession(user);
           if (!controller.isClosed) {
             controller.add(null);
           }
@@ -103,6 +99,7 @@ final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
             } else {
               try {
                 await Supabase.instance.client.auth.signInAnonymously();
+                await SupabaseService.ensureFreshSession();
                 if (!controller.isClosed) {
                   controller.add(null);
                 }
@@ -150,6 +147,20 @@ final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
     return controller.stream;
   },
 );
+
+Future<void> _syncSupabaseSession(User user) async {
+  final bool forceFirebaseRefresh = !SupabaseService.hasFreshSession;
+  final String? idToken = await user.getIdToken(forceFirebaseRefresh);
+  if (idToken == null) {
+    throw const SupabaseSessionExpiredException();
+  }
+
+  await Supabase.instance.client.auth.signInWithIdToken(
+    provider: const OAuthProvider('firebase'),
+    idToken: idToken,
+  );
+  await SupabaseService.ensureFreshSession();
+}
 
 bool _isFirebaseProviderConfigError(Object error) {
   if (error is! AuthException) return false;

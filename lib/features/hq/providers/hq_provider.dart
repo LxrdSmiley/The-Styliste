@@ -27,7 +27,9 @@ final StreamProvider<Player> hqPlayerStreamProvider =
   // Guard: if uid is empty the auth gate hasn't resolved yet — emit nothing.
   if (uid.isEmpty) return const Stream<Player>.empty();
 
-  return const SupabasePlayerRepository().watchPlayer(uid);
+  return SupabaseService.guardRealtimeStream(
+    const SupabasePlayerRepository().watchPlayer(uid),
+  );
 });
 
 /// Streams the authenticated player's Brand (brand_state) row from Supabase.
@@ -44,7 +46,9 @@ final StreamProvider<Brand> hqBrandStreamProvider =
   final String uid = ref.watch(activeUidProvider);
   if (uid.isEmpty) return const Stream<Brand>.empty();
 
-  return const SupabaseEconomyRepository().watchBrandState(uid);
+  return SupabaseService.guardRealtimeStream(
+    const SupabaseEconomyRepository().watchBrandState(uid),
+  );
 });
 
 // =============================================================================

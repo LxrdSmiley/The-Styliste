@@ -6,8 +6,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/providers/active_player_provider.dart';
+import '../../../core/router/app_router.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../domain/models/design.dart';
 import '../../../domain/models/feed_post.dart';
 import '../providers/feed_provider.dart';
 import '../widgets/alpha_drop_feed_card.dart';
@@ -36,6 +41,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final FeedMode mode = ref.watch(feedModeProvider);
     final Map<String, int> hypeOverrides = ref.watch(feedHypeOverrideProvider);
     final Map<String, int> likeOverrides = ref.watch(feedLikeOverrideProvider);
+    final String activeUid = ref.watch(activeUidProvider);
     final PendingAlphaDrop? pendingAlphaDrop =
         ref.watch(pendingAlphaDropProvider);
     final AsyncValue<List<FeedPost>> globalAsync =
@@ -111,12 +117,14 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                           globalAsync,
                           hypeOverrides,
                           likeOverrides,
+                          activeUid,
                         )
                       : _buildSyndicate(
                           syndicatePosts,
                           activeAsync,
                           hypeOverrides,
                           likeOverrides,
+                          activeUid,
                         ),
                   _ArrivalBanner(visible: _showArrivalBanner),
                 ],
@@ -151,16 +159,19 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     AsyncValue<List<FeedPost>> async,
     Map<String, int> hypeOverrides,
     Map<String, int> likeOverrides,
+    String activeUid,
   ) {
     return async.when(
       loading: () => const Center(
         child:
             CircularProgressIndicator(color: AppColors.gold, strokeWidth: 1.5),
       ),
-      error: (Object e, _) => _statusWidget('SIGNAL LOST'),
+      error: (Object e, _) => _statusWidget(
+        _feedStatusMessage(e, 'SIGNAL LOST'),
+      ),
       data: (List<FeedPost> posts) => posts.isEmpty
           ? _statusWidget('NO SIGNALS YET\nBE THE FIRST TO FLEX')
-          : _postPager(posts, hypeOverrides, likeOverrides),
+          : _postPager(posts, hypeOverrides, likeOverrides, activeUid),
     );
   }
 
@@ -169,6 +180,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     AsyncValue<List<FeedPost>> async,
     Map<String, int> hypeOverrides,
     Map<String, int> likeOverrides,
+    String activeUid,
   ) {
     if (async.isLoading && posts.isEmpty) {
       return const Center(
@@ -177,18 +189,21 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
       );
     }
     if (async.hasError && posts.isEmpty) {
-      return _statusWidget('SYNDICATE SIGNAL LOST');
+      return _statusWidget(
+        _feedStatusMessage(async.error, 'SYNDICATE SIGNAL LOST'),
+      );
     }
     if (posts.isEmpty) {
       return _statusWidget('FOLLOW PLAYERS TO\nBUILD YOUR SYNDICATE');
     }
-    return _postPager(posts, hypeOverrides, likeOverrides);
+    return _postPager(posts, hypeOverrides, likeOverrides, activeUid);
   }
 
   Widget _postPager(
     List<FeedPost> posts,
     Map<String, int> hypeOverrides,
     Map<String, int> likeOverrides,
+    String activeUid,
   ) {
     return PageView.builder(
       scrollDirection: Axis.vertical,
@@ -199,8 +214,15 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         final int localLikeDelta = likeOverrides[post.id] ?? 0;
         final double displayHype = post.hype + localHypeDelta;
         final int displayLikes = post.likes + localLikeDelta;
+        final bool isOwnPost = activeUid == post.playerId;
 
         if (_isDesignerAlphaDrop(post.type)) {
+          final FeedRequestQuery query = FeedRequestQuery(
+            postId: post.id,
+            requestType: FeedRequestType.designInspiration,
+          );
+          final AsyncValue<FeedSocialRequest?> requestAsync =
+              ref.watch(feedRequestStatusProvider(query));
           return AlphaDropFeedCard(
             post: post,
             displayHype: displayHype,
@@ -208,9 +230,26 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             onHype: () => _onHype(context, post.id),
             onLike: () => _onLike(context, post.id),
             onComment: () => _showCommentSheet(context, post),
+            onSave: () => _onSave(context, post.id),
+            inspirationLabel: _inspirationLabel(
+              isOwnPost: isOwnPost,
+              requestAsync: requestAsync,
+            ),
+            onInspiration: _inspirationAction(
+              context: context,
+              post: post,
+              isOwnPost: isOwnPost,
+              requestAsync: requestAsync,
+            ),
           );
         }
 
+        final FeedRequestQuery query = FeedRequestQuery(
+          postId: post.id,
+          requestType: FeedRequestType.collab,
+        );
+        final AsyncValue<FeedSocialRequest?> requestAsync =
+            ref.watch(feedRequestStatusProvider(query));
         return MogulPowerFeedCard(
           post: post,
           displayHype: displayHype,
@@ -218,6 +257,17 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           onHype: () => _onHype(context, post.id),
           onLike: () => _onLike(context, post.id),
           onComment: () => _showCommentSheet(context, post),
+          onSave: () => _onSave(context, post.id),
+          collabLabel: _collabLabel(
+            isOwnPost: isOwnPost,
+            requestAsync: requestAsync,
+          ),
+          onCollab: _collabAction(
+            context: context,
+            post: post,
+            isOwnPost: isOwnPost,
+            requestAsync: requestAsync,
+          ),
         );
       },
     );
@@ -239,6 +289,78 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           height: 1.8,
         ),
       ),
+    );
+  }
+
+  String _inspirationLabel({
+    required bool isOwnPost,
+    required AsyncValue<FeedSocialRequest?> requestAsync,
+  }) {
+    if (isOwnPost) return 'REQUESTS';
+    final FeedSocialRequest? request = _requestValue(requestAsync);
+    if (requestAsync.isLoading) return 'WAIT';
+    if (request == null) return 'INSPIRE';
+    if (request.isPending) return 'PENDING';
+    if (request.isAccepted) return 'LOAD';
+    if (request.isDeclined) return 'DENIED';
+    return 'INSPIRE';
+  }
+
+  String _collabLabel({
+    required bool isOwnPost,
+    required AsyncValue<FeedSocialRequest?> requestAsync,
+  }) {
+    if (isOwnPost) return 'REQUESTS';
+    final FeedSocialRequest? request = _requestValue(requestAsync);
+    if (requestAsync.isLoading) return 'WAIT';
+    if (request == null) return 'COLLAB';
+    if (request.isPending) return 'PENDING';
+    if (request.isAccepted) return 'PARTNER';
+    if (request.isDeclined) return 'DENIED';
+    return 'COLLAB';
+  }
+
+  VoidCallback? _inspirationAction({
+    required BuildContext context,
+    required FeedPost post,
+    required bool isOwnPost,
+    required AsyncValue<FeedSocialRequest?> requestAsync,
+  }) {
+    if (isOwnPost) return () => _showRequestsSheet(context, post);
+    if (requestAsync.isLoading) return null;
+
+    final FeedSocialRequest? request = _requestValue(requestAsync);
+    if (request == null) {
+      return () => _requestInspiration(context, post.id);
+    }
+    if (request.isAccepted) {
+      return () => _loadInspiration(context, request);
+    }
+    return null;
+  }
+
+  VoidCallback? _collabAction({
+    required BuildContext context,
+    required FeedPost post,
+    required bool isOwnPost,
+    required AsyncValue<FeedSocialRequest?> requestAsync,
+  }) {
+    if (isOwnPost) return () => _showRequestsSheet(context, post);
+    if (requestAsync.isLoading) return null;
+
+    final FeedSocialRequest? request = _requestValue(requestAsync);
+    if (request == null) {
+      return () => _requestCollab(context, post.id);
+    }
+    return null;
+  }
+
+  FeedSocialRequest? _requestValue(
+    AsyncValue<FeedSocialRequest?> requestAsync,
+  ) {
+    return requestAsync.maybeWhen(
+      data: (FeedSocialRequest? request) => request,
+      orElse: () => null,
     );
   }
 
@@ -274,6 +396,123 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     );
   }
 
+  void _onSave(BuildContext context, String postId) {
+    unawaited(_savePost(context, postId));
+  }
+
+  Future<void> _savePost(BuildContext context, String postId) async {
+    try {
+      final FeedReactionResult result =
+          await ref.read(feedActionsProvider).save(postId: postId);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result.success ? 'Saved to Lookbook.' : 'Already saved.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _feedErrorMessage(e, 'Could not save right now.'),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  void _requestInspiration(BuildContext context, String postId) {
+    unawaited(_sendInspirationRequest(context, postId));
+  }
+
+  Future<void> _sendInspirationRequest(
+    BuildContext context,
+    String postId,
+  ) async {
+    try {
+      await ref.read(feedActionsProvider).requestInspiration(postId: postId);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Inspiration request sent.')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _feedErrorMessage(
+                e,
+                'Could not request inspiration right now.',
+              ),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  void _requestCollab(BuildContext context, String postId) {
+    unawaited(_sendCollabRequest(context, postId));
+  }
+
+  Future<void> _sendCollabRequest(BuildContext context, String postId) async {
+    try {
+      await ref.read(feedActionsProvider).requestCollab(postId: postId);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Collab request sent.')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _feedErrorMessage(e, 'Could not request collab right now.'),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  void _loadInspiration(BuildContext context, FeedSocialRequest request) {
+    unawaited(_loadInspirationDesign(context, request));
+  }
+
+  Future<void> _loadInspirationDesign(
+    BuildContext context,
+    FeedSocialRequest request,
+  ) async {
+    try {
+      final Design design =
+          await ref.read(feedActionsProvider).loadApprovedInspirationDesign(
+                request,
+              );
+      if (context.mounted) {
+        unawaited(context.push(AppRouter.atelier, extra: design));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _feedErrorMessage(
+                e,
+                'Could not load inspiration right now.',
+              ),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _react({
     required BuildContext context,
     required String postId,
@@ -298,7 +537,14 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
       _rollbackReaction(postId, overrideProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not $reactionType: $e')),
+          SnackBar(
+            content: Text(
+              _feedErrorMessage(
+                e,
+                'Could not $reactionType right now.',
+              ),
+            ),
+          ),
         );
       }
     }
@@ -338,6 +584,29 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
       ),
     );
   }
+
+  void _showRequestsSheet(BuildContext context, FeedPost post) {
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: AppColors.obsidianCard,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(8.0)),
+        ),
+        builder: (_) => _FeedRequestsSheet(post: post),
+      ),
+    );
+  }
+}
+
+String _feedErrorMessage(Object error, String fallback) {
+  return SupabaseService.playerSafeErrorMessage(error, fallback: fallback);
+}
+
+String _feedStatusMessage(Object? error, String fallback) {
+  if (error == null) return fallback;
+  return SupabaseService.playerSafeErrorMessage(error, fallback: fallback);
 }
 
 class _ModeToggle extends StatelessWidget {
@@ -490,6 +759,208 @@ class _ArrivalBanner extends StatelessWidget {
   }
 }
 
+class _FeedRequestsSheet extends ConsumerWidget {
+  const _FeedRequestsSheet({required this.post});
+
+  final FeedPost post;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<List<FeedSocialRequest>> requestsAsync =
+        ref.watch(feedIncomingRequestsProvider(post.id));
+    final double bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: MediaQuery.sizeOf(context).height * 0.64,
+          child: Column(
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 14.0, 8.0, 8.0),
+                child: Row(
+                  children: <Widget>[
+                    const Expanded(
+                      child: Text(
+                        'REQUESTS',
+                        style: TextStyle(
+                          color: AppColors.ivory,
+                          fontSize: 11.0,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 2.5,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Close requests',
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: Icon(
+                        Icons.close,
+                        color: AppColors.ivory.withValues(alpha: 0.64),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: requestsAsync.when(
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.gold,
+                      strokeWidth: 1.5,
+                    ),
+                  ),
+                  error: (_, __) => Center(
+                    child: Text(
+                      'REQUESTS UNAVAILABLE',
+                      style: TextStyle(
+                        color: AppColors.ivory.withValues(alpha: 0.32),
+                        fontSize: 10.0,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                  ),
+                  data: (List<FeedSocialRequest> requests) {
+                    if (requests.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'NO PENDING REQUESTS',
+                          style: TextStyle(
+                            color: AppColors.ivory.withValues(alpha: 0.32),
+                            fontSize: 10.0,
+                            letterSpacing: 2.0,
+                          ),
+                        ),
+                      );
+                    }
+                    return ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 16.0),
+                      itemCount: requests.length,
+                      separatorBuilder: (_, __) => Divider(
+                        color: AppColors.ivory.withValues(alpha: 0.08),
+                        height: 18.0,
+                      ),
+                      itemBuilder: (BuildContext context, int index) {
+                        final FeedSocialRequest request = requests[index];
+                        final bool inspiration = request.requestType ==
+                            FeedRequestType.designInspiration;
+                        return Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    inspiration
+                                        ? 'ATELIER INSPIRATION'
+                                        : 'COLLAB REQUEST',
+                                    style: const TextStyle(
+                                      color: AppColors.gold,
+                                      fontSize: 10.0,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 1.4,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5.0),
+                                  Text(
+                                    _shortId(request.requesterId),
+                                    style: TextStyle(
+                                      color: AppColors.ivory
+                                          .withValues(alpha: 0.76),
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  if (request.message.isNotEmpty) ...<Widget>[
+                                    const SizedBox(height: 4.0),
+                                    Text(
+                                      request.message,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: AppColors.ivory
+                                            .withValues(alpha: 0.56),
+                                        fontSize: 11.0,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Deny request',
+                              onPressed: () => unawaited(
+                                _respond(context, ref, request, false),
+                              ),
+                              icon: const Icon(
+                                Icons.close,
+                                color: AppColors.danger,
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Approve request',
+                              onPressed: () => unawaited(
+                                _respond(context, ref, request, true),
+                              ),
+                              icon: const Icon(
+                                Icons.check,
+                                color: AppColors.lime,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _respond(
+    BuildContext context,
+    WidgetRef ref,
+    FeedSocialRequest request,
+    bool approve,
+  ) async {
+    try {
+      await ref.read(feedActionsProvider).respondToRequest(
+            request: request,
+            approve: approve,
+          );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(approve ? 'Request approved.' : 'Request denied.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _feedErrorMessage(e, 'Could not respond right now.'),
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  static String _shortId(String value) {
+    if (value.length <= 8) return value;
+    return 'Designer ${value.substring(0, 8).toUpperCase()}';
+  }
+}
+
 class _CommentSheet extends ConsumerStatefulWidget {
   const _CommentSheet({required this.post});
 
@@ -523,7 +994,11 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not comment: $e')),
+          SnackBar(
+            content: Text(
+              _feedErrorMessage(e, 'Could not comment right now.'),
+            ),
+          ),
         );
       }
     } finally {

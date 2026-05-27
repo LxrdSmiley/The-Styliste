@@ -1,6 +1,8 @@
 // GDD §5.7 — Power Move Combo mini-game (sequence drag, 72h cooldown)
 // Directive O: The Zero-Stub Mandate — Full implementation with economic wiring
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -85,9 +87,7 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
     if (won) {
       HapticFeedback.heavyImpact();
       // Wire to LedgerProvider for economic impact
-      ref.read(upgradeStoreProvider.notifier).applyPowerMoveCombo(
-            multiplier: _achievedMultiplier,
-          );
+      unawaited(ref.read(upgradeStoreProvider.notifier).applyPowerMoveCombo());
     }
 
     Future<void>.delayed(const Duration(seconds: 2), () {

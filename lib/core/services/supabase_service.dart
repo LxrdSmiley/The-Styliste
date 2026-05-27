@@ -17,7 +17,10 @@ abstract final class SupabaseService {
 
   /// True when the current session exists and is not near expiry.
   static bool get hasFreshSession {
-    final Session? session = client.auth.currentSession;
+    return isFreshSession(client.auth.currentSession);
+  }
+
+  static bool isFreshSession(Session? session) {
     return session != null && !_shouldRefresh(session);
   }
 
@@ -32,6 +35,7 @@ abstract final class SupabaseService {
     }
 
     if (!_shouldRefresh(session)) {
+      await _setRealtimeAuth(session);
       return session;
     }
 
@@ -41,31 +45,74 @@ abstract final class SupabaseService {
       if (refreshedSession == null || _shouldRefresh(refreshedSession)) {
         throw const SupabaseSessionExpiredException();
       }
+      await _setRealtimeAuth(refreshedSession);
       return refreshedSession;
     } catch (_) {
       throw const SupabaseSessionExpiredException();
     }
   }
 
-  static bool isRecoverableAuthError(Object error) {
+  /// Forces active Realtime streams to rebuild around the latest auth token.
+  static Future<void> recreateRealtimeChannels() async {
+    final Session session = await ensureFreshSession();
+    await _setRealtimeAuth(session);
+    await client.removeAllChannels();
+  }
+
+  /// Clears all Realtime subscriptions after Supabase signs out.
+  static Future<void> cleanupRealtimeChannels() async {
+    await client.removeAllChannels();
+  }
+
+  static Stream<T> guardRealtimeStream<T>(Stream<T> stream) {
+    return stream.handleError(
+      (Object _, StackTrace __) {
+        throw const SupabaseSessionExpiredException();
+      },
+      test: (Object? error) => isRecoverableAuthError(error),
+    );
+  }
+
+  static String playerSafeErrorMessage(
+    Object error, {
+    required String fallback,
+  }) {
+    return isRecoverableAuthError(error)
+        ? SupabaseSessionExpiredException.safeMessage
+        : fallback;
+  }
+
+  static bool isRecoverableAuthError(Object? error) {
+    if (error == null) return false;
     if (error is SupabaseSessionExpiredException) return true;
 
     final String message = error.toString().toLowerCase();
     return message.contains('invalidjwttoken') ||
+        message.contains('invalid jwt') ||
         message.contains('token has expired') ||
         message.contains('jwt expired') ||
         message.contains('session expired') ||
         message.contains('authsessionmissing') ||
+        message.contains('auth session missing') ||
+        message.contains('access token is expired') ||
         message.contains('realtimesubscribeexception');
   }
 
   static bool _shouldRefresh(Session session) {
     final int? expiresAt = session.expiresAt;
-    if (expiresAt == null) return false;
+    if (expiresAt == null || session.isExpired) return true;
 
     final DateTime expiry =
         DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000);
     return DateTime.now().add(_sessionRefreshMargin).isAfter(expiry);
+  }
+
+  static Future<void> _setRealtimeAuth(Session session) async {
+    try {
+      await client.realtime.setAuth(session.accessToken);
+    } catch (_) {
+      throw const SupabaseSessionExpiredException();
+    }
   }
 
   /// Convenience: invoke a Supabase Edge Function by name.
@@ -74,6 +121,7 @@ abstract final class SupabaseService {
     String functionName, {
     Map<String, dynamic>? body,
   }) async {
+    await ensureFreshSession();
     final FunctionResponse response = await client.functions.invoke(
       functionName,
       body: body,

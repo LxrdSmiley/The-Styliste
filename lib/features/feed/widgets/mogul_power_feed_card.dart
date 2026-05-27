@@ -1,5 +1,5 @@
 // GDD 5 + 6.1 - Mogul and system feed presentation.
-// This widget reads existing feed content only and adds no backend behavior.
+// This widget reads existing feed content and delegates mutations to providers.
 
 import 'package:flutter/material.dart';
 
@@ -14,6 +14,9 @@ class MogulPowerFeedCard extends StatelessWidget {
     required this.onHype,
     required this.onLike,
     required this.onComment,
+    required this.onSave,
+    required this.onCollab,
+    required this.collabLabel,
     super.key,
   });
 
@@ -23,6 +26,9 @@ class MogulPowerFeedCard extends StatelessWidget {
   final VoidCallback onHype;
   final VoidCallback onLike;
   final VoidCallback onComment;
+  final VoidCallback onSave;
+  final VoidCallback? onCollab;
+  final String collabLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -130,6 +136,9 @@ class MogulPowerFeedCard extends StatelessWidget {
                   onHype: onHype,
                   onLike: onLike,
                   onComment: onComment,
+                  onSave: onSave,
+                  onCollab: onCollab,
+                  collabLabel: collabLabel,
                 ),
               ),
             ],
@@ -278,6 +287,9 @@ class _PowerActionRail extends StatelessWidget {
     required this.onHype,
     required this.onLike,
     required this.onComment,
+    required this.onSave,
+    required this.onCollab,
+    required this.collabLabel,
   });
 
   final Color accent;
@@ -286,6 +298,9 @@ class _PowerActionRail extends StatelessWidget {
   final VoidCallback onHype;
   final VoidCallback onLike;
   final VoidCallback onComment;
+  final VoidCallback onSave;
+  final VoidCallback? onCollab;
+  final String collabLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -310,8 +325,18 @@ class _PowerActionRail extends StatelessWidget {
           color: AppColors.ivory,
           onTap: actionsEnabled ? onComment : null,
         ),
-        const _RailButton(icon: Icons.bookmark_border, label: 'SAVE'),
-        const _RailButton(icon: Icons.group_add, label: 'COLLAB'),
+        _RailButton(
+          icon: Icons.bookmark_border,
+          label: 'SAVE',
+          color: AppColors.ivory,
+          onTap: actionsEnabled ? onSave : null,
+        ),
+        _RailButton(
+          icon: Icons.group_add,
+          label: collabLabel,
+          color: AppColors.ivory,
+          onTap: actionsEnabled ? onCollab : null,
+        ),
       ],
     );
   }

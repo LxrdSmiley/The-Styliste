@@ -198,8 +198,12 @@ abstract final class AppRouter {
       // --- Atelier: Designer session (GDD §4.1) — pushed over shell ---
       GoRoute(
         path: atelier,
-        builder: (BuildContext context, GoRouterState state) =>
-            const AtelierScreen(),
+        builder: (BuildContext context, GoRouterState state) {
+          final Object? extra = state.extra;
+          return AtelierScreen(
+            inspirationDesign: extra is Design ? extra : null,
+          );
+        },
       ),
 
       // --- Atelier Drop Preview: Vex Critic integration (GDD v6) ---

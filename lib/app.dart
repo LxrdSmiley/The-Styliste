@@ -83,7 +83,8 @@ class _ObsidianGate extends StatelessWidget {
 }
 
 String _authErrorMessage(Object error) {
-  return SupabaseService.isRecoverableAuthError(error)
-      ? SupabaseSessionExpiredException.safeMessage
-      : 'Auth error: $error';
+  return SupabaseService.playerSafeErrorMessage(
+    error,
+    fallback: 'Authentication unavailable. Please try again.',
+  );
 }

@@ -14,6 +14,9 @@ class AlphaDropFeedCard extends StatelessWidget {
     required this.onHype,
     required this.onLike,
     required this.onComment,
+    required this.onSave,
+    required this.onInspiration,
+    required this.inspirationLabel,
     super.key,
   });
 
@@ -23,6 +26,9 @@ class AlphaDropFeedCard extends StatelessWidget {
   final VoidCallback onHype;
   final VoidCallback onLike;
   final VoidCallback onComment;
+  final VoidCallback onSave;
+  final VoidCallback? onInspiration;
+  final String inspirationLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +112,9 @@ class AlphaDropFeedCard extends StatelessWidget {
                 onHype: onHype,
                 onLike: onLike,
                 onComment: onComment,
+                onSave: onSave,
+                onInspiration: onInspiration,
+                inspirationLabel: inspirationLabel,
               ),
             ),
           ],
@@ -375,6 +384,9 @@ class _ActionRail extends StatelessWidget {
     required this.onHype,
     required this.onLike,
     required this.onComment,
+    required this.onSave,
+    required this.onInspiration,
+    required this.inspirationLabel,
   });
 
   final Color accent;
@@ -382,6 +394,9 @@ class _ActionRail extends StatelessWidget {
   final VoidCallback onHype;
   final VoidCallback onLike;
   final VoidCallback onComment;
+  final VoidCallback onSave;
+  final VoidCallback? onInspiration;
+  final String inspirationLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -406,17 +421,17 @@ class _ActionRail extends StatelessWidget {
           color: AppColors.ivory,
           onTap: onComment,
         ),
-        const _RailButton(
+        _RailButton(
           icon: Icons.bookmark_border,
           label: 'SAVE',
+          color: AppColors.ivory,
+          onTap: onSave,
         ),
-        const _RailButton(
-          icon: Icons.brush,
-          label: 'REMIX',
-        ),
-        const _RailButton(
-          icon: Icons.call_split,
-          label: 'STITCH',
+        _RailButton(
+          icon: Icons.palette_outlined,
+          label: inspirationLabel,
+          color: AppColors.ivory,
+          onTap: onInspiration,
         ),
       ],
     );

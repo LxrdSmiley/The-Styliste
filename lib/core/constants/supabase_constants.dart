@@ -72,6 +72,7 @@ abstract final class SupabaseConstants {
   static const String fnDropDesign = 'drop-design';
   static const String fnFeedReact = 'feed-react';
   static const String fnFeedComment = 'feed-comment';
+  static const String fnFeedInspiration = 'feed-inspiration';
   static const String fnProcessTransaction = 'process-transaction';
   static const String fnMaisonDonate = 'maison-donate';
   static const String fnValidateIap = 'validate-iap';

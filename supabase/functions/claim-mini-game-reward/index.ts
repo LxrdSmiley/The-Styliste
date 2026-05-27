@@ -52,6 +52,19 @@ Deno.serve(async (req: Request) => {
     return json({ success: true, stamina: 100 }, 200);
   }
 
+  if (gameKey === 'power_move_combo' && resultKey === 'standard_win') {
+    const { data, error } = await supabase.rpc('edge_apply_power_move_combo', {
+      p_player_id: playerId,
+      p_result_key: resultKey,
+    });
+
+    if (error) {
+      return json({ error: error.message }, 400);
+    }
+
+    return json(data as Record<string, unknown>, 200);
+  }
+
   const rewardTable: Record<string, Record<string, { currency: number }>> = {
     supplier_raid: {
       standard_win: { currency: 250 },

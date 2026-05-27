@@ -20,7 +20,9 @@ import '../widgets/fabric_swatch_panel.dart';
 import '../widgets/garment_canvas.dart';
 
 class AtelierScreen extends ConsumerStatefulWidget {
-  const AtelierScreen({super.key});
+  const AtelierScreen({this.inspirationDesign, super.key});
+
+  final Design? inspirationDesign;
 
   @override
   ConsumerState<AtelierScreen> createState() => _AtelierScreenState();
@@ -35,6 +37,24 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
   Timer? _interactionTimer;
 
   static const int _gateSeconds = 5;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final Design? inspiration = widget.inspirationDesign;
+    if (inspiration == null) return;
+
+    _selectedDye = _hexToColor(
+      inspiration.fabricData['color_hex'] as String? ?? 'FAF7F0',
+    );
+    final List<String> inspirationTags = _readStyleTags(inspiration);
+    if (inspirationTags.isNotEmpty) {
+      _selectedStyleTags
+        ..clear()
+        ..addAll(inspirationTags.take(3));
+    }
+  }
 
   // ---------------------------------------------------------------------------
   // Interaction gate timer — only ticks while touch is active.
@@ -156,6 +176,9 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
       ),
       body: Column(
         children: <Widget>[
+          if (widget.inspirationDesign != null)
+            _InspirationBanner(design: widget.inspirationDesign!),
+
           // --- Fabric dye selector ---
           FabricSwatchPanel(
             selectedColor: _selectedDye,
@@ -295,5 +318,68 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
         ],
       ),
     );
+  }
+}
+
+class _InspirationBanner extends StatelessWidget {
+  const _InspirationBanner({required this.design});
+
+  final Design design;
+
+  @override
+  Widget build(BuildContext context) {
+    final String sourceName =
+        design.fabricData['inspiration_source_name'] as String? ?? design.name;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10.0),
+      decoration: BoxDecoration(
+        color: AppColors.gold.withValues(alpha: 0.12),
+        border: Border(
+          bottom: BorderSide(color: AppColors.gold.withValues(alpha: 0.28)),
+        ),
+      ),
+      child: Row(
+        children: <Widget>[
+          const Icon(Icons.palette_outlined, color: AppColors.gold, size: 16.0),
+          const SizedBox(width: 10.0),
+          Expanded(
+            child: Text(
+              'INSPIRATION LOADED: ${sourceName.toUpperCase()}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.gold,
+                fontSize: 10.0,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+List<String> _readStyleTags(Design design) {
+  final Object? rawTags = design.fabricData['style_tags'];
+  if (rawTags is! List) return kDefaultStyleTags;
+
+  final List<String> tags = rawTags
+      .map((Object? value) => value?.toString().trim() ?? '')
+      .where((String tag) => tag.isNotEmpty)
+      .take(3)
+      .toList(growable: false);
+  return tags.isEmpty ? kDefaultStyleTags : tags;
+}
+
+Color _hexToColor(String hex) {
+  try {
+    final String clean = hex.replaceAll('#', '').padLeft(6, '0');
+    return Color(int.parse('FF$clean', radix: 16));
+  } catch (_) {
+    return AppColors.ivory;
   }
 }

@@ -154,24 +154,28 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
   }
 
   /// Apply Power Move Combo: store multiplier for next liquidation
-  Future<Map<String, dynamic>> applyPowerMoveCombo({
-    required double multiplier,
-  }) async {
+  Future<Map<String, dynamic>> applyPowerMoveCombo() async {
     try {
-      await SupabaseService.client
-          .from(SupabaseConstants.tableBrandState)
-          .update(<String, dynamic>{
-        'pending_power_move_multiplier': multiplier,
-        'power_move_expires_at':
-            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
-      }).eq('player_id', SupabaseService.client.auth.currentUser!.id);
+      final Session? session = SupabaseService.client.auth.currentSession;
+      if (session == null) {
+        return <String, dynamic>{
+          'success': false,
+          'error': 'Not authenticated',
+        };
+      }
 
-      return <String, dynamic>{
-        'success': true,
-        'multiplier': multiplier,
-        'expires_at':
-            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
-      };
+      final FunctionResponse response =
+          await SupabaseService.client.functions.invoke(
+        'claim-mini-game-reward',
+        body: <String, dynamic>{
+          'game_key': 'power_move_combo',
+          'result_key': 'standard_win',
+        },
+        headers: <String, String>{
+          'Authorization': 'Bearer ${session.accessToken}',
+        },
+      );
+      return Map<String, dynamic>.from(response.data as Map<String, dynamic>);
     } catch (e) {
       return <String, dynamic>{
         'success': false,
