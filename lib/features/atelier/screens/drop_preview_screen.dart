@@ -1,5 +1,5 @@
-// GDD v6 — Drop Preview Screen with Vex AI Critic
-// Two-phase flow: Mint → Preview (with tag selection + Vex opt-in) → Drop
+// GDD v6 - Drop Preview Screen with Vex AI Critic
+// Two-phase flow: Mint -> Preview (with tag selection + Vex opt-in) -> Drop
 // Alabaster Standard: Aurelian palette, SpaceGrotesk typography, Champagne Gold accents
 
 import 'package:flutter/material.dart';
@@ -32,17 +32,18 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
     _selectedTags.addAll(_readMintedStyleTags(widget.design));
 
     // Initialize drop flow
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((Duration _) {
+      if (!mounted) return;
       ref.read(dropDesignProvider.notifier).initDropFlow(
             design: widget.design,
-            styleTags: _selectedTags.toList(),
+            styleTags: _selectedTags.toList(growable: false),
           );
     });
   }
 
   List<String> _readMintedStyleTags(Design design) {
     final Object? rawTags = design.fabricData['style_tags'];
-    if (rawTags is List) {
+    if (rawTags is List<Object?>) {
       final List<String> tags = rawTags
           .map((Object? value) => value?.toString().trim() ?? '')
           .where((String tag) => tag.isNotEmpty)
@@ -61,7 +62,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
     final String? error = ref.read(dropDesignProvider).error;
     if (error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
+        const SnackBar(content: Text('Drop failed. Please try again.')),
       );
       return;
     }
@@ -91,9 +92,12 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
   @override
   Widget build(BuildContext context) {
     final DropDesignState dropState = ref.watch(dropDesignProvider);
-    final double projectedHype = dropState.hypeResult?.totalScore ?? 0.0;
+    final double mintedHype =
+        dropState.hypeResult?.totalScore ?? widget.design.hypeScore;
     final double multiplier = dropState.hypeResult?.tsunamiMultiplier ?? 1.0;
     final bool hasTsunamiMatch = multiplier > 1.0;
+    final Color fabricColor = _readFabricColor(widget.design);
+    final List<String> selectedTags = _selectedTags.toList(growable: false);
 
     return Scaffold(
       backgroundColor: AurelianPalette.ivory,
@@ -117,26 +121,11 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
         padding: const EdgeInsets.all(24.0),
         children: <Widget>[
           // --- Design Preview ---
-          Container(
-            height: 200.0,
-            decoration: BoxDecoration(
-              color: AurelianPalette.alabaster,
-              borderRadius: BorderRadius.circular(12.0),
-              border: Border.all(
-                color: AurelianPalette.champagneGold.withValues(alpha: 0.3),
-              ),
-            ),
-            child: Center(
-              child: Text(
-                widget.design.name,
-                style: const TextStyle(
-                  fontFamily: 'SpaceGrotesk',
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w600,
-                  color: AurelianPalette.textPrimary,
-                ),
-              ),
-            ),
+          _DropGarmentPreview(
+            design: widget.design,
+            fabricColor: fabricColor,
+            styleTags: selectedTags,
+            hypeScore: mintedHype,
           ),
 
           const SizedBox(height: 24.0),
@@ -168,7 +157,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                   color: AurelianPalette.textPrimary,
                 ),
               );
-            }).toList(),
+            }).toList(growable: false),
           ),
 
           const SizedBox(height: 24.0),
@@ -209,7 +198,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                 ),
                 Switch(
                   value: dropState.vexOptedIn,
-                  onChanged: (_) =>
+                  onChanged: (bool _) =>
                       ref.read(dropDesignProvider.notifier).toggleVexOptIn(),
                   activeThumbColor: AurelianPalette.champagneGold,
                 ),
@@ -219,7 +208,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
 
           const SizedBox(height: 24.0),
 
-          // --- Projected Hype Score ---
+          // --- Minted Hype Score ---
           Container(
             padding: const EdgeInsets.all(20.0),
             decoration: BoxDecoration(
@@ -236,7 +225,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     const Text(
-                      'PROJECTED HYPE',
+                      'MINTED HYPE',
                       style: TextStyle(
                         fontFamily: 'SpaceGrotesk',
                         fontSize: 10.0,
@@ -247,7 +236,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
                     ),
                     const SizedBox(height: 4.0),
                     Text(
-                      projectedHype.toStringAsFixed(1),
+                      mintedHype.toStringAsFixed(1),
                       style: const TextStyle(
                         fontFamily: 'SpaceGrotesk',
                         fontSize: 32.0,
@@ -316,5 +305,274 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
         ],
       ),
     );
+  }
+}
+
+class _DropGarmentPreview extends StatelessWidget {
+  const _DropGarmentPreview({
+    required this.design,
+    required this.fabricColor,
+    required this.styleTags,
+    required this.hypeScore,
+  });
+
+  final Design design;
+  final Color fabricColor;
+  final List<String> styleTags;
+  final double hypeScore;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 258.0,
+      decoration: BoxDecoration(
+        color: AurelianPalette.alabaster,
+        borderRadius: BorderRadius.circular(14.0),
+        border: Border.all(
+          color: AurelianPalette.champagneGold.withValues(alpha: 0.56),
+        ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: AurelianPalette.champagneGoldDark.withValues(alpha: 0.13),
+            blurRadius: 26.0,
+            offset: const Offset(0.0, 14.0),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: <Color>[
+                  AurelianPalette.ivory,
+                  Color.lerp(
+                        fabricColor,
+                        AurelianPalette.champagneGold,
+                        0.6,
+                      )?.withValues(alpha: 0.44) ??
+                      AurelianPalette.champagneGold.withValues(alpha: 0.44),
+                  AurelianPalette.alabaster,
+                ],
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _PreviewGarmentPainter(fabricColor: fabricColor),
+            ),
+          ),
+          const Positioned(
+            left: 16.0,
+            top: 14.0,
+            child: _PreviewBadge(label: 'ALPHA MINTED'),
+          ),
+          Positioned(
+            right: 16.0,
+            top: 14.0,
+            child: _PreviewBadge(label: '${hypeScore.toStringAsFixed(1)} HYPE'),
+          ),
+          Positioned(
+            left: 16.0,
+            right: 16.0,
+            bottom: 16.0,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(
+                  design.name.toUpperCase(),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: 'SpaceGrotesk',
+                    fontSize: 25.0,
+                    fontWeight: FontWeight.w800,
+                    height: 0.98,
+                    color: AurelianPalette.textPrimary,
+                  ),
+                ),
+                if (styleTags.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: 10.0),
+                  Wrap(
+                    spacing: 6.0,
+                    runSpacing: 6.0,
+                    children: styleTags.take(3).map((String tag) {
+                      return _PreviewTagPill(label: tag);
+                    }).toList(growable: false),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreviewBadge extends StatelessWidget {
+  const _PreviewBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 7.0),
+      decoration: BoxDecoration(
+        color: AurelianPalette.ivory.withValues(alpha: 0.86),
+        borderRadius: BorderRadius.circular(999.0),
+        border: Border.all(
+          color: AurelianPalette.champagneGoldDark.withValues(alpha: 0.42),
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontFamily: 'SpaceGrotesk',
+          color: AurelianPalette.textPrimary,
+          fontSize: 9.0,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewTagPill extends StatelessWidget {
+  const _PreviewTagPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9.0, vertical: 5.0),
+      decoration: BoxDecoration(
+        color: AurelianPalette.champagneGold.withValues(alpha: 0.32),
+        borderRadius: BorderRadius.circular(999.0),
+        border: Border.all(color: AurelianPalette.champagneGoldDark),
+      ),
+      child: Text(
+        label.toUpperCase(),
+        style: const TextStyle(
+          fontFamily: 'SpaceGrotesk',
+          color: AurelianPalette.textPrimary,
+          fontSize: 8.0,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.0,
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewGarmentPainter extends CustomPainter {
+  const _PreviewGarmentPainter({required this.fabricColor});
+
+  final Color fabricColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Offset center = Offset(size.width * 0.5, size.height * 0.43);
+    final Paint glow = Paint()
+      ..color = AurelianPalette.champagneGoldDark.withValues(alpha: 0.22)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 28.0);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center,
+        width: size.width * 0.48,
+        height: size.height * 0.78,
+      ),
+      glow,
+    );
+
+    final Path dress = Path()
+      ..moveTo(center.dx - 34.0, size.height * 0.18)
+      ..cubicTo(
+        center.dx - 86.0,
+        size.height * 0.28,
+        center.dx - 78.0,
+        size.height * 0.66,
+        center.dx,
+        size.height * 0.76,
+      )
+      ..cubicTo(
+        center.dx + 78.0,
+        size.height * 0.66,
+        center.dx + 86.0,
+        size.height * 0.28,
+        center.dx + 34.0,
+        size.height * 0.18,
+      )
+      ..quadraticBezierTo(
+        center.dx,
+        size.height * 0.28,
+        center.dx - 34.0,
+        size.height * 0.18,
+      )
+      ..close();
+
+    final Paint fabric = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: <Color>[
+          fabricColor.withValues(alpha: 0.9),
+          Color.lerp(
+                fabricColor,
+                AurelianPalette.textPrimary,
+                0.2,
+              )?.withValues(alpha: 0.88) ??
+              fabricColor.withValues(alpha: 0.88),
+          AurelianPalette.champagneGoldDark.withValues(alpha: 0.86),
+        ],
+      ).createShader(dress.getBounds());
+    canvas.drawPath(dress, fabric);
+
+    final Paint edge = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..color = AurelianPalette.ivory.withValues(alpha: 0.72);
+    canvas.drawPath(dress, edge);
+
+    final Paint stand = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..color = AurelianPalette.textPrimary.withValues(alpha: 0.22);
+    canvas
+      ..drawLine(
+        Offset(center.dx, size.height * 0.76),
+        Offset(center.dx, size.height * 0.88),
+        stand,
+      )
+      ..drawLine(
+        Offset(center.dx - 36.0, size.height * 0.88),
+        Offset(center.dx + 36.0, size.height * 0.88),
+        stand,
+      );
+  }
+
+  @override
+  bool shouldRepaint(covariant _PreviewGarmentPainter oldDelegate) {
+    return oldDelegate.fabricColor != fabricColor;
+  }
+}
+
+Color _readFabricColor(Design design) {
+  final Object? color = design.fabricData['color_hex'];
+  if (color is! String) return AurelianPalette.ivory;
+
+  try {
+    final String clean = color.replaceAll('#', '').padLeft(6, '0');
+    return Color(int.parse('FF$clean', radix: 16));
+  } catch (_) {
+    return AurelianPalette.ivory;
   }
 }
