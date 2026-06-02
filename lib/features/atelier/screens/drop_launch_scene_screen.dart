@@ -92,14 +92,7 @@ class _DropLaunchSceneScreenState extends ConsumerState<DropLaunchSceneScreen> {
                     ],
                   ),
                   const SizedBox(height: 18.0),
-                  Text(
-                    'The feed is watching. Vex is awake.',
-                    style: TextStyle(
-                      color: AppColors.ivory.withValues(alpha: 0.66),
-                      fontSize: 14.0,
-                      height: 1.35,
-                    ),
-                  ),
+                  if (pending != null) _DropResultPanel(drop: pending),
                   const SizedBox(height: 22.0),
                   SizedBox(
                     width: double.infinity,
@@ -132,6 +125,141 @@ class _DropLaunchSceneScreenState extends ConsumerState<DropLaunchSceneScreen> {
       ),
     );
   }
+}
+
+class _DropResultPanel extends StatelessWidget {
+  const _DropResultPanel({required this.drop});
+
+  final PendingAlphaDrop drop;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<_ResultMetric> metrics = <_ResultMetric>[
+      if ((drop.followersDelta ?? 0) > 0)
+        _ResultMetric('+${drop.followersDelta} FOLLOWERS'),
+      if ((drop.brandHeatDelta ?? 0) > 0)
+        _ResultMetric('+${drop.brandHeatDelta} BRAND HEAT'),
+      if ((drop.xpDelta ?? 0) > 0) _ResultMetric('+${drop.xpDelta} XP'),
+      if ((drop.rankProgressDelta ?? 0.0) > 0.0)
+        _ResultMetric(
+          '+${drop.rankProgressDelta!.toStringAsFixed(1)}% RANK PROGRESS',
+        ),
+      if ((drop.idleRevenueDelta ?? 0.0) > 0.0)
+        _ResultMetric(
+          '+${drop.idleRevenueDelta!.toStringAsFixed(0)}/HR IDLE',
+        ),
+    ];
+    final String? vexLine = _firstText(<String?>[
+      drop.vexQuote,
+      drop.vexHeadline,
+      drop.vexVerdict,
+    ]);
+    final String? nextObjective = _firstText(<String?>[drop.nextObjective]);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14.0),
+      decoration: BoxDecoration(
+        color: AppColors.obsidian.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(color: AppColors.gold.withValues(alpha: 0.34)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      drop.marketReaction?.toUpperCase() ?? 'MARKET REACTION',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 10.0,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.8,
+                      ),
+                    ),
+                    const SizedBox(height: 4.0),
+                    Text(
+                      '${drop.hypeScore.toStringAsFixed(1)} HYPE',
+                      style: const TextStyle(
+                        color: AppColors.ivory,
+                        fontSize: 28.0,
+                        fontWeight: FontWeight.w900,
+                        height: 0.95,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (metrics.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: metrics
+                      .take(3)
+                      .map(
+                        (_ResultMetric metric) => Padding(
+                          padding: const EdgeInsets.only(bottom: 5.0),
+                          child: Text(
+                            metric.label,
+                            style: const TextStyle(
+                              color: AppColors.lime,
+                              fontSize: 10.0,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(growable: false),
+                ),
+            ],
+          ),
+          if (vexLine != null) ...<Widget>[
+            const SizedBox(height: 10.0),
+            Text(
+              'VEX: $vexLine',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppColors.ivory.withValues(alpha: 0.72),
+                fontSize: 12.0,
+                fontWeight: FontWeight.w600,
+                height: 1.3,
+              ),
+            ),
+          ],
+          if (nextObjective != null) ...<Widget>[
+            const SizedBox(height: 8.0),
+            Text(
+              'NEXT: $nextObjective',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: AppColors.gold.withValues(alpha: 0.86),
+                fontSize: 11.0,
+                fontWeight: FontWeight.w800,
+                height: 1.25,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ResultMetric {
+  const _ResultMetric(this.label);
+
+  final String label;
 }
 
 class _SceneBadge extends StatelessWidget {
@@ -312,6 +440,13 @@ class _DropLaunchGame extends FlameGame<World> {
       );
     }
   }
+}
+
+String? _firstText(List<String?> values) {
+  for (final String? value in values) {
+    if (value != null && value.trim().isNotEmpty) return value.trim();
+  }
+  return null;
 }
 
 Color _hexToColor(String hex) {

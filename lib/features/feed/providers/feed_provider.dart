@@ -37,6 +37,16 @@ class PendingAlphaDrop {
     required this.hypeScore,
     this.brandName,
     this.fabricColorHex,
+    this.vexVerdict,
+    this.vexHeadline,
+    this.vexQuote,
+    this.followersDelta,
+    this.brandHeatDelta,
+    this.xpDelta,
+    this.rankProgressDelta,
+    this.idleRevenueDelta,
+    this.marketReaction,
+    this.nextObjective,
   });
 
   final String feedPostId;
@@ -45,6 +55,16 @@ class PendingAlphaDrop {
   final double hypeScore;
   final String? brandName;
   final String? fabricColorHex;
+  final String? vexVerdict;
+  final String? vexHeadline;
+  final String? vexQuote;
+  final int? followersDelta;
+  final int? brandHeatDelta;
+  final int? xpDelta;
+  final double? rankProgressDelta;
+  final double? idleRevenueDelta;
+  final String? marketReaction;
+  final String? nextObjective;
 }
 
 final StateProvider<PendingAlphaDrop?> pendingAlphaDropProvider =

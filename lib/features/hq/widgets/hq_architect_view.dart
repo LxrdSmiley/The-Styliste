@@ -22,6 +22,7 @@ import '../theme/aurelian_hq_theme.dart';
 import '../widgets/brand_heat_meter.dart';
 import '../widgets/empire_pulse_painter.dart';
 import '../widgets/glass_walled_penthouse.dart';
+import '../widgets/latest_alpha_drop_module.dart';
 
 /// Golden Hour HQ: Architect View
 ///
@@ -108,6 +109,10 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                         brandAsync: brandAsync,
                         onTap: () => unawaited(context.push(AppRouter.ledger)),
                       ),
+
+                      const SizedBox(height: 32.0),
+
+                      const LatestAlphaDropModule(),
 
                       const SizedBox(height: 32.0),
 

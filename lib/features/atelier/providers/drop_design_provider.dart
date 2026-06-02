@@ -18,6 +18,18 @@ double _safeDouble(Object? value, {double fallback = 0.0}) {
   return fallback;
 }
 
+int? _safeInt(Object? value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
+String? _safeString(Object? value) {
+  if (value is String && value.trim().isNotEmpty) return value.trim();
+  return null;
+}
+
 /// State for the drop design flow
 class DropDesignState {
   const DropDesignState({
@@ -158,6 +170,20 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
         hypeScore: hypeScore,
         brandName: brandName,
         fabricColorHex: fabricColorHex,
+        vexVerdict: _safeString(response['vex_verdict']),
+        vexHeadline: _safeString(response['vex_headline']),
+        vexQuote: _safeString(response['vex_quote']),
+        followersDelta: _safeInt(response['followers_delta']),
+        brandHeatDelta: _safeInt(response['brand_heat_delta']),
+        xpDelta: _safeInt(response['xp_delta']),
+        rankProgressDelta: _safeDouble(
+          response['rank_progress_delta'],
+        ),
+        idleRevenueDelta: _safeDouble(
+          response['idle_revenue_delta'],
+        ),
+        marketReaction: _safeString(response['market_reaction']),
+        nextObjective: _safeString(response['next_objective']),
       );
 
       // Final state transition

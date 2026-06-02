@@ -17,6 +17,7 @@ import '../providers/hq_provider.dart';
 import '../theme/aurelian_hq_theme.dart';
 import '../widgets/brand_heat_meter.dart';
 import '../widgets/glass_walled_penthouse.dart';
+import '../widgets/latest_alpha_drop_module.dart';
 import '../widgets/sun_dial_hype_meter.dart';
 
 /// Golden Hour HQ: Artisan View
@@ -101,6 +102,10 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
                           error: (_, __) => const SizedBox.shrink(),
                         ),
                       ),
+
+                      const SizedBox(height: 32.0),
+
+                      const LatestAlphaDropModule(),
 
                       const SizedBox(height: 32.0),
 
