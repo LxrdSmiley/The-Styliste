@@ -123,6 +123,7 @@ final FutureProvider<LatestAlphaDropSummary?> latestAlphaDropProvider =
       .select('id, content, hype, created_at')
       .eq('player_id', uid)
       .inFilter('type', <String>['design_flex', 'design_drop'])
+      .filter('content->>event', 'eq', 'alpha_dropped')
       .order('created_at', ascending: false)
       .limit(1)
       .maybeSingle();

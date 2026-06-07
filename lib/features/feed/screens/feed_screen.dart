@@ -14,6 +14,7 @@ import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../domain/models/design.dart';
 import '../../../domain/models/feed_post.dart';
+import '../../ftue/providers/first_objective_provider.dart';
 import '../providers/feed_provider.dart';
 import '../widgets/alpha_drop_feed_card.dart';
 import '../widgets/mogul_power_feed_card.dart';
@@ -29,6 +30,12 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   Timer? _arrivalBannerTimer;
   String? _lastArrivalBannerPostId;
   bool _showArrivalBanner = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(firstObjectiveActionsProvider.notifier).markFeedVisited();
+  }
 
   @override
   void dispose() {

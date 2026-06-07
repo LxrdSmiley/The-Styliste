@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../domain/models/brand.dart';
 import '../../../domain/models/store.dart';
+import '../../../features/ftue/providers/first_objective_provider.dart';
 import '../../../features/hq/providers/hq_provider.dart';
 import '../providers/ledger_provider.dart';
 
@@ -30,6 +31,12 @@ class LedgerScreen extends ConsumerStatefulWidget {
 
 class _LedgerScreenState extends ConsumerState<LedgerScreen> {
   bool _errorSnackbarShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(firstObjectiveActionsProvider.notifier).markLedgerOpened();
+  }
 
   @override
   Widget build(BuildContext context) {

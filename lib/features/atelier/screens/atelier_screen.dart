@@ -16,6 +16,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/design.dart';
 import '../../design/services/hype_calculator.dart';
+import '../../ftue/providers/first_objective_provider.dart';
 import '../../trends/models/trend_tsunami.dart';
 import '../../trends/providers/trend_provider.dart';
 import '../constants/style_tags.dart';
@@ -46,6 +47,7 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
   @override
   void initState() {
     super.initState();
+    ref.read(firstObjectiveActionsProvider.notifier).markAtelierOpened();
 
     final Design? inspiration = widget.inspirationDesign;
     if (inspiration == null) return;
