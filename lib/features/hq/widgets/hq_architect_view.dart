@@ -14,6 +14,7 @@ import '../../../core/providers/idle_engine_provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../../domain/models/brand.dart';
 import '../../../domain/models/player.dart';
+import '../../ftue/widgets/first_objective_card.dart';
 import '../../supply_chain/models/supply_chain_models.dart';
 import '../../supply_chain/providers/supply_chain_provider.dart';
 import '../../supply_chain/widgets/buffer_stock_monitor.dart';
@@ -102,6 +103,8 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
+                      FirstObjectiveCard(player: widget.player),
+
                       // --- Empire Pulse Graph (CustomPainter) ---
                       const _SectionTitle('EMPIRE PULSE'),
                       const SizedBox(height: 16.0),

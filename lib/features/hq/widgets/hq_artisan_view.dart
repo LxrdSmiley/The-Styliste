@@ -13,6 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/router/app_router.dart';
 import '../../../domain/models/brand.dart';
 import '../../../domain/models/player.dart';
+import '../../ftue/widgets/first_objective_card.dart';
 import '../providers/hq_provider.dart';
 import '../theme/aurelian_hq_theme.dart';
 import '../widgets/brand_heat_meter.dart';
@@ -87,6 +88,8 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
+                      FirstObjectiveCard(player: widget.player),
+
                       // --- Sun-Dial Hype Meter (CustomPainter) ---
                       const _SectionTitle('HYPE SOLARIS'),
                       const SizedBox(height: 16.0),

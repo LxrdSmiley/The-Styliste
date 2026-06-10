@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../domain/models/player.dart';
+import '../../features/ftue/providers/first_objective_provider.dart';
 import '../../features/hq/providers/hq_provider.dart';
 
 class MainShell extends ConsumerWidget {
@@ -40,10 +41,15 @@ class MainShell extends ConsumerWidget {
         currentIndex: currentIndex,
         hqIcon: hqIcon,
         hqLabel: hqLabel,
-        onTap: (int index) => navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
-        ),
+        onTap: (int index) {
+          if (index == 0) {
+            ref.read(firstObjectiveActionsProvider.notifier).markReturnedToHq();
+          }
+          navigationShell.goBranch(
+            index,
+            initialLocation: index == navigationShell.currentIndex,
+          );
+        },
       ),
     );
   }
