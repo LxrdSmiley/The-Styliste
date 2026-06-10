@@ -124,16 +124,18 @@ supabase db lint
 
 ## Tech Stack
 
-- **Flutter / Dart** mobile client and UI.
+- **Flutter + Dart** mobile client and UI.
 - **Riverpod** state management.
 - **go_router** app routing.
 - **Flame** lightweight embedded game-feel scenes.
-- **Supabase PostgreSQL** authoritative database.
-- **Supabase RLS** data access protection.
+- **Supabase Postgres / RPC / RLS / Realtime / Storage** authoritative backend, data access, live sync, and media storage.
 - **Supabase Edge Functions / TypeScript** server-authoritative gameplay logic.
 - **Firebase Auth** authentication.
 - **Firebase Messaging** push notifications.
 - **Firebase App Check** abuse protection.
+- **Flutter in_app_purchase** mobile purchase plumbing.
+- **PostHog** optional future analytics, gated by privacy controls and legal documentation.
+- **CodeRabbit** development-only PR review tooling.
 - **Custom shaders** luxury visual effects and mobile-first polish.
 
 ## Documents
