@@ -3,10 +3,14 @@
 
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract final class SupabaseService {
   static const Duration _sessionRefreshMargin = Duration(minutes: 2);
+
+  static const String noInternetMessage =
+      'No internet connection. Check your network and try again.';
 
   /// The authenticated Supabase client.
   /// Always use this getter — never construct a new client.
@@ -77,9 +81,33 @@ abstract final class SupabaseService {
     Object error, {
     required String fallback,
   }) {
+    final String errStr = error.toString().toLowerCase();
+    if (errStr.contains('socketexception') ||
+        errStr.contains('httpexception') ||
+        errStr.contains('failed host lookup')) {
+      return noInternetMessage;
+    }
+
     return isRecoverableAuthError(error)
         ? SupabaseSessionExpiredException.safeMessage
         : fallback;
+  }
+
+  static Future<void> signOut() async {
+    try {
+      // 1. Cleanup Realtime
+      await cleanupRealtimeChannels();
+    } catch (_) {}
+
+    try {
+      // 2. Sign out of Firebase (this will trigger the bridge to clear via authStateProvider)
+      await FirebaseAuth.instance.signOut();
+    } catch (_) {}
+
+    try {
+      // 3. Sign out of Supabase
+      await client.auth.signOut();
+    } catch (_) {}
   }
 
   static bool isRecoverableAuthError(Object? error) {

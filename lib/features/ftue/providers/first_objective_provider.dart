@@ -65,8 +65,7 @@ final StateNotifierProvider<FirstObjectiveActions, FirstObjectiveMarkers>
 
 final Provider<FirstObjectiveRepository> firstObjectiveRepositoryProvider =
     Provider<FirstObjectiveRepository>(
-  (Ref<FirstObjectiveRepository> _) =>
-      const SupabaseFirstObjectiveRepository(),
+  (Ref<FirstObjectiveRepository> _) => const SupabaseFirstObjectiveRepository(),
 );
 
 class FirstObjectiveState {
@@ -101,9 +100,8 @@ final FutureProviderFamily<FirstObjectiveState, Player> firstObjectiveProvider =
       final String activeUid = ref.watch(activeUidProvider);
       final FirstObjectiveRepository repository =
           ref.watch(firstObjectiveRepositoryProvider);
-      final bool hasServerConfirmedAlphaDrop =
-          activeUid.isNotEmpty &&
-              await repository.hasServerConfirmedAlphaDrop(activeUid);
+      final bool hasServerConfirmedAlphaDrop = activeUid.isNotEmpty &&
+          await repository.hasServerConfirmedAlphaDrop(activeUid);
       return FirstObjectiveState(
         playerId: activeUid.isEmpty ? player.id : activeUid,
         path: player.path,
