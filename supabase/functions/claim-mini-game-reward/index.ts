@@ -26,30 +26,58 @@ Deno.serve(async (req: Request) => {
   const { game_key: gameKey, result_key: resultKey } = payload;
   const playerId = userData.user.id;
 
-  if (gameKey === 'staff_rally' && resultKey === 'stamina_reset') {
+  if (gameKey === 'staff_rally') {
     const talentId = payload.talent_id as string | undefined;
     if (!talentId) {
       return json({ error: 'Missing talent_id' }, 400);
     }
 
-    const { error, count } = await supabase
-      .from('player_roster')
-      .update({
-        stamina: 100,
-        last_stamina_refresh: new Date().toISOString(),
-      }, { count: 'exact' })
-      .eq('player_id', playerId)
-      .eq('talent_id', talentId);
+    if (resultKey === 'stamina_reset') {
+      const { error, count } = await supabase
+        .from('player_roster')
+        .update({
+          stamina: 100,
+          last_stamina_refresh: new Date().toISOString(),
+        }, { count: 'exact' })
+        .eq('player_id', playerId)
+        .eq('talent_id', talentId);
 
-    if (error) {
-      return json({ error: error.message }, 400);
+      if (error) {
+        return json({ error: error.message }, 400);
+      }
+
+      if (!count) {
+        return json({ success: false, error: 'Talent not found' }, 404);
+      }
+
+      return json({ success: true, stamina: 100 }, 200);
+    } else if (resultKey === 'cooldown_loss') {
+      const cooldownUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      const { error, count } = await supabase
+        .from('player_roster')
+        .update({
+          gala_cooldown_until: cooldownUntil,
+        }, { count: 'exact' })
+        .eq('player_id', playerId)
+        .eq('talent_id', talentId);
+
+      if (error) {
+        return json({ error: error.message }, 400);
+      }
+
+      if (!count) {
+        return json({ success: false, error: 'Talent not found' }, 404);
+      }
+
+      return json({
+        success: true,
+        cooldown_hours: 24,
+        cooldown_until: cooldownUntil,
+        message: 'Talent needs 24h rest before next Gala assignment',
+      }, 200);
+    } else {
+      return json({ error: 'Invalid result_key for staff_rally' }, 400);
     }
-
-    if (!count) {
-      return json({ success: false, error: 'Talent not found' }, 404);
-    }
-
-    return json({ success: true, stamina: 100 }, 200);
   }
 
   if (gameKey === 'power_move_combo' && resultKey === 'standard_win') {

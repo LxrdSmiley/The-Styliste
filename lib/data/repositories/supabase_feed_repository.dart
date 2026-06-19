@@ -35,12 +35,6 @@ class SupabaseFeedRepository implements FeedRepository {
         );
   }
 
-  @override
-  Future<void> createPost(Map<String, dynamic> postData) async {
-    await SupabaseService.client
-        .from(SupabaseConstants.tableFeedPosts)
-        .insert(postData);
-  }
 
   @override
   Future<void> reactToPost(String postId, String reactionType) async {

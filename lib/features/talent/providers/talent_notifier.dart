@@ -110,33 +110,50 @@ class TalentNotifier extends StateNotifier<TalentState> {
         state = state.copyWith(isLoading: false);
         return result;
       } else {
-        // Apply 24h cooldown
-        final DateTime cooldownUntil =
-            DateTime.now().add(const Duration(hours: 24));
-
-        // Update local state
-        state = state.copyWith(
-          isLoading: false,
-          rallyCooldownUntil: cooldownUntil,
-        );
-
-        // Store cooldown in Supabase.
-        if (talentId != null) {
-          await supabase
-              .from('player_roster')
-              .update(<String, dynamic>{
-                'gala_cooldown_until': cooldownUntil.toIso8601String(),
-              })
-              .eq('player_id', userId)
-              .eq('talent_id', talentId);
+        if (talentId == null) {
+          state = state.copyWith(isLoading: false);
+          return <String, dynamic>{
+            'success': false,
+            'error': 'No talent selected for rally',
+          };
         }
 
-        return <String, dynamic>{
-          'success': true,
-          'cooldown_hours': 24,
-          'cooldown_until': cooldownUntil.toIso8601String(),
-          'message': 'Talent needs 24h rest before next Gala assignment',
-        };
+        final Session? session = supabase.auth.currentSession;
+        if (session == null) {
+          state = state.copyWith(isLoading: false);
+          return <String, dynamic>{
+            'success': false,
+            'error': 'Not authenticated',
+          };
+        }
+
+        final FunctionResponse response = await supabase.functions.invoke(
+          'claim-mini-game-reward',
+          body: <String, dynamic>{
+            'game_key': 'staff_rally',
+            'result_key': 'cooldown_loss',
+            'talent_id': talentId,
+          },
+          headers: <String, String>{
+            'Authorization': 'Bearer ${session.accessToken}',
+          },
+        );
+
+        final Map<String, dynamic> result =
+            Map<String, dynamic>.from(response.data as Map<String, dynamic>);
+
+        if (result['success'] == true && result['cooldown_until'] != null) {
+          final DateTime cooldownUntil =
+              DateTime.parse(result['cooldown_until'] as String).toLocal();
+          state = state.copyWith(
+            isLoading: false,
+            rallyCooldownUntil: cooldownUntil,
+          );
+        } else {
+          state = state.copyWith(isLoading: false);
+        }
+
+        return result;
       }
     } catch (e) {
       state = state.copyWith(

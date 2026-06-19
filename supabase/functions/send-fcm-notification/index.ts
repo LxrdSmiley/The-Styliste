@@ -62,11 +62,17 @@ interface FCMMessage {
 
 serve(async (req: Request) => {
   try {
-    // Verify webhook secret
+    // SEC-02: Fail-closed webhook secret verification.
+    // If WEBHOOK_SECRET is not configured, reject the request (500).
+    // If header does not match, reject (401).
     const webhookSecret = req.headers.get('x-webhook-secret');
     const expectedSecret = Deno.env.get('WEBHOOK_SECRET');
-    
-    if (expectedSecret && webhookSecret !== expectedSecret) {
+
+    if (!expectedSecret) {
+      console.error('send-fcm-notification: WEBHOOK_SECRET not configured — rejecting.');
+      return new Response('Server misconfigured', { status: 500 });
+    }
+    if (webhookSecret !== expectedSecret) {
       return new Response('Unauthorized', { status: 401 });
     }
 

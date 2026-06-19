@@ -16,6 +16,24 @@ const HEAT_DECAY_MIN = 1;
 const HEAT_DECAY_MAX = 3;
 
 serve(async (_req: Request): Promise<Response> => {
+  // ── SEC-01: Cron-secret authorization gate ────────────────────────────
+  // Fail-closed: missing env var = 500, wrong/missing header = 401.
+  const expectedSecret = Deno.env.get("CRON_SECRET");
+  if (!expectedSecret) {
+    console.error("trend-decay: CRON_SECRET not configured — rejecting.");
+    return new Response(
+      JSON.stringify({ error: "Server misconfigured" }),
+      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+    );
+  }
+  const cronSecret = _req.headers.get("x-cron-secret");
+  if (cronSecret !== expectedSecret) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+    );
+  }
+
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
