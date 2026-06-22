@@ -1,8 +1,8 @@
 # The Styliste
 
-**The Styliste** is a portrait-first mobile fashion empire game where players build a luxury fashion brand from an unknown label into a global cultural powerhouse.
+**The Styliste** is a mobile fashion empire game centered on portrait-first gameplay, where players build a luxury fashion brand from an unknown label into a global cultural powerhouse.
 
-Players create fashion drops, chase hype, react to trend shifts, grow their audience, manage capital, expand territory, and compete for status through the Global Feed, Atelier, Maison, and Mogul systems.
+Players will create fashion drops, pursue hype, react to trend shifts, grow their audience, manage capital, expand territories, and compete for status through the Global Feed, Atelier, Maison, and Mogul systems.
 
 ## Official Genres
 
@@ -10,18 +10,18 @@ Players create fashion drops, chase hype, react to trend shifts, grow their audi
 - **Idle / Tycoon Game**
 - **Fashion Design Strategy Game**
 - **Social Competition Game**
-- **Mobile Management Sim**
+- **Mobile Management Simulation**
 - **Narrative-Lite Brand-Building Game**
 
 ## Game Description
 
-The Styliste blends fashion creation, idle progression, business strategy, and social dominance into one mobile-first experience.
+The Styliste combines fashion creation, idle progression, business strategy, and social dominance into one mobile-first experience.
 
-The player starts as an emerging fashion force and chooses how to build power:
+Players begin as emerging fashion forces and choose how to build their influence:
 
-- **Designer / Artisan path** create drops, master aesthetics, chase Hype Score, and dominate the Global Feed.
-- **Architect / Mogul path** build stores, control districts, manage capital, and expand a luxury empire.
-- **Maison path** join or build elite fashion houses for prestige, co-drops, collective power, and social status.
+- **Designer / Artisan Path:** Create drops, master aesthetics, chase Hype Score, and dominate the Global Feed.
+- **Architect / Mogul Path:** Build stores, control districts, manage capital, and expand a luxury empire.
+- **Maison Path:** Join or establish elite fashion houses for prestige, collaborate on drops, leverage collective power, and gain social status.
 
 The core fantasy is simple:
 
@@ -34,76 +34,76 @@ The goal of The Styliste is to become the most influential fashion empire in the
 Players progress by:
 
 - Creating and launching Alpha Drops.
-- Raising Hype Score.
-- Gaining followers and brand value.
+- Increasing their Hype Score.
+- Gaining followers and enhancing brand value.
 - Expanding income streams.
 - Competing on the Global Feed.
-- Joining or building a Maison.
+- Joining or founding a Maison.
 - Controlling districts and markets.
-- Surviving crises, trend shifts, rival pressure, and public judgment.
+- Navigating crises, trend shifts, rival pressures, and public judgment.
 
-The game is not only about making money. It is about building cultural power.
+The game focuses not only on financial success but on building cultural power as well.
 
 ## Core Gameplay Loop
 
 ```text
-Design â†’ Drop â†’ Hype â†’ Revenue â†’ Expansion â†’ Prestige â†’ Bigger Drops
+Design → Drop → Hype → Revenue → Expansion → Prestige → Bigger Drops
 ```
 
 ### Designer Loop
 
 ```text
-Research trends â†’ Create fashion â†’ Launch drop â†’ Get Vex review â†’ Gain hype â†’ Refine brand identity
+Research Trends → Create Fashion → Launch Drop → Receive Vex Review → Gain Hype → Refine Brand Identity
 ```
 
 ### Mogul Loop
 
 ```text
-Invest capital â†’ Open stores â†’ Control districts â†’ Increase cashflow â†’ Pressure rivals â†’ Expand empire
+Invest Capital → Open Stores → Control Districts → Increase Cash Flow → Pressure Rivals → Expand Empire
 ```
 
 ### Social Loop
 
 ```text
-Post to Global Feed â†’ Gain reactions â†’ Compete for status â†’ Join Maisons â†’ Influence the market
+Post to Global Feed → Gain Reactions → Compete for Status → Join Maisons → Influence the Market
 ```
 
 ## Key Features
 
-- **Atelier** create fashion pieces, experiment with style, fabric, color, and trend alignment.
-- **Hype Score** the main public performance score for drops.
-- **Global Feed** full-screen fashion-social arena where drops, flexes, and market reactions appear.
-- **Vex Reviews** editorial critic-style feedback that can boost or expose a drop.
-- **Maison System** prestige groups for co-drops, social power, and collective dominance.
-- **Mogul Systems** capital, stores, districts, cashflow, and luxury business strategy.
-- **Trend Tsunami** rotating fashion meta shifts that reward smart timing and adaptation.
-- **Server-Authoritative Economy** rewards, ownership, capital, and progression must be validated through backend logic.
+- **Atelier:** Create fashion pieces and experiment with style, fabric, color, and trend alignment.
+- **Hype Score:** The primary public performance metric for drops.
+- **Global Feed:** A full-screen, fashion-social arena where drops, highlights, and market reactions are displayed.
+- **Vex Reviews:** Critiques that can either boost a drop's success or expose its weaknesses.
+- **Maison System:** Prestigious groups for co-drops, social power, and collective dominance.
+- **Mogul Systems:** Strategies for managing capital, stores, districts, cash flow, and luxury business.
+- **Trend Tsunami:** Rotating fashion meta shifts that reward timely and strategic adaptations.
+- **Server-Authoritative Economy:** Rewards, ownership, capital, and progress must be validated through backend protocols.
 
 ## Current Status
 
 The Styliste is currently in **alpha remediation**.
 
-The repository contains broad feature coverage for the v6 GDD, but several gameplay, legal, security, and verification items are still alpha blockers.
+The repository covers broad feature areas specified in the v6 Game Design Document (GDD), but several gameplay, legal, security, and verification items still pose alpha blockers.
 
-Current focus:
+Current focus areas include:
 
-- Security hardening.
+- Security enhancements.
 - Supabase schema drift repairs.
-- Server-authoritative economy validation.
-- Global Feed visual alignment.
-- Atelier and fashion fantasy improvements.
-- HQ identity and post-drop feedback.
-- District Warfare and Maison prestige improvements.
-- Removing scaffolds, dead code, placeholder logic, and unsafe client-side mutations.
+- Validation of the server-authoritative economy.
+- Visual alignment of the Global Feed.
+- Improvements to the Atelier and fashion experience.
+- Enhancements to HQ identity and post-drop feedback.
+- Upgrades to District Warfare and Maison prestige.
+- Removal of scaffolding, dead code, placeholder logic, and unsafe client-side mutations.
 
 ## Alpha Rules
 
-The following are required before any system is considered production-ready:
+The following requirements must be met before any system can be considered production-ready:
 
 - Gameplay must align with `THE_STYLISTE_GDD_v6.md`.
-- Economy paths must be server-authoritative.
+- Economic paths must be server-authoritative.
 - No fake local rewards.
-- No client-side ownership transfer.
+- No client-side ownership transfers.
 - No pay-to-win progression.
 - No placeholder security rules.
 - No unverified Supabase schema changes.
@@ -124,19 +124,19 @@ supabase db lint
 
 ## Tech Stack
 
-- **Flutter + Dart** mobile client and UI.
-- **Riverpod** state management.
-- **go_router** app routing.
-- **Flame** lightweight embedded game-feel scenes.
-- **Supabase Postgres / RPC / RLS / Realtime / Storage** authoritative backend, data access, live sync, and media storage.
-- **Supabase Edge Functions / TypeScript** server-authoritative gameplay logic.
-- **Firebase Auth** authentication.
-- **Firebase Messaging** push notifications.
-- **Firebase App Check** abuse protection.
-- **Flutter in_app_purchase** mobile purchase plumbing.
-- **PostHog** optional future analytics, gated by privacy controls and legal documentation.
-- **CodeRabbit** development-only PR review tooling.
-- **Custom shaders** luxury visual effects and mobile-first polish.
+- **Flutter + Dart:** Mobile client and user interface.
+- **Riverpod:** State management solution.
+- **go_router:** Application routing.
+- **Flame:** Lightweight embedded game-feel scenes.
+- **Supabase:** Authoritative backend for Postgres, RPC, RLS, real-time data synchronization, and media storage.
+- **Supabase Edge Functions / TypeScript:** Server-authoritative gameplay logic.
+- **Firebase Auth:** User authentication.
+- **Firebase Messaging:** Push notifications.
+- **Firebase App Check:** Abuse protection.
+- **Flutter in_app_purchase:** Framework for managing mobile purchases.
+- **PostHog:** Optional future analytics solution, subject to privacy controls and legal documentation.
+- **CodeRabbit:** Development-only PR review tooling.
+- **Custom shaders:** Luxury visual effects and mobile-first polish.
 
 ## Documents
 
@@ -149,7 +149,7 @@ supabase db lint
 
 ## Development Direction
 
-The projectâ€™s main directive is to reach full GDD v6 alignment across:
+The project's main directive is to reach full GDD v6 alignment across:
 
 | Area | Target |
 |---|---:|

@@ -1,0 +1,10 @@
+- [x] Update `SupabaseService` in `lib/core/services/supabase_service.dart`
+    - [x] Update `playerSafeErrorMessage` to handle connection errors
+    - [x] Add `signOut()` fail-safe method
+- [x] Update `HqScreen` in `lib/features/hq/screens/hq_screen.dart`
+    - [x] Replace simple error text with recovery UI (RETRY / SIGN OUT)
+    - [x] Style buttons with `AurelianPalette`
+- [ ] Verification
+    - [/] `dart format lib`
+    - [/] `flutter analyze`
+    - [/] `flutter test`

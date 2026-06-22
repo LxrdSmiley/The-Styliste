@@ -11,9 +11,6 @@ abstract interface class FeedRepository {
   /// Real-time stream of new feed posts.
   Stream<Map<String, dynamic>> watchNewPosts();
 
-  /// Post a new entry to the Global Feed.
-  Future<void> createPost(Map<String, dynamic> postData);
-
   /// React to a post (like, AR reaction, etc.).
   Future<void> reactToPost(String postId, String reactionType);
 }

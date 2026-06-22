@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/player.dart';
 import '../../ftue/providers/first_objective_provider.dart';
 import '../../ftue/widgets/luxe_first_objective_overlay.dart';
@@ -42,19 +43,7 @@ class _HqScreenState extends ConsumerState<HqScreen> {
       ),
 
       // --- Error state ---
-      error: (Object e, _) => Scaffold(
-        backgroundColor: AppColors.obsidian,
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Text(
-              _profileErrorMessage(e),
-              style: const TextStyle(color: AppColors.danger, fontSize: 12.0),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-      ),
+      error: (Object e, _) => _HqErrorView(error: e),
 
       // --- Path-specific view switch ---
       data: (Player player) {
@@ -111,4 +100,85 @@ String _profileErrorMessage(Object error) {
     error,
     fallback: 'Profile unavailable. Please try again.',
   );
+}
+
+class _HqErrorView extends ConsumerWidget {
+  const _HqErrorView({required this.error});
+
+  final Object error;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final String message = _profileErrorMessage(error);
+
+    return Scaffold(
+      backgroundColor: AppColors.obsidian,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text(
+                'CANNOT LOAD HQ',
+                style: TextStyle(
+                  fontFamily: 'SpaceGrotesk',
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.w700,
+                  color: AurelianPalette.champagneGold,
+                  letterSpacing: 2.0,
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              Text(
+                message,
+                style: const TextStyle(
+                  fontFamily: 'SpaceGrotesk',
+                  fontSize: 16.0,
+                  color: AurelianPalette.textSecondary,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  OutlinedButton(
+                    onPressed: () => SupabaseService.signOut(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AurelianPalette.textTertiary,
+                      side:
+                          const BorderSide(color: AurelianPalette.textTertiary),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                        vertical: 12.0,
+                      ),
+                    ),
+                    child: const Text('SIGN OUT'),
+                  ),
+                  const SizedBox(width: 16.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      ref.invalidate(hqPlayerStreamProvider);
+                      ref.invalidate(hqBrandStreamProvider);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AurelianPalette.champagneGold,
+                      foregroundColor: AurelianPalette.textPrimary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                        vertical: 12.0,
+                      ),
+                    ),
+                    child: const Text('RETRY'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
