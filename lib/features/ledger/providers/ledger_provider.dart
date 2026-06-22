@@ -5,12 +5,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'
-    show FunctionResponse, Session;
+import 'package:uuid/uuid.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/services/mini_game_service.dart';
 import '../../../domain/models/store.dart';
 
 // ---------------------------------------------------------------------------
@@ -96,6 +96,7 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
         body: <String, dynamic>{
           'action': 'upgrade_store',
           'store_id': store.id,
+          'idempotency_key': const Uuid().v4(),
         },
       );
       // 2. Success: clear optimistic state. Realtime stream provides truth.
@@ -123,103 +124,55 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
 
   /// Apply Price War Blitz result: buff or debuff idle multiplier
   /// Win = +35% for 12h, Loss = -15% for 6h
-  Future<Map<String, dynamic>> applyPriceWarResult({required bool won}) async {
+  Future<Map<String, dynamic>> applyPriceWarResult({
+    required String attemptId,
+    required List<double> tapValues,
+  }) async {
     try {
-      final Session? session = SupabaseService.client.auth.currentSession;
-      if (session == null) {
-        return <String, dynamic>{
-          'success': false,
-          'error': 'Not authenticated',
-        };
-      }
-
-      final FunctionResponse response =
-          await SupabaseService.client.functions.invoke(
-        'claim-mini-game-reward',
-        body: <String, dynamic>{
-          'game_key': 'price_war',
-          'result_key': won ? 'standard_win' : 'loss',
-        },
-        headers: <String, String>{
-          'Authorization': 'Bearer ${session.accessToken}',
-        },
+      return await MiniGameService.claim(
+        attemptId,
+        <String, dynamic>{'tap_values': tapValues},
       );
-      return Map<String, dynamic>.from(response.data as Map<String, dynamic>);
-    } catch (e) {
+    } catch (_) {
       return <String, dynamic>{
         'success': false,
-        'error': 'Failed to apply price war result: $e',
+        'error': 'Price war result could not be verified.',
       };
     }
   }
 
   /// Apply Power Move Combo: store multiplier for next liquidation
-  Future<Map<String, dynamic>> applyPowerMoveCombo() async {
+  Future<Map<String, dynamic>> applyPowerMoveCombo({
+    required String attemptId,
+    required List<String> sequence,
+  }) async {
     try {
-      final Session? session = SupabaseService.client.auth.currentSession;
-      if (session == null) {
-        return <String, dynamic>{
-          'success': false,
-          'error': 'Not authenticated',
-        };
-      }
-
-      final FunctionResponse response =
-          await SupabaseService.client.functions.invoke(
-        'claim-mini-game-reward',
-        body: <String, dynamic>{
-          'game_key': 'power_move_combo',
-          'result_key': 'standard_win',
-        },
-        headers: <String, String>{
-          'Authorization': 'Bearer ${session.accessToken}',
-        },
+      return await MiniGameService.claim(
+        attemptId,
+        <String, dynamic>{'sequence': sequence},
       );
-      return Map<String, dynamic>.from(response.data as Map<String, dynamic>);
-    } catch (e) {
+    } catch (_) {
       return <String, dynamic>{
         'success': false,
-        'error': 'Failed to store power move combo: $e',
+        'error': 'Power move result could not be verified.',
       };
     }
   }
 
   /// Apply Hostile Takeover result: inject 5000 Capital if 100% ownership
   Future<Map<String, dynamic>> applyTakeoverResult({
-    required double finalPct,
+    required String attemptId,
+    required int tapCount,
   }) async {
-    if (finalPct != 100.0) {
-      return <String, dynamic>{
-        'success': false,
-        'reason': 'Takeover incomplete: $finalPct%',
-      };
-    }
-
     try {
-      final Session? session = SupabaseService.client.auth.currentSession;
-      if (session == null) {
-        return <String, dynamic>{
-          'success': false,
-          'error': 'Not authenticated',
-        };
-      }
-
-      final FunctionResponse response =
-          await SupabaseService.client.functions.invoke(
-        'claim-mini-game-reward',
-        body: <String, dynamic>{
-          'game_key': 'hostile_takeover',
-          'result_key': 'complete_takeover',
-        },
-        headers: <String, String>{
-          'Authorization': 'Bearer ${session.accessToken}',
-        },
+      return await MiniGameService.claim(
+        attemptId,
+        <String, dynamic>{'tap_count': tapCount},
       );
-      return Map<String, dynamic>.from(response.data as Map<String, dynamic>);
-    } catch (e) {
+    } catch (_) {
       return <String, dynamic>{
         'success': false,
-        'error': 'Failed to inject takeover bonus: $e',
+        'error': 'Takeover result could not be verified.',
       };
     }
   }

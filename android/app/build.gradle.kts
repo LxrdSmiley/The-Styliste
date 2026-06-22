@@ -16,6 +16,30 @@ val keystorePropertiesFile = rootProject.projectDir.resolve("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
+val releaseTaskRequested = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true)
+}
+if (releaseTaskRequested) {
+    val requiredSigningKeys = listOf(
+        "keyAlias",
+        "keyPassword",
+        "storeFile",
+        "storePassword",
+    )
+    val missingSigningKeys = requiredSigningKeys.filter {
+        keystoreProperties[it].toString().isBlank()
+    }
+    val configuredStoreFile = keystoreProperties["storeFile"]?.toString()
+    if (!keystorePropertiesFile.exists() ||
+        missingSigningKeys.isNotEmpty() ||
+        configuredStoreFile == null ||
+        !file(configuredStoreFile).exists()
+    ) {
+        throw GradleException(
+            "Release signing is not configured. A production release must never use debug signing."
+        )
+    }
+}
 
 android {
     namespace = "com.skinteethnerds.styliste.the_styliste"
@@ -59,12 +83,7 @@ android {
                 "proguard-rules.pro"
             )
             
-            // If key.properties is missing, fall back to debug signing to allow local release testing
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

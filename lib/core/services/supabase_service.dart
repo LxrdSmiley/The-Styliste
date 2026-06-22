@@ -64,6 +64,13 @@ abstract final class SupabaseService {
     await client.removeAllChannels();
   }
 
+  static Future<void> signOutAndCleanup() async {
+    await cleanupRealtimeChannels();
+    if (client.auth.currentSession != null) {
+      await client.auth.signOut();
+    }
+  }
+
   static Stream<T> guardRealtimeStream<T>(Stream<T> stream) {
     return stream.handleError(
       (Object _, StackTrace __) {

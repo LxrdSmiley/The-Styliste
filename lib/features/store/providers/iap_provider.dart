@@ -19,11 +19,6 @@ import '../../../core/services/supabase_service.dart';
 // Directive M: The Aurelian Storefront — Premium fiat bridge
 // ---------------------------------------------------------------------------
 const Set<String> kLuxeProductIds = <String>{
-  // Legacy IDs (backward compatibility)
-  'luxe_100',
-  'luxe_550',
-  'luxe_1200',
-  'luxe_2800',
   // Directive M: The Aurelian Storefront tiered products
   'initiates_cache', // $0.99 — 100 Luxe (impulse buy)
   'artisans_reserve', // $4.99 — 550 Luxe (standard top-up)
@@ -33,11 +28,6 @@ const Set<String> kLuxeProductIds = <String>{
 
 // Token grant amounts (mirrors server-side LUXE_PRODUCTS map — display only).
 const Map<String, int> kLuxeGrants = <String, int>{
-  // Legacy
-  'luxe_100': 100,
-  'luxe_550': 550,
-  'luxe_1200': 1200,
-  'luxe_2800': 2800,
   // Directive M
   'initiates_cache': 100,
   'artisans_reserve': 550,
@@ -182,7 +172,15 @@ class IapNotifier extends StateNotifier<IapState> {
     if (state.purchasingProductId != null) return;
     state = IapState(purchasingProductId: product.id);
 
-    final PurchaseParam param = PurchaseParam(productDetails: product);
+    final String? accountToken = SupabaseService.currentUserId;
+    if (accountToken == null) {
+      state = const IapState(errorMessage: 'PLEASE SIGN IN AGAIN');
+      return;
+    }
+    final PurchaseParam param = PurchaseParam(
+      productDetails: product,
+      applicationUserName: accountToken,
+    );
     try {
       await InAppPurchase.instance.buyNonConsumable(purchaseParam: param);
     } on Exception catch (e) {

@@ -39,6 +39,8 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
   int _interactionSeconds = 0;
   bool _touchActive = false;
   bool _isMinting = false;
+  String? _atelierSessionId;
+  Future<String>? _atelierSessionFuture;
   Timer? _interactionTimer;
 
   static const int _gateSeconds = 5;
@@ -50,22 +52,62 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
     ref.read(firstObjectiveActionsProvider.notifier).markAtelierOpened();
 
     final Design? inspiration = widget.inspirationDesign;
-    if (inspiration == null) return;
+    if (inspiration != null) {
+      _selectedDye = _hexToColor(
+        inspiration.fabricData['color_hex'] as String? ?? 'FAF7F0',
+      );
+      final List<String> inspirationTags = _readStyleTags(inspiration);
+      if (inspirationTags.isNotEmpty) {
+        _selectedStyleTags
+          ..clear()
+          ..addAll(inspirationTags.take(3));
+      }
+    }
 
-    _selectedDye = _hexToColor(
-      inspiration.fabricData['color_hex'] as String? ?? 'FAF7F0',
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_prepareAtelierSession());
+    });
+  }
+
+  Future<void> _prepareAtelierSession() async {
+    if (_atelierSessionId != null || !mounted) return;
+    final Future<String>? existingFuture = _atelierSessionFuture;
+    if (existingFuture != null) {
+      try {
+        await existingFuture;
+      } catch (_) {
+        // The request owner presents the player-safe session error.
+      }
+      return;
+    }
+    final Future<String> sessionFuture = startAtelierSession(
+      fabricColorHex: _selectedFabricHex,
+      styleTags: _selectedStyleTags.toList(growable: false),
     );
-    final List<String> inspirationTags = _readStyleTags(inspiration);
-    if (inspirationTags.isNotEmpty) {
-      _selectedStyleTags
-        ..clear()
-        ..addAll(inspirationTags.take(3));
+    _atelierSessionFuture = sessionFuture;
+    try {
+      final String sessionId = await sessionFuture;
+      if (mounted) setState(() => _atelierSessionId = sessionId);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: AurelianPalette.danger,
+            content: Text('Atelier session unavailable. Please try again.'),
+          ),
+        );
+      }
+    } finally {
+      if (identical(_atelierSessionFuture, sessionFuture)) {
+        _atelierSessionFuture = null;
+      }
     }
   }
 
   void _onInteractionActive(bool active) {
     setState(() => _touchActive = active);
     if (active) {
+      unawaited(_prepareAtelierSession());
       _interactionTimer ??= Timer.periodic(
         const Duration(seconds: 1),
         (Timer _) {
@@ -105,9 +147,15 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
     setState(() => _isMinting = true);
 
     try {
+      await _prepareAtelierSession();
+      final String? sessionId = _atelierSessionId;
+      if (sessionId == null) {
+        throw const FormatException('Atelier session unavailable.');
+      }
       final Design design = await ref.read(
         mintDesignProvider(
           MintDesignInput(
+            sessionId: sessionId,
             fabricColorHex: _selectedFabricHex,
             styleTags: _selectedStyleTags.toList(growable: false),
           ),
@@ -297,17 +345,12 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
       data: (List<TrendTsunami> value) => value,
       orElse: () => <TrendTsunami>[],
     );
-    final MintDesignInput currentInput = MintDesignInput(
-      fabricColorHex: _selectedFabricHex,
-      styleTags: selectedTags,
-    );
-
     try {
       final HypeCalculationResult result = _hypeCalculator.calculate(
         input: HypeCalculationInput(
-          styleTags: currentInput.styleTags,
-          materialQuality: currentInput.materialQuality.toDouble(),
-          aestheticAlignment: currentInput.aestheticAlignment.toDouble(),
+          styleTags: selectedTags,
+          materialQuality: 65.0,
+          aestheticAlignment: 72.0,
         ),
         activeTsunamis: waves,
       );

@@ -82,21 +82,40 @@ serve(async (req: Request): Promise<Response> => {
     return new Response("ok", { headers: CORS_HEADERS });
   }
 
-  const expectedSecret = Deno.env.get("ECLIPSE_EVENT_TICK_SECRET");
-  const providedSecret = req.headers.get("x-cron-secret");
+  const expectedSecret = Deno.env.get("ECLIPSE_EVENT_TICK_SECRET") ?? "";
+  const providedSecret = req.headers.get("x-cron-secret") ?? "";
 
-  if (!expectedSecret || providedSecret !== expectedSecret) {
+  if (expectedSecret.length < 32) {
+    return new Response(
+      JSON.stringify({ error: "SERVICE_NOT_CONFIGURED" }),
+      { status: 503, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+    );
+  }
+  if (!await constantTimeEqual(providedSecret, expectedSecret)) {
     return new Response(
       JSON.stringify({ error: "Forbidden" }),
       { status: 403, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   }
 
+  const correlationId = crypto.randomUUID();
   try {
     const admin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
+    const periodKey = new Date().toISOString().slice(0, 13);
+    const { data: claimed, error: claimError } = await admin.rpc(
+      "edge_claim_job_run",
+      { p_job_key: "eclipse_event_tick", p_period_key: periodKey },
+    );
+    if (claimError) throw claimError;
+    if (!claimed) {
+      return new Response(
+        JSON.stringify({ status: "already_complete", period: periodKey }),
+        { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    }
 
     // Select a random event archetype
     const event = ECLIPSE_EVENTS[Math.floor(Math.random() * ECLIPSE_EVENTS.length)];
@@ -147,10 +166,29 @@ serve(async (req: Request): Promise<Response> => {
       { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   } catch (err) {
-    console.error("eclipse-event-tick fatal:", (err as Error).message);
+    console.error("eclipse-event-tick fatal:", correlationId, err);
     return new Response(
-      JSON.stringify({ error: (err as Error).message }),
+      JSON.stringify({
+        error: "ECLIPSE_TICK_FAILED",
+        correlation_id: correlationId,
+      }),
       { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   }
 });
+
+async function constantTimeEqual(left: string, right: string): Promise<boolean> {
+  if (!left || left.length !== right.length) return false;
+  const encoder = new TextEncoder();
+  const [aHash, bHash] = await Promise.all([
+    crypto.subtle.digest("SHA-256", encoder.encode(left)),
+    crypto.subtle.digest("SHA-256", encoder.encode(right)),
+  ]);
+  const a = new Uint8Array(aHash);
+  const b = new Uint8Array(bHash);
+  let difference = 0;
+  for (let index = 0; index < a.length; index++) {
+    difference |= a[index] ^ b[index];
+  }
+  return difference === 0;
+}

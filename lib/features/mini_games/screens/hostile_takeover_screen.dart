@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/services/mini_game_service.dart';
 import '../../../features/ledger/providers/equity_provider.dart';
 
 /// Hostile Takeover — High-stakes corporate tug-of-war
@@ -28,10 +29,13 @@ class _HostileTakeoverScreenState extends ConsumerState<HostileTakeoverScreen>
   int _round = 1;
   bool _gameOver = false;
   bool _won = false;
+  String? _attemptId;
+  int _tapCount = 0;
 
   @override
   void initState() {
     super.initState();
+    _prepareAttempt();
 
     // 30 Second global timer
     _gameTimer = AnimationController(
@@ -64,6 +68,16 @@ class _HostileTakeoverScreenState extends ConsumerState<HostileTakeoverScreen>
       });
   }
 
+  Future<void> _prepareAttempt() async {
+    try {
+      final MiniGameAttempt attempt =
+          await MiniGameService.start('hostile_takeover');
+      if (mounted) setState(() => _attemptId = attempt.id);
+    } catch (_) {
+      if (mounted) _endGame();
+    }
+  }
+
   @override
   void dispose() {
     _gameTimer.dispose();
@@ -72,9 +86,10 @@ class _HostileTakeoverScreenState extends ConsumerState<HostileTakeoverScreen>
   }
 
   void _onPlayerTap() {
-    if (_gameOver) return;
+    if (_gameOver || _attemptId == null) return;
 
     HapticFeedback.lightImpact();
+    _tapCount++;
     setState(() {
       _ownershipPct += 2.5; // Player pushes back
 
@@ -106,11 +121,15 @@ class _HostileTakeoverScreenState extends ConsumerState<HostileTakeoverScreen>
       });
 
       // Wire to EquityProvider for economic impact
-      ref.read(equityProvider.notifier).applyTakeoverResult(
-            finalPct: _ownershipPct,
-          );
     } else {
       HapticFeedback.vibrate();
+    }
+    final String? attemptId = _attemptId;
+    if (attemptId != null) {
+      ref.read(equityProvider.notifier).applyTakeoverResult(
+            attemptId: attemptId,
+            tapCount: _tapCount,
+          );
     }
 
     // Pop the modal after showing the result

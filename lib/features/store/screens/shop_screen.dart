@@ -253,7 +253,7 @@ class _LuxePackCard extends StatelessWidget {
   final bool anyPurchasing;
   final VoidCallback onTap;
 
-  bool get _isPopular => product.id == 'luxe_1200';
+  bool get _isPopular => product.id == 'architects_vault';
 
   @override
   Widget build(BuildContext context) {

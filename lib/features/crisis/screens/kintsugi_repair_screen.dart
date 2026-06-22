@@ -62,14 +62,16 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
       final ui.FragmentProgram program = await ui.FragmentProgram.fromAsset(
         'lib/shaders/liquid_gold.frag',
       );
+      if (!mounted) return;
       setState(() {
         _shader = program.fragmentShader();
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (_) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Failed to load shader: $e';
+        _errorMessage = 'The liquid-gold effect is unavailable.';
       });
     }
   }
@@ -89,22 +91,26 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
 
     // Haptic ramp-up
     await _hapticRampUp();
+    if (!mounted) return;
 
     // Start fill animation
     unawaited(_fillController.forward());
 
     // Execute RPC
     try {
-      final SupabaseClient supabase = Supabase.instance.client;
-      final String userId = supabase.auth.currentUser!.id;
-
-      final Map<String, dynamic> result = await supabase.rpc(
+      final dynamic response = await Supabase.instance.client.rpc(
         SupabaseConstants.fnApplyKintsugiRepair,
-        params: <String, dynamic>{
-          'p_player_id': userId,
-          'p_prestige_token_cost': 10,
-        },
       );
+      final Map<String, dynamic> result;
+      if (response is Map) {
+        result = Map<String, dynamic>.from(response);
+      } else if (response is List &&
+          response.length == 1 &&
+          response.first is Map) {
+        result = Map<String, dynamic>.from(response.first as Map);
+      } else {
+        throw const FormatException('Invalid repair response.');
+      }
 
       if (result['success'] == true) {
         final int newLevel = result['new_kintsugi_level'] as int;
@@ -117,14 +123,15 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
           _showSuccessDialog(newLevel, capitalSpent);
         }
       } else {
-        _handleError(result['message'] as String? ?? 'Repair failed');
+        _handleError(_repairErrorMessage(result['message'] as String?));
       }
-    } catch (e) {
-      _handleError(e.toString());
+    } catch (_) {
+      _handleError('Kintsugi repair is unavailable. Please try again.');
     }
   }
 
   void _handleError(String error) {
+    if (!mounted) return;
     _fillController.stop();
     _fillController.reset();
     setState(() {
@@ -132,6 +139,14 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
       _errorMessage = error;
     });
   }
+
+  String _repairErrorMessage(String? code) => switch (code) {
+        'BRAND_NOT_FOUND' => 'Your brand profile is not ready yet.',
+        'NO_TARNISH_TO_REPAIR' => 'There is no Tarnish to repair.',
+        'INSUFFICIENT_PRESTIGE_TOKENS' =>
+          'You need 10 Prestige Tokens for Kintsugi.',
+        _ => 'Kintsugi repair is unavailable. Please try again.',
+      };
 
   Future<void> _hapticRampUp() async {
     for (int i = 0; i < 3; i++) {

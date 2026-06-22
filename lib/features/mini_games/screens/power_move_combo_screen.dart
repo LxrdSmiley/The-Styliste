@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/services/mini_game_service.dart';
 import '../../../features/ledger/providers/ledger_provider.dart';
 
 /// Power Move Combo — Sequence memorization and drag mini-game
@@ -23,13 +24,11 @@ class PowerMoveComboScreen extends ConsumerStatefulWidget {
 
 class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
     with TickerProviderStateMixin {
-  final List<IconData> _targetSequence = <IconData>[
-    Icons.trending_up,
-    Icons.security,
-    Icons.bolt,
-    Icons.star,
-  ];
+  List<String> _targetSymbols = <String>['trend', 'shield', 'bolt', 'star'];
+  List<IconData> _targetSequence = <IconData>[];
   List<IconData> _scrambled = <IconData>[];
+  final List<String> _submittedSymbols = <String>[];
+  String? _attemptId;
   int _currentIndex = 0;
   bool _showingSequence = true;
   bool _gameOver = false;
@@ -40,7 +39,9 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
   @override
   void initState() {
     super.initState();
+    _targetSequence = _targetSymbols.map(_iconForSymbol).toList();
     _scrambled = List<IconData>.from(_targetSequence)..shuffle();
+    _prepareAttempt();
     _timer = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 15),
@@ -59,7 +60,29 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
     });
   }
 
+  Future<void> _prepareAttempt() async {
+    try {
+      final MiniGameAttempt attempt =
+          await MiniGameService.start('power_move_combo');
+      final List<dynamic> raw =
+          attempt.challenge['sequence'] as List<dynamic>? ?? <dynamic>[];
+      final List<String> symbols =
+          raw.map((dynamic value) => value.toString()).toList();
+      if (!mounted || symbols.length != 4) return;
+      setState(() {
+        _attemptId = attempt.id;
+        _targetSymbols = symbols;
+        _targetSequence = symbols.map(_iconForSymbol).toList();
+        _scrambled = List<IconData>.from(_targetSequence)..shuffle();
+      });
+    } catch (_) {
+      if (mounted) _endGame(false);
+    }
+  }
+
   void _onAccept(IconData data) {
+    if (_attemptId == null) return;
+    _submittedSymbols.add(_symbolForIcon(data));
     if (data == _targetSequence[_currentIndex]) {
       HapticFeedback.lightImpact();
       setState(() => _currentIndex++);
@@ -86,8 +109,15 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
 
     if (won) {
       HapticFeedback.heavyImpact();
-      // Wire to LedgerProvider for economic impact
-      unawaited(ref.read(upgradeStoreProvider.notifier).applyPowerMoveCombo());
+    }
+    final String? attemptId = _attemptId;
+    if (attemptId != null) {
+      unawaited(
+        ref.read(upgradeStoreProvider.notifier).applyPowerMoveCombo(
+              attemptId: attemptId,
+              sequence: _submittedSymbols,
+            ),
+      );
     }
 
     Future<void>.delayed(const Duration(seconds: 2), () {
@@ -208,4 +238,20 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
       ),
     );
   }
+}
+
+IconData _iconForSymbol(String symbol) => switch (symbol) {
+      'trend' => Icons.trending_up,
+      'shield' => Icons.security,
+      'bolt' => Icons.bolt,
+      'star' => Icons.star,
+      _ => Icons.help_outline,
+    };
+
+String _symbolForIcon(IconData icon) {
+  if (icon == Icons.trending_up) return 'trend';
+  if (icon == Icons.security) return 'shield';
+  if (icon == Icons.bolt) return 'bolt';
+  if (icon == Icons.star) return 'star';
+  return 'unknown';
 }

@@ -2,10 +2,8 @@
 // GDD §5.7 — Mogul Path: Corporate warfare, hostile takeovers, stock price
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'
-    show FunctionResponse, Session;
 
-import '../../../core/services/supabase_service.dart';
+import '../../../core/services/mini_game_service.dart';
 import '../../../domain/models/brand.dart';
 import '../../hq/providers/hq_provider.dart';
 
@@ -118,51 +116,27 @@ class EquityNotifier extends StateNotifier<EquityState> {
 
   /// Apply Hostile Takeover result: inject 5000 Capital if 100% ownership
   Future<Map<String, dynamic>> applyTakeoverResult({
-    required double finalPct,
+    required String attemptId,
+    required int tapCount,
   }) async {
-    if (finalPct != 100.0) {
-      return <String, dynamic>{
-        'success': false,
-        'reason': 'Takeover incomplete: $finalPct%',
-      };
-    }
-
     state = state.copyWith(isLoading: true);
 
     try {
-      final Session? session = SupabaseService.client.auth.currentSession;
-      if (session == null) {
-        state = state.copyWith(isLoading: false);
-        return <String, dynamic>{
-          'success': false,
-          'error': 'Not authenticated',
-        };
-      }
-
-      final FunctionResponse response =
-          await SupabaseService.client.functions.invoke(
-        'claim-mini-game-reward',
-        body: <String, dynamic>{
-          'game_key': 'hostile_takeover',
-          'result_key': 'complete_takeover',
-        },
-        headers: <String, String>{
-          'Authorization': 'Bearer ${session.accessToken}',
-        },
+      final Map<String, dynamic> result = await MiniGameService.claim(
+        attemptId,
+        <String, dynamic>{'tap_count': tapCount},
       );
-      final Map<String, dynamic> result =
-          Map<String, dynamic>.from(response.data as Map<String, dynamic>);
 
       state = state.copyWith(isLoading: false);
       return result;
-    } catch (e) {
+    } catch (_) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Failed to inject takeover bonus: $e',
+        errorMessage: 'Takeover result could not be verified.',
       );
       return <String, dynamic>{
         'success': false,
-        'error': 'Failed to inject takeover bonus: $e',
+        'error': 'Takeover result could not be verified.',
       };
     }
   }

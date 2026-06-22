@@ -10,7 +10,6 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart' hide OAuthProvider;
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
@@ -66,75 +65,40 @@ final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
     ref.keepAlive();
 
     final StreamController<void> controller = StreamController<void>();
+    Future<void> bridgeQueue = Future<void>.value();
+    int authGeneration = 0;
 
     final StreamSubscription<User?> subscription =
         FirebaseAuth.instance.idTokenChanges().listen(
-      (User? user) async {
-        if (user == null) {
-          await SupabaseService.cleanupRealtimeChannels();
-          return;
-        }
-        try {
-          await _syncSupabaseSession(user);
-          if (!controller.isClosed) {
-            controller.add(null);
-          }
-        } catch (e) {
-          if (_isFirebaseProviderConfigError(e)) {
-            if (Supabase.instance.client.auth.currentSession != null) {
-              try {
-                await SupabaseService.ensureFreshSession();
-                if (!controller.isClosed) {
-                  controller.add(null);
-                }
-                return;
-              } catch (_) {
-                if (!controller.isClosed) {
-                  controller.addError(
-                    const SupabaseSessionExpiredException(),
-                  );
-                }
-                return;
-              }
-            } else {
-              try {
-                await Supabase.instance.client.auth.signInAnonymously();
-                await SupabaseService.ensureFreshSession();
-                if (!controller.isClosed) {
-                  controller.add(null);
-                }
-                return;
-              } catch (anonymousError) {
-                if (kDebugMode) {
-                  debugPrint(
-                    'supabase anonymous fallback error: $anonymousError',
-                  );
-                }
-              }
-            }
-          }
-
-          if (SupabaseService.isRecoverableAuthError(e) ||
-              !SupabaseService.hasFreshSession) {
+      (User? user) {
+        final int eventGeneration = ++authGeneration;
+        bridgeQueue = bridgeQueue.then((_) async {
+          if (eventGeneration != authGeneration) return;
+          if (user == null) {
+            await SupabaseService.signOutAndCleanup();
+            _BridgeIdentity.clear();
             if (!controller.isClosed) {
               controller.addError(const SupabaseSessionExpiredException());
             }
             return;
           }
-
-          // Bridge errors are logged. We emit a value anyway to unblock the
-          // app's loading gate, allowing local play/UI to render.
-          if (kDebugMode) {
-            debugPrint('supabaseBridge error: $e');
+          try {
+            await _syncSupabaseSession(user);
+            if (eventGeneration == authGeneration && !controller.isClosed) {
+              controller.add(null);
+            }
+          } catch (_) {
+            await SupabaseService.signOutAndCleanup();
+            _BridgeIdentity.clear();
+            if (!controller.isClosed) {
+              controller.addError(const SupabaseSessionExpiredException());
+            }
           }
-          if (!controller.isClosed) {
-            controller.add(null);
-          }
-        }
+        });
       },
-      onError: (Object e) {
-        if (kDebugMode) {
-          debugPrint('supabaseBridge stream error: $e');
+      onError: (Object _) {
+        if (!controller.isClosed) {
+          controller.addError(const SupabaseSessionExpiredException());
         }
       },
     );
@@ -149,27 +113,46 @@ final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
 );
 
 Future<void> _syncSupabaseSession(User user) async {
+  if (_BridgeIdentity.firebaseUid != null &&
+      _BridgeIdentity.firebaseUid != user.uid) {
+    await SupabaseService.signOutAndCleanup();
+    _BridgeIdentity.clear();
+  }
   final bool forceFirebaseRefresh = !SupabaseService.hasFreshSession;
   final String? idToken = await user.getIdToken(forceFirebaseRefresh);
   if (idToken == null) {
     throw const SupabaseSessionExpiredException();
   }
 
-  await Supabase.instance.client.auth.signInWithIdToken(
+  final AuthResponse response =
+      await Supabase.instance.client.auth.signInWithIdToken(
     provider: const OAuthProvider('firebase'),
     idToken: idToken,
   );
+  final String? supabaseUserId = response.user?.id;
+  if (supabaseUserId == null) {
+    throw const SupabaseSessionExpiredException();
+  }
+  if (_BridgeIdentity.firebaseUid == user.uid &&
+      _BridgeIdentity.supabaseUserId != null &&
+      _BridgeIdentity.supabaseUserId != supabaseUserId) {
+    await SupabaseService.signOutAndCleanup();
+    throw const SupabaseSessionExpiredException();
+  }
+  _BridgeIdentity
+    ..firebaseUid = user.uid
+    ..supabaseUserId = supabaseUserId;
   await SupabaseService.ensureFreshSession();
 }
 
-bool _isFirebaseProviderConfigError(Object error) {
-  if (error is! AuthException) return false;
+abstract final class _BridgeIdentity {
+  static String? firebaseUid;
+  static String? supabaseUserId;
 
-  final String message = error.message.toLowerCase();
-  return message.contains('firebase') &&
-      (message.contains('not allowed') ||
-          message.contains('provider') ||
-          message.contains('oidc'));
+  static void clear() {
+    firebaseUid = null;
+    supabaseUserId = null;
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -36,6 +36,11 @@ class _ReportModalState extends State<ReportModal> {
   Future<void> _submit() async {
     final String? category = _selectedCategory;
     if (category == null || _isSubmitting) return;
+    final String? reporterId = Supabase.instance.client.auth.currentUser?.id;
+    if (reporterId == null) {
+      setState(() => _error = 'Please sign in again before reporting.');
+      return;
+    }
 
     setState(() {
       _isSubmitting = true;
@@ -46,7 +51,7 @@ class _ReportModalState extends State<ReportModal> {
       await Supabase.instance.client
           .from('player_reports')
           .insert(<String, dynamic>{
-        'reporter_id': Supabase.instance.client.auth.currentUser!.id,
+        'reporter_id': reporterId,
         'reported_player_id': widget.reportedPlayerId,
         'reported_id': widget.reportedPlayerId,
         'category': category,
@@ -59,13 +64,29 @@ class _ReportModalState extends State<ReportModal> {
         const SnackBar(content: Text('Report submitted')),
       );
       Navigator.of(context).pop();
-    } catch (e) {
+    } on PostgrestException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+        _error = _reportErrorMessage(error.message);
+      });
+    } catch (_) {
       if (!mounted) return;
       setState(() {
         _isSubmitting = false;
         _error = 'Report failed. Please try again.';
       });
     }
+  }
+
+  String _reportErrorMessage(String message) {
+    if (message.contains('REPORT_RATE_LIMITED')) {
+      return 'You recently reported this player. Our moderation team has it.';
+    }
+    if (message.contains('REPORT_DAILY_LIMIT')) {
+      return 'Your daily report limit has been reached.';
+    }
+    return 'Report failed. Please try again.';
   }
 
   @override
@@ -112,6 +133,7 @@ class _ReportModalState extends State<ReportModal> {
                 controller: _descriptionController,
                 minLines: 2,
                 maxLines: 4,
+                maxLength: 1000,
                 style: const TextStyle(color: AppColors.ivory),
                 decoration: const InputDecoration(
                   hintText: 'Add context',

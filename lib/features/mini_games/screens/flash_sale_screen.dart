@@ -1,14 +1,13 @@
 // GDD §5.7 — Flash Sale Frenzy mini-game (60s sprint, swipe mechanic)
 // Directive O: The Zero-Stub Mandate — Full implementation with economic wiring
 
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/services/mini_game_service.dart';
 import '../../../features/supply_chain/providers/supply_chain_provider.dart';
 
 /// Flash Sale Frenzy — Falling garment drag mini-game
@@ -28,6 +27,10 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
   int _missCount = 0;
   bool _gameOver = false;
   bool _won = false;
+  String? _attemptId;
+  List<int> _challengeTiers = <int>[];
+  int _nextGarmentIndex = 0;
+  final List<Map<String, int>> _matches = <Map<String, int>>[];
 
   // Tier bins at bottom
   final List<_TierBin> _tierBins = <_TierBin>[
@@ -56,19 +59,38 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
       duration: const Duration(seconds: 60),
     )..forward().then((_) => _endGame());
 
-    // Spawn garments periodically
-    _spawnGarments();
+    _prepareAttempt();
+  }
+
+  Future<void> _prepareAttempt() async {
+    try {
+      final MiniGameAttempt attempt = await MiniGameService.start('flash_sale');
+      final List<dynamic> raw =
+          attempt.challenge['tiers'] as List<dynamic>? ?? <dynamic>[];
+      if (!mounted) return;
+      setState(() {
+        _attemptId = attempt.id;
+        _challengeTiers =
+            raw.map((dynamic value) => (value as num).toInt()).toList();
+      });
+      _spawnGarments();
+    } catch (_) {
+      if (mounted) _endGame();
+    }
   }
 
   void _spawnGarments() {
     Future<void>.delayed(const Duration(milliseconds: 1500), () {
       if (!_gameOver && mounted) {
         setState(() {
+          if (_nextGarmentIndex >= _challengeTiers.length) return;
+          final int index = _nextGarmentIndex++;
           _garments.add(
             _FallingGarment(
-              id: DateTime.now().millisecondsSinceEpoch.toString(),
-              tier: math.Random().nextInt(3) + 1,
-              xPosition: math.Random().nextDouble() * 0.8 + 0.1,
+              id: index.toString(),
+              index: index,
+              tier: _challengeTiers[index],
+              xPosition: 0.15 + ((index * 0.23) % 0.7),
             ),
           );
         });
@@ -86,6 +108,10 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
       HapticFeedback.lightImpact();
       setState(() {
         _matchCount++;
+        _matches.add(<String, int>{
+          'index': garment.index,
+          'tier': tier,
+        });
         _garments.removeWhere((_FallingGarment g) => g.id == garmentId);
       });
     } else {
@@ -113,9 +139,13 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
     }
 
     // Wire to SupplyChainProvider for economic impact
-    ref.read(liquidationProvider.notifier).liquidateStock(
-          matchCount: _matchCount,
-        );
+    final String? attemptId = _attemptId;
+    if (attemptId != null) {
+      ref.read(liquidationProvider.notifier).liquidateStock(
+            attemptId: attemptId,
+            matches: _matches,
+          );
+    }
 
     Future<void>.delayed(const Duration(seconds: 2), () {
       if (mounted) {
@@ -266,11 +296,13 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
 class _FallingGarment {
   const _FallingGarment({
     required this.id,
+    required this.index,
     required this.tier,
     required this.xPosition,
   });
 
   final String id;
+  final int index;
   final int tier;
   final double xPosition;
 }

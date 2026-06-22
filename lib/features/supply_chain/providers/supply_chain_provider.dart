@@ -4,6 +4,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/services/mini_game_service.dart';
 import '../models/supply_chain_models.dart';
 
 // =============================================================================
@@ -83,31 +84,15 @@ class LiquidationNotifier
 
   /// Liquidate stock with Flash Sale bonus
   /// matchCount = successful tier matches, bonus = matchCount * 50 Capital
-  Future<Map<String, dynamic>> liquidateStock({required int matchCount}) async {
+  Future<Map<String, dynamic>> liquidateStock({
+    required String attemptId,
+    required List<Map<String, int>> matches,
+  }) async {
     try {
-      final SupabaseClient supabase = Supabase.instance.client;
-      final Session? session = supabase.auth.currentSession;
-
-      if (session == null) {
-        return <String, dynamic>{
-          'success': false,
-          'error': 'Not authenticated',
-        };
-      }
-
-      final FunctionResponse response = await supabase.functions.invoke(
-        'claim-mini-game-reward',
-        body: <String, dynamic>{
-          'game_key': 'flash_sale',
-          'result_key': matchCount >= 20 ? 'perfect_win' : 'standard_win',
-        },
-        headers: <String, String>{
-          'Authorization': 'Bearer ${session.accessToken}',
-        },
+      final Map<String, dynamic> data = await MiniGameService.claim(
+        attemptId,
+        <String, dynamic>{'matches': matches},
       );
-
-      final Map<String, dynamic> data =
-          Map<String, dynamic>.from(response.data as Map<String, dynamic>);
       final int reward =
           ((data['reward'] as Map<String, dynamic>?)?['currency'] as num?)
                   ?.toInt() ??
@@ -117,10 +102,10 @@ class LiquidationNotifier
         ...data,
         'bonus_amount': reward,
       };
-    } catch (e) {
+    } catch (_) {
       return <String, dynamic>{
         'success': false,
-        'error': 'Flash sale liquidation failed: $e',
+        'error': 'Flash sale result could not be verified.',
       };
     }
   }
@@ -177,59 +162,6 @@ class LogisticsNotifier extends StateNotifier<AsyncValue<LogisticsUpgrade?>> {
 
   void reset() {
     state = const AsyncValue<LogisticsUpgrade?>.data(null);
-  }
-
-  // ===========================================================================
-  // Directive O: Supplier Raid — Logistics discount or halt
-  // ===========================================================================
-
-  /// Apply Supplier Raid result
-  /// Win = 15% discount for 14 days, Loss = immediate halt
-  Future<Map<String, dynamic>> applySupplierRaidResult({
-    required bool won,
-  }) async {
-    try {
-      final SupabaseClient supabase = Supabase.instance.client;
-      if (supabase.auth.currentUser == null) {
-        return <String, dynamic>{
-          'success': false,
-          'error': 'Not authenticated',
-        };
-      }
-
-      if (!won) {
-        return <String, dynamic>{
-          'success': true,
-          'reward': <String, dynamic>{'currency': 0},
-        };
-      }
-
-      final Session? session = supabase.auth.currentSession;
-      if (session == null) {
-        return <String, dynamic>{
-          'success': false,
-          'error': 'Not authenticated',
-        };
-      }
-
-      final FunctionResponse response = await supabase.functions.invoke(
-        'claim-mini-game-reward',
-        body: <String, dynamic>{
-          'game_key': 'supplier_raid',
-          'result_key': 'standard_win',
-        },
-        headers: <String, String>{
-          'Authorization': 'Bearer ${session.accessToken}',
-        },
-      );
-
-      return Map<String, dynamic>.from(response.data as Map<String, dynamic>);
-    } catch (e) {
-      return <String, dynamic>{
-        'success': false,
-        'error': 'Supplier raid result failed: $e',
-      };
-    }
   }
 }
 

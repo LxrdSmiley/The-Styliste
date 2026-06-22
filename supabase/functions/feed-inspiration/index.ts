@@ -115,6 +115,17 @@ serve(async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
+    const { data: allowed, error: rateError } = await admin.rpc(
+      "edge_consume_rate_limit",
+      {
+        p_actor_id: playerId,
+        p_action: "feed_inspiration",
+        p_window_seconds: 300,
+        p_max_requests: 10,
+      },
+    );
+    if (rateError) throw rateError;
+    if (!allowed) return json({ error: "RATE_LIMITED" }, 429);
 
     let rpcName = "";
     let params: Record<string, unknown> = {};
@@ -168,7 +179,12 @@ serve(async (req: Request): Promise<Response> => {
 
     const { data, error } = await admin.rpc(rpcName, params);
     if (error) {
-      return json({ error: error.message }, errorStatus(error.message));
+      const status = errorStatus(error.message);
+      console.error("feed-inspiration RPC error:", error.message);
+      return json(
+        { error: status === 403 ? "INSPIRATION_FORBIDDEN" : "INSPIRATION_FAILED" },
+        status,
+      );
     }
     if (!data) {
       return json({ error: "EMPTY_RESPONSE" }, 500);
@@ -178,6 +194,6 @@ serve(async (req: Request): Promise<Response> => {
   } catch (err) {
     const message = (err as Error).message;
     console.error("feed-inspiration error:", message);
-    return json({ error: message }, errorStatus(message));
+    return json({ error: "INSPIRATION_FAILED" }, errorStatus(message));
   }
 });

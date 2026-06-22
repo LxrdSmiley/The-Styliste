@@ -7,6 +7,7 @@
 import 'dart:io';
 
 import 'package:games_services/games_services.dart' as gs;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_service.dart';
@@ -175,8 +176,7 @@ class AuthService {
 
   /// Sign out from platform services (called on logout)
   Future<void> signOut() async {
-    // Note: Games Services doesn't have a sign-out method
-    // User must sign out at system level
-    // We just clear any local state here
+    await SupabaseService.signOutAndCleanup();
+    await FirebaseAuth.instance.signOut();
   }
 }

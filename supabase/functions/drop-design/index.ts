@@ -97,6 +97,17 @@ serve(async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
+    const { data: allowed, error: rateError } = await admin.rpc(
+      "edge_consume_rate_limit",
+      {
+        p_actor_id: playerId,
+        p_action: "drop_design",
+        p_window_seconds: 600,
+        p_max_requests: 10,
+      },
+    );
+    if (rateError) throw rateError;
+    if (!allowed) return json({ error: "RATE_LIMITED" }, 429);
 
     const { data, error } = await admin.rpc("edge_drop_design", {
       p_player_id: playerId,
@@ -108,7 +119,16 @@ serve(async (req: Request): Promise<Response> => {
     });
 
     if (error) {
-      return json({ error: error.message }, errorStatus(error.message));
+      const status = errorStatus(error.message);
+      const safeCode = status === 403
+        ? "DESIGN_NOT_OWNED"
+        : status === 404
+        ? "DESIGN_NOT_FOUND"
+        : status === 400
+        ? "DROP_NOT_READY"
+        : "DROP_FAILED";
+      console.error("drop-design RPC error:", error.message);
+      return json({ error: safeCode }, status);
     }
 
     const row = Array.isArray(data) ? data[0] : data;
@@ -120,6 +140,6 @@ serve(async (req: Request): Promise<Response> => {
   } catch (err) {
     const message = (err as Error).message;
     console.error("drop-design error:", message);
-    return json({ error: message }, errorStatus(message));
+    return json({ error: "DROP_FAILED" }, errorStatus(message));
   }
 });

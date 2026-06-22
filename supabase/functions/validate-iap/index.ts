@@ -1,25 +1,3 @@
-// Edge Function: validate-iap
-// GDD §9.8 — Phase 9: Server-authoritative Luxe Token minting.
-//
-// Security model (three-layer defence):
-//   Layer 1: Server-to-server receipt verification with Apple/Google.
-//            Spoofed receipts have no valid transaction on store servers.
-//   Layer 2: SHA-256(receiptData) deduplication in iap_receipts table.
-//            INSERT ON CONFLICT DO NOTHING — zero rows = already redeemed → 409.
-//   Layer 3: Postgres PRIMARY KEY B-tree serializes concurrent inserts (~0.05ms
-//            critical section) — eliminates TOCTOU replay race entirely.
-//
-// Compensating rollback: if Apple/Google returns 5xx (transient), the hash row
-//   is deleted to allow retry. Genuine auth failures (21003/21004) are NOT rolled
-//   back — that receipt is permanently blacklisted.
-//
-// Required env vars:
-//   APPLE_SHARED_SECRET       — App Store Connect shared secret
-//   GOOGLE_SERVICE_ACCOUNT_KEY — JSON key for Google Play Developer API service account
-//   GOOGLE_PACKAGE_NAME        — e.g., com.skinteethnerd.thestyliste
-//
-// Grant amounts are SERVER-AUTHORITATIVE — client cannot influence token quantity.
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -28,305 +6,235 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// ---------------------------------------------------------------------------
-// Server-authoritative product map — client cannot influence grant amount.
-// GDD §9.8 — Luxe Token tiers.
-// ---------------------------------------------------------------------------
 const LUXE_PRODUCTS: Record<string, number> = {
-  "luxe_100":  100,
-  "luxe_550":  550,
-  "luxe_1200": 1200,
-  "luxe_2800": 2800,
+  "initiates_cache": 100,
+  "artisans_reserve": 550,
+  "architects_vault": 1200,
+  "sovereign_syndicate": 6500,
 };
 
-// ---------------------------------------------------------------------------
-// SHA-256 via Web Crypto API (available in Deno)
-// ---------------------------------------------------------------------------
-async function sha256Hex(input: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(input);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+interface VerifiedPurchase {
+  productId: string;
+  transactionId: string;
+  accountToken: string;
+  environment: string;
 }
 
-// ---------------------------------------------------------------------------
-// Apple receipt verification
-// ---------------------------------------------------------------------------
-async function verifyAppleReceipt(
-  receiptData: string,
-): Promise<{ valid: boolean; transientError: boolean }> {
-  const sharedSecret = Deno.env.get("APPLE_SHARED_SECRET") ?? "";
-  const payload = JSON.stringify({ "receipt-data": receiptData, password: sharedSecret });
+function json(body: Record<string, unknown>, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+  });
+}
 
-  // Production first, then sandbox fallback for status 21007 (TestFlight)
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function newestAppleItem(body: Record<string, unknown>): Record<string, unknown> | null {
+  const candidates = [
+    ...((body.latest_receipt_info as Record<string, unknown>[] | undefined) ?? []),
+    ...((((body.receipt as Record<string, unknown> | undefined)?.in_app) as
+      Record<string, unknown>[] | undefined) ?? []),
+  ];
+  candidates.sort((a, b) =>
+    Number(b.purchase_date_ms ?? 0) - Number(a.purchase_date_ms ?? 0)
+  );
+  return candidates[0] ?? null;
+}
+
+async function verifyAppleReceipt(receiptData: string): Promise<VerifiedPurchase> {
+  const sharedSecret = Deno.env.get("APPLE_SHARED_SECRET") ?? "";
+  const bundleId = Deno.env.get("APPLE_BUNDLE_ID") ?? "";
+  if (!sharedSecret || !bundleId) throw new Error("IAP_NOT_CONFIGURED");
+
+  let responseBody: Record<string, unknown> | null = null;
   for (const url of [
     "https://buy.itunes.apple.com/verifyReceipt",
     "https://sandbox.itunes.apple.com/verifyReceipt",
   ]) {
-    const res = await fetch(url, {
+    const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: payload,
+      body: JSON.stringify({ "receipt-data": receiptData, password: sharedSecret }),
     });
-
-    if (!res.ok) {
-      // Apple server itself returned 5xx
-      return { valid: false, transientError: true };
-    }
-
-    const body = await res.json() as { status: number };
-    if (body.status === 0) return { valid: true, transientError: false };
-    if (body.status === 21007) continue; // sandbox receipt — retry against sandbox URL
-    // 21003 = receipt auth failed; 21004 = wrong shared secret; others = invalid
-    return { valid: false, transientError: false };
+    if (!response.ok) throw new Error("STORE_UNAVAILABLE");
+    const body = await response.json() as Record<string, unknown>;
+    if (body.status === 21007) continue;
+    if (body.status !== 0) throw new Error("RECEIPT_INVALID");
+    responseBody = body;
+    break;
   }
-  return { valid: false, transientError: false };
+  if (!responseBody) throw new Error("RECEIPT_INVALID");
+
+  const receipt = responseBody.receipt as Record<string, unknown> | undefined;
+  if (String(receipt?.bundle_id ?? "") !== bundleId) throw new Error("BUNDLE_MISMATCH");
+  const item = newestAppleItem(responseBody);
+  if (!item || item.cancellation_date_ms || item.revocation_date) {
+    throw new Error("RECEIPT_INVALID");
+  }
+  const productId = String(item.product_id ?? "");
+  const transactionId = String(item.transaction_id ?? "");
+  const accountToken = String(
+    item.app_account_token ?? item.application_username ?? "",
+  ).toLowerCase();
+  if (!productId || !transactionId || !accountToken) throw new Error("ACCOUNT_BINDING_REQUIRED");
+  return {
+    productId,
+    transactionId,
+    accountToken,
+    environment: String(responseBody.environment ?? "unknown"),
+  };
 }
 
-// ---------------------------------------------------------------------------
-// Google Play receipt verification (OAuth2 via service account)
-// ---------------------------------------------------------------------------
-async function verifyGoogleReceipt(
-  productId: string,
-  purchaseToken: string,
-): Promise<{ valid: boolean; transientError: boolean }> {
-  const serviceAccountJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_KEY") ?? "{}";
-  const packageName = Deno.env.get("GOOGLE_PACKAGE_NAME") ?? "";
-
-  let serviceAccount: { client_email: string; private_key: string };
-  try {
-    serviceAccount = JSON.parse(serviceAccountJson) as {
-      client_email: string;
-      private_key: string;
-    };
-  } catch {
-    console.error("validate-iap: invalid GOOGLE_SERVICE_ACCOUNT_KEY");
-    return { valid: false, transientError: false };
+async function googleAccessToken(): Promise<string> {
+  const serviceAccount = JSON.parse(
+    Deno.env.get("GOOGLE_SERVICE_ACCOUNT_KEY") ?? "{}",
+  ) as { client_email?: string; private_key?: string };
+  if (!serviceAccount.client_email || !serviceAccount.private_key) {
+    throw new Error("IAP_NOT_CONFIGURED");
   }
-
-  // Build JWT for service account
   const now = Math.floor(Date.now() / 1000);
-  const header = btoa(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-  const claimSet = btoa(
-    JSON.stringify({
-      iss: serviceAccount.client_email,
-      scope: "https://www.googleapis.com/auth/androidpublisher",
-      aud: "https://oauth2.googleapis.com/token",
-      iat: now,
-      exp: now + 3600,
-    }),
+  const encode = (value: unknown) =>
+    btoa(JSON.stringify(value)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+  const signingInput = `${encode({ alg: "RS256", typ: "JWT" })}.${encode({
+    iss: serviceAccount.client_email,
+    scope: "https://www.googleapis.com/auth/androidpublisher",
+    aud: "https://oauth2.googleapis.com/token",
+    iat: now,
+    exp: now + 3600,
+  })}`;
+  const pem = serviceAccount.private_key.replace(/\\n/g, "\n")
+    .replace("-----BEGIN PRIVATE KEY-----", "")
+    .replace("-----END PRIVATE KEY-----", "")
+    .replace(/\s/g, "");
+  const key = await crypto.subtle.importKey(
+    "pkcs8",
+    Uint8Array.from(atob(pem), (c) => c.charCodeAt(0)),
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"],
   );
-
-  // Sign with RS256 — requires importing the private key
-  let accessToken: string;
-  try {
-    const privateKeyPem = serviceAccount.private_key.replace(/\\n/g, "\n");
-    const pemContents = privateKeyPem
-      .replace("-----BEGIN PRIVATE KEY-----", "")
-      .replace("-----END PRIVATE KEY-----", "")
-      .replace(/\s/g, "");
-    const binaryKey = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
-    const cryptoKey = await crypto.subtle.importKey(
-      "pkcs8",
-      binaryKey,
-      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-      false,
-      ["sign"],
-    );
-    const signingInput = `${header}.${claimSet}`;
-    const signature = await crypto.subtle.sign(
-      "RSASSA-PKCS1-v1_5",
-      cryptoKey,
-      new TextEncoder().encode(signingInput),
-    );
-    const sigB64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
-    const jwt = `${signingInput}.${sigB64}`;
-
-    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
-    });
-    const tokenBody = await tokenRes.json() as { access_token?: string };
-    if (!tokenBody.access_token) return { valid: false, transientError: false };
-    accessToken = tokenBody.access_token;
-  } catch (err) {
-    console.error("validate-iap: Google JWT signing failed:", (err as Error).message);
-    return { valid: false, transientError: true };
-  }
-
-  // Call Google Play Developer API
-  const apiUrl = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${packageName}/purchases/products/${productId}/tokens/${purchaseToken}`;
-  const apiRes = await fetch(apiUrl, {
-    headers: { Authorization: `Bearer ${accessToken}` },
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    key,
+    new TextEncoder().encode(signingInput),
+  );
+  const assertion = `${signingInput}.${
+    btoa(String.fromCharCode(...new Uint8Array(signature)))
+      .replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "")
+  }`;
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${assertion}`,
   });
-
-  if (!apiRes.ok) {
-    return { valid: false, transientError: apiRes.status >= 500 };
-  }
-
-  const apiBody = await apiRes.json() as { purchaseState?: number };
-  // purchaseState 0 = purchased
-  return { valid: apiBody.purchaseState === 0, transientError: false };
+  const body = await response.json() as { access_token?: string };
+  if (!body.access_token) throw new Error("STORE_UNAVAILABLE");
+  return body.access_token;
 }
 
-// ---------------------------------------------------------------------------
-// Main handler
-// ---------------------------------------------------------------------------
+async function verifyGooglePurchase(
+  requestedProductId: string,
+  purchaseToken: string,
+): Promise<VerifiedPurchase> {
+  const packageName = Deno.env.get("GOOGLE_PACKAGE_NAME") ?? "";
+  if (!packageName) throw new Error("IAP_NOT_CONFIGURED");
+  const accessToken = await googleAccessToken();
+  const response = await fetch(
+    `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${
+      encodeURIComponent(packageName)
+    }/purchases/products/${encodeURIComponent(requestedProductId)}/tokens/${
+      encodeURIComponent(purchaseToken)
+    }`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+  if (!response.ok) throw new Error(response.status >= 500 ? "STORE_UNAVAILABLE" : "RECEIPT_INVALID");
+  const body = await response.json() as Record<string, unknown>;
+  if (body.purchaseState !== 0 || body.consumptionState === 1) throw new Error("RECEIPT_INVALID");
+  const accountToken = String(body.obfuscatedExternalAccountId ?? "").toLowerCase();
+  const transactionId = String(body.orderId ?? "");
+  if (!accountToken || !transactionId) throw new Error("ACCOUNT_BINDING_REQUIRED");
+  return {
+    productId: requestedProductId,
+    transactionId,
+    accountToken,
+    environment: "google_play",
+  };
+}
+
 serve(async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: CORS_HEADERS });
-  }
+  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS_HEADERS });
+  if (req.method !== "POST") return json({ error: "METHOD_NOT_ALLOWED" }, 405);
+  const correlationId = crypto.randomUUID();
 
   try {
-    // ── JWT identity verification ──────────────────────────────────────────
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "MISSING_AUTH" }),
-        { status: 401, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
-    }
-    const token = authHeader.replace("Bearer ", "");
-
-    const verifyClient = createClient(
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) return json({ error: "MISSING_AUTH" }, 401);
+    const token = authHeader.slice("Bearer ".length);
+    const verifier = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
     );
-    const { data: { user }, error: authError } = await verifyClient.auth.getUser(token);
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "INVALID_TOKEN" }),
-        { status: 401, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
+    const { data: { user }, error: authError } = await verifier.auth.getUser(token);
+    if (authError || !user) return json({ error: "UNAUTHORIZED" }, 401);
+
+    const body = await req.json() as Record<string, unknown>;
+    const platform = String(body.platform ?? "");
+    const requestedProductId = String(body.productId ?? "");
+    const receiptData = String(body.receiptData ?? "");
+    if (!["ios", "android"].includes(platform) || !receiptData) {
+      return json({ error: "INVALID_PAYLOAD" }, 400);
     }
-    const uid = user.id;
-
-    // ── Parse payload ──────────────────────────────────────────────────────
-    const body = await req.json() as {
-      platform?: string;
-      productId?: string;
-      receiptData?: string;
-    };
-    const { platform, productId, receiptData } = body;
-
-    if (
-      !platform || !productId || !receiptData ||
-      !["ios", "android"].includes(platform)
-    ) {
-      return new Response(
-        JSON.stringify({ error: "INVALID_PAYLOAD" }),
-        { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
-    }
-
-    // Validate productId is a known product
-    const luxeGrant = LUXE_PRODUCTS[productId];
-    if (luxeGrant === undefined) {
-      return new Response(
-        JSON.stringify({ error: "UNKNOWN_PRODUCT" }),
-        { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
-    }
-
-    // ── Layer 2: SHA-256 deduplication ─────────────────────────────────────
-    // Hash before external call — prevents TOCTOU window.
-    const receiptHash = await sha256Hex(receiptData);
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
+    const { data: allowed, error: rateError } = await admin.rpc(
+      "edge_consume_rate_limit",
+      {
+        p_actor_id: user.id,
+        p_action: "validate_iap",
+        p_window_seconds: 600,
+        p_max_requests: 10,
+      },
+    );
+    if (rateError) throw rateError;
+    if (!allowed) return json({ error: "RATE_LIMITED" }, 429);
 
-    // INSERT ON CONFLICT DO NOTHING — B-tree PK serializes concurrent requests.
-    const { data: insertedRows, error: insertErr } = await admin
-      .from("iap_receipts")
-      .insert({
-        receipt_hash: receiptHash,
-        player_id: uid,
-        product_id: productId,
-        platform,
-        luxe_granted: luxeGrant,
-      })
-      .select("receipt_hash");
-
-    if (insertErr) throw new Error(`Receipt insert failed: ${insertErr.message}`);
-
-    if (!insertedRows || insertedRows.length === 0) {
-      // Hash already exists — this receipt was already redeemed.
-      return new Response(
-        JSON.stringify({ error: "RECEIPT_ALREADY_REDEEMED" }),
-        { status: 409, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
+    const verified = platform === "ios"
+      ? await verifyAppleReceipt(receiptData)
+      : await verifyGooglePurchase(requestedProductId, receiptData);
+    const grant = LUXE_PRODUCTS[verified.productId];
+    if (!grant) return json({ error: "UNKNOWN_PRODUCT" }, 400);
+    if (verified.accountToken !== user.id.toLowerCase()) {
+      return json({ error: "ACCOUNT_MISMATCH" }, 403);
     }
 
-    // ── Layer 1: Server-to-server verification ─────────────────────────────
-    let verifyResult: { valid: boolean; transientError: boolean };
-    if (platform === "ios") {
-      verifyResult = await verifyAppleReceipt(receiptData);
-    } else {
-      verifyResult = await verifyGoogleReceipt(productId, receiptData);
+    const { data, error } = await admin.rpc("edge_redeem_iap_atomic", {
+      p_player_id: user.id,
+      p_platform: platform,
+      p_transaction_id: verified.transactionId,
+      p_receipt_hash: await sha256Hex(receiptData),
+      p_product_id: verified.productId,
+      p_luxe_grant: grant,
+      p_account_token: verified.accountToken,
+      p_environment: verified.environment,
+    });
+    if (error) throw error;
+    return json(data as Record<string, unknown>);
+  } catch (error) {
+    console.error("validate-iap", correlationId, error);
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("STORE_UNAVAILABLE")) return json({ error: "STORE_UNAVAILABLE_RETRY" }, 503);
+    if (message.includes("ACCOUNT")) return json({ error: "ACCOUNT_MISMATCH" }, 403);
+    if (message.includes("INVALID") || message.includes("MISMATCH")) {
+      return json({ error: "RECEIPT_INVALID" }, 400);
     }
-
-    if (!verifyResult.valid) {
-      // Compensating rollback: delete hash row only on transient 5xx errors
-      // so the player can retry. Genuine auth failures stay blacklisted.
-      if (verifyResult.transientError) {
-        await admin
-          .from("iap_receipts")
-          .delete()
-          .eq("receipt_hash", receiptHash);
-        return new Response(
-          JSON.stringify({ error: "STORE_UNAVAILABLE_RETRY" }),
-          { status: 503, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-        );
-      }
-      // Permanent auth failure — receipt_hash stays in table as blacklist entry.
-      return new Response(
-        JSON.stringify({ error: "RECEIPT_INVALID" }),
-        { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-      );
-    }
-
-    // ── Atomic token grant ─────────────────────────────────────────────────
-    // Fetch current balance then increment (service role bypasses RLS).
-    const { data: brandRows, error: brandErr } = await admin
-      .from("brand_state")
-      .select("luxe_tokens")
-      .eq("player_id", uid)
-      .limit(1);
-
-    if (brandErr) throw new Error(`Brand state fetch failed: ${brandErr.message}`);
-
-    const currentTokens = (brandRows?.[0] as { luxe_tokens: number } | undefined)
-      ?.luxe_tokens ?? 0;
-    const newBalance = currentTokens + luxeGrant;
-
-    const { error: updateErr } = await admin
-      .from("brand_state")
-      .update({ luxe_tokens: newBalance })
-      .eq("player_id", uid);
-
-    if (updateErr) throw new Error(`Token grant failed: ${updateErr.message}`);
-
-    console.log(
-      `validate-iap: granted ${luxeGrant} tokens to ${uid} for ${productId} (${platform})`,
-    );
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        luxe_granted: luxeGrant,
-        new_balance: newBalance,
-      }),
-      { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-    );
-  } catch (err) {
-    console.error("validate-iap fatal:", (err as Error).message);
-    return new Response(
-      JSON.stringify({ error: (err as Error).message }),
-      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-    );
+    if (message.includes("CONFIGURED")) return json({ error: "STORE_NOT_CONFIGURED" }, 503);
+    return json({ error: "PURCHASE_VALIDATION_FAILED", correlation_id: correlationId }, 500);
   }
 });

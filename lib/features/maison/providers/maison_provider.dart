@@ -7,6 +7,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/services/supabase_service.dart';
@@ -70,7 +71,10 @@ class MaisonDonateNotifier extends StateNotifier<MaisonDonateState> {
       final FunctionResponse result =
           await SupabaseService.client.functions.invoke(
         SupabaseConstants.fnMaisonDonate,
-        body: <String, dynamic>{'amount': roundedAmount},
+        body: <String, dynamic>{
+          'amount': roundedAmount,
+          'idempotency_key': const Uuid().v4(),
+        },
       );
 
       // Edge Function returns FunctionResponse — check for error payload.

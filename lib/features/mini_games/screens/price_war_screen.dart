@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/services/mini_game_service.dart';
 import '../../../features/ledger/providers/ledger_provider.dart';
 
 /// Price War Blitz — Rhythm-based price alignment mini-game
@@ -26,11 +27,23 @@ class _PriceWarScreenState extends ConsumerState<PriceWarScreen>
   bool _gameOver = false;
   bool _won = false;
   Color _flashColor = Colors.transparent;
+  String? _attemptId;
+  final List<double> _tapValues = <double>[];
 
   @override
   void initState() {
     super.initState();
     _startRound();
+    _prepareAttempt();
+  }
+
+  Future<void> _prepareAttempt() async {
+    try {
+      final MiniGameAttempt attempt = await MiniGameService.start('price_war');
+      if (mounted) setState(() => _attemptId = attempt.id);
+    } catch (_) {
+      if (mounted) setState(() => _gameOver = true);
+    }
   }
 
   void _startRound() {
@@ -42,7 +55,8 @@ class _PriceWarScreenState extends ConsumerState<PriceWarScreen>
   }
 
   void _onTap() {
-    if (_gameOver) return;
+    if (_gameOver || _attemptId == null) return;
+    _tapValues.add(_sliderAnim.value);
 
     // Target zone is between 0.4 and 0.6
     if (_sliderAnim.value >= 0.4 && _sliderAnim.value <= 0.6) {
@@ -83,7 +97,13 @@ class _PriceWarScreenState extends ConsumerState<PriceWarScreen>
     }
 
     // Wire to LedgerProvider for economic impact
-    ref.read(upgradeStoreProvider.notifier).applyPriceWarResult(won: _won);
+    final String? attemptId = _attemptId;
+    if (attemptId != null) {
+      ref.read(upgradeStoreProvider.notifier).applyPriceWarResult(
+            attemptId: attemptId,
+            tapValues: _tapValues,
+          );
+    }
 
     Future<void>.delayed(const Duration(seconds: 2), () {
       if (mounted) {

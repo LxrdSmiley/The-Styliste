@@ -1,0 +1,60 @@
+name: Security release gate
+
+on:
+  pull_request:
+    paths:
+      - "android/**"
+      - "supabase/**"
+      - "lib/core/providers/auth_provider.dart"
+      - "lib/core/services/**"
+      - "lib/features/store/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-security-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify tracked Gradle wrapper
+        shell: bash
+        run: |
+          test -f android/gradlew
+          test -f android/gradlew.bat
+          test -f android/gradle/wrapper/gradle-wrapper.jar
+          test -f android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Reject release debug-signing fallback
+        shell: bash
+        run: |
+          if grep -R "signingConfigs.getByName(\"debug\")" android/app/build.gradle.kts; then
+            echo "Release build may not use debug signing."
+            exit 1
+          fi
+
+      - name: Reject client-side service credentials
+        shell: bash
+        run: |
+          if grep -R -n -E "SUPABASE_SERVICE_ROLE_KEY|APPLE_SHARED_SECRET|GOOGLE_SERVICE_ACCOUNT_KEY|BEGIN PRIVATE KEY" \
+            lib android ios web 2>/dev/null; then
+            echo "Server secret marker found in client source."
+            exit 1
+          fi
+
+      - name: Check Edge Function TypeScript
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type-check hardened Edge Functions
+        run: |
+          deno check supabase/functions/claim-mini-game-reward/index.ts
+          deno check supabase/functions/mint-design/index.ts
+          deno check supabase/functions/process-transaction/index.ts
+          deno check supabase/functions/maison-donate/index.ts
+          deno check supabase/functions/trend-decay/index.ts
+          deno check supabase/functions/send-fcm-notification/index.ts
+          deno check supabase/functions/validate-iap/index.ts

@@ -1,5 +1,4 @@
-// GDD §4.1 — Mint Alpha design via server-authoritative Edge Function.
-// FutureProvider.family: parameterised by the full pre-mint design brief.
+// GDD §4.1 — Server-owned Atelier session and authoritative Alpha mint.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,40 +8,52 @@ import '../../../domain/models/design.dart';
 
 class MintDesignInput {
   const MintDesignInput({
+    required this.sessionId,
     required this.fabricColorHex,
     required this.styleTags,
-    this.materialQuality = 72,
-    this.aestheticAlignment = 78,
   });
 
+  final String sessionId;
   final String fabricColorHex;
   final List<String> styleTags;
-  final int materialQuality;
-  final int aestheticAlignment;
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other is! MintDesignInput) return false;
-    if (fabricColorHex != other.fabricColorHex ||
-        materialQuality != other.materialQuality ||
-        aestheticAlignment != other.aestheticAlignment ||
-        styleTags.length != other.styleTags.length) {
-      return false;
-    }
-    for (int i = 0; i < styleTags.length; i++) {
-      if (styleTags[i] != other.styleTags[i]) return false;
-    }
-    return true;
+  bool operator ==(Object other) =>
+      other is MintDesignInput &&
+      other.sessionId == sessionId &&
+      other.fabricColorHex == fabricColorHex &&
+      _sameTags(other.styleTags, styleTags);
+
+  @override
+  int get hashCode =>
+      Object.hash(sessionId, fabricColorHex, Object.hashAll(styleTags));
+}
+
+bool _sameTags(List<String> left, List<String> right) {
+  if (left.length != right.length) return false;
+  for (int index = 0; index < left.length; index++) {
+    if (left[index] != right[index]) return false;
   }
+  return true;
+}
 
-  @override
-  int get hashCode => Object.hash(
-        fabricColorHex,
-        materialQuality,
-        aestheticAlignment,
-        Object.hashAll(styleTags),
-      );
+Future<String> startAtelierSession({
+  required String fabricColorHex,
+  required List<String> styleTags,
+}) async {
+  final Map<String, dynamic> response = await SupabaseService.invokeFunction(
+    SupabaseConstants.fnMintDesign,
+    body: <String, dynamic>{
+      'action': 'start',
+      'fabric_color_hex': fabricColorHex,
+      'style_tags': styleTags,
+    },
+  );
+  final String? sessionId = response['session_id'] as String?;
+  if (sessionId == null || sessionId.isEmpty) {
+    throw const FormatException('Atelier session was not created.');
+  }
+  return sessionId;
 }
 
 final FutureProviderFamily<Design, MintDesignInput> mintDesignProvider =
@@ -51,9 +62,9 @@ final FutureProviderFamily<Design, MintDesignInput> mintDesignProvider =
     final Map<String, dynamic> response = await SupabaseService.invokeFunction(
       SupabaseConstants.fnMintDesign,
       body: <String, dynamic>{
+        'action': 'mint',
+        'session_id': input.sessionId,
         'fabric_color_hex': input.fabricColorHex,
-        'material_quality': input.materialQuality,
-        'aesthetic_alignment': input.aestheticAlignment,
         'style_tags': input.styleTags,
       },
     );

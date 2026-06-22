@@ -295,13 +295,9 @@ class _AurelianStorefrontScreenState
   List<ProductDetails> _sortByTier(List<ProductDetails> products) {
     final Map<String, int> tierOrder = <String, int>{
       'initiates_cache': 0,
-      'luxe_100': 0,
       'artisans_reserve': 1,
-      'luxe_550': 1,
       'architects_vault': 2,
-      'luxe_1200': 2,
       'sovereign_syndicate': 3,
-      'luxe_2800': 3,
     };
 
     return products
@@ -315,16 +311,12 @@ class _AurelianStorefrontScreenState
   LuxeTier _getTier(String productId) {
     switch (productId) {
       case 'initiates_cache':
-      case 'luxe_100':
         return LuxeTier.initiate;
       case 'artisans_reserve':
-      case 'luxe_550':
         return LuxeTier.artisan;
       case 'architects_vault':
-      case 'luxe_1200':
         return LuxeTier.architect;
       case 'sovereign_syndicate':
-      case 'luxe_2800':
         return LuxeTier.sovereign;
       default:
         return LuxeTier.initiate;

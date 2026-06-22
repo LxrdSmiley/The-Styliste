@@ -174,10 +174,10 @@ enable_anonymous_sign_ins = true
 # Allow/disallow testing manual linking of accounts
 enable_manual_linking = false
 # Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
-minimum_password_length = 6
+minimum_password_length = 10
 # Passwords that do not meet the following requirements will be rejected as weak. Supported values
 # are: `letters_digits`, `lower_upper_letters_digits`, `lower_upper_letters_digits_symbols`
-password_requirements = ""
+password_requirements = "lower_upper_letters_digits"
 
 # Configure passkey sign-ins.
 # [auth.passkey]
@@ -195,13 +195,13 @@ email_sent = 2
 # Number of SMS messages that can be sent per hour. Requires auth.sms to be enabled.
 sms_sent = 30
 # Number of anonymous sign-ins that can be made per hour per IP address. Requires enable_anonymous_sign_ins = true.
-anonymous_users = 30
+anonymous_users = 10
 # Number of sessions that can be refreshed in a 5 minute interval per IP address.
 token_refresh = 150
 # Number of sign up and sign-in requests that can be made in a 5 minute interval per IP address (excludes anonymous users).
-sign_in_sign_ups = 30
+sign_in_sign_ups = 10
 # Number of OTP / Magic link verifications that can be made in a 5 minute interval per IP address.
-token_verifications = 30
+token_verifications = 10
 # Number of Web3 logins that can be made in a 5 minute interval per IP address.
 web3 = 30
 
@@ -220,13 +220,13 @@ double_confirm_changes = true
 # If enabled, users need to confirm their email address before signing in.
 enable_confirmations = false
 # If enabled, users will need to reauthenticate or have logged in recently to change their password.
-secure_password_change = false
+secure_password_change = true
 # Controls the minimum amount of time that must pass before sending another signup confirmation or password reset email.
-max_frequency = "1s"
+max_frequency = "60s"
 # Number of characters used in the email OTP.
 otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
-otp_expiry = 3600
+otp_expiry = 600
 
 # Use a production-ready SMTP server
 # [auth.email.smtp]
@@ -451,3 +451,52 @@ entrypoint = "./functions/feed-inspiration/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/feed-inspiration/*.html" ]
+
+[functions.mint-design]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/mint-design/index.ts"
+
+[functions.claim-mini-game-reward]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/claim-mini-game-reward/index.ts"
+
+[functions.process-transaction]
+enabled = true
+verify_jwt = true
+import_map = "./functions/process-transaction/deno.json"
+entrypoint = "./functions/process-transaction/index.ts"
+
+[functions.maison-donate]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/maison-donate/index.ts"
+
+[functions.validate-iap]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/validate-iap/index.ts"
+
+[functions.trend-decay]
+enabled = true
+verify_jwt = false
+import_map = "./functions/trend-decay/deno.json"
+entrypoint = "./functions/trend-decay/index.ts"
+
+[functions.send-fcm-notification]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/send-fcm-notification/index.ts"
+
+[functions.calculate-idle-income]
+enabled = true
+verify_jwt = true
+import_map = "./functions/calculate-idle-income/deno.json"
+entrypoint = "./functions/calculate-idle-income/index.ts"
+
+[functions.eclipse-event-tick]
+enabled = true
+verify_jwt = false
+import_map = "./functions/eclipse-event-tick/deno.json"
+entrypoint = "./functions/eclipse-event-tick/index.ts"

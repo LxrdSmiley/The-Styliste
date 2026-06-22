@@ -293,8 +293,8 @@ class _EquityContent extends StatelessWidget {
               ),
               _MiniGameItem(
                 icon: Icons.local_shipping,
-                label: 'Supplier Raid',
-                reward: 'Logistics -15%',
+                label: 'Supply Chain Scramble',
+                reward: 'Maison Feed Event',
               ),
             ],
           ),

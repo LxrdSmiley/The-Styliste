@@ -13,8 +13,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.21.0';
 
 // Firebase Admin SDK (service account required)
 // Note: In production, store service account JSON in Supabase secrets
-const FIREBASE_PROJECT_ID = Deno.env.get('FIREBASE_PROJECT_ID') || 'the-styliste';
-const FIREBASE_SERVICE_ACCOUNT = Deno.env.get('FIREBASE_SERVICE_ACCOUNT');
+const FIREBASE_PROJECT_ID = Deno.env.get('FIREBASE_PROJECT_ID') ?? '';
+const FIREBASE_SERVICE_ACCOUNT = Deno.env.get('FIREBASE_SERVICE_ACCOUNT') ?? '';
 
 interface WebhookPayload {
   type: 'INSERT' | 'UPDATE' | 'DELETE';
@@ -61,16 +61,51 @@ interface FCMMessage {
 }
 
 serve(async (req: Request) => {
+  const correlationId = crypto.randomUUID();
   try {
-    // Verify webhook secret
+    if (req.method !== 'POST') {
+      return new Response('Method not allowed', { status: 405 });
+    }
+
+    // Fail closed if deployment is missing its webhook credential.
     const webhookSecret = req.headers.get('x-webhook-secret');
-    const expectedSecret = Deno.env.get('WEBHOOK_SECRET');
-    
-    if (expectedSecret && webhookSecret !== expectedSecret) {
+    const expectedSecret = Deno.env.get('WEBHOOK_SECRET') ?? '';
+    if (expectedSecret.length < 32) {
+      console.error('send-fcm-notification: WEBHOOK_SECRET is missing or too short');
+      return new Response('Service not configured', { status: 503 });
+    }
+    if (!await constantTimeEqual(webhookSecret ?? '', expectedSecret)) {
       return new Response('Unauthorized', { status: 401 });
+    }
+    if (!FIREBASE_PROJECT_ID || !FIREBASE_SERVICE_ACCOUNT) {
+      console.error('send-fcm-notification: Firebase credentials are missing');
+      return new Response('Service not configured', { status: 503 });
     }
 
     const payload: WebhookPayload = await req.json();
+    if (!['INSERT', 'UPDATE', 'DELETE'].includes(payload.type) ||
+        payload.schema !== 'public' ||
+        !['feed_posts', 'garment_drops', 'gala_events', 'maison_members'].includes(payload.table) ||
+        !payload.record || typeof payload.record !== 'object' ||
+        typeof payload.record.id !== 'string' ||
+        payload.record.id.length === 0) {
+      return new Response('Invalid webhook payload', { status: 400 });
+    }
+
+    const eventId = req.headers.get('x-webhook-id') ??
+      payload.record.id;
+    const replayClient = createClient(
+      Deno.env.get('SUPABASE_URL') || '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+    );
+    const { data: claimed, error: claimError } = await replayClient.rpc(
+      'edge_claim_webhook_event',
+      { p_source: 'database_webhook', p_event_id: eventId },
+    );
+    if (claimError) throw claimError;
+    if (!claimed) {
+      return new Response('Already processed', { status: 200 });
+    }
     
     // Route by table and event type
     const notification = await buildNotification(payload);
@@ -80,23 +115,43 @@ serve(async (req: Request) => {
     }
 
     // Send FCM notification
-    const result = await sendFCM(notification);
+    await sendFCM(notification);
     
     // Log telemetry event
     await logNotificationSent(notification);
 
     return new Response(
-      JSON.stringify({ success: true, result }),
+      JSON.stringify({ success: true }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('FCM notification failed:', error);
+    console.error('FCM notification failed:', correlationId, error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({
+        success: false,
+        error: 'NOTIFICATION_FAILED',
+        correlation_id: correlationId,
+      }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 });
+
+async function constantTimeEqual(left: string, right: string): Promise<boolean> {
+  if (!left || left.length !== right.length) return false;
+  const encoder = new TextEncoder();
+  const [leftHash, rightHash] = await Promise.all([
+    crypto.subtle.digest('SHA-256', encoder.encode(left)),
+    crypto.subtle.digest('SHA-256', encoder.encode(right)),
+  ]);
+  const a = new Uint8Array(leftHash);
+  const b = new Uint8Array(rightHash);
+  let difference = 0;
+  for (let i = 0; i < a.length; i++) {
+    difference |= a[i] ^ b[i];
+  }
+  return difference === 0;
+}
 
 async function buildNotification(payload: WebhookPayload): Promise<FCMMessage | null> {
   const { table, record, old_record, type } = payload;

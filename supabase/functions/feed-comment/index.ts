@@ -82,6 +82,17 @@ serve(async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
+    const { data: allowed, error: rateError } = await admin.rpc(
+      "edge_consume_rate_limit",
+      {
+        p_actor_id: playerId,
+        p_action: "feed_comment",
+        p_window_seconds: 300,
+        p_max_requests: 10,
+      },
+    );
+    if (rateError) throw rateError;
+    if (!allowed) return json({ error: "RATE_LIMITED" }, 429);
     const { data, error } = await admin.rpc("edge_add_feed_comment", {
       p_player_id: playerId,
       p_post_id: postId,
@@ -89,7 +100,14 @@ serve(async (req: Request): Promise<Response> => {
     });
 
     if (error) {
-      return json({ error: error.message }, errorStatus(error.message));
+      const status = errorStatus(error.message);
+      const safeCode = status === 404
+        ? "POST_NOT_FOUND"
+        : status === 400
+        ? "COMMENT_REJECTED"
+        : "COMMENT_FAILED";
+      console.error("feed-comment RPC error:", error.message);
+      return json({ error: safeCode }, status);
     }
 
     const row = Array.isArray(data) ? data[0] : data;
@@ -101,6 +119,6 @@ serve(async (req: Request): Promise<Response> => {
   } catch (err) {
     const message = (err as Error).message;
     console.error("feed-comment error:", message);
-    return json({ error: message }, errorStatus(message));
+    return json({ error: "COMMENT_FAILED" }, errorStatus(message));
   }
 });

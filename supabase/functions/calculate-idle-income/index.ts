@@ -47,6 +47,7 @@ serve(async (req: Request): Promise<Response> => {
     return new Response("ok", { headers: CORS_HEADERS });
   }
 
+  const correlationId = crypto.randomUUID();
   try {
     // ── Step 1: Cryptographic JWT verification ─────────────────────────────
     const authHeader = req.headers.get("Authorization");
@@ -80,6 +81,22 @@ serve(async (req: Request): Promise<Response> => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
+    const { data: allowed, error: rateError } = await admin.rpc(
+      "edge_consume_rate_limit",
+      {
+        p_actor_id: playerId,
+        p_action: "idle_income",
+        p_window_seconds: 300,
+        p_max_requests: 10,
+      },
+    );
+    if (rateError) throw rateError;
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({ error: "RATE_LIMITED" }),
+        { status: 429, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
+      );
+    }
 
     // Fetch brand state
     const { data: brandState, error: brandError } = await admin
@@ -176,8 +193,12 @@ serve(async (req: Request): Promise<Response> => {
       { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   } catch (err) {
+    console.error("calculate-idle-income", correlationId, err);
     return new Response(
-      JSON.stringify({ error: (err as Error).message }),
+      JSON.stringify({
+        error: "IDLE_INCOME_FAILED",
+        correlation_id: correlationId,
+      }),
       { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
     );
   }
