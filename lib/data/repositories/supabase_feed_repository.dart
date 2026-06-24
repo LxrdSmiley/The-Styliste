@@ -34,16 +34,4 @@ class SupabaseFeedRepository implements FeedRepository {
               rows.isNotEmpty ? rows.first : <String, dynamic>{},
         );
   }
-
-
-  @override
-  Future<void> reactToPost(String postId, String reactionType) async {
-    await SupabaseService.client.rpc<void>(
-      'increment_post_reaction',
-      params: <String, dynamic>{
-        'post_id': postId,
-        'reaction_type': reactionType,
-      },
-    );
-  }
 }

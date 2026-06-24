@@ -8,8 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/aurelian_theme.dart';
 import '../../../core/services/mini_game_service.dart';
+import '../../../core/theme/aurelian_theme.dart';
 import '../../../features/ledger/providers/ledger_provider.dart';
 
 /// Power Move Combo — Sequence memorization and drag mini-game
@@ -67,7 +67,7 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
       final List<dynamic> raw =
           attempt.challenge['sequence'] as List<dynamic>? ?? <dynamic>[];
       final List<String> symbols =
-          raw.map((dynamic value) => value.toString()).toList();
+          raw.map((Object? value) => value.toString()).toList();
       if (!mounted || symbols.length != 4) return;
       setState(() {
         _attemptId = attempt.id;

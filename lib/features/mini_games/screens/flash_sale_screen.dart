@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/aurelian_theme.dart';
 import '../../../core/services/mini_game_service.dart';
+import '../../../core/theme/aurelian_theme.dart';
 import '../../../features/supply_chain/providers/supply_chain_provider.dart';
 
 /// Flash Sale Frenzy — Falling garment drag mini-game
@@ -71,7 +71,7 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
       setState(() {
         _attemptId = attempt.id;
         _challengeTiers =
-            raw.map((dynamic value) => (value as num).toInt()).toList();
+            raw.whereType<num>().map((num value) => value.toInt()).toList();
       });
       _spawnGarments();
     } catch (_) {

@@ -139,9 +139,8 @@ Future<void> _syncSupabaseSession(User user) async {
     await SupabaseService.signOutAndCleanup();
     throw const SupabaseSessionExpiredException();
   }
-  _BridgeIdentity
-    ..firebaseUid = user.uid
-    ..supabaseUserId = supabaseUserId;
+  _BridgeIdentity.firebaseUid = user.uid;
+  _BridgeIdentity.supabaseUserId = supabaseUserId;
   await SupabaseService.ensureFreshSession();
 }
 

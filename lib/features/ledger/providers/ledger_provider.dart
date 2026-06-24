@@ -9,8 +9,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/providers/active_player_provider.dart';
-import '../../../core/services/supabase_service.dart';
 import '../../../core/services/mini_game_service.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/store.dart';
 
 // ---------------------------------------------------------------------------

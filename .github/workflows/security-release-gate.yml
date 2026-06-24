@@ -19,6 +19,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Reject unresolved merge conflict markers
+        shell: bash
+        run: |
+          if git grep -n -I -E '^(<{7}|={7}|>{7})' -- .; then
+            echo "Unresolved merge conflict marker found."
+            exit 1
+          fi
+
       - name: Verify tracked Gradle wrapper
         shell: bash
         run: |

@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/theme/aurelian_theme.dart';
 import '../../../core/services/mini_game_service.dart';
+import '../../../core/theme/aurelian_theme.dart';
 import '../../../features/ledger/providers/ledger_provider.dart';
 
 /// Price War Blitz — Rhythm-based price alignment mini-game

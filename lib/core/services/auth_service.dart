@@ -6,8 +6,8 @@
 
 import 'dart:io';
 
-import 'package:games_services/games_services.dart' as gs;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:games_services/games_services.dart' as gs;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_service.dart';

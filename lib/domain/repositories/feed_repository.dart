@@ -10,7 +10,4 @@ abstract interface class FeedRepository {
 
   /// Real-time stream of new feed posts.
   Stream<Map<String, dynamic>> watchNewPosts();
-
-  /// React to a post (like, AR reaction, etc.).
-  Future<void> reactToPost(String postId, String reactionType);
 }

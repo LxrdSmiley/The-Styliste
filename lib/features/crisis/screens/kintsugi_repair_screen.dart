@@ -98,16 +98,18 @@ class _KintsugiRepairScreenState extends ConsumerState<KintsugiRepairScreen>
 
     // Execute RPC
     try {
-      final dynamic response = await Supabase.instance.client.rpc(
+      final Object? response = await Supabase.instance.client.rpc<Object?>(
         SupabaseConstants.fnApplyKintsugiRepair,
       );
       final Map<String, dynamic> result;
-      if (response is Map) {
+      if (response is Map<Object?, Object?>) {
         result = Map<String, dynamic>.from(response);
       } else if (response is List &&
           response.length == 1 &&
-          response.first is Map) {
-        result = Map<String, dynamic>.from(response.first as Map);
+          response.first is Map<Object?, Object?>) {
+        result = Map<String, dynamic>.from(
+          response.first as Map<Object?, Object?>,
+        );
       } else {
         throw const FormatException('Invalid repair response.');
       }

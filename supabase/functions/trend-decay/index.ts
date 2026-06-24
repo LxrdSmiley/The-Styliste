@@ -13,7 +13,6 @@ function json(body: Record<string, unknown>, status = 200): Response {
   });
 }
 
-<<<<<<< HEAD
 async function sameSecret(left: string, right: string): Promise<boolean> {
   if (!left || !right || left.length !== right.length) return false;
   const encoder = new TextEncoder();
@@ -32,6 +31,7 @@ serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS_HEADERS });
   if (req.method !== "POST") return json({ error: "METHOD_NOT_ALLOWED" }, 405);
 
+  // Scheduler callers must send x-cron-secret matching CRON_INVOKE_SECRET.
   const expected = Deno.env.get("CRON_INVOKE_SECRET") ?? "";
   if (expected.length < 32) {
     console.error("trend-decay: CRON_INVOKE_SECRET is missing or too short");
@@ -42,27 +42,6 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   const correlationId = crypto.randomUUID();
-=======
-serve(async (_req: Request): Promise<Response> => {
-  // ── SEC-01: Cron-secret authorization gate ────────────────────────────
-  // Fail-closed: missing env var = 500, wrong/missing header = 401.
-  const expectedSecret = Deno.env.get("CRON_SECRET");
-  if (!expectedSecret) {
-    console.error("trend-decay: CRON_SECRET not configured — rejecting.");
-    return new Response(
-      JSON.stringify({ error: "Server misconfigured" }),
-      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-    );
-  }
-  const cronSecret = _req.headers.get("x-cron-secret");
-  if (cronSecret !== expectedSecret) {
-    return new Response(
-      JSON.stringify({ error: "Unauthorized" }),
-      { status: 401, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } },
-    );
-  }
-
->>>>>>> 813e538151b2ac74022b84c094a35a53fc1d2bb8
   try {
     const admin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",

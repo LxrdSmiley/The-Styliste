@@ -63,7 +63,6 @@ interface FCMMessage {
 serve(async (req: Request) => {
   const correlationId = crypto.randomUUID();
   try {
-<<<<<<< HEAD
     if (req.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 });
     }
@@ -76,19 +75,6 @@ serve(async (req: Request) => {
       return new Response('Service not configured', { status: 503 });
     }
     if (!await constantTimeEqual(webhookSecret ?? '', expectedSecret)) {
-=======
-    // SEC-02: Fail-closed webhook secret verification.
-    // If WEBHOOK_SECRET is not configured, reject the request (500).
-    // If header does not match, reject (401).
-    const webhookSecret = req.headers.get('x-webhook-secret');
-    const expectedSecret = Deno.env.get('WEBHOOK_SECRET');
-
-    if (!expectedSecret) {
-      console.error('send-fcm-notification: WEBHOOK_SECRET not configured — rejecting.');
-      return new Response('Server misconfigured', { status: 500 });
-    }
-    if (webhookSecret !== expectedSecret) {
->>>>>>> 813e538151b2ac74022b84c094a35a53fc1d2bb8
       return new Response('Unauthorized', { status: 401 });
     }
     if (!FIREBASE_PROJECT_ID || !FIREBASE_SERVICE_ACCOUNT) {
