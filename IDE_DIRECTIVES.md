@@ -1,6 +1,6 @@
 # IDE Directives — Current Execution State
 
-Last reconciled: June 23, 2026
+Last reconciled: June 25, 2026
 Active repository: `C:\STN\The-Styliste-1`
 
 This file reflects the authoritative current worktree, not the older exported
@@ -9,8 +9,8 @@ snapshot used by the follow-up audit.
 ## Current Verdict
 
 The security implementation is materially stronger, but public testing remains
-blocked by operator configuration, legal review, platform purchase testing,
-local Supabase reset/lint verification with Docker, and manual runtime checks.
+blocked by operator configuration, legal review, platform purchase testing, and
+manual runtime checks.
 
 ## Resolved Directives
 
@@ -131,26 +131,21 @@ systems remain future GDD implementation work.
 - Changed Edge Functions pass `deno check`.
 - `trend-decay`, `send-fcm-notification`, and `claim-mini-game-reward` were
   redeployed to Supabase project `xzzklkmkjmwzpiedkwho` on June 23, 2026.
-- Global Feed seed migration
-  `20260623204922_seed_global_feed_system_posts.sql` was pushed to the linked
-  Supabase project on June 23, 2026; remote readback confirmed the three
-  seeded `system_eclipse` posts.
 - Linked database lint has no error-level findings.
+- Local `supabase db reset --local` passed on June 25, 2026 with Docker
+  running; the full migration chain and seed file applied.
+- Local `supabase db lint --local` passed on June 25, 2026 with warning-level
+  findings only in `public.execute_casting_pull` and
+  `public.rotate_gala_event`.
 - The rollback-only security regression harness passes for mini-game replay,
   Atelier mint idempotency, store and Maison idempotency, IAP replay, Kintsugi
   fixed cost, report category validation, and report throttling.
 - Unauthenticated JWT-backed endpoints return `401`.
 - Unconfigured privileged secret-backed endpoints fail closed with `503`.
-- `dart format lib`, `flutter analyze`, and `flutter test` pass locally.
+- `dart format lib test`, `flutter analyze`, and `flutter test` pass locally as
+  of June 25, 2026.
 - `git diff --check` reports no whitespace errors.
 - The security release gate rejects unresolved Git merge conflict markers.
-
-Local `supabase db reset --local` and `supabase db lint --local` could not be
-completed because Docker/local Postgres was not running in this workspace.
-After the Global Feed seed pass, `flutter test` passed once with five tests and
-the focused system-feed parser regression passed independently. Later
-project-wide analyzer/test attempts hung in local Dart/Flutter tooling without
-diagnostics.
 
 ## Remaining Public-Test Blockers
 
@@ -166,8 +161,6 @@ diagnostics.
 - Complete Apple/Google sandbox substitution, replay, restore, refund, and
   account-switch purchase tests.
 - Complete manual runtime checks.
-- Re-run `supabase db reset --local` and `supabase db lint --local` with Docker
-  running.
 - Build the server-wide Solidarity Strike and Maison-ranked Supply Chain
   Scramble community events that replace the retired standalone games.
 

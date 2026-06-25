@@ -19,11 +19,13 @@ Completed by Codex:
 - Added a CI release-gate check that rejects unresolved Git merge conflict
   markers.
 - Ran `dart format lib`, `flutter analyze`, and `flutter test` successfully.
-- Added and applied remote migration
-  `20260623204922_seed_global_feed_system_posts.sql`; linked-project readback
-  confirmed three `system_eclipse` Global Feed posts with `player_id = NULL`
-  and `is_system = true`.
-- Added a parser regression for null-owner system feed posts.
+- Re-ran `supabase db reset --local` successfully with Docker running on
+  June 25, 2026; the full migration chain and `supabase/seed.sql` applied.
+- Re-ran `supabase db lint --local` successfully with Docker running on
+  June 25, 2026. It exited `0` with warning-level findings only in
+  `public.execute_casting_pull` and `public.rotate_gala_event`.
+- Smiley re-ran `dart format lib test`, `flutter analyze`, and `flutter test`
+  successfully on June 25, 2026.
 - Added database rate limits, replay protection, atomic economy/payment RPCs, server-owned mini-game attempts, authoritative Atelier sessions, safe error surfaces, release-signing failure guards, tracked Gradle wrapper files, and the security release-gate workflow.
 - Added database-enforced report categories, description limits, target integrity, a 15-minute same-target cooldown, and a 10-report daily cap.
 - Reduced `player_reports` grants to authenticated `SELECT`/`INSERT` only and removed all `anon` table privileges.
@@ -42,8 +44,6 @@ Still requires an authorized operator:
 - Enable PITR/backups and perform a restore drill. Current linked-project status is WALG enabled, PITR disabled, with no available backup timestamps.
 - Complete the Supabase Auth, Firebase/App Check, store-console, signing-certificate, monitoring, alerting, storage, and incident-readiness tasks below.
 - Run the manual runtime checks at the end of this file.
-- Re-run local Supabase reset/lint with Docker running; Docker/local Postgres
-  was unavailable in the June 23 Codex workspace.
 - Triage the remaining Advisor backlog separately: legacy callable `SECURITY DEFINER` RPCs, anonymous-access policy notices, `pg_net` in `public`, leaked-password protection, RLS performance plans, and unindexed foreign keys. The new service-only security tables intentionally have RLS with no client policies and revoked client grants.
 - Replace the bundled closed-alpha legal placeholders with counsel-approved, versioned documents published at stable public URLs before external testing.
 
@@ -162,12 +162,10 @@ supabase db reset --local
 supabase db lint --local
 ```
 
-Codex last ran the Dart/Flutter commands successfully on June 23, 2026. After
-the Global Feed seed pass, `flutter test` passed once with five tests and the
-new parser regression passed independently; later analyzer/test attempts hung in
-local Dart/Flutter tooling without diagnostics. The Supabase local commands
-still require Docker/local Postgres. Verification is not complete until those
-commands and the manual runtime/security checks succeed.
+Smiley last ran `dart format lib test`, `flutter analyze`, and `flutter test`
+successfully on June 25, 2026. Codex last ran `supabase db reset --local` and
+`supabase db lint --local` successfully on June 25, 2026. Verification is not
+complete until the manual runtime/security checks succeed.
 
 ## 9. Manual runtime and security checks
 
