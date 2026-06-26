@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/styliste_visual_mode.dart';
+import '../../../core/widgets/pill_badge.dart';
 import '../providers/hq_provider.dart';
 
 class LatestAlphaDropModule extends ConsumerWidget {
-  const LatestAlphaDropModule({super.key});
+  const LatestAlphaDropModule({
+    this.mode = StylisteVisualMode.editorialLight,
+    super.key,
+  });
+
+  final StylisteVisualMode mode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -14,7 +21,7 @@ class LatestAlphaDropModule extends ConsumerWidget {
     return latestAsync.maybeWhen(
       data: (LatestAlphaDropSummary? drop) {
         if (drop == null) return const SizedBox.shrink();
-        return _LatestAlphaDropCard(drop: drop);
+        return _LatestAlphaDropCard(drop: drop, mode: mode);
       },
       orElse: () => const SizedBox.shrink(),
     );
@@ -22,9 +29,13 @@ class LatestAlphaDropModule extends ConsumerWidget {
 }
 
 class _LatestAlphaDropCard extends StatelessWidget {
-  const _LatestAlphaDropCard({required this.drop});
+  const _LatestAlphaDropCard({
+    required this.drop,
+    required this.mode,
+  });
 
   final LatestAlphaDropSummary drop;
+  final StylisteVisualMode mode;
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +136,12 @@ class _LatestAlphaDropCard extends StatelessWidget {
               spacing: 8.0,
               runSpacing: 8.0,
               children: metrics
-                  .map((String metric) => _MetricPill(label: metric))
+                  .map(
+                    (String metric) => PillBadge(
+                      label: metric,
+                      mode: mode,
+                    ),
+                  )
                   .toList(growable: false),
             ),
           ],
@@ -160,34 +176,6 @@ class _LatestAlphaDropCard extends StatelessWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-class _MetricPill extends StatelessWidget {
-  const _MetricPill({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9.0, vertical: 5.0),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7E7CE).withValues(alpha: 0.42),
-        borderRadius: BorderRadius.circular(999.0),
-        border: Border.all(color: const Color(0xFFE8D4B8)),
-      ),
-      child: Text(
-        label.toUpperCase(),
-        style: const TextStyle(
-          fontFamily: 'SpaceGrotesk',
-          fontSize: 9.0,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1.0,
-          color: Color(0xFF2A2A2A),
-        ),
       ),
     );
   }

@@ -122,6 +122,7 @@ class _EmpirePulsePainter extends CustomPainter {
           champagneGold,
           const Color(0xFFFFF8F0), // Bright at top
         ],
+        <double>[0.0, 0.55, 1.0],
       );
 
     // Generate smooth curve through data points

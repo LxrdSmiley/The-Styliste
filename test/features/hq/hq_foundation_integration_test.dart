@@ -1,0 +1,112 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:the_styliste/core/providers/active_player_provider.dart';
+import 'package:the_styliste/core/theme/styliste_visual_mode.dart';
+import 'package:the_styliste/core/widgets/glass_metric_card.dart';
+import 'package:the_styliste/core/widgets/styliste_scaffold.dart';
+import 'package:the_styliste/domain/models/brand.dart';
+import 'package:the_styliste/domain/models/player.dart';
+import 'package:the_styliste/features/ftue/providers/first_objective_provider.dart';
+import 'package:the_styliste/features/ftue/repositories/first_objective_repository.dart';
+import 'package:the_styliste/features/hq/providers/hq_provider.dart';
+import 'package:the_styliste/features/hq/widgets/hq_architect_view.dart';
+import 'package:the_styliste/features/hq/widgets/hq_artisan_view.dart';
+import 'package:the_styliste/features/supply_chain/models/supply_chain_models.dart';
+import 'package:the_styliste/features/supply_chain/providers/supply_chain_provider.dart';
+
+void main() {
+  testWidgets('Artisan HQ uses editorialLight mode and renders foundation UI', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      _hqHarness(child: HqArtisanView(player: _player(CareerPath.designer))),
+    );
+    await tester.pump();
+
+    final StylisteScaffold scaffold =
+        tester.widget<StylisteScaffold>(find.byType(StylisteScaffold));
+    expect(scaffold.mode, StylisteVisualMode.editorialLight);
+    expect(find.byType(GlassMetricCard), findsWidgets);
+    expect(find.text('FIRST OBJECTIVE'), findsOneWidget);
+  });
+
+  testWidgets('Architect HQ uses executiveObsidian mode and renders metrics', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      _hqHarness(child: HqArchitectView(player: _player(CareerPath.mogul))),
+    );
+    await tester.pump();
+
+    final StylisteScaffold scaffold =
+        tester.widget<StylisteScaffold>(find.byType(StylisteScaffold));
+    expect(scaffold.mode, StylisteVisualMode.executiveObsidian);
+    expect(find.byType(GlassMetricCard), findsWidgets);
+    expect(find.text('FIRST OBJECTIVE'), findsOneWidget);
+  });
+}
+
+Widget _hqHarness({required Widget child}) {
+  final Player designer = _player(CareerPath.designer);
+  final Brand brand = _brand();
+
+  return ProviderScope(
+    overrides: <Override>[
+      activeUidProvider.overrideWith((Ref ref) => designer.id),
+      firstObjectiveRepositoryProvider.overrideWith(
+        (Ref ref) => const _FakeFirstObjectiveRepository(),
+      ),
+      hqPlayerStreamProvider.overrideWith(
+        (Ref ref) => Stream<Player>.value(designer),
+      ),
+      hqBrandStreamProvider.overrideWith(
+        (Ref ref) => Stream<Brand>.value(brand),
+      ),
+      latestAlphaDropProvider.overrideWith(
+        (Ref ref) async => const LatestAlphaDropSummary(
+          feedPostId: 'drop-1',
+          designName: 'Obsidian Bias',
+          hypeScore: 84.0,
+          marketReaction: 'Rising',
+          followersDelta: 12,
+        ),
+      ),
+      supplyChainProvider.overrideWith(
+        (Ref ref) => Stream<SupplyChainState>.value(
+          const SupplyChainState(currentInventoryValue: 1200),
+        ),
+      ),
+    ],
+    child: MaterialApp(home: child),
+  );
+}
+
+Player _player(CareerPath path) {
+  return Player(
+    id: 'player-1',
+    brandName: 'Aurelian',
+    path: path,
+    hqCity: HqCity.paris,
+    brandRank: 7,
+    onboardingComplete: true,
+  );
+}
+
+Brand _brand() {
+  return const Brand(
+    playerId: 'player-1',
+    heat: 72,
+    hypeScore: 4200,
+    followers: 12800,
+    idleRevenuePerHour: 860,
+    totalRevenue: 124000,
+  );
+}
+
+class _FakeFirstObjectiveRepository implements FirstObjectiveRepository {
+  const _FakeFirstObjectiveRepository();
+
+  @override
+  Future<bool> hasServerConfirmedAlphaDrop(String playerId) async => false;
+}
