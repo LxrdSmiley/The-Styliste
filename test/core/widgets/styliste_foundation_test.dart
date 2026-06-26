@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:the_styliste/core/theme/styliste_colors.dart';
+import 'package:the_styliste/core/theme/styliste_typography.dart';
 import 'package:the_styliste/core/theme/styliste_visual_mode.dart';
 import 'package:the_styliste/core/widgets/glass_metric_card.dart';
-import 'package:the_styliste/core/widgets/gold_primary_button.dart';
 import 'package:the_styliste/core/widgets/pill_badge.dart';
+import 'package:the_styliste/core/widgets/styliste_buttons.dart';
 import 'package:the_styliste/core/widgets/styliste_scaffold.dart';
 
 void main() {
@@ -18,13 +20,31 @@ void main() {
     }
   });
 
+  test('Stitch palette and typography tokens compile', () {
+    expect(StylisteColors.ivory, isA<Color>());
+    expect(StylisteColors.alabaster, isA<Color>());
+    expect(StylisteColors.champagneGold, isA<Color>());
+    expect(StylisteColors.deepGold, isA<Color>());
+    expect(StylisteColors.roseAccent, isA<Color>());
+    expect(StylisteColors.obsidian, isA<Color>());
+    expect(StylisteColors.obsidianSurface, isA<Color>());
+    expect(StylisteColors.warmGrey, isA<Color>());
+    expect(StylisteText.displayEditorial.fontFamily, 'SpaceGrotesk');
+    expect(StylisteText.metricLarge.fontFamily, 'JetBrainsMono');
+    expect(StylisteText.body.fontSize, greaterThanOrEqualTo(12.0));
+  });
+
   testWidgets('GoldPrimaryButton supports disabled state', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: GoldPrimaryButton(label: 'Drop', onPressed: null),
+          body: GoldPrimaryButton(
+            label: 'Drop',
+            disabledReason: 'Finish the garment first.',
+            onPressed: null,
+          ),
         ),
       ),
     );
@@ -32,6 +52,7 @@ void main() {
     final ElevatedButton button = tester.widget(find.byType(ElevatedButton));
     expect(button.onPressed, isNull);
     expect(find.text('DROP'), findsOneWidget);
+    expect(find.text('Finish the garment first.'), findsOneWidget);
   });
 
   testWidgets('GoldPrimaryButton supports loading state', (
@@ -55,6 +76,54 @@ void main() {
 
     await tester.tap(find.byType(ElevatedButton));
     expect(taps, 0);
+  });
+
+  testWidgets('button system renders core variants and feedback states', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Column(
+            children: <Widget>[
+              ObsidianPrimaryButton(
+                label: 'Face Vex',
+                feedback: StylisteButtonFeedback.success,
+                onPressed: () {},
+              ),
+              IvorySecondaryButton(
+                label: 'Back to Atelier',
+                feedback: StylisteButtonFeedback.error,
+                onPressed: () {},
+              ),
+              PillChoiceButton(
+                label: 'Runway',
+                selected: true,
+                onPressed: () {},
+              ),
+              IconCircleButton(
+                icon: Icons.close,
+                tooltip: 'Dismiss',
+                onPressed: () {},
+              ),
+              FloatingReactionButton(
+                label: 'Iconic',
+                icon: Icons.auto_awesome,
+                count: '12K',
+                onPressed: () {},
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('FACE VEX'), findsOneWidget);
+    expect(find.text('BACK TO ATELIER'), findsOneWidget);
+    expect(find.text('RUNWAY'), findsOneWidget);
+    expect(find.byIcon(Icons.close), findsOneWidget);
+    expect(find.text('ICONIC 12K'), findsOneWidget);
+    expect(find.byType(ElevatedButton), findsNWidgets(5));
   });
 
   testWidgets('GlassMetricCard supports loading and error states', (
