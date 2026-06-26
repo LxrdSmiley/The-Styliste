@@ -15,10 +15,13 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../../../core/theme/aurelian_theme.dart';
+
 class GarmentCanvas extends StatefulWidget {
   const GarmentCanvas({
     required this.dyeColor,
     this.onInteractionActive,
+    this.reduceMotion = false,
     super.key,
   });
 
@@ -28,6 +31,9 @@ class GarmentCanvas extends StatefulWidget {
   /// Called with true while a touch is active, false when lifted.
   /// Used by AtelierScreen to gate the _interactionSeconds counter.
   final ValueChanged<bool>? onInteractionActive;
+
+  /// Reduced-motion fallback keeps the cloth preview static after load.
+  final bool reduceMotion;
 
   @override
   State<GarmentCanvas> createState() => _GarmentCanvasState();
@@ -39,6 +45,7 @@ class _GarmentCanvasState extends State<GarmentCanvas>
   ui.FragmentShader? _shader;
   ui.Image? _fabricTexture;
   bool _shaderReady = false;
+  Object? _shaderError;
 
   // --- Time ---
   final Stopwatch _stopwatch = Stopwatch()..start();
@@ -55,31 +62,50 @@ class _GarmentCanvasState extends State<GarmentCanvas>
   @override
   void initState() {
     super.initState();
-    _ticker = createTicker(_onTick)..start();
+    _ticker = createTicker(_onTick);
+    if (!widget.reduceMotion) _ticker.start();
     _loadShader();
   }
 
+  @override
+  void didUpdateWidget(covariant GarmentCanvas oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.reduceMotion == oldWidget.reduceMotion) return;
+    if (widget.reduceMotion) {
+      if (_ticker.isActive) _ticker.stop();
+      setState(() => _smoothTouch = _targetTouch);
+    } else if (!_ticker.isActive) {
+      _ticker.start();
+    }
+  }
+
   Future<void> _loadShader() async {
-    final ui.FragmentProgram program = await ui.FragmentProgram.fromAsset(
-      'lib/shaders/cloth_physics.frag',
-    );
+    try {
+      final ui.FragmentProgram program = await ui.FragmentProgram.fromAsset(
+        'lib/shaders/cloth_physics.frag',
+      );
 
-    // 1×1 ivory fallback texture — blended with uDyeColor via mix() in shader.
-    final ui.PictureRecorder recorder = ui.PictureRecorder();
-    final Canvas c = Canvas(recorder);
-    c.drawRect(
-      const Rect.fromLTWH(0.0, 0.0, 1.0, 1.0),
-      Paint()..color = const Color(0xFFFAF7F0),
-    );
-    final ui.Picture picture = recorder.endRecording();
-    final ui.Image texture = await picture.toImage(1, 1);
+      // 1×1 ivory fallback texture — blended with uDyeColor via mix() in shader.
+      final ui.PictureRecorder recorder = ui.PictureRecorder();
+      final Canvas c = Canvas(recorder);
+      c.drawRect(
+        const Rect.fromLTWH(0.0, 0.0, 1.0, 1.0),
+        Paint()..color = const Color(0xFFFAF7F0),
+      );
+      final ui.Picture picture = recorder.endRecording();
+      final ui.Image texture = await picture.toImage(1, 1);
 
-    if (!mounted) return;
-    setState(() {
-      _shader = program.fragmentShader();
-      _fabricTexture = texture;
-      _shaderReady = true;
-    });
+      if (!mounted) return;
+      setState(() {
+        _shader = program.fragmentShader();
+        _fabricTexture = texture;
+        _shaderReady = true;
+        _shaderError = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _shaderError = error);
+    }
   }
 
   void _onTick(Duration elapsed) {
@@ -102,6 +128,9 @@ class _GarmentCanvasState extends State<GarmentCanvas>
       (localPosition.dy / canvasSize.height).clamp(0.0, 1.0),
     );
     _targetTouch = normalized;
+    if (widget.reduceMotion) {
+      setState(() => _smoothTouch = _targetTouch);
+    }
   }
 
   void _startInteraction(Offset localPosition, Size canvasSize) {
@@ -120,6 +149,9 @@ class _GarmentCanvasState extends State<GarmentCanvas>
     if (!_touchActive && _targetTouch == _kOffScreen) return;
     _targetTouch = _kOffScreen;
     _touchActive = false;
+    if (widget.reduceMotion) {
+      setState(() => _smoothTouch = _targetTouch);
+    }
     widget.onInteractionActive?.call(false);
   }
 
@@ -162,7 +194,9 @@ class _GarmentCanvasState extends State<GarmentCanvas>
                     ? _GarmentPainter(
                         shader: _shader!,
                         fabricTexture: _fabricTexture!,
-                        time: _stopwatch.elapsed.inMilliseconds / 1000.0,
+                        time: widget.reduceMotion
+                            ? 0.0
+                            : _stopwatch.elapsed.inMilliseconds / 1000.0,
                         smoothTouch: _smoothTouch,
                         dyeColor: widget.dyeColor,
                       )
@@ -170,7 +204,20 @@ class _GarmentCanvasState extends State<GarmentCanvas>
                 child: Stack(
                   fit: StackFit.expand,
                   children: <Widget>[
-                    if (!_shaderReady)
+                    if (_shaderError != null)
+                      const Center(
+                        child: Text(
+                          'GARMENT PREVIEW UNAVAILABLE',
+                          style: TextStyle(
+                            color: AurelianPalette.textSecondary,
+                            fontSize: 10.0,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.6,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                    else if (!_shaderReady)
                       const Center(
                         child: CircularProgressIndicator(
                           color: Color(0xFFC9A84C),
