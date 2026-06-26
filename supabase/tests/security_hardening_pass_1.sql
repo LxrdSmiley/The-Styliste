@@ -1,4 +1,5 @@
 BEGIN;
+SELECT plan(1);
 SELECT set_config('request.jwt.claim.role', 'service_role', true);
 
 DO $$
@@ -217,5 +218,8 @@ BEGIN
   END;
 END;
 $$;
+
+SELECT pass('security hardening pass 1 regression checks completed');
+SELECT * FROM finish();
 
 ROLLBACK;
