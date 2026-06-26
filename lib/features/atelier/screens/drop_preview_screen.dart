@@ -2,17 +2,22 @@
 // Two-phase flow: Mint -> Preview (with tag selection + Vex opt-in) -> Drop
 // Alabaster Standard: Aurelian palette, SpaceGrotesk typography, Champagne Gold accents
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/widgets/gold_primary_button.dart';
 import '../../../domain/models/design.dart';
 import '../../design/models/vex_review.dart';
 import '../../design/widgets/vex_review_card.dart';
+import '../../luxe/widgets/luxe_recovery_card.dart';
 import '../constants/style_tags.dart';
 import '../providers/drop_design_provider.dart';
+import '../widgets/face_vex_panel.dart';
 
 class DropPreviewScreen extends ConsumerStatefulWidget {
   const DropPreviewScreen({required this.design, super.key});
@@ -61,9 +66,7 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
     if (!mounted) return;
     final String? error = ref.read(dropDesignProvider).error;
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Drop failed. Please try again.')),
-      );
+      await _showDropRecovery();
       return;
     }
 
@@ -87,6 +90,31 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
 
     if (!mounted) return;
     context.go(AppRouter.atelierDropLaunch);
+  }
+
+  Future<void> _showDropRecovery() async {
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16.0),
+        child: LuxeRecoveryCard(
+          title: 'Feed Recovery',
+          message: 'The Feed missed that drop. Your design is safe.',
+          primaryLabel: 'Try Again',
+          onPrimary: () {
+            Navigator.of(dialogContext).pop();
+            unawaited(_onDropToFeed());
+          },
+          secondaryLabel: 'Return to Atelier',
+          onSecondary: () {
+            Navigator.of(dialogContext).pop();
+            context.go(AppRouter.atelier);
+          },
+          icon: Icons.wifi_off_outlined,
+        ),
+      ),
+    );
   }
 
   @override
@@ -162,48 +190,13 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
 
           const SizedBox(height: 24.0),
 
-          // --- Vex Opt-In Toggle ---
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: AurelianPalette.alabaster,
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            child: Row(
-              children: <Widget>[
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        'FACE VEX JUDGMENT',
-                        style: TextStyle(
-                          fontFamily: 'SpaceGrotesk',
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w600,
-                          color: AurelianPalette.textPrimary,
-                        ),
-                      ),
-                      SizedBox(height: 4.0),
-                      Text(
-                        'Receive AI critique on your drop',
-                        style: TextStyle(
-                          fontFamily: 'SpaceGrotesk',
-                          fontSize: 12.0,
-                          color: AurelianPalette.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Switch(
-                  value: dropState.vexOptedIn,
-                  onChanged: (bool _) =>
-                      ref.read(dropDesignProvider.notifier).toggleVexOptIn(),
-                  activeThumbColor: AurelianPalette.champagneGold,
-                ),
-              ],
-            ),
+          // --- Vex Opt-In Choice ---
+          FaceVexPanel(
+            vexOptedIn: dropState.vexOptedIn,
+            onFaceVex: () =>
+                ref.read(dropDesignProvider.notifier).setVexOptIn(true),
+            onDropWithoutCritique: () =>
+                ref.read(dropDesignProvider.notifier).setVexOptIn(false),
           ),
 
           const SizedBox(height: 24.0),
@@ -275,30 +268,10 @@ class _DropPreviewScreenState extends ConsumerState<DropPreviewScreen> {
           // --- Drop Button ---
           SizedBox(
             width: double.infinity,
-            height: 56.0,
-            child: ElevatedButton(
+            child: GoldPrimaryButton(
+              label: 'DROP TO FEED',
+              isLoading: dropState.isDropping,
               onPressed: dropState.isDropping ? null : _onDropToFeed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AurelianPalette.champagneGold,
-                foregroundColor: AurelianPalette.textPrimary,
-                elevation: 0.0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-              ),
-              child: dropState.isDropping
-                  ? const CircularProgressIndicator(
-                      color: AurelianPalette.ivory,
-                    )
-                  : const Text(
-                      'DROP TO FEED',
-                      style: TextStyle(
-                        fontFamily: 'SpaceGrotesk',
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 2.0,
-                      ),
-                    ),
             ),
           ),
           const SizedBox(height: 12.0),

@@ -22,6 +22,7 @@ import '../../../core/widgets/styliste_scaffold.dart';
 import '../../../domain/models/design.dart';
 import '../../design/services/hype_calculator.dart';
 import '../../ftue/providers/first_objective_provider.dart';
+import '../../luxe/widgets/luxe_recovery_card.dart';
 import '../../trends/models/trend_tsunami.dart';
 import '../../trends/providers/trend_provider.dart';
 import '../constants/style_tags.dart';
@@ -50,11 +51,16 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
   bool _touchActive = false;
   bool _isMinting = false;
   String? _atelierSessionId;
-  String? _sessionError;
+  bool _showSessionRecovery = false;
+  bool _showMintRecovery = false;
   Future<String>? _atelierSessionFuture;
   Timer? _interactionTimer;
 
   static const int _gateSeconds = 5;
+  static const double _previewMaterialQualityHeuristic = 65.0;
+  static const double _previewAestheticAlignmentHeuristic = 72.0;
+  static const String _atelierRecoveryMessage =
+      'The Atelier lost the thread. Your choices are still here.';
   static const HypeCalculator _hypeCalculator = HypeCalculator();
 
   @override
@@ -100,25 +106,19 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
     );
     setState(() {
       _atelierSessionFuture = sessionFuture;
-      _sessionError = null;
+      _showSessionRecovery = false;
     });
     try {
       final String sessionId = await sessionFuture;
       if (mounted) {
         setState(() {
           _atelierSessionId = sessionId;
-          _sessionError = null;
+          _showSessionRecovery = false;
         });
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _sessionError = 'Atelier session unavailable.');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: AurelianPalette.danger,
-            content: Text('Atelier session unavailable. Please try again.'),
-          ),
-        );
+        setState(() => _showSessionRecovery = true);
       }
     } finally {
       if (identical(_atelierSessionFuture, sessionFuture)) {
@@ -167,13 +167,16 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
 
   Future<void> _onMintAlpha() async {
     if (_isMinting || !_mintUnlocked) return;
-    setState(() => _isMinting = true);
+    setState(() {
+      _isMinting = true;
+      _showMintRecovery = false;
+    });
 
     try {
       await _prepareAtelierSession();
       final String? sessionId = _atelierSessionId;
       if (sessionId == null) {
-        throw const FormatException('Atelier session unavailable.');
+        throw StateError('atelier session missing');
       }
       final Design design = await ref.read(
         mintDesignProvider(
@@ -195,16 +198,10 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _isMinting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: AurelianPalette.danger,
-            content: Text(
-              'Mint failed. Please try again.',
-              style: TextStyle(color: AurelianPalette.ivory),
-            ),
-          ),
-        );
+        setState(() {
+          _isMinting = false;
+          _showMintRecovery = true;
+        });
       }
     }
   }
@@ -252,10 +249,22 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
                       _AtelierStatePanel(
                         hasInspiration: widget.inspirationDesign != null,
                         serverSyncPending: serverSyncPending,
-                        sessionError: _sessionError,
+                        sessionRecoveryVisible: _showSessionRecovery,
                         reduceMotion: reduceMotion,
                       ),
                       const SizedBox(height: 12.0),
+                      if (_showSessionRecovery) ...<Widget>[
+                        LuxeRecoveryCard(
+                          title: 'Atelier Recovery',
+                          message: _atelierRecoveryMessage,
+                          primaryLabel: 'Retry Sync',
+                          onPrimary: () => unawaited(
+                            _prepareAtelierSession(),
+                          ),
+                          icon: Icons.wifi_off_outlined,
+                        ),
+                        const SizedBox(height: 12.0),
+                      ],
                       if (widget.inspirationDesign != null)
                         _InspirationBanner(design: widget.inspirationDesign!),
                       _StudioHeader(
@@ -298,6 +307,19 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
                         projection: projection,
                         ready: _mintUnlocked,
                       ),
+                      if (_showMintRecovery) ...<Widget>[
+                        const SizedBox(height: 14.0),
+                        LuxeRecoveryCard(
+                          title: 'Mint Recovery',
+                          message: _atelierRecoveryMessage,
+                          primaryLabel: 'Try Mint Again',
+                          onPrimary: _onMintAlpha,
+                          secondaryLabel: 'Keep Designing',
+                          onSecondary: () =>
+                              setState(() => _showMintRecovery = false),
+                          icon: Icons.auto_fix_high_outlined,
+                        ),
+                      ],
                       const SizedBox(height: 14.0),
                       AnimatedScale(
                         duration: reduceMotion
@@ -357,8 +379,10 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
       final HypeCalculationResult result = _hypeCalculator.calculate(
         input: HypeCalculationInput(
           styleTags: selectedTags,
-          materialQuality: 65.0,
-          aestheticAlignment: 72.0,
+          // Non-authoritative UI projection only.
+          // Final Hype is calculated by the server mint/drop path.
+          materialQuality: _previewMaterialQualityHeuristic,
+          aestheticAlignment: _previewAestheticAlignmentHeuristic,
         ),
         activeTsunamis: waves,
       );
@@ -464,18 +488,16 @@ class _AtelierStatePanel extends StatelessWidget {
     required this.hasInspiration,
     required this.serverSyncPending,
     required this.reduceMotion,
-    this.sessionError,
+    required this.sessionRecoveryVisible,
   });
 
   final bool hasInspiration;
   final bool serverSyncPending;
   final bool reduceMotion;
-  final String? sessionError;
+  final bool sessionRecoveryVisible;
 
   @override
   Widget build(BuildContext context) {
-    final String? error = sessionError;
-
     return _StudioPanel(
       child: Wrap(
         spacing: 8.0,
@@ -493,9 +515,9 @@ class _AtelierStatePanel extends StatelessWidget {
               icon: Icons.sync,
               mode: StylisteVisualMode.atelierWarmStudio,
             ),
-          if (error != null)
+          if (sessionRecoveryVisible)
             const PillBadge(
-              label: 'Session Error',
+              label: 'Recovery Ready',
               icon: Icons.error_outline,
               mode: StylisteVisualMode.atelierWarmStudio,
             ),
@@ -504,15 +526,6 @@ class _AtelierStatePanel extends StatelessWidget {
               label: 'Reduced Motion',
               icon: Icons.motion_photos_off_outlined,
               mode: StylisteVisualMode.atelierWarmStudio,
-            ),
-          if (error != null)
-            Text(
-              error,
-              style: const TextStyle(
-                color: AurelianPalette.danger,
-                fontSize: 12.0,
-                fontWeight: FontWeight.w700,
-              ),
             ),
         ],
       ),

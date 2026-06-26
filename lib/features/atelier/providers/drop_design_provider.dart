@@ -70,7 +70,7 @@ class DropDesignState {
       isPreviewing: isPreviewing ?? this.isPreviewing,
       isDropping: isDropping ?? this.isDropping,
       hypeResult: hypeResult ?? this.hypeResult,
-      vexReview: vexReview ?? this.vexReview,
+      vexReview: vexOptedIn == false ? null : (vexReview ?? this.vexReview),
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -111,21 +111,25 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
     );
   }
 
-  /// Toggle Vex opt-in (player can choose to face judgment or not)
-  void toggleVexOptIn() {
-    final bool newOptIn = !state.vexOptedIn;
+  /// Explicitly set Vex opt-in (player can choose to face judgment or not)
+  void setVexOptIn(bool value) {
+    if (state.vexOptedIn == value) return;
 
-    // Regenerate review if opting in, clear if opting out
-    final VexReview? newReview = newOptIn && state.hypeResult != null
+    final VexReview? newReview = value && state.hypeResult != null
         ? _vexEngine.generateReview(
             result: state.hypeResult!,
           )
         : null;
 
     state = state.copyWith(
-      vexOptedIn: newOptIn,
+      vexOptedIn: value,
       vexReview: newReview,
     );
+  }
+
+  /// Toggle Vex opt-in (player can choose to face judgment or not)
+  void toggleVexOptIn() {
+    setVexOptIn(!state.vexOptedIn);
   }
 
   /// Execute the drop to feed
@@ -197,7 +201,7 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
     } catch (e) {
       state = state.copyWith(
         isDropping: false,
-        error: 'Failed to drop: $e',
+        error: 'The Feed missed that drop. Your design is safe.',
       );
       return null;
     }
