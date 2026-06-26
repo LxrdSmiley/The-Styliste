@@ -8,7 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/widgets/styliste_buttons.dart';
 import '../models/vex_review.dart';
+import 'vex_verdict_badge.dart';
 
 /// The Vex Review Card — editorial critique overlay
 ///
@@ -219,33 +221,7 @@ class VexReviewCard extends StatelessWidget {
   }
 
   Widget _buildVerdictBadge() {
-    final Color badgeColor = switch (review.verdict) {
-      VexVerdict.tarnished => const Color(0xFF8B4513),
-      VexVerdict.derivative => AurelianPalette.textSecondary,
-      VexVerdict.visionary => AurelianPalette.champagneGold,
-      VexVerdict.sovereign => const Color(0xFFD4AF37),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.1),
-        border: Border.all(
-          color: badgeColor.withValues(alpha: 0.5),
-        ),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: Text(
-        review.verdict.displayName,
-        style: TextStyle(
-          fontFamily: 'SpaceGrotesk',
-          fontSize: 12.0,
-          fontWeight: FontWeight.w600,
-          color: badgeColor,
-          letterSpacing: 2.0,
-        ),
-      ),
-    );
+    return VexVerdictBadge(tier: review.visualTier);
   }
 
   Widget _buildHeadline() {
@@ -333,36 +309,19 @@ class VexReviewCard extends StatelessWidget {
   }
 
   Widget _buildActions() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         if (onShare != null)
-          TextButton.icon(
+          IvorySecondaryButton(
+            label: 'Share',
+            icon: Icons.share,
             onPressed: onShare,
-            icon: const Icon(Icons.share, size: 18.0),
-            label: const Text('SHARE'),
-            style: TextButton.styleFrom(
-              foregroundColor: AurelianPalette.textSecondary,
-            ),
           ),
-        const SizedBox(width: 16.0),
-        ElevatedButton(
+        if (onShare != null) const SizedBox(height: 12.0),
+        ObsidianPrimaryButton(
+          label: 'Continue to Launch',
           onPressed: onDismiss,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AurelianPalette.champagneGold,
-            foregroundColor: AurelianPalette.textPrimary,
-            elevation: 0.0,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-          ),
-          child: const Text(
-            'ACCEPT',
-            style: TextStyle(
-              fontFamily: 'SpaceGrotesk',
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.0,
-            ),
-          ),
         ),
       ],
     );

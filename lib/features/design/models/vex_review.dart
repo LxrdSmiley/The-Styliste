@@ -22,6 +22,28 @@ enum VexVerdict {
   sovereign,
 }
 
+enum VexVerdictVisualTier {
+  quiet,
+  watched,
+  rising,
+  trendSurge,
+  waveRider,
+  iconic,
+}
+
+extension VexVerdictVisualTierExtension on VexVerdictVisualTier {
+  String get displayName {
+    return switch (this) {
+      VexVerdictVisualTier.quiet => 'Quiet',
+      VexVerdictVisualTier.watched => 'Watched',
+      VexVerdictVisualTier.rising => 'Rising',
+      VexVerdictVisualTier.trendSurge => 'Trend Surge',
+      VexVerdictVisualTier.waveRider => 'Wave Rider',
+      VexVerdictVisualTier.iconic => 'Iconic',
+    };
+  }
+}
+
 /// Extension for verdict display properties
 extension VexVerdictExtension on VexVerdict {
   /// Display name for UI headers
@@ -121,6 +143,23 @@ class VexReview with _$VexReview {
   /// Whether this review references a trend tsunami
   bool get referencesTsunami =>
       matchingTsunamiTag != null && tsunamiMultiplier != null;
+
+  VexVerdictVisualTier get visualTier {
+    switch (verdict) {
+      case VexVerdict.tarnished:
+        return VexVerdictVisualTier.quiet;
+      case VexVerdict.derivative:
+        return hypeScore < 50.0
+            ? VexVerdictVisualTier.watched
+            : VexVerdictVisualTier.rising;
+      case VexVerdict.visionary:
+        return referencesTsunami
+            ? VexVerdictVisualTier.waveRider
+            : VexVerdictVisualTier.trendSurge;
+      case VexVerdict.sovereign:
+        return VexVerdictVisualTier.iconic;
+    }
+  }
 
   /// The "flex" statement — what players can quote
   String get quotableLine {
