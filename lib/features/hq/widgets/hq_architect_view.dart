@@ -705,8 +705,8 @@ class _PowerMovesGrid extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: GoldPrimaryButton(
-      label: 'PUBLIC APOLOGY',
-      icon: Icons.campaign,
+        label: 'PUBLIC APOLOGY',
+        icon: Icons.campaign,
         onPressed: onPublicApology,
       ),
     );

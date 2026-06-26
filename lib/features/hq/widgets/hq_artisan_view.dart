@@ -312,7 +312,8 @@ class _HqMetricStrip extends StatelessWidget {
         const SizedBox(height: 12.0),
         GlassMetricCard(
           label: 'Idle Revenue',
-          value: '${_formatCompactCurrency(brand?.idleRevenuePerHour ?? 0)} / hr',
+          value:
+              '${_formatCompactCurrency(brand?.idleRevenuePerHour ?? 0)} / hr',
           mode: mode,
           isLoading: isLoading,
           error: error == null ? null : 'Idle revenue unavailable',
