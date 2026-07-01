@@ -12,10 +12,12 @@ void main() {
     expect(initStateBody, contains('markFeedVisited()'));
     expect(
       initStateBody,
-      isNot(contains(
-        'super.initState();\n'
-        '    ref.read(firstObjectiveActionsProvider.notifier).markFeedVisited();',
-      )),
+      isNot(
+        contains(
+          'super.initState();\n'
+          '    ref.read(firstObjectiveActionsProvider.notifier).markFeedVisited();',
+        ),
+      ),
     );
   });
 
@@ -38,9 +40,8 @@ void main() {
   });
 
   test('Ledger first objective marker is deferred outside initState', () {
-    final String source =
-        File('lib/features/ledger/screens/ledger_screen.dart')
-            .readAsStringSync();
+    final String source = File('lib/features/ledger/screens/ledger_screen.dart')
+        .readAsStringSync();
     final String initStateBody = _methodBody(source, 'void initState()');
 
     expect(initStateBody, contains('addPostFrameCallback'));
