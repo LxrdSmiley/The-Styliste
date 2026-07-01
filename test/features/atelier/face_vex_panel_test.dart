@@ -7,6 +7,36 @@ import 'package:the_styliste/features/atelier/providers/drop_design_provider.dar
 import 'package:the_styliste/features/atelier/widgets/face_vex_panel.dart';
 
 void main() {
+  testWidgets(
+    'vexOptedIn false renders Face Vex as selectable and no critique selected',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        _panelHarness(
+          FaceVexPanel(
+            vexOptedIn: false,
+            onFaceVex: () {},
+            onDropWithoutCritique: () {},
+          ),
+        ),
+      );
+
+      expect(find.text('DROP WILL SKIP CRITIQUE'), findsOneWidget);
+      expect(
+        find.widgetWithText(IvorySecondaryButton, 'FACE VEX'),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(GoldPrimaryButton, 'SELECTED: NO CRITIQUE'),
+        findsOneWidget,
+      );
+      expect(
+        find.widgetWithText(GoldPrimaryButton, 'SELECTED: FACE VEX'),
+        findsNothing,
+      );
+      expect(find.text('VEX WILL FRAME THIS DROP'), findsNothing);
+    },
+  );
+
   testWidgets('FaceVexPanel primary action selects Vex critique', (
     WidgetTester tester,
   ) async {
@@ -22,10 +52,39 @@ void main() {
       ),
     );
 
-    await tester.tap(find.widgetWithText(GoldPrimaryButton, 'FACE VEX'));
+    await tester.tap(find.widgetWithText(IvorySecondaryButton, 'FACE VEX'));
     await tester.pump();
 
     expect(selected, isTrue);
+  });
+
+  testWidgets('vexOptedIn true renders Face Vex selected', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      _panelHarness(
+        FaceVexPanel(
+          vexOptedIn: true,
+          onFaceVex: () {},
+          onDropWithoutCritique: () {},
+        ),
+      ),
+    );
+
+    expect(find.text('VEX WILL FRAME THIS DROP'), findsOneWidget);
+    expect(
+      find.widgetWithText(GoldPrimaryButton, 'SELECTED: FACE VEX'),
+      findsOneWidget,
+    );
+    expect(
+      find.widgetWithText(IvorySecondaryButton, 'DROP WITHOUT CRITIQUE'),
+      findsOneWidget,
+    );
+    expect(
+      find.widgetWithText(GoldPrimaryButton, 'SELECTED: NO CRITIQUE'),
+      findsNothing,
+    );
+    expect(find.text('DROP WILL SKIP CRITIQUE'), findsNothing);
   });
 
   testWidgets('FaceVexPanel secondary action skips Vex critique', (
@@ -51,7 +110,52 @@ void main() {
     expect(selected, isFalse);
   });
 
-  test('DropDesignNotifier setVexOptIn explicitly sets true and false', () {
+  testWidgets('FaceVexPanel selected and unselected labels are distinct', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      _panelHarness(
+        FaceVexPanel(
+          vexOptedIn: true,
+          onFaceVex: () {},
+          onDropWithoutCritique: () {},
+        ),
+      ),
+    );
+
+    expect(find.textContaining('SELECTED:'), findsOneWidget);
+    expect(
+      find.widgetWithText(GoldPrimaryButton, 'SELECTED: FACE VEX'),
+      findsOneWidget,
+    );
+    expect(find.widgetWithText(IvorySecondaryButton, 'FACE VEX'), findsNothing);
+
+    await tester.pumpWidget(
+      _panelHarness(
+        FaceVexPanel(
+          vexOptedIn: false,
+          onFaceVex: () {},
+          onDropWithoutCritique: () {},
+        ),
+      ),
+    );
+
+    expect(find.textContaining('SELECTED:'), findsOneWidget);
+    expect(
+      find.widgetWithText(GoldPrimaryButton, 'SELECTED: NO CRITIQUE'),
+      findsOneWidget,
+    );
+    expect(
+      find.widgetWithText(IvorySecondaryButton, 'DROP WITHOUT CRITIQUE'),
+      findsNothing,
+    );
+  });
+
+  test('DropDesignState default vexOptedIn is false', () {
+    expect(const DropDesignState().vexOptedIn, isFalse);
+  });
+
+  test('initDropFlow does not generate VexReview until player opts in', () {
     final ProviderContainer container = ProviderContainer();
     addTearDown(container.dispose);
 
@@ -62,8 +166,6 @@ void main() {
       styleTags: const <String>['minimal'],
     );
 
-    notifier.setVexOptIn(false);
-
     expect(container.read(dropDesignProvider).vexOptedIn, isFalse);
     expect(container.read(dropDesignProvider).vexReview, isNull);
 
@@ -71,6 +173,11 @@ void main() {
 
     expect(container.read(dropDesignProvider).vexOptedIn, isTrue);
     expect(container.read(dropDesignProvider).vexReview, isNotNull);
+
+    notifier.setVexOptIn(false);
+
+    expect(container.read(dropDesignProvider).vexOptedIn, isFalse);
+    expect(container.read(dropDesignProvider).vexReview, isNull);
   });
 }
 

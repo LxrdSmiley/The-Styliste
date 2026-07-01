@@ -81,31 +81,119 @@ class FaceVexPanel extends StatelessWidget {
               ],
             ),
             const SizedBox(height: StylisteSpacing.stackMd),
-            Text(
-              vexOptedIn
-                  ? 'VEX WILL FRAME THIS DROP'
-                  : 'DROP WILL SKIP CRITIQUE',
-              style: StylisteText.labelCaps.copyWith(
-                color: vexOptedIn
-                    ? StylisteColors.champagneGold
-                    : StylisteColors.roseAccent,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              child: Text(
+                vexOptedIn
+                    ? 'VEX WILL FRAME THIS DROP'
+                    : 'DROP WILL SKIP CRITIQUE',
+                key: ValueKey<bool>(vexOptedIn),
+                style: StylisteText.labelCaps.copyWith(
+                  color: vexOptedIn
+                      ? StylisteColors.champagneGold
+                      : StylisteColors.roseAccent,
+                ),
               ),
             ),
             const SizedBox(height: StylisteSpacing.stackMd),
-            GoldPrimaryButton(
-              label: 'FACE VEX',
-              icon: vexOptedIn ? Icons.check : Icons.visibility_outlined,
+            _VexChoiceButton(
+              selected: vexOptedIn,
+              selectedLabel: 'SELECTED: FACE VEX',
+              unselectedLabel: 'FACE VEX',
+              selectedIcon: Icons.check_circle,
+              unselectedIcon: Icons.visibility_outlined,
               onPressed: onFaceVex,
             ),
             const SizedBox(height: StylisteSpacing.stackSm),
-            IvorySecondaryButton(
-              label: 'DROP WITHOUT CRITIQUE',
-              icon: Icons.close,
+            _NoCritiqueChoiceButton(
+              selected: !vexOptedIn,
+              selectedLabel: 'SELECTED: NO CRITIQUE',
+              unselectedLabel: 'DROP WITHOUT CRITIQUE',
+              selectedIcon: Icons.check_circle,
+              unselectedIcon: Icons.close,
               onPressed: onDropWithoutCritique,
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _VexChoiceButton extends StatelessWidget {
+  const _VexChoiceButton({
+    required this.selected,
+    required this.selectedLabel,
+    required this.unselectedLabel,
+    required this.selectedIcon,
+    required this.unselectedIcon,
+    required this.onPressed,
+  });
+
+  final bool selected;
+  final String selectedLabel;
+  final String unselectedLabel;
+  final IconData selectedIcon;
+  final IconData unselectedIcon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedScale(
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOutCubic,
+      scale: selected ? 1.01 : 1.0,
+      child: selected
+          ? GoldPrimaryButton(
+              label: selectedLabel,
+              icon: selectedIcon,
+              onPressed: onPressed,
+            )
+          : IvorySecondaryButton(
+              label: unselectedLabel,
+              icon: unselectedIcon,
+              onPressed: onPressed,
+            ),
+    );
+  }
+}
+
+class _NoCritiqueChoiceButton extends StatelessWidget {
+  const _NoCritiqueChoiceButton({
+    required this.selected,
+    required this.selectedLabel,
+    required this.unselectedLabel,
+    required this.selectedIcon,
+    required this.unselectedIcon,
+    required this.onPressed,
+  });
+
+  final bool selected;
+  final String selectedLabel;
+  final String unselectedLabel;
+  final IconData selectedIcon;
+  final IconData unselectedIcon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOutCubic,
+      opacity: selected ? 1.0 : 0.82,
+      child: selected
+          ? GoldPrimaryButton(
+              label: selectedLabel,
+              icon: selectedIcon,
+              onPressed: onPressed,
+            )
+          : IvorySecondaryButton(
+              label: unselectedLabel,
+              icon: unselectedIcon,
+              onPressed: onPressed,
+            ),
     );
   }
 }

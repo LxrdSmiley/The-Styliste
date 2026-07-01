@@ -35,7 +35,7 @@ class DropDesignState {
   const DropDesignState({
     this.design,
     this.styleTags = const <String>[],
-    this.vexOptedIn = true,
+    this.vexOptedIn = false,
     this.isPreviewing = true,
     this.isDropping = false,
     this.hypeResult,
@@ -98,7 +98,8 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
       talentBonus: 0.0,
     );
 
-    // Generate preview Vex review from the server-authoritative minted hype.
+    // Generate preview Vex review from the server-authoritative minted hype
+    // only after the player explicitly opts into critique.
     final VexReview? previewReview =
         state.vexOptedIn ? _vexEngine.generateReview(result: hypeResult) : null;
 
