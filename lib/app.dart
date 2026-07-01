@@ -1,8 +1,8 @@
 // GDD §3.0 — App root widget: MaterialApp.router with portrait lock and theming
 // PROJECT_RULES §3 — go_router manages all navigation
-// Phase 2 — Auth gate: holds pure obsidian SizedBox until Firebase anonymous
-// sign-in resolves. supabaseBridgeProvider watched here (keepAlive) so the
-// Firebase→Supabase JWT sync stays alive for the entire app lifecycle.
+// Phase 2 — Auth gate: holds pure obsidian SizedBox until the Supabase
+// anonymous game identity resolves. Firebase services initialize in main.dart,
+// but Firebase Auth is not started during first-session gameplay.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,32 +18,21 @@ class TheStyliste extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Eagerly trigger anonymous sign-in. The FutureProvider caches the result
-    // so hot-restarts reuse the existing Firebase session.
-    final AsyncValue<Object?> anonSignIn =
-        ref.watch(firebaseAnonSignInProvider);
+    final AsyncValue<Object?> supabaseSignIn =
+        ref.watch(supabaseAnonSignInProvider);
 
-    // Keep the bridge alive for the entire app lifecycle (directive §1).
-    // We don't use the value — just watching it prevents Riverpod disposal.
-    final AsyncValue<void> supabaseBridge = ref.watch(supabaseBridgeProvider);
-
-    // Auth gate: hold obsidian until Firebase resolves (no white flash).
+    // Auth gate: hold obsidian until Supabase game identity resolves.
     // On error: surface a minimal danger-coloured message for debugging.
-    return anonSignIn.when(
+    return supabaseSignIn.when(
       loading: () => const _ObsidianGate(),
       error: (Object e, _) => _ObsidianGate(errorMessage: _authErrorMessage(e)),
-      data: (_) => supabaseBridge.when(
-        loading: () => const _ObsidianGate(),
-        error: (Object e, _) =>
-            _ObsidianGate(errorMessage: _authErrorMessage(e)),
-        data: (_) => MaterialApp.router(
-          title: 'The Styliste',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.dark,
-          routerConfig: AppRouter.router,
-        ),
+      data: (_) => MaterialApp.router(
+        title: 'The Styliste',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.dark,
+        routerConfig: AppRouter.router,
       ),
     );
   }

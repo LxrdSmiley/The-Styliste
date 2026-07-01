@@ -107,7 +107,7 @@ abstract final class SupabaseService {
     } catch (_) {}
 
     try {
-      // 2. Sign out of Firebase (this will trigger the bridge to clear via authStateProvider)
+      // 2. Sign out of Firebase-linked surfaces, if any are active.
       await FirebaseAuth.instance.signOut();
     } catch (_) {}
 

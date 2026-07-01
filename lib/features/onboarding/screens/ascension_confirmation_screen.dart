@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -14,6 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/providers/onboarding_provider.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../domain/models/player.dart';
 
@@ -124,51 +124,8 @@ class _AscensionConfirmationScreenState
     final String? existingSupabaseUserId = supabase.auth.currentUser?.id;
     if (existingSupabaseUserId != null) return existingSupabaseUserId;
 
-    firebase_auth.User? firebaseUser =
-        firebase_auth.FirebaseAuth.instance.currentUser;
-    firebaseUser ??=
-        (await firebase_auth.FirebaseAuth.instance.signInAnonymously()).user;
-
-    final String? idToken = await firebaseUser?.getIdToken();
-    if (idToken == null || idToken.isEmpty) {
-      throw StateError('Authentication is not ready. Please restart the app.');
-    }
-
-    try {
-      await supabase.auth.signInWithIdToken(
-        provider: const OAuthProvider('firebase'),
-        idToken: idToken,
-      );
-    } on AuthException catch (e) {
-      if (!_isFirebaseProviderConfigError(e)) rethrow;
-
-      final AuthResponse anonymousResponse =
-          await supabase.auth.signInAnonymously();
-      final String? anonymousUserId =
-          anonymousResponse.user?.id ?? supabase.auth.currentUser?.id;
-      if (anonymousUserId == null) {
-        throw StateError(
-          'Supabase anonymous sign-in is not enabled for this project.',
-        );
-      }
-
-      return anonymousUserId;
-    }
-
-    final String? bridgedSupabaseUserId = supabase.auth.currentUser?.id;
-    if (bridgedSupabaseUserId == null) {
-      throw StateError('Supabase session was not established.');
-    }
-
-    return bridgedSupabaseUserId;
-  }
-
-  bool _isFirebaseProviderConfigError(AuthException error) {
-    final String message = error.message.toLowerCase();
-    return message.contains('firebase') &&
-        (message.contains('not allowed') ||
-            message.contains('provider') ||
-            message.contains('oidc'));
+    final Session session = await SupabaseService.ensureFreshSession();
+    return session.user.id;
   }
 
   Map<String, dynamic> _firstRpcRow(Object? rpcResult) {
