@@ -34,7 +34,10 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   @override
   void initState() {
     super.initState();
-    ref.read(firstObjectiveActionsProvider.notifier).markFeedVisited();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(firstObjectiveActionsProvider.notifier).markFeedVisited();
+    });
   }
 
   @override

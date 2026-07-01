@@ -7,14 +7,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/router/app_router.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
 import '../../../core/widgets/gold_primary_button.dart';
 import '../../../core/widgets/styliste_scaffold.dart';
 import '../../../domain/models/player.dart';
+import '../../../domain/repositories/player_repository.dart';
 import '../../ftue/providers/first_objective_provider.dart';
 import '../../ftue/widgets/luxe_first_objective_overlay.dart';
 import '../providers/hq_provider.dart';
@@ -32,6 +35,7 @@ class HqScreen extends ConsumerStatefulWidget {
 
 class _HqScreenState extends ConsumerState<HqScreen> {
   String? _overlayCheckPlayerId;
+  String? _lastScheduledHqEffectsPlayerId;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +63,9 @@ class _HqScreenState extends ConsumerState<HqScreen> {
   }
 
   void _scheduleHqEffects(Player player) {
+    if (_lastScheduledHqEffectsPlayerId == player.id) return;
+    _lastScheduledHqEffectsPlayerId = player.id;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(firstObjectiveActionsProvider.notifier).markReturnedToHq();
@@ -98,6 +105,9 @@ class _HqScreenState extends ConsumerState<HqScreen> {
 }
 
 String _profileErrorMessage(Object error) {
+  if (error is PlayerProfileMissingException) {
+    return PlayerProfileMissingException.safeMessage;
+  }
   return SupabaseService.playerSafeErrorMessage(
     error,
     fallback: 'Profile unavailable. Please try again.',
@@ -111,6 +121,7 @@ class _HqErrorView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final bool missingProfile = error is PlayerProfileMissingException;
     final String message = _profileErrorMessage(error);
 
     return StylisteScaffold(
@@ -121,9 +132,9 @@ class _HqErrorView extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              const Text(
-                'CANNOT LOAD HQ',
-                style: TextStyle(
+              Text(
+                missingProfile ? 'CREATE YOUR HOUSE' : 'CANNOT LOAD HQ',
+                style: const TextStyle(
                   fontFamily: 'SpaceGrotesk',
                   fontSize: 14.0,
                   fontWeight: FontWeight.w700,
@@ -146,23 +157,29 @@ class _HqErrorView extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  OutlinedButton(
-                    onPressed: () => SupabaseService.signOut(),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AurelianPalette.textTertiary,
-                      side:
-                          const BorderSide(color: AurelianPalette.textTertiary),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24.0,
-                        vertical: 12.0,
+                  if (!missingProfile)
+                    OutlinedButton(
+                      onPressed: () => SupabaseService.signOut(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AurelianPalette.textTertiary,
+                        side: const BorderSide(
+                          color: AurelianPalette.textTertiary,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0,
+                          vertical: 12.0,
+                        ),
                       ),
+                      child: const Text('SIGN OUT'),
                     ),
-                    child: const Text('SIGN OUT'),
-                  ),
-                  const SizedBox(width: 16.0),
+                  if (!missingProfile) const SizedBox(width: 16.0),
                   GoldPrimaryButton(
-                    label: 'Retry',
+                    label: missingProfile ? 'Start Onboarding' : 'Retry',
                     onPressed: () {
+                      if (missingProfile) {
+                        context.go(AppRouter.onboardingAurelianGate);
+                        return;
+                      }
                       ref.invalidate(hqPlayerStreamProvider);
                       ref.invalidate(hqBrandStreamProvider);
                     },

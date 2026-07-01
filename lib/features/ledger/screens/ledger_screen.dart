@@ -35,7 +35,10 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
   @override
   void initState() {
     super.initState();
-    ref.read(firstObjectiveActionsProvider.notifier).markLedgerOpened();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(firstObjectiveActionsProvider.notifier).markLedgerOpened();
+    });
   }
 
   @override
