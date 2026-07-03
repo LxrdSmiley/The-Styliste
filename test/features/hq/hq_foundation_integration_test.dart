@@ -109,4 +109,7 @@ class _FakeFirstObjectiveRepository implements FirstObjectiveRepository {
 
   @override
   Future<bool> hasServerConfirmedAlphaDrop(String playerId) async => false;
+
+  @override
+  Future<bool> hasServerConfirmedStarterStore(String playerId) async => false;
 }

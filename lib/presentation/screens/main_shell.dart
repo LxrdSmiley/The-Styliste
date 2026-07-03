@@ -99,10 +99,11 @@ class _FloatingNavBar extends StatelessWidget {
               onTap: () => onTap(1),
             ),
             _NavTab(
-              icon: Icons.group_outlined,
-              label: 'MAISON',
-              selected: currentIndex == 2,
-              selectedColor: AppColors.ivory,
+              icon: Icons.lock_outline,
+              label: 'LOCKED',
+              selected: false,
+              selectedColor: AppColors.grey600,
+              enabled: false,
               onTap: () => onTap(2),
             ),
           ],
@@ -119,21 +120,25 @@ class _NavTab extends StatelessWidget {
     required this.selected,
     required this.selectedColor,
     required this.onTap,
+    this.enabled = true,
   });
 
   final IconData icon;
   final String label;
   final bool selected;
   final Color selectedColor;
+  final bool enabled;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final Color color = selected ? selectedColor : AppColors.grey600;
+    final Color color = enabled
+        ? (selected ? selectedColor : AppColors.grey600)
+        : AppColors.grey700;
 
     return Expanded(
       child: GestureDetector(
-        onTap: onTap,
+        onTap: enabled ? onTap : null,
         behavior: HitTestBehavior.opaque,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10.0),

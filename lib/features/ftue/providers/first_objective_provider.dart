@@ -52,7 +52,9 @@ class FirstObjectiveActions extends StateNotifier<FirstObjectiveMarkers> {
   }
 
   void markReturnedToHq() {
-    if (!state.feedVisited || state.returnedToHq) return;
+    if ((!state.feedVisited && !state.ledgerOpened) || state.returnedToHq) {
+      return;
+    }
     state = state.copyWith(returnedToHq: true);
   }
 }
@@ -102,35 +104,40 @@ final FutureProviderFamily<FirstObjectiveState, Player> firstObjectiveProvider =
           ref.watch(firstObjectiveRepositoryProvider);
       final bool hasServerConfirmedAlphaDrop = activeUid.isNotEmpty &&
           await repository.hasServerConfirmedAlphaDrop(activeUid);
+      final bool designerComplete =
+          hasServerConfirmedAlphaDrop && markers.returnedToHq;
+      final bool needsHqReturn =
+          hasServerConfirmedAlphaDrop && !markers.returnedToHq;
       return FirstObjectiveState(
         playerId: activeUid.isEmpty ? player.id : activeUid,
         path: player.path,
-        title: 'Mint your first Alpha Drop',
-        description: 'Open the Atelier, mint an Alpha, then drop it to Feed.',
-        progressLabel: hasServerConfirmedAlphaDrop ? '1/1' : '0/1',
-        ctaLabel: 'Open Atelier',
-        ctaRoute: AppRouter.atelier,
-        isComplete: hasServerConfirmedAlphaDrop,
+        title: 'Launch your first Alpha Drop',
+        description:
+            'Open Atelier, mint an Alpha, drop it to Feed, then return HQ.',
+        progressLabel: designerComplete ? '1/1' : '0/1',
+        ctaLabel: needsHqReturn ? 'Return HQ' : 'Open Atelier',
+        ctaRoute: needsHqReturn ? AppRouter.hq : AppRouter.atelier,
+        isComplete: designerComplete,
       );
     }
 
+    final FirstObjectiveRepository repository =
+        ref.watch(firstObjectiveRepositoryProvider);
+    final bool hasServerConfirmedStarterStore =
+        await repository.hasServerConfirmedStarterStore(player.id);
     final bool mogulComplete =
-        markers.ledgerOpened && markers.feedVisited && markers.returnedToHq;
-    final String ctaLabel = markers.ledgerOpened && !markers.feedVisited
-        ? 'Check Feed'
-        : 'Open Ledger';
-    final String ctaRoute = markers.ledgerOpened && !markers.feedVisited
-        ? AppRouter.feed
-        : AppRouter.ledger;
+        hasServerConfirmedStarterStore && markers.returnedToHq;
+    final bool needsHqReturn =
+        hasServerConfirmedStarterStore && !markers.returnedToHq;
 
     return FirstObjectiveState(
       playerId: player.id,
       path: player.path,
-      title: 'Review your first empire move',
-      description: 'Open the Ledger, review your economy, then check Feed.',
+      title: 'Open your first store',
+      description: 'Open Ledger, launch a starter store, then return HQ.',
       progressLabel: mogulComplete ? '1/1' : '0/1',
-      ctaLabel: ctaLabel,
-      ctaRoute: ctaRoute,
+      ctaLabel: needsHqReturn ? 'Return HQ' : 'Open Ledger',
+      ctaRoute: needsHqReturn ? AppRouter.hq : AppRouter.ledger,
       isComplete: mogulComplete,
     );
   },

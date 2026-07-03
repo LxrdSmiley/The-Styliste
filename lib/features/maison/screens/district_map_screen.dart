@@ -444,11 +444,7 @@ class _DistrictDetailsSheet extends StatelessWidget {
               width: double.infinity,
               height: 56.0,
               child: ElevatedButton(
-                onPressed: () {
-                  // Navigate to siege preparation
-                  Navigator.pop(context);
-                  // context.push('/maison/siege/${district.id}');
-                },
+                onPressed: null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AurelianPalette.champagneGold,
                   foregroundColor: AurelianPalette.textPrimary,
@@ -458,7 +454,7 @@ class _DistrictDetailsSheet extends StatelessWidget {
                   ),
                 ),
                 child: const Text(
-                  'INITIATE SIEGE',
+                  'DISTRICT WARFARE LOCKED',
                   style: TextStyle(
                     fontFamily: 'SpaceGrotesk',
                     fontSize: 14.0,

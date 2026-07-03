@@ -3,6 +3,7 @@ import '../../../core/services/supabase_service.dart';
 
 abstract interface class FirstObjectiveRepository {
   Future<bool> hasServerConfirmedAlphaDrop(String playerId);
+  Future<bool> hasServerConfirmedStarterStore(String playerId);
 }
 
 class SupabaseFirstObjectiveRepository implements FirstObjectiveRepository {
@@ -17,6 +18,22 @@ class SupabaseFirstObjectiveRepository implements FirstObjectiveRepository {
           .select('id')
           .eq('player_id', playerId)
           .filter('content->>event', 'eq', 'alpha_dropped')
+          .limit(1);
+      return rows.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> hasServerConfirmedStarterStore(String playerId) async {
+    try {
+      await SupabaseService.ensureFreshSession();
+      final List<dynamic> rows = await SupabaseService.client
+          .from(SupabaseConstants.tableStores)
+          .select('id')
+          .eq('player_id', playerId)
+          .eq('type', 'ecommerce')
           .limit(1);
       return rows.isNotEmpty;
     } catch (_) {

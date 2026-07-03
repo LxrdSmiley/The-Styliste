@@ -83,9 +83,8 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
         playerId: widget.player.id,
         tarnishLevel: tarnish,
         kintsugiLevel: kintsugi,
-        onKintsugiRequest: () =>
-            unawaited(context.push(AppRouter.crisisKintsugi)),
-        onApologyRequest: () => _applyApology(context),
+        onKintsugiRequest: null,
+        onApologyRequest: null,
         child: SafeArea(
           child: Column(
             children: <Widget>[
@@ -143,17 +142,11 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           const _SectionTitle('BUFFER STOCK'),
-                          // Logistics upgrade button
                           supplyChainAsync.when(
-                            data: (SupplyChainState state) => InkWell(
-                              borderRadius: BorderRadius.circular(999.0),
-                              onTap: () =>
-                                  _showLogisticsUpgrade(context, state),
-                              child: PillBadge(
-                                label: 'LV.${state.logisticsLevel}',
-                                icon: Icons.upgrade,
-                                mode: StylisteVisualMode.executiveObsidian,
-                              ),
+                            data: (SupplyChainState state) => PillBadge(
+                              label: 'LV.${state.logisticsLevel} LOCKED',
+                              icon: Icons.lock_outline,
+                              mode: StylisteVisualMode.executiveObsidian,
                             ),
                             loading: () => const SizedBox.shrink(),
                             error: (_, __) => const SizedBox.shrink(),
@@ -162,26 +155,6 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                       ),
                       const SizedBox(height: 16.0),
                       const BufferStockMonitor(),
-
-                      const SizedBox(height: 32.0),
-
-                      // --- Power Move Slots ---
-                      const _SectionTitle('POWER MOVES'),
-                      const SizedBox(height: 16.0),
-                      _PowerMovesGrid(
-                        onPublicApology: () =>
-                            unawaited(_applyApology(context)),
-                      ),
-
-                      const SizedBox(height: 32.0),
-
-                      // --- Territory Preview ---
-                      const _SectionTitle('TERRITORY'),
-                      const SizedBox(height: 16.0),
-                      _TerritoryPreviewCard(
-                        onTap: () =>
-                            unawaited(context.push(AppRouter.districtMap)),
-                      ),
 
                       const SizedBox(height: 32.0),
 
@@ -688,26 +661,6 @@ class _EmpirePulseCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _PowerMovesGrid extends StatelessWidget {
-  const _PowerMovesGrid({
-    required this.onPublicApology,
-  });
-
-  final VoidCallback onPublicApology;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: GoldPrimaryButton(
-        label: 'PUBLIC APOLOGY',
-        icon: Icons.campaign,
-        onPressed: onPublicApology,
       ),
     );
   }

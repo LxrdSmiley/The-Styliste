@@ -68,9 +68,8 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
         playerId: widget.player.id,
         tarnishLevel: tarnish,
         kintsugiLevel: kintsugi,
-        onKintsugiRequest: () =>
-            unawaited(context.push(AppRouter.crisisKintsugi)),
-        onApologyRequest: () => _applyApology(context),
+        onKintsugiRequest: null,
+        onApologyRequest: null,
         child: SafeArea(
           child: Column(
             children: <Widget>[

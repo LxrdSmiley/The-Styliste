@@ -335,7 +335,7 @@ class _ConfirmModal extends StatelessWidget {
             Text(
               'You have chosen $pathName.\n\n'
               'This path shapes your entire empire. '
-              'A change costs premium currency. '
+              'A Joint Venture can broaden your empire later. '
               'Are you certain?',
               style: const TextStyle(
                 color: AppColors.ivoryMuted,
