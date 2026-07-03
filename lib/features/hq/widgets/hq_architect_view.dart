@@ -191,7 +191,6 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
       ),
     );
   }
-
 }
 
 class _HqMetricStrip extends StatefulWidget {

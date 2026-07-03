@@ -177,7 +177,6 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
       ),
     );
   }
-
 }
 
 // =============================================================================
