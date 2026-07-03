@@ -184,6 +184,11 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
         rankProgressDelta: _safeDouble(
           response['rank_progress_delta'],
         ),
+        currentRank: _safeInt(response['current_rank']),
+        rankProgressPercent: _safeDouble(
+          response['rank_progress_percent'],
+        ),
+        rankUpOccurred: response['rank_up_occurred'] as bool?,
         idleRevenueDelta: _safeDouble(
           response['idle_revenue_delta'],
         ),
