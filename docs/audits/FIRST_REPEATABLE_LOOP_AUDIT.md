@@ -274,3 +274,47 @@ Remaining deferred systems:
 - Hostile takeovers.
 - Storefront monetization.
 - Disconnected mini-games.
+
+## 7. Coverage matrix
+
+Covered by automated tests:
+
+- Idle RPC result normalization and RPC call-shape contract:
+  `test/core/services/idle_engine_service_test.dart`.
+- Drop Preview duplicate-submit guard:
+  `test/features/atelier/drop_preview_duplicate_submit_guard_test.dart`.
+- Designer/Mogul first objective copy, route intent, and starter-store repository check:
+  `test/features/ftue/first_loop_scope_contract_test.dart`.
+- Mogul first action CTA and Realtime store stream source of truth:
+  `test/features/ledger/open_first_store_contract_test.dart`.
+- First-loop route reachability:
+  `test/core/router/first_loop_route_reachability_test.dart`.
+- Existing marker lifecycle guard coverage:
+  `test/features/ftue/first_objective_lifecycle_contract_test.dart`.
+
+Covered by Supabase tests:
+
+- Drop grants XP, updates Rank 1-10 server-side, bounds rank progress, and keeps duplicate drops idempotent:
+  `supabase/tests/first_loop_rank_progression.sql`.
+- Starter store creation is server-side, idempotent, and path-guarded:
+  `supabase/tests/first_loop_open_first_store.sql`.
+
+Manual-only verification:
+
+- Full on-device loop:
+  onboarding -> HQ -> Atelier -> mint -> Drop Preview -> Vex/no Vex -> Drop Launch -> Feed -> HQ feedback.
+- Confirm HQ shows Rank/XP/heat/follower/idle changes from server-confirmed state.
+- Confirm Architect/Mogul path can open Ledger, open first store, see the Realtime-owned asset, return HQ, and claim idle income.
+- Confirm no raw Supabase/RPC/JWT/null/500 errors appear to the player.
+- Confirm no duplicate drops, duplicate store creation, or duplicate rewards occur during fast tapping and back navigation.
+
+Remaining deferred systems:
+
+- Maison expansion.
+- District.
+- Gala.
+- Equity / IPO.
+- AR.
+- Hostile takeovers.
+- Storefront monetization.
+- Disconnected mini-games.
