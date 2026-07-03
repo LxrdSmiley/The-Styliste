@@ -31,6 +31,7 @@ class LedgerScreen extends ConsumerStatefulWidget {
 
 class _LedgerScreenState extends ConsumerState<LedgerScreen> {
   bool _errorSnackbarShown = false;
+  bool _openErrorSnackbarShown = false;
 
   @override
   void initState() {
@@ -46,6 +47,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
     final AsyncValue<List<Store>> storesAsync =
         ref.watch(ledgerStoresStreamProvider);
     final UpgradeStoreState upgradeState = ref.watch(upgradeStoreProvider);
+    final OpenFirstStoreState openState = ref.watch(openFirstStoreProvider);
 
     // Surface error once per error event, then clear.
     if (upgradeState.errorMessage != null && !_errorSnackbarShown) {
@@ -68,6 +70,30 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
           );
           ref.read(upgradeStoreProvider.notifier).clearError();
           _errorSnackbarShown = false;
+        }
+      });
+    }
+
+    if (openState.errorMessage != null && !_openErrorSnackbarShown) {
+      _openErrorSnackbarShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: AppColors.obsidianCard,
+              content: Text(
+                openState.errorMessage!,
+                style: const TextStyle(
+                  color: AppColors.lime,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2.0,
+                ),
+              ),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+          ref.read(openFirstStoreProvider.notifier).clearError();
+          _openErrorSnackbarShown = false;
         }
       });
     }
@@ -161,14 +187,87 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
               data: (List<Store> stores) {
                 if (stores.isEmpty) {
                   return Center(
-                    child: Text(
-                      'NO ASSETS\nOPEN YOUR FIRST STORE',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.lime.withValues(alpha: 0.3),
-                        fontSize: 11.0,
-                        letterSpacing: 2.0,
-                        height: 2.0,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 28.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Text(
+                            'NO ASSETS',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColors.lime.withValues(alpha: 0.36),
+                              fontSize: 11.0,
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                          const SizedBox(height: 10.0),
+                          Text(
+                            'OPEN A STARTER E-COMMERCE STORE',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColors.lime.withValues(alpha: 0.62),
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.6,
+                              height: 1.35,
+                            ),
+                          ),
+                          const SizedBox(height: 18.0),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 44.0,
+                            child: OutlinedButton(
+                              onPressed: openState.isOpening
+                                  ? null
+                                  : () {
+                                      HapticFeedback.mediumImpact();
+                                      ref
+                                          .read(
+                                            openFirstStoreProvider.notifier,
+                                          )
+                                          .open();
+                                    },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.lime,
+                                side: BorderSide(
+                                  color: openState.isOpening
+                                      ? AppColors.lime.withValues(alpha: 0.2)
+                                      : AppColors.lime,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(2.0),
+                                ),
+                              ),
+                              child: openState.isOpening
+                                  ? const SizedBox(
+                                      width: 16.0,
+                                      height: 16.0,
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.lime,
+                                        strokeWidth: 1.5,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'OPEN FIRST STORE',
+                                      style: TextStyle(
+                                        fontSize: 10.0,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 2.0,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(height: 10.0),
+                          Text(
+                            '\$500/HR STARTER REVENUE',
+                            style: TextStyle(
+                              color: AppColors.lime.withValues(alpha: 0.4),
+                              fontSize: 9.0,
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   );

@@ -33,6 +33,61 @@ final StreamProvider<List<Store>> ledgerStoresStreamProvider =
 // Upgrade state — optimistic lock + error propagation.
 // ---------------------------------------------------------------------------
 
+class OpenFirstStoreState {
+  const OpenFirstStoreState({
+    this.isOpening = false,
+    this.errorMessage,
+  });
+
+  final bool isOpening;
+  final String? errorMessage;
+
+  OpenFirstStoreState copyWith({
+    bool? isOpening,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return OpenFirstStoreState(
+      isOpening: isOpening ?? this.isOpening,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    );
+  }
+}
+
+class OpenFirstStoreNotifier extends StateNotifier<OpenFirstStoreState> {
+  OpenFirstStoreNotifier() : super(const OpenFirstStoreState());
+
+  Future<void> open() async {
+    if (state.isOpening) return;
+
+    state = const OpenFirstStoreState(isOpening: true);
+
+    try {
+      await SupabaseService.invokeFunction(
+        SupabaseConstants.fnProcessTransaction,
+        body: <String, dynamic>{'action': 'open_first_store'},
+      );
+      if (mounted) state = const OpenFirstStoreState();
+    } on Exception {
+      if (mounted) {
+        state = const OpenFirstStoreState(
+          errorMessage: 'FIRST STORE FAILED - TRY AGAIN',
+        );
+      }
+    }
+  }
+
+  void clearError() {
+    if (mounted) state = state.copyWith(clearError: true);
+  }
+}
+
+final StateNotifierProvider<OpenFirstStoreNotifier, OpenFirstStoreState>
+    openFirstStoreProvider =
+    StateNotifierProvider<OpenFirstStoreNotifier, OpenFirstStoreState>(
+  (_) => OpenFirstStoreNotifier(),
+);
+
 class UpgradeStoreState {
   const UpgradeStoreState({
     this.upgradingStoreId,

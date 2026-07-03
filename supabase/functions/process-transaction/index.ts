@@ -3,7 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 function json(body: Record<string, unknown>, status = 200): Response {
@@ -14,28 +15,35 @@ function json(body: Record<string, unknown>, status = 200): Response {
 }
 
 serve(async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS_HEADERS });
-  if (req.method !== "POST") return json({ error: "METHOD_NOT_ALLOWED" }, 405);
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: CORS_HEADERS });
+  }
+  if (req.method !== "POST") {
+    return json({ error: "METHOD_NOT_ALLOWED" }, 405);
+  }
 
   const correlationId = crypto.randomUUID();
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
-    if (!authHeader.startsWith("Bearer ")) return json({ error: "MISSING_AUTH" }, 401);
+    if (!authHeader.startsWith("Bearer ")) {
+      return json({ error: "MISSING_AUTH" }, 401);
+    }
+
     const token = authHeader.slice("Bearer ".length);
     const verifier = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
     );
-    const { data: { user }, error: authError } = await verifier.auth.getUser(token);
+    const { data: { user }, error: authError } = await verifier.auth.getUser(
+      token,
+    );
     if (authError || !user) return json({ error: "UNAUTHORIZED" }, 401);
 
     const body = await req.json() as Record<string, unknown>;
-    if (body.action !== "upgrade_store") return json({ error: "INVALID_ACTION" }, 400);
-    const storeId = typeof body.store_id === "string" ? body.store_id : "";
-    const idempotencyKey = typeof body.idempotency_key === "string"
-      ? body.idempotency_key
-      : "";
-    if (!storeId || !idempotencyKey) return json({ error: "INVALID_PAYLOAD" }, 400);
+    const action = typeof body.action === "string" ? body.action : "";
+    if (action !== "upgrade_store" && action !== "open_first_store") {
+      return json({ error: "INVALID_ACTION" }, 400);
+    }
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -52,6 +60,24 @@ serve(async (req: Request): Promise<Response> => {
     );
     if (rateError) throw rateError;
     if (!allowed) return json({ error: "RATE_LIMITED" }, 429);
+
+    if (action === "open_first_store") {
+      const { data, error } = await admin.rpc(
+        "edge_open_first_store_atomic",
+        { p_player_id: user.id },
+      );
+      if (error) throw error;
+      return json(data as Record<string, unknown>);
+    }
+
+    const storeId = typeof body.store_id === "string" ? body.store_id : "";
+    const idempotencyKey = typeof body.idempotency_key === "string"
+      ? body.idempotency_key
+      : "";
+    if (!storeId || !idempotencyKey) {
+      return json({ error: "INVALID_PAYLOAD" }, 400);
+    }
+
     const { data, error } = await admin.rpc("edge_upgrade_store_atomic", {
       p_player_id: user.id,
       p_store_id: storeId,
@@ -62,10 +88,22 @@ serve(async (req: Request): Promise<Response> => {
   } catch (error) {
     console.error("process-transaction", correlationId, error);
     const message = error instanceof Error ? error.message : "";
-    if (message.includes("INSUFFICIENT_CAPITAL")) return json({ error: "INSUFFICIENT_CAPITAL" }, 409);
-    if (message.includes("NOT_FOUND") || message.includes("NOT_OWNED")) {
+    if (message.includes("INSUFFICIENT_CAPITAL")) {
+      return json({ error: "INSUFFICIENT_CAPITAL" }, 409);
+    }
+    if (message.includes("MOGUL_PATH_REQUIRED")) {
+      return json({ error: "MOGUL_PATH_REQUIRED" }, 403);
+    }
+    if (
+      message.includes("NOT_FOUND") ||
+      message.includes("NOT_OWNED") ||
+      message.includes("BRAND_STATE_NOT_FOUND")
+    ) {
       return json({ error: "STORE_NOT_AVAILABLE" }, 404);
     }
-    return json({ error: "TRANSACTION_FAILED", correlation_id: correlationId }, 500);
+    return json(
+      { error: "TRANSACTION_FAILED", correlation_id: correlationId },
+      500,
+    );
   }
 });
