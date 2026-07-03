@@ -1,10 +1,10 @@
-// GDD §3.3, §12.1.2 — Idle income engine with Supply Chain constraints
-// PROJECT_RULES §3 — Server-authoritative: player_id from JWT, client clock IGNORED.
-// Implements WidgetsBindingObserver to fire on resume + 60s periodic timer.
-// Concurrency mutex (_isCalculating) prevents overlapping invocations.
+// GDD 3.3, 12.1.2 - Idle income engine with Supply Chain constraints.
+// PROJECT_RULES 3 - Server-authoritative: player_id from JWT, client clock ignored.
+// Implements WidgetsBindingObserver to fire on resume plus a 60s periodic timer.
+// Concurrency mutex prevents overlapping invocations.
 //
-// Directive L: Revenue now adds to inventory (capped by warehouse_capacity).
-// Atomic catch-up: O(1) single RPC call handles all offline time.
+// Directive L: revenue now adds to inventory, capped by warehouse_capacity.
+// Atomic catch-up: one RPC call handles offline time.
 
 import 'dart:async';
 
@@ -14,8 +14,6 @@ import '../constants/supabase_constants.dart';
 import 'supabase_service.dart';
 
 /// Result from the server-side idle income calculation.
-///
-/// Directive L: Now includes inventory state (not just revenue)
 class IdleIncomeResult {
   const IdleIncomeResult({
     required this.addedToInventory,
@@ -26,39 +24,67 @@ class IdleIncomeResult {
     this.idleRevenuePerHour = 0.0,
   });
 
-  final double addedToInventory; // Amount actually added (capped)
-  final double inventoryValue; // Current inventory level
-  final double warehouseCapacity; // Max capacity
-  final bool isWarehouseFull; // True if at capacity
-  final double secondsElapsed; // Time calculated
-  final double idleRevenuePerHour; // Generation rate
+  factory IdleIncomeResult.fromRpcResponse(Object? response) {
+    final Map<String, dynamic> row = _firstRpcRow(response);
+    return IdleIncomeResult(
+      addedToInventory:
+          (row['added_to_inventory'] as num?)?.toDouble() ?? 0.0,
+      inventoryValue: (row['new_inventory'] as num?)?.toDouble() ?? 0.0,
+      warehouseCapacity:
+          (row['warehouse_capacity'] as num?)?.toDouble() ?? 5000.0,
+      isWarehouseFull: row['is_full'] as bool? ?? false,
+      secondsElapsed: (row['seconds_elapsed'] as num?)?.toDouble() ?? 0.0,
+      idleRevenuePerHour:
+          (row['idle_revenue_per_hour'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
 
-  /// Fill percentage (0.0 to 100.0+)
+  final double addedToInventory;
+  final double inventoryValue;
+  final double warehouseCapacity;
+  final bool isWarehouseFull;
+  final double secondsElapsed;
+  final double idleRevenuePerHour;
+
   double get fillPercent =>
       warehouseCapacity > 0 ? (inventoryValue / warehouseCapacity) * 100 : 0.0;
 
   bool get needsLiquidation => isWarehouseFull;
+
+  static Map<String, dynamic> _firstRpcRow(Object? response) {
+    if (response is Map<String, dynamic>) return response;
+    if (response is Map) return Map<String, dynamic>.from(response);
+    if (response is List && response.isNotEmpty) {
+      final Object? first = response.first;
+      if (first is Map<String, dynamic>) return first;
+      if (first is Map) return Map<String, dynamic>.from(first);
+    }
+
+    throw FormatException(
+      'process_idle_income returned ${response.runtimeType}, expected row.',
+    );
+  }
 }
 
-/// Callback type: invoked every time the edge function returns a result.
 typedef OnIdleIncomeResult = void Function(IdleIncomeResult result);
 
+typedef IdleIncomeRpcInvoker = Future<Object?> Function({
+  required String playerId,
+});
+
 class IdleEngineService with WidgetsBindingObserver {
-  IdleEngineService({required this.onResult}) {
+  IdleEngineService({
+    required this.onResult,
+    IdleIncomeRpcInvoker? rpcInvoker,
+  }) : _rpcInvoker = rpcInvoker ?? _invokeProcessIdleIncomeRpc {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  /// Called whenever a new IdleIncomeResult arrives.
   final OnIdleIncomeResult onResult;
+  final IdleIncomeRpcInvoker _rpcInvoker;
 
   Timer? _periodicTimer;
-
-  /// Concurrency mutex — prevents overlapping edge function calls.
   bool _isCalculating = false;
-
-  // ---------------------------------------------------------------------------
-  // Lifecycle
-  // ---------------------------------------------------------------------------
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -74,9 +100,7 @@ class IdleEngineService with WidgetsBindingObserver {
   }
 
   void _onResumed() {
-    // Immediate trigger on foreground.
     _triggerIdleCalc();
-    // Periodic trigger while foregrounded (keeps last_active_at fresh).
     _periodicTimer?.cancel();
     _periodicTimer = Timer.periodic(
       const Duration(seconds: 60),
@@ -89,51 +113,38 @@ class IdleEngineService with WidgetsBindingObserver {
     _periodicTimer = null;
   }
 
-  // ---------------------------------------------------------------------------
-  // Core invocation
-  // ---------------------------------------------------------------------------
-
-  /// Triggers the edge function. Drops the call silently if one is in flight.
   void _triggerIdleCalc() {
     if (_isCalculating) return;
     _isCalculating = true;
-    // Fire-and-forget; errors are caught inside.
     _invokeAndNotify().whenComplete(() => _isCalculating = false);
   }
 
   Future<void> _invokeAndNotify() async {
     try {
-      // Directive L: Atomic catch-up using process_idle_income RPC
-      // O(1) complexity - single call handles all offline time calculation
-      // Server clamps inventory to warehouse_capacity automatically
-      final Map<String, dynamic> response =
-          await SupabaseService.invokeFunction(
-        SupabaseConstants.fnProcessIdleIncome,
-      );
+      await SupabaseService.ensureFreshSession();
+      final String? playerId = SupabaseService.currentUserId;
+      if (playerId == null || playerId.isEmpty) {
+        throw const SupabaseSessionExpiredException();
+      }
 
-      final IdleIncomeResult result = IdleIncomeResult(
-        addedToInventory:
-            (response['added_to_inventory'] as num?)?.toDouble() ?? 0.0,
-        inventoryValue: (response['new_inventory'] as num?)?.toDouble() ?? 0.0,
-        warehouseCapacity:
-            (response['warehouse_capacity'] as num?)?.toDouble() ?? 5000.0,
-        isWarehouseFull: response['is_full'] as bool? ?? false,
-        secondsElapsed:
-            (response['seconds_elapsed'] as num?)?.toDouble() ?? 0.0,
-        idleRevenuePerHour:
-            (response['idle_revenue_per_hour'] as num?)?.toDouble() ?? 0.0,
-      );
+      final Object? response = await _rpcInvoker(playerId: playerId);
+      final IdleIncomeResult result =
+          IdleIncomeResult.fromRpcResponse(response);
 
       onResult(result);
     } catch (e) {
-      // Non-fatal: economy errors must never crash the app.
-      debugPrint('IdleEngineService: edge function error — $e');
+      debugPrint('IdleEngineService: RPC error - $e');
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Dispose
-  // ---------------------------------------------------------------------------
+  static Future<Object?> _invokeProcessIdleIncomeRpc({
+    required String playerId,
+  }) {
+    return SupabaseService.client.rpc(
+      SupabaseConstants.fnProcessIdleIncome,
+      params: <String, dynamic>{'p_player_id': playerId},
+    );
+  }
 
   void dispose() {
     _periodicTimer?.cancel();
