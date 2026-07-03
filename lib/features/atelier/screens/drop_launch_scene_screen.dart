@@ -139,7 +139,7 @@ class _DropResultPanel extends StatelessWidget {
         _ResultMetric('+${drop.followersDelta} FOLLOWERS'),
       if ((drop.brandHeatDelta ?? 0) > 0)
         _ResultMetric('+${drop.brandHeatDelta} BRAND HEAT'),
-      if (drop.rankUpOccurred == true && drop.currentRank != null)
+      if ((drop.rankUpOccurred ?? false) && drop.currentRank != null)
         _ResultMetric('RANK ${drop.currentRank} UNLOCKED')
       else if ((drop.rankProgressPercent ?? 0.0) > 0.0)
         _ResultMetric(

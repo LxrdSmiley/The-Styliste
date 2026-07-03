@@ -112,8 +112,7 @@ class LatestAlphaDropSummary {
       xpDelta: _intValue(result['xp_delta']),
       rankProgressDelta: _doubleValueOrNull(result['rank_progress_delta']),
       currentRank: _intValue(result['current_rank']),
-      rankProgressPercent:
-          _doubleValueOrNull(result['rank_progress_percent']),
+      rankProgressPercent: _doubleValueOrNull(result['rank_progress_percent']),
       rankUpOccurred: result['rank_up_occurred'] as bool?,
       idleRevenueDelta: _doubleValueOrNull(result['idle_revenue_delta']),
     );

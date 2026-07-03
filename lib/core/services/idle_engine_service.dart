@@ -27,8 +27,7 @@ class IdleIncomeResult {
   factory IdleIncomeResult.fromRpcResponse(Object? response) {
     final Map<String, dynamic> row = _firstRpcRow(response);
     return IdleIncomeResult(
-      addedToInventory:
-          (row['added_to_inventory'] as num?)?.toDouble() ?? 0.0,
+      addedToInventory: (row['added_to_inventory'] as num?)?.toDouble() ?? 0.0,
       inventoryValue: (row['new_inventory'] as num?)?.toDouble() ?? 0.0,
       warehouseCapacity:
           (row['warehouse_capacity'] as num?)?.toDouble() ?? 5000.0,

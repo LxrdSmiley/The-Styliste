@@ -47,12 +47,15 @@ void main() {
 
     expect(shellSource, contains("label: 'LOCKED'"));
     expect(shellSource, contains('enabled: false'));
-    expect(architectSource, contains('onKintsugiRequest: null'));
-    expect(architectSource, contains('onApologyRequest: null'));
+    expect(architectSource, isNot(contains('onKintsugiRequest:')));
+    expect(architectSource, isNot(contains('onApologyRequest:')));
+    expect(architectSource, isNot(contains('execute_power_move')));
+    expect(architectSource, isNot(contains('logisticsUpgradeProvider')));
     expect(architectSource, isNot(contains('AppRouter.districtMap')));
     expect(architectSource, isNot(contains('PUBLIC APOLOGY')));
-    expect(artisanSource, contains('onKintsugiRequest: null'));
-    expect(artisanSource, contains('onApologyRequest: null'));
+    expect(artisanSource, isNot(contains('onKintsugiRequest:')));
+    expect(artisanSource, isNot(contains('onApologyRequest:')));
+    expect(artisanSource, isNot(contains('execute_power_move')));
     expect(districtSource, contains('DISTRICT WARFARE LOCKED'));
     expect(districtSource, isNot(contains('INITIATE SIEGE')));
   });

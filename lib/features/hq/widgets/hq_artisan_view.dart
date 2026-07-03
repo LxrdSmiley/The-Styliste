@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
@@ -68,8 +67,6 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
         playerId: widget.player.id,
         tarnishLevel: tarnish,
         kintsugiLevel: kintsugi,
-        onKintsugiRequest: null,
-        onApologyRequest: null,
         child: SafeArea(
           child: Column(
             children: <Widget>[
@@ -181,26 +178,6 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
     );
   }
 
-  Future<void> _applyApology(BuildContext context) async {
-    unawaited(HapticFeedback.heavyImpact());
-    final Map<String, dynamic> result =
-        await Supabase.instance.client.rpc<Map<String, dynamic>>(
-      'execute_power_move',
-      params: <String, dynamic>{
-        'p_move_key': 'public_apology',
-        'p_player_id': Supabase.instance.client.auth.currentUser!.id,
-      },
-    );
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text(result['message'] as String? ?? 'Public apology issued'),
-          backgroundColor: const Color(0xFFF7E7CE),
-        ),
-      );
-    }
-  }
 }
 
 // =============================================================================

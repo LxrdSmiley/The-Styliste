@@ -8,7 +8,8 @@ void main() {
         File('lib/features/ledger/providers/ledger_provider.dart')
             .readAsStringSync();
     final String screenSource =
-        File('lib/features/ledger/screens/ledger_screen.dart').readAsStringSync();
+        File('lib/features/ledger/screens/ledger_screen.dart')
+            .readAsStringSync();
 
     expect(providerSource, contains("'action': 'open_first_store'"));
     expect(providerSource, contains('SupabaseConstants.fnProcessTransaction'));
@@ -30,7 +31,8 @@ void main() {
     expect(providerSource, isNot(contains('Store(')));
   });
 
-  test('process-transaction routes first store through authenticated user id', () {
+  test('process-transaction routes first store through authenticated user id',
+      () {
     final String edgeFunctionSource =
         File('supabase/functions/process-transaction/index.ts')
             .readAsStringSync();

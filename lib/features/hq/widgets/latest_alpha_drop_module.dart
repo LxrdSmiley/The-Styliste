@@ -42,7 +42,7 @@ class _LatestAlphaDropCard extends StatelessWidget {
     final List<String> metrics = <String>[
       if ((drop.followersDelta ?? 0) > 0) '+${drop.followersDelta} followers',
       if ((drop.brandHeatDelta ?? 0) > 0) '+${drop.brandHeatDelta} heat',
-      if (drop.rankUpOccurred == true && drop.currentRank != null)
+      if ((drop.rankUpOccurred ?? false) && drop.currentRank != null)
         'Rank ${drop.currentRank} unlocked'
       else if ((drop.rankProgressPercent ?? 0.0) > 0.0)
         '${drop.rankProgressPercent!.toStringAsFixed(1)}% rank'
