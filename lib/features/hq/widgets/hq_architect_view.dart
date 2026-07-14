@@ -12,6 +12,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/providers/idle_engine_provider.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/styliste_visual_mode.dart';
+import '../../../core/widgets/glass_metric_card.dart';
+import '../../../core/widgets/gold_primary_button.dart';
+import '../../../core/widgets/pill_badge.dart';
+import '../../../core/widgets/styliste_scaffold.dart';
 import '../../../domain/models/brand.dart';
 import '../../../domain/models/player.dart';
 import '../../ftue/widgets/first_objective_card.dart';
@@ -70,7 +75,9 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
     final AsyncValue<SupplyChainState> supplyChainAsync =
         ref.watch(supplyChainProvider);
 
-    return Scaffold(
+    return StylisteScaffold(
+      mode: StylisteVisualMode.executiveObsidian,
+      useSafeArea: false,
       body: GlassWalledPenthouse(
         rank: widget.player.brandRank,
         playerId: widget.player.id,
@@ -106,9 +113,11 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                       FirstObjectiveCard(player: widget.player),
 
                       const SizedBox(height: 16.0),
-                      _CashFlowRibbon(
+                      _HqMetricStrip(
+                        player: widget.player,
                         brandAsync: brandAsync,
                         idleIncomeTick: idleIncomeTick,
+                        mode: StylisteVisualMode.executiveObsidian,
                       ),
 
                       const SizedBox(height: 32.0),
@@ -123,7 +132,9 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
 
                       const SizedBox(height: 32.0),
 
-                      const LatestAlphaDropModule(),
+                      const LatestAlphaDropModule(
+                        mode: StylisteVisualMode.executiveObsidian,
+                      ),
 
                       const SizedBox(height: 32.0),
 
@@ -134,42 +145,14 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
                           const _SectionTitle('BUFFER STOCK'),
                           // Logistics upgrade button
                           supplyChainAsync.when(
-                            data: (SupplyChainState state) => GestureDetector(
+                            data: (SupplyChainState state) => InkWell(
+                              borderRadius: BorderRadius.circular(999.0),
                               onTap: () =>
                                   _showLogisticsUpgrade(context, state),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12.0,
-                                  vertical: 6.0,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF7E7CE)
-                                      .withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  border: Border.all(
-                                    color: const Color(0xFFE8D4B8),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    const Icon(
-                                      Icons.upgrade,
-                                      size: 14.0,
-                                      color: Color(0xFF2A2A2A),
-                                    ),
-                                    const SizedBox(width: 4.0),
-                                    Text(
-                                      'LV.${state.logisticsLevel}',
-                                      style: const TextStyle(
-                                        fontFamily: 'JetBrainsMono',
-                                        fontSize: 10.0,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF2A2A2A),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              child: PillBadge(
+                                label: 'LV.${state.logisticsLevel}',
+                                icon: Icons.upgrade,
+                                mode: StylisteVisualMode.executiveObsidian,
                               ),
                             ),
                             loading: () => const SizedBox.shrink(),
@@ -337,30 +320,12 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
               ),
             ),
             const SizedBox(height: 24.0),
-            GestureDetector(
-              onTap: () {
+            GoldPrimaryButton(
+              label: 'Confirm Upgrade',
+              onPressed: () {
                 ref.read(logisticsUpgradeProvider.notifier).upgrade();
                 Navigator.of(ctx).pop();
               },
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2A2A2A),
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
-                child: const Center(
-                  child: Text(
-                    'CONFIRM UPGRADE',
-                    style: TextStyle(
-                      fontFamily: 'SpaceGrotesk',
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 2.0,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
             ),
           ],
         ),
@@ -393,22 +358,24 @@ class _HqArchitectViewState extends ConsumerState<HqArchitectView>
   }
 }
 
-// Display-only cashflow surface: values come from the brand_state stream.
-// The local pulse animates the readout but never mutates player currency.
-class _CashFlowRibbon extends StatefulWidget {
-  const _CashFlowRibbon({
+class _HqMetricStrip extends StatefulWidget {
+  const _HqMetricStrip({
+    required this.player,
     required this.brandAsync,
     required this.idleIncomeTick,
+    required this.mode,
   });
 
+  final Player player;
   final AsyncValue<Brand> brandAsync;
   final int idleIncomeTick;
+  final StylisteVisualMode mode;
 
   @override
-  State<_CashFlowRibbon> createState() => _CashFlowRibbonState();
+  State<_HqMetricStrip> createState() => _HqMetricStripState();
 }
 
-class _CashFlowRibbonState extends State<_CashFlowRibbon> {
+class _HqMetricStripState extends State<_HqMetricStrip> {
   Timer? _pulseTimer;
   int _pulseTick = 0;
 
@@ -436,232 +403,66 @@ class _CashFlowRibbonState extends State<_CashFlowRibbon> {
   Widget build(BuildContext context) {
     final Brand? brand = widget.brandAsync.value;
     final bool isLoading = widget.brandAsync.isLoading && brand == null;
+    final Object? error = widget.brandAsync.error;
     final double incomePerHour = brand?.idleRevenuePerHour ?? 0.0;
     final double totalRevenue = brand?.totalRevenue ?? 0.0;
     final bool hasRevenue = incomePerHour > 0.0;
     final double incomePerSecond = incomePerHour / 3600.0;
-    final bool pulseOn = _pulseTick.isEven;
-    final String statusText = isLoading
-        ? 'Cashflow initializing'
+    final String pulseStatus = hasRevenue && _pulseTick.isEven
+        ? '+${_formatCompactCurrency(incomePerSecond)} / sec'
         : hasRevenue
             ? 'Empire still earning'
             : 'No active revenue stream yet';
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 520),
-      curve: Curves.easeOutCubic,
-      width: double.infinity,
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFAF7F0),
-        borderRadius: BorderRadius.circular(16.0),
-        border: Border.all(
-          color:
-              (hasRevenue ? const Color(0xFFE0B85B) : const Color(0xFFE8D4B8))
-                  .withValues(alpha: pulseOn ? 0.74 : 0.38),
-        ),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: const Color(0xFFE0B85B).withValues(
-              alpha: hasRevenue && pulseOn ? 0.18 : 0.08,
-            ),
-            blurRadius: hasRevenue && pulseOn ? 22.0 : 12.0,
-            spreadRadius: hasRevenue && pulseOn ? 2.0 : 0.0,
-            offset: const Offset(0.0, 10.0),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              AnimatedOpacity(
-                opacity: hasRevenue && pulseOn ? 1.0 : 0.48,
-                duration: const Duration(milliseconds: 520),
-                child: Container(
-                  width: 8.0,
-                  height: 8.0,
-                  decoration: BoxDecoration(
-                    color: hasRevenue
-                        ? const Color(0xFF63A875)
-                        : const Color(0xFF9B9590),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8.0),
-              const Expanded(
-                child: Text(
-                  'CASH FLOW RIBBON',
-                  style: TextStyle(
-                    fontFamily: 'SpaceGrotesk',
-                    fontSize: 10.0,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2.4,
-                    color: Color(0xFF888888),
-                  ),
-                ),
-              ),
-              _CashFlowMiniStat(
-                label: 'CAPITAL',
-                value: _formatCompactCurrency(totalRevenue),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14.0),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              Expanded(
-                flex: 3,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 320),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  child: Text(
-                    '${_formatCompactCurrency(incomePerHour)} / hr',
-                    key: ValueKey<String>(
-                      'hour-${incomePerHour.toStringAsFixed(2)}-${widget.idleIncomeTick}',
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontFamily: 'JetBrainsMono',
-                      fontSize: 28.0,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF2A2A2A),
-                      letterSpacing: 0.4,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12.0),
-              Flexible(
-                flex: 2,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 320),
-                  child: Text(
-                    '+${_formatCompactCurrency(incomePerSecond)} / sec',
-                    key: ValueKey<String>(
-                      'second-${incomePerSecond.toStringAsFixed(4)}-${widget.idleIncomeTick}',
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      fontFamily: 'JetBrainsMono',
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w700,
-                      color: hasRevenue
-                          ? const Color(0xFF4D8A5F)
-                          : const Color(0xFF888888),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12.0),
-          TweenAnimationBuilder<double>(
-            tween: Tween<double>(
-              begin: 0.18,
-              end: hasRevenue ? (pulseOn ? 1.0 : 0.62) : 0.18,
-            ),
-            duration: const Duration(milliseconds: 700),
-            curve: Curves.easeOutCubic,
-            builder: (
-              BuildContext context,
-              double value,
-              Widget? _,
-            ) {
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(999.0),
-                child: LinearProgressIndicator(
-                  value: value,
-                  minHeight: 4.0,
-                  backgroundColor:
-                      const Color(0xFFE8D4B8).withValues(alpha: 0.26),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    hasRevenue
-                        ? const Color(0xFFE0B85B)
-                        : const Color(0xFFBEB6AD),
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 10.0),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 260),
-            child: Text(
-              statusText,
-              key: ValueKey<String>(statusText),
-              style: TextStyle(
-                fontFamily: 'SpaceGrotesk',
-                fontSize: 11.0,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF666666).withValues(alpha: 0.82),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CashFlowMiniStat extends StatelessWidget {
-  const _CashFlowMiniStat({
-    required this.label,
-    required this.value,
-  });
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7E7CE).withValues(alpha: 0.42),
-        borderRadius: BorderRadius.circular(10.0),
-        border: Border.all(
-          color: const Color(0xFFE8D4B8).withValues(alpha: 0.62),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 7.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+    return Column(
+      children: <Widget>[
+        Row(
           children: <Widget>[
-            Text(
-              label,
-              style: const TextStyle(
-                fontFamily: 'SpaceGrotesk',
-                fontSize: 8.0,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.5,
-                color: Color(0xFF888888),
+            Expanded(
+              child: GlassMetricCard(
+                label: 'Capital',
+                value: _formatCompactCurrency(totalRevenue),
+                mode: widget.mode,
+                isLoading: isLoading,
+                error: error == null ? null : 'Capital unavailable',
               ),
             ),
-            const SizedBox(height: 2.0),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 280),
-              child: Text(
-                value,
-                key: ValueKey<String>(value),
-                style: const TextStyle(
-                  fontFamily: 'JetBrainsMono',
-                  fontSize: 12.0,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF2A2A2A),
-                ),
+            const SizedBox(width: 12.0),
+            Expanded(
+              child: GlassMetricCard(
+                label: 'Idle Revenue',
+                value: '${_formatCompactCurrency(incomePerHour)} / hr',
+                delta: pulseStatus,
+                mode: widget.mode,
+                isLoading: isLoading,
+                error: error == null ? null : 'Idle revenue unavailable',
               ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 12.0),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: GlassMetricCard(
+                label: 'Brand Rank',
+                value: 'R${widget.player.brandRank}',
+                mode: widget.mode,
+              ),
+            ),
+            const SizedBox(width: 12.0),
+            Expanded(
+              child: GlassMetricCard(
+                label: 'Followers',
+                value: _formatCompactNumber(brand?.followers ?? 0),
+                mode: widget.mode,
+                isLoading: isLoading,
+                error: error == null ? null : 'Followers unavailable',
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -692,7 +493,31 @@ String _formatCompactCurrency(double value) {
           ? 1
           : 2;
 
-  return '$sign\u00A5${displayValue.toStringAsFixed(decimals)}$suffix';
+  return '$sign\$${displayValue.toStringAsFixed(decimals)}$suffix';
+}
+
+String _formatCompactNumber(num value) {
+  final double absValue = value.abs().toDouble();
+  final String sign = value < 0 ? '-' : '';
+  final String suffix;
+  final double displayValue;
+
+  if (absValue >= 1000000000.0) {
+    suffix = 'B';
+    displayValue = absValue / 1000000000.0;
+  } else if (absValue >= 1000000.0) {
+    suffix = 'M';
+    displayValue = absValue / 1000000.0;
+  } else if (absValue >= 1000.0) {
+    suffix = 'K';
+    displayValue = absValue / 1000.0;
+  } else {
+    suffix = '';
+    displayValue = absValue;
+  }
+
+  final int decimals = displayValue >= 100.0 || suffix.isEmpty ? 0 : 1;
+  return '$sign${displayValue.toStringAsFixed(decimals)}$suffix';
 }
 
 // =============================================================================
@@ -750,25 +575,10 @@ class _ArchitectHeader extends StatelessWidget {
               ),
             ],
           ),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF7E7CE).withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20.0),
-              border: Border.all(
-                color: const Color(0xFFF7E7CE),
-              ),
-            ),
-            child: Text(
-              'R${player.brandRank}',
-              style: const TextStyle(
-                fontFamily: 'JetBrainsMono',
-                fontSize: 14.0,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2A2A2A),
-              ),
-            ),
+          PillBadge(
+            label: 'R${player.brandRank}',
+            icon: Icons.workspace_premium,
+            mode: StylisteVisualMode.executiveObsidian,
           ),
         ],
       ),
@@ -892,66 +702,12 @@ class _PowerMovesGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _PowerMoveButton(
+    return SizedBox(
+      width: double.infinity,
+      child: GoldPrimaryButton(
       label: 'PUBLIC APOLOGY',
       icon: Icons.campaign,
-      onTap: onPublicApology,
-      color: const Color(0xFFF7E7CE),
-      isWide: true,
-    );
-  }
-}
-
-class _PowerMoveButton extends StatelessWidget {
-  const _PowerMoveButton({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-    required this.color,
-    this.isWide = false,
-  });
-
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-  final Color color;
-  final bool isWide;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: isWide ? double.infinity : null,
-        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12.0),
-          border: Border.all(
-            color: const Color(0xFFE8D4B8).withValues(alpha: 0.5),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Icon(
-              icon,
-              size: 18.0,
-              color: const Color(0xFF2A2A2A),
-            ),
-            const SizedBox(width: 8.0),
-            Text(
-              label,
-              style: const TextStyle(
-                fontFamily: 'SpaceGrotesk',
-                fontSize: 11.0,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.5,
-                color: Color(0xFF2A2A2A),
-              ),
-            ),
-          ],
-        ),
+        onPressed: onPublicApology,
       ),
     );
   }
@@ -1051,35 +807,11 @@ class _SovereignBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F0),
-        borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(
-          color: const Color(0xFFF7E7CE),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          const Icon(
-            Icons.auto_graph,
-            size: 16.0,
-            color: Color(0xFFF7E7CE),
-          ),
-          const SizedBox(width: 8.0),
-          Text(
-            '+${(count * 25)}% SOVEREIGN BONUS',
-            style: const TextStyle(
-              fontFamily: 'SpaceGrotesk',
-              fontSize: 11.0,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.5,
-              color: Color(0xFF666666),
-            ),
-          ),
-        ],
+    return Center(
+      child: PillBadge(
+        label: '+${(count * 25)}% Sovereign Bonus',
+        icon: Icons.auto_graph,
+        mode: StylisteVisualMode.executiveObsidian,
       ),
     );
   }

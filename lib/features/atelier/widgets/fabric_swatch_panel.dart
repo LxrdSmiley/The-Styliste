@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/theme/styliste_visual_mode.dart';
+import '../../../core/widgets/pill_badge.dart';
 
 class FabricSwatchPanel extends StatelessWidget {
   const FabricSwatchPanel({
@@ -54,20 +56,15 @@ class FabricSwatchPanel extends StatelessWidget {
                   ),
                 ),
               ),
-              Text(
-                selected.label,
-                style: const TextStyle(
-                  color: AurelianPalette.textPrimary,
-                  fontSize: 10.0,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.5,
-                ),
+              PillBadge(
+                label: selected.label,
+                mode: StylisteVisualMode.atelierWarmStudio,
               ),
             ],
           ),
           const SizedBox(height: 12.0),
           SizedBox(
-            height: 74.0,
+            height: 92.0,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: _swatches.length,
@@ -119,7 +116,7 @@ class _FabricSwatch extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOutCubic,
-        width: 92.0,
+        width: 98.0,
         padding: const EdgeInsets.all(7.0),
         decoration: BoxDecoration(
           color: selected
@@ -178,16 +175,9 @@ class _FabricSwatch extends StatelessWidget {
               ],
             ),
             const Spacer(),
-            Text(
-              swatch.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AurelianPalette.textPrimary,
-                fontSize: 10.0,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.1,
-              ),
+            PillBadge(
+              label: swatch.label,
+              mode: StylisteVisualMode.atelierWarmStudio,
             ),
             const SizedBox(height: 1.0),
             Text(

@@ -10,8 +10,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/supabase_service.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/theme/styliste_visual_mode.dart';
+import '../../../core/widgets/gold_primary_button.dart';
+import '../../../core/widgets/styliste_scaffold.dart';
 import '../../../domain/models/player.dart';
 import '../../ftue/providers/first_objective_provider.dart';
 import '../../ftue/widgets/luxe_first_objective_overlay.dart';
@@ -37,8 +39,8 @@ class _HqScreenState extends ConsumerState<HqScreen> {
 
     return playerAsync.when(
       // --- Obsidian loading gate (directive §3 — pure black, no flash) ---
-      loading: () => const Scaffold(
-        backgroundColor: AppColors.obsidian,
+      loading: () => const StylisteScaffold(
+        mode: StylisteVisualMode.noirCinematic,
         body: SizedBox.expand(),
       ),
 
@@ -111,8 +113,8 @@ class _HqErrorView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final String message = _profileErrorMessage(error);
 
-    return Scaffold(
-      backgroundColor: AppColors.obsidian,
+    return StylisteScaffold(
+      mode: StylisteVisualMode.noirCinematic,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
@@ -158,20 +160,12 @@ class _HqErrorView extends ConsumerWidget {
                     child: const Text('SIGN OUT'),
                   ),
                   const SizedBox(width: 16.0),
-                  ElevatedButton(
+                  GoldPrimaryButton(
+                    label: 'Retry',
                     onPressed: () {
                       ref.invalidate(hqPlayerStreamProvider);
                       ref.invalidate(hqBrandStreamProvider);
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AurelianPalette.champagneGold,
-                      foregroundColor: AurelianPalette.textPrimary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24.0,
-                        vertical: 12.0,
-                      ),
-                    ),
-                    child: const Text('RETRY'),
                   ),
                 ],
               ),

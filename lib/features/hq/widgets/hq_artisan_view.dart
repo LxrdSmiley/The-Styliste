@@ -11,6 +11,11 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/router/app_router.dart';
+import '../../../core/theme/styliste_visual_mode.dart';
+import '../../../core/widgets/glass_metric_card.dart';
+import '../../../core/widgets/gold_primary_button.dart';
+import '../../../core/widgets/pill_badge.dart';
+import '../../../core/widgets/styliste_scaffold.dart';
 import '../../../domain/models/brand.dart';
 import '../../../domain/models/player.dart';
 import '../../ftue/widgets/first_objective_card.dart';
@@ -55,7 +60,9 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
     final int kintsugi = ref.watch(kintsugiLevelProvider);
     final AsyncValue<Brand> brandAsync = ref.watch(hqBrandStreamProvider);
 
-    return Scaffold(
+    return StylisteScaffold(
+      mode: StylisteVisualMode.editorialLight,
+      useSafeArea: false,
       body: GlassWalledPenthouse(
         rank: widget.player.brandRank,
         playerId: widget.player.id,
@@ -89,6 +96,14 @@ class _HqArtisanViewState extends ConsumerState<HqArtisanView>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       FirstObjectiveCard(player: widget.player),
+
+                      _HqMetricStrip(
+                        player: widget.player,
+                        brandAsync: brandAsync,
+                        mode: StylisteVisualMode.editorialLight,
+                      ),
+
+                      const SizedBox(height: 32.0),
 
                       // --- Sun-Dial Hype Meter (CustomPainter) ---
                       const _SectionTitle('HYPE SOLARIS'),
@@ -244,28 +259,65 @@ class _ArtisanHeader extends StatelessWidget {
               ),
             ],
           ),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF7E7CE).withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20.0),
-              border: Border.all(
-                color: const Color(0xFFF7E7CE),
-              ),
-            ),
-            child: Text(
-              'R${player.brandRank}',
-              style: const TextStyle(
-                fontFamily: 'JetBrainsMono',
-                fontSize: 14.0,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2A2A2A),
-              ),
-            ),
+          PillBadge(
+            label: 'R${player.brandRank}',
+            icon: Icons.workspace_premium,
           ),
         ],
       ),
+    );
+  }
+}
+
+class _HqMetricStrip extends StatelessWidget {
+  const _HqMetricStrip({
+    required this.player,
+    required this.brandAsync,
+    required this.mode,
+  });
+
+  final Player player;
+  final AsyncValue<Brand> brandAsync;
+  final StylisteVisualMode mode;
+
+  @override
+  Widget build(BuildContext context) {
+    final Brand? brand = brandAsync.value;
+    final bool isLoading = brandAsync.isLoading && brand == null;
+    final Object? error = brandAsync.error;
+
+    return Column(
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: GlassMetricCard(
+                label: 'Brand Rank',
+                value: 'R${player.brandRank}',
+                mode: mode,
+              ),
+            ),
+            const SizedBox(width: 12.0),
+            Expanded(
+              child: GlassMetricCard(
+                label: 'Followers',
+                value: _formatCompactNumber(brand?.followers ?? 0),
+                mode: mode,
+                isLoading: isLoading,
+                error: error == null ? null : 'Followers unavailable',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12.0),
+        GlassMetricCard(
+          label: 'Idle Revenue',
+          value: '${_formatCompactCurrency(brand?.idleRevenuePerHour ?? 0)} / hr',
+          mode: mode,
+          isLoading: isLoading,
+          error: error == null ? null : 'Idle revenue unavailable',
+        ),
+      ],
     );
   }
 }
@@ -476,49 +528,12 @@ class _QuickSketchButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 20.0),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: <Color>[
-              Color(0xFFF7E7CE),
-              Color(0xFFE8D4B8),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16.0),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: const Color(0xFFF7E7CE).withValues(alpha: 0.4),
-              blurRadius: 16.0,
-              spreadRadius: 2.0,
-              offset: const Offset(0.0, 8.0),
-            ),
-          ],
-        ),
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Icon(
-              Icons.brush,
-              size: 20.0,
-              color: Color(0xFF2A2A2A),
-            ),
-            SizedBox(width: 12.0),
-            Text(
-              'QUICK SKETCH',
-              style: TextStyle(
-                fontFamily: 'SpaceGrotesk',
-                fontSize: 14.0,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 2.0,
-                color: Color(0xFF2A2A2A),
-              ),
-            ),
-          ],
-        ),
+    return SizedBox(
+      width: double.infinity,
+      child: GoldPrimaryButton(
+        label: 'Quick Sketch',
+        icon: Icons.brush,
+        onPressed: onTap,
       ),
     );
   }
@@ -531,36 +546,39 @@ class _SovereignBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F0),
-        borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(
-          color: const Color(0xFFF7E7CE),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          const Icon(
-            Icons.auto_graph,
-            size: 16.0,
-            color: Color(0xFFF7E7CE),
-          ),
-          const SizedBox(width: 8.0),
-          Text(
-            '+${(count * 25)}% SOVEREIGN BONUS',
-            style: const TextStyle(
-              fontFamily: 'SpaceGrotesk',
-              fontSize: 11.0,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.5,
-              color: Color(0xFF666666),
-            ),
-          ),
-        ],
+    return Center(
+      child: PillBadge(
+        label: '+${(count * 25)}% Sovereign Bonus',
+        icon: Icons.auto_graph,
       ),
     );
   }
+}
+
+String _formatCompactNumber(num value) {
+  final double absValue = value.abs().toDouble();
+  final String sign = value < 0 ? '-' : '';
+  final String suffix;
+  final double displayValue;
+
+  if (absValue >= 1000000000.0) {
+    suffix = 'B';
+    displayValue = absValue / 1000000000.0;
+  } else if (absValue >= 1000000.0) {
+    suffix = 'M';
+    displayValue = absValue / 1000000.0;
+  } else if (absValue >= 1000.0) {
+    suffix = 'K';
+    displayValue = absValue / 1000.0;
+  } else {
+    suffix = '';
+    displayValue = absValue;
+  }
+
+  final int decimals = displayValue >= 100.0 || suffix.isEmpty ? 0 : 1;
+  return '$sign${displayValue.toStringAsFixed(decimals)}$suffix';
+}
+
+String _formatCompactCurrency(num value) {
+  return '\$${_formatCompactNumber(value)}';
 }
