@@ -50,7 +50,8 @@ menus. The memorable differentiator is:
 The governing product promise is that the player can always understand what happened,
 why it happened, what changed, who reacted, and what strategic action is available next.
 This document is self-contained and supersedes active mechanic ambiguity in the prior
-specification. Baseline continuity is retained from `THE_STYLISTE_GDD_v6.md` §§1–12.
+specification. Its continuity requirements are incorporated directly into the sections
+below.
 
 ## 2. Design Pillars
 
@@ -147,8 +148,7 @@ feed at least two others:
 - Rival actions create strategic responses rather than unavoidable penalties.
 
 No major mechanic exists only as a timer or currency sink. No result is shown without its
-major causes and the next available decision. Continuity references: v6 §§2, 4.1, 5,
-and 8.
+major causes and the next available decision.
 
 ## 5. First Session and First Week
 
@@ -211,7 +211,7 @@ understood what to pursue next.
 
 No objective requires likes, votes, purchases, advertisements, or another player's
 cooperation. Existing players receive historical objective backfill. Progress cannot be
-completed through local state manipulation. Continuity: v6 §§1.1, 3.7, and 3.9.
+completed through local state manipulation.
 
 ## 6. Player Paths and Progression
 
@@ -238,7 +238,7 @@ severity, or competitive eligibility.
 The free path can reach every gameplay role and the full Hype range. No rank reward or
 purchase creates an unreachable competitive ceiling. Progression is meaningful through
 new decisions, capacity, information, identity, and narrative consequence rather than
-exponential inflation. Continuity: v6 §§3.1–3.9 and 8.9.7–8.9.8.
+exponential inflation.
 
 ## 7. World, Cities, and Customer Segments
 
@@ -261,8 +261,7 @@ affinities are server configuration, not client constants.
 - **Everyday Stylists:** price-value fit, wearability, trust, availability, and loyalty.
 
 City identity is fictional worldbuilding, not a stereotype about real-world wealth or
-taste. Additional cities follow vertical-slice validation. Continuity: v6 World Map,
-§§5.3, 8.1, and 8.9.11.
+taste. Additional cities follow vertical-slice validation.
 
 ## 8. Designer Systems
 
@@ -315,7 +314,7 @@ provide a free-progression-equivalent archetype.
 
 Every result returns a structured explanation: what happened, why it happened, what
 changed, who reacted, and what the player can do next. The client displays the
-server-provided breakdown. Continuity: v6 §§4.1–4.2, 8.9.3–8.9.5, 8.10, and 8.11.
+server-provided breakdown.
 
 ## 9. Mogul Systems
 
@@ -397,6 +396,12 @@ scans, or social-platform engagement never directly grant Hype, ranked power, ra
 materials, or economic advantage. Verified referrals can grant cosmetics after a retained
 user milestone.
 
+Reporting, blocking, moderation review, and player support are first-class launch
+surfaces. Reports identify the reported content or interaction, reason, evidence, and
+status; block state applies across Feed, direct messages, profiles, and multiplayer
+surfaces. Moderation outcomes and support resolutions are auditable, explainable, and
+never used as hidden competitive modifiers.
+
 ## 12. Narrative, Luxe, Vex, and Rivalry
 
 ### 12.1 Luxe: The First Cut
@@ -453,7 +458,7 @@ behavior may change, but each delta names its cause.
 
 The crisis screen defines loading, evidence-unavailable, offline, error, disabled,
 expired, resolved, and next-action states. It never hides a meaningful consequence behind
-decorative motion. Continuity: v6 §§8.9.2 and 12.2.1.
+decorative motion.
 
 ## 14. Live Events and Competitive Play
 
@@ -498,6 +503,14 @@ weighted against suspicious account clusters, and unable to determine the winner
 Paid cosmetics, talent editions, follower count, advertisements, and spending do not
 modify score. There is one eligible submission per account; scores freeze at settlement;
 claims are idempotent; a new skilled account can place highly; brigading cannot dominate.
+
+### 14.3 Authored fashion calendar and Maison legacy
+
+Fashion Week and other authored calendar events are seasonal decision spaces with
+published themes, deadlines, judging rules, and consequence summaries. Maison Wars,
+district influence, and legacy watermarks express house identity and city history without
+granting hidden combat power or paid competitive modifiers. District state, event
+placement, and legacy rewards are server-settled and replayable from immutable inputs.
 
 ## 15. Talent and Staff
 
@@ -706,8 +719,8 @@ mutations have one server owner and retryable mutations are idempotent.
 Current calculation and mutation paths include the `process_idle_income` PostgreSQL RPC,
 atomic first-store and upgrade operations, feed reaction orchestration, Gala submission
 and voting functions, crisis functions, and server-side purchase verification. A client
-must not invoke a retired or duplicate authority path. Continuity: v6 §§6, 8.15, and
-9.9; implementation verification also follows `PROJECT_RULES.md` and
+must not invoke a retired or duplicate authority path. Implementation verification also
+follows `PROJECT_RULES.md` and
 `VERIFICATION_PROTOCOL.md`.
 
 ## 20. Analytics and Product Metrics
@@ -754,14 +767,22 @@ moderation and support.
 ### Post-Launch
 
 AR Try-On; Street Snaps; resale; advanced B2B; deeper digital-product-passport
-simulation; digital fashion; larger live events; additional rival houses; and
-additional Luxe seasons.
+simulation; digital fashion; repair and longevity services; endorsement and
+collaboration contracts; district influence and legacy watermarks; larger live events;
+additional rival houses; and additional Luxe seasons.
 
 ### Deferred pending validation
 
 Voice chat; real-time shared Atelier; live runway streaming; hostile player takeovers;
 player-owned public equities; external engagement rewards; blockchain and related
 tokenized systems.
+
+Standalone reflex mini-games and reward loops that would make social spam, streak loss,
+or external engagement economically compulsory are intentionally removed from the
+canonical design. Their useful decision value is represented by Atelier, supply,
+crisis, Feed, and event choices. Detailed digital-product-passport compliance and
+advanced wholesale rules remain Post-Launch until their legal, operational, and
+performance contracts are validated.
 
 Every feature has exactly one status. No vertical-slice dependency requires a deferred
 concept. A route or screen alone is not completion. Roadmap order prioritizes depth,
@@ -831,6 +852,13 @@ monetization; replaces mixed authority with Supabase and PostgreSQL ownership; a
 server-authority matrix and anti-cheat contract; and separates vertical-slice,
 Alpha, Launch, Post-Launch, and deferred scope.
 
+The continuity review preserves or explicitly dispositions the remaining unique
+concepts: moderation and support are Launch requirements; Fashion Week, Maison and
+district legacy, endorsement contracts, repair and longevity services, resale, digital
+product passports, and advanced wholesale are staged; standalone reflex mini-games and
+harmful external-engagement reward loops are removed because their intended value is
+covered by the core causal loop.
+
 This version also adopts the repository’s `frontend-design` skill as the primary UI/UX
 methodology while preserving the established Flutter design system and Aurelian visual
 identity. It adds required states, result explanations, accessibility behavior, motion
@@ -838,5 +866,5 @@ fallbacks, low-performance fallbacks, and measurable 60 fps evidence requirement
 Onboarding, Atelier, Ledger, HQ, Feed, Luxe, Vex, crises, Gala, and all future major
 interfaces.
 
-Binding continuity references: `THE_STYLISTE_GDD_v6.md` §§1–12,
-`PROJECT_RULES.md`, and `VERIFICATION_PROTOCOL.md`.
+Binding implementation references: `PROJECT_RULES.md` and
+`VERIFICATION_PROTOCOL.md`.
