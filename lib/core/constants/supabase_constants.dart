@@ -6,6 +6,7 @@ abstract final class SupabaseConstants {
   // --- Core Player Tables ---
   static const String tablePlayers = 'players';
   static const String tableBrandState = 'brand_state';
+  static const String tableFirstWeekObjectives = 'first_week_objectives';
 
   // --- Design & Atelier Tables ---
   static const String tableDesigns = 'designs';
@@ -74,6 +75,7 @@ abstract final class SupabaseConstants {
   static const String fnFeedComment = 'feed-comment';
   static const String fnFeedInspiration = 'feed-inspiration';
   static const String fnProcessTransaction = 'process-transaction';
+  static const String fnOpenFirstStore = 'open-first-store';
   static const String fnMaisonDonate = 'maison-donate';
   static const String fnValidateIap = 'validate-iap';
   static const String fnAttemptDistrictTakeover = 'attempt_district_takeover';

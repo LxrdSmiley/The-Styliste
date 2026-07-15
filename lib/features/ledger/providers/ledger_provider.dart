@@ -13,6 +13,83 @@ import '../../../core/services/mini_game_service.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/store.dart';
 
+class FirstStoreState {
+  const FirstStoreState({
+    this.isSubmitting = false,
+    this.errorMessage,
+    this.result,
+  });
+
+  final bool isSubmitting;
+  final String? errorMessage;
+  final Map<String, dynamic>? result;
+
+  FirstStoreState copyWith({
+    bool? isSubmitting,
+    String? errorMessage,
+    Map<String, dynamic>? result,
+    bool clearError = false,
+  }) {
+    return FirstStoreState(
+      isSubmitting: isSubmitting ?? this.isSubmitting,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      result: result ?? this.result,
+    );
+  }
+}
+
+class FirstStoreNotifier extends StateNotifier<FirstStoreState> {
+  FirstStoreNotifier() : super(const FirstStoreState());
+
+  Future<bool> open({
+    required String city,
+    required String storeType,
+    required String priceTier,
+    required int inventoryCapacity,
+  }) async {
+    if (state.isSubmitting) return false;
+    state = const FirstStoreState(isSubmitting: true);
+    try {
+      final Map<String, dynamic> result = await SupabaseService.invokeFunction(
+        SupabaseConstants.fnOpenFirstStore,
+        body: <String, dynamic>{
+          'city': city,
+          'store_type': storeType,
+          'price_tier': priceTier,
+          'inventory_capacity': inventoryCapacity,
+          'idempotency_key': const Uuid().v4(),
+        },
+      );
+      if (mounted) state = FirstStoreState(result: result);
+      return result['success'] == true;
+    } on Exception catch (error) {
+      if (mounted) {
+        final String raw = error.toString();
+        state = FirstStoreState(
+          errorMessage: raw.contains('INSUFFICIENT_CAPITAL')
+              ? 'INSUFFICIENT CAPITAL'
+              : raw.contains('MOGUL_ONLY')
+                  ? 'THIS OPERATION IS FOR MOGULS ONLY'
+                  : raw.contains('FIRST_STORE_ALREADY_OPEN')
+                      ? 'YOUR FIRST STORE IS ALREADY OPEN'
+                      : 'STORE OPENING FAILED — TRY AGAIN',
+        );
+      }
+      return false;
+    }
+  }
+
+  void clearError() {
+    if (mounted) state = state.copyWith(clearError: true);
+  }
+}
+
+final StateNotifierProvider<FirstStoreNotifier, FirstStoreState>
+    firstStoreProvider =
+    StateNotifierProvider<FirstStoreNotifier, FirstStoreState>(
+  (Ref<FirstStoreState> _) => FirstStoreNotifier(),
+);
+
 // ---------------------------------------------------------------------------
 // Store stream — Realtime-backed list of the authenticated player's stores.
 // ---------------------------------------------------------------------------

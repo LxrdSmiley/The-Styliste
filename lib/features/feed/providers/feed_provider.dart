@@ -29,6 +29,31 @@ double _safeDouble(Object? value, {double fallback = 0.0}) {
   return fallback;
 }
 
+String _safeString(Object? value, {String fallback = ''}) {
+  if (value is String) return value;
+  return fallback;
+}
+
+String? _safeOptionalString(Object? value) {
+  if (value is! String) return null;
+  final String trimmed = value.trim();
+  return trimmed.isEmpty ? null : trimmed;
+}
+
+DateTime _safeDateTime(Object? value) {
+  if (value is DateTime) return value;
+  if (value is String) {
+    return DateTime.tryParse(value) ?? DateTime.now();
+  }
+  return DateTime.now();
+}
+
+Map<String, dynamic>? _safeJsonObject(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  return null;
+}
+
 class PendingAlphaDrop {
   const PendingAlphaDrop({
     required this.feedPostId,
@@ -118,13 +143,12 @@ class FeedComment {
 
   factory FeedComment.fromJson(Map<String, dynamic> json) {
     return FeedComment(
-      id: json['id'] as String? ?? '',
-      postId: json['post_id'] as String? ?? '',
-      playerId: json['player_id'] as String? ?? '',
-      body: json['body'] as String? ?? '',
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
-          DateTime.now(),
-      brandName: json['brand_name'] as String?,
+      id: _safeString(json['id'], fallback: _safeString(json['comment_id'])),
+      postId: _safeString(json['post_id']),
+      playerId: _safeString(json['player_id']),
+      body: _safeString(json['body']),
+      createdAt: _safeDateTime(json['created_at']),
+      brandName: _safeOptionalString(json['brand_name']),
     );
   }
 }
@@ -295,9 +319,8 @@ class FeedActions {
       },
     );
     final Object? comment = response['comment'];
-    final FeedComment parsed = FeedComment.fromJson(
-      comment is Map<String, dynamic> ? comment : response,
-    );
+    final FeedComment parsed =
+        FeedComment.fromJson(_safeJsonObject(comment) ?? response);
     _ref.invalidate(feedCommentsProvider(postId));
     return parsed;
   }
@@ -428,10 +451,13 @@ final FutureProviderFamily<List<FeedComment>, String> feedCommentsProvider =
         .eq('post_id', postId)
         .order('created_at');
 
-    return rows
-        .cast<Map<String, dynamic>>()
-        .map(FeedComment.fromJson)
-        .toList(growable: false);
+    return rows.map<FeedComment>((Object? row) {
+      final Map<String, dynamic>? comment = _safeJsonObject(row);
+      if (comment == null) {
+        throw const FormatException('Invalid feed comment row.');
+      }
+      return FeedComment.fromJson(comment);
+    }).toList(growable: false);
   },
 );
 

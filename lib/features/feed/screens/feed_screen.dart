@@ -87,6 +87,23 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     final AsyncValue<List<FeedPost>> activeAsync =
         mode == FeedMode.global ? globalAsync : syndicateAsync;
 
+    FeedPost? ownAlpha;
+    for (final FeedPost post in activeAsync.valueOrNull ?? <FeedPost>[]) {
+      if (post.playerId == activeUid &&
+          post.content['event']?.toString() == 'alpha_dropped') {
+        ownAlpha = post;
+        break;
+      }
+    }
+    if (ownAlpha != null) {
+      unawaited(
+        ref.read(firstObjectiveRepositoryProvider).recordValidatedEvent(
+              'first_drop_result_viewed',
+              entityId: ownAlpha.id,
+            ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.obsidian,
       body: SafeArea(
@@ -1097,7 +1114,7 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              comment.brandName ?? 'Unknown Sovereign',
+                              _commentAuthorLabel(comment),
                               style: const TextStyle(
                                 color: AppColors.gold,
                                 fontSize: 10.0,
@@ -1153,19 +1170,35 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
                       ),
                     ),
                     const SizedBox(width: 8.0),
-                    IconButton(
-                      tooltip: 'Post comment',
-                      onPressed: _isSubmitting ? null : _submit,
-                      icon: _isSubmitting
-                          ? const SizedBox(
-                              width: 18.0,
-                              height: 18.0,
-                              child: CircularProgressIndicator(
-                                color: AppColors.gold,
-                                strokeWidth: 1.5,
-                              ),
-                            )
-                          : const Icon(Icons.send, color: AppColors.gold),
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _controller,
+                      builder: (
+                        BuildContext context,
+                        TextEditingValue value,
+                        Widget? _,
+                      ) {
+                        final bool canSubmit =
+                            !_isSubmitting && value.text.trim().isNotEmpty;
+                        return IconButton(
+                          tooltip: 'Post comment',
+                          onPressed: canSubmit ? _submit : null,
+                          icon: _isSubmitting
+                              ? const SizedBox(
+                                  width: 18.0,
+                                  height: 18.0,
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.gold,
+                                    strokeWidth: 1.5,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.send,
+                                  color: canSubmit
+                                      ? AppColors.gold
+                                      : AppColors.ivory.withValues(alpha: 0.32),
+                                ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -1175,5 +1208,12 @@ class _CommentSheetState extends ConsumerState<_CommentSheet> {
         ),
       ),
     );
+  }
+
+  static String _commentAuthorLabel(FeedComment comment) {
+    final String? brandName = comment.brandName;
+    if (brandName != null && brandName.isNotEmpty) return brandName;
+    if (comment.playerId.length <= 8) return comment.playerId;
+    return 'Designer ${comment.playerId.substring(0, 8).toUpperCase()}';
   }
 }
