@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.player_progression_events (
   entity_id UUID,
   metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
   occurred_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (player_id, event_key, entity_id)
+  UNIQUE NULLS NOT DISTINCT (player_id, event_key, entity_id)
 );
 
 CREATE INDEX IF NOT EXISTS player_progression_events_player_idx
@@ -36,7 +36,11 @@ CREATE POLICY "Progression events: read own"
   ON public.player_progression_events FOR SELECT
   TO authenticated
   USING ((SELECT auth.uid()) = player_id);
-REVOKE INSERT, UPDATE, DELETE ON public.player_progression_events FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON TABLE public.player_progression_events
+  FROM PUBLIC, anon, authenticated, service_role;
+GRANT SELECT ON TABLE public.player_progression_events TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.player_progression_events
+  TO service_role;
 
 CREATE TABLE IF NOT EXISTS public.first_week_objectives (
   player_id UUID NOT NULL REFERENCES public.players(id) ON DELETE CASCADE,
@@ -60,7 +64,11 @@ CREATE POLICY "First week objectives: read own"
   ON public.first_week_objectives FOR SELECT
   TO authenticated
   USING ((SELECT auth.uid()) = player_id);
-REVOKE INSERT, UPDATE, DELETE ON public.first_week_objectives FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON TABLE public.first_week_objectives
+  FROM PUBLIC, anon, authenticated, service_role;
+GRANT SELECT ON TABLE public.first_week_objectives TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.first_week_objectives
+  TO service_role;
 
 INSERT INTO public.first_week_objectives
   (player_id, objective_key, path, title, description, completion_event_key)
@@ -101,7 +109,7 @@ CREATE OR REPLACE FUNCTION public.seed_first_week_objectives()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 BEGIN
   INSERT INTO public.first_week_objectives
@@ -126,6 +134,9 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION public.seed_first_week_objectives()
+  FROM PUBLIC, anon, authenticated, service_role;
+
 DROP TRIGGER IF EXISTS seed_first_week_objectives_on_player ON public.players;
 CREATE TRIGGER seed_first_week_objectives_on_player
   AFTER INSERT ON public.players
@@ -140,7 +151,7 @@ CREATE OR REPLACE FUNCTION public.record_progression_event_internal(
 RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
   v_event_id UUID;
@@ -157,6 +168,9 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION public.record_progression_event_internal(UUID, TEXT, UUID, JSONB)
+  FROM PUBLIC, anon, authenticated, service_role;
+
 INSERT INTO public.player_progression_events(player_id, event_key, entity_id, metadata)
 SELECT d.player_id, 'first_design_created', d.id, '{}'::jsonb
 FROM public.designs d
@@ -172,9 +186,22 @@ SELECT s.player_id, 'first_store_opened', s.id, '{}'::jsonb
 FROM public.stores s
 ON CONFLICT (player_id, event_key, entity_id) DO NOTHING;
 
-INSERT INTO public.player_progression_events(player_id, event_key, entity_id, metadata)
-SELECT f.player_id, 'global_feed_participation', f.id, '{}'::jsonb
-FROM public.feed_posts f
+INSERT INTO public.player_progression_events (
+  player_id,
+  event_key,
+  entity_id,
+  metadata
+)
+SELECT
+  fp.player_id,
+  'global_feed_participation',
+  fp.id,
+  '{}'::jsonb
+FROM public.feed_posts AS fp
+JOIN public.players AS p
+  ON p.id = fp.player_id
+WHERE fp.player_id IS NOT NULL
+  AND fp.is_system IS NOT TRUE
 ON CONFLICT (player_id, event_key, entity_id) DO NOTHING;
 
 UPDATE public.first_week_objectives o
@@ -192,8 +219,8 @@ CREATE OR REPLACE FUNCTION public.record_progression_event(
 )
 RETURNS JSONB
 LANGUAGE plpgsql
-SECURITY INVOKER
-SET search_path = public
+SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   v_player_id UUID := auth.uid();
@@ -202,8 +229,12 @@ BEGIN
   IF v_player_id IS NULL THEN RAISE EXCEPTION 'UNAUTHORIZED'; END IF;
 
   v_valid := CASE p_event_key
-    WHEN 'global_feed_participation' THEN EXISTS (
-      SELECT 1 FROM public.feed_posts WHERE player_id = v_player_id
+    WHEN 'global_feed_participation' THEN p_entity_id IS NOT NULL AND EXISTS (
+      SELECT 1
+      FROM public.feed_posts
+      WHERE id = p_entity_id
+        AND player_id = v_player_id
+        AND is_system IS NOT TRUE
     )
     WHEN 'first_drop_result_viewed' THEN EXISTS (
       SELECT 1 FROM public.feed_posts
@@ -221,14 +252,15 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.record_progression_event(TEXT, UUID) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.record_progression_event(TEXT, UUID)
+  FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.record_progression_event(TEXT, UUID) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.progression_event_trigger()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
 BEGIN
   IF TG_TABLE_NAME = 'designs' THEN
@@ -240,12 +272,17 @@ BEGIN
     IF NEW.decision_made_at IS NOT NULL THEN
       PERFORM public.record_progression_event_internal(NEW.player_id, 'first_store_decision', NEW.id);
     END IF;
-  ELSIF TG_TABLE_NAME = 'feed_posts' THEN
+  ELSIF TG_TABLE_NAME = 'feed_posts'
+      AND NEW.player_id IS NOT NULL
+      AND NEW.is_system IS NOT TRUE THEN
     PERFORM public.record_progression_event_internal(NEW.player_id, 'global_feed_participation', NEW.id);
   END IF;
   RETURN NEW;
 END;
 $$;
+
+REVOKE ALL ON FUNCTION public.progression_event_trigger()
+  FROM PUBLIC, anon, authenticated, service_role;
 
 DROP TRIGGER IF EXISTS progression_event_on_design ON public.designs;
 CREATE TRIGGER progression_event_on_design
@@ -274,7 +311,7 @@ CREATE OR REPLACE FUNCTION public.edge_open_first_store_atomic(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY INVOKER
-SET search_path = public
+SET search_path = ''
 AS $$
 DECLARE
   v_player public.players%ROWTYPE;
@@ -349,7 +386,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.edge_open_first_store_atomic(UUID, TEXT, TEXT, TEXT, INTEGER, UUID)
-  FROM PUBLIC, anon, authenticated;
+  FROM PUBLIC, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.edge_open_first_store_atomic(UUID, TEXT, TEXT, TEXT, INTEGER, UUID)
   TO service_role;
 
