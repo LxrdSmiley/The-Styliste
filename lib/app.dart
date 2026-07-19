@@ -1,8 +1,7 @@
 // GDD §3.0 — App root widget: MaterialApp.router with portrait lock and theming
 // PROJECT_RULES §3 — go_router manages all navigation
-// Phase 2 — Auth gate: holds pure obsidian SizedBox until the Supabase
-// anonymous game identity resolves. Firebase services initialize in main.dart,
-// but Firebase Auth is not started during first-session gameplay.
+// Phase 2 — Auth gate: holds pure obsidian SizedBox until the Firebase
+// anonymous identity and its Supabase bridge resolve.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,22 +17,34 @@ class TheStyliste extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<Object?> supabaseSignIn =
-        ref.watch(supabaseAnonSignInProvider);
+    final AsyncValue<Object?> firebaseSignIn =
+        ref.watch(firebaseAnonSignInProvider);
+    final AsyncValue<Object?> supabaseBridge =
+        ref.watch(supabaseBridgeProvider);
 
-    // Auth gate: hold obsidian until Supabase game identity resolves.
+    // Auth gate: hold obsidian until the game identity is bridged to Supabase.
     // On error: surface a minimal danger-coloured message for debugging.
-    return supabaseSignIn.when(
-      loading: () => const _ObsidianGate(),
-      error: (Object e, _) => _ObsidianGate(errorMessage: _authErrorMessage(e)),
-      data: (_) => MaterialApp.router(
-        title: 'The Styliste',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.dark,
-        routerConfig: AppRouter.router,
-      ),
+    if (firebaseSignIn.isLoading || supabaseBridge.isLoading) {
+      return const _ObsidianGate();
+    }
+    if (firebaseSignIn.hasError) {
+      return _ObsidianGate(
+        errorMessage: _authErrorMessage(firebaseSignIn.error!),
+      );
+    }
+    if (supabaseBridge.hasError) {
+      return _ObsidianGate(
+        errorMessage: _authErrorMessage(supabaseBridge.error!),
+      );
+    }
+
+    return MaterialApp.router(
+      title: 'The Styliste',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.dark,
+      routerConfig: AppRouter.router,
     );
   }
 }
