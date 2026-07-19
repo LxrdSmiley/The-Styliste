@@ -8,10 +8,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/providers/active_player_provider.dart';
-import '../../../core/services/supabase_service.dart';
 import '../models/fashion_district.dart';
 
 part 'district_provider.g.dart';
+
+const String kDistrictSiegesUnavailableMessage =
+    'District sieges are temporarily unavailable while authoritative '
+    'settlement is being strengthened. No capital or control changed.';
 
 /// Real-time stream of all 9 fashion districts
 ///
@@ -121,12 +124,13 @@ class DistrictSiegeState {
     TakeoverResult? result,
     String? errorMessage,
     bool clearError = false,
+    bool clearResult = false,
   }) {
     return DistrictSiegeState(
       isSieging: isSieging ?? this.isSieging,
       targetDistrictId: targetDistrictId ?? this.targetDistrictId,
       bidAmount: bidAmount ?? this.bidAmount,
-      result: result ?? this.result,
+      result: clearResult ? null : (result ?? this.result),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
   }
@@ -145,38 +149,21 @@ class DistrictSiegeNotifier extends StateNotifier<DistrictSiegeState> {
     required String maisonId,
     required String districtId,
     required int capitalBid,
-  }) async {
-    if (state.isSieging) return;
+  }) {
+    if (state.isSieging) return Future<void>.value();
+    assert(maisonId.isNotEmpty);
 
+    // The former client-callable RPC remains quarantined until its bid and
+    // settlement rules can be made authoritative. Do not send a speculative
+    // client mutation that could affect Maison control or capital.
     state = state.copyWith(
-      isSieging: true,
+      isSieging: false,
       targetDistrictId: districtId,
       bidAmount: capitalBid,
-      clearError: true,
+      errorMessage: kDistrictSiegesUnavailableMessage,
+      clearResult: true,
     );
-
-    try {
-      final Map<String, dynamic> result = await SupabaseService.client.rpc(
-        SupabaseConstants.fnAttemptDistrictTakeover,
-        params: <String, dynamic>{
-          'p_attacker_maison_id': maisonId,
-          'p_district_id': districtId,
-          'p_capital_bid': capitalBid,
-        },
-      );
-
-      final TakeoverResult takeoverResult = TakeoverResult.fromJson(result);
-
-      state = state.copyWith(
-        isSieging: false,
-        result: takeoverResult,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isSieging: false,
-        errorMessage: 'Siege failed: $e',
-      );
-    }
+    return Future<void>.value();
   }
 
   /// Clear siege state after user acknowledges

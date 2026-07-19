@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/services/mini_game_service.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../features/supply_chain/providers/supply_chain_provider.dart';
+import '../widgets/mini_game_rewards_unavailable.dart';
 
 /// Flash Sale Frenzy — Falling garment drag mini-game
 /// Drag falling garment cards to tier bins before they fall off screen
@@ -54,6 +55,7 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
   @override
   void initState() {
     super.initState();
+    if (!MiniGameService.rewardsAreAvailable) return;
     _gameTimer = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 60),
@@ -156,12 +158,19 @@ class _FlashSaleScreenState extends ConsumerState<FlashSaleScreen>
 
   @override
   void dispose() {
+    if (!MiniGameService.rewardsAreAvailable) {
+      super.dispose();
+      return;
+    }
     _gameTimer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!MiniGameService.rewardsAreAvailable) {
+      return const MiniGameRewardsUnavailableScreen();
+    }
     final Size screenSize = MediaQuery.of(context).size;
 
     return Scaffold(

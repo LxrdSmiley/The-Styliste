@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/services/mini_game_service.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../features/ledger/providers/equity_provider.dart';
+import '../widgets/mini_game_rewards_unavailable.dart';
 
 /// Hostile Takeover — High-stakes corporate tug-of-war
 /// 30-second timer, rival pushes back constantly, player taps to acquire shares
@@ -35,6 +36,7 @@ class _HostileTakeoverScreenState extends ConsumerState<HostileTakeoverScreen>
   @override
   void initState() {
     super.initState();
+    if (!MiniGameService.rewardsAreAvailable) return;
     _prepareAttempt();
 
     // 30 Second global timer
@@ -80,6 +82,10 @@ class _HostileTakeoverScreenState extends ConsumerState<HostileTakeoverScreen>
 
   @override
   void dispose() {
+    if (!MiniGameService.rewardsAreAvailable) {
+      super.dispose();
+      return;
+    }
     _gameTimer.dispose();
     _rivalForce.dispose();
     super.dispose();
@@ -142,6 +148,9 @@ class _HostileTakeoverScreenState extends ConsumerState<HostileTakeoverScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!MiniGameService.rewardsAreAvailable) {
+      return const MiniGameRewardsUnavailableScreen();
+    }
     return Scaffold(
       backgroundColor: AurelianPalette.textPrimary, // Obsidian
       body: GestureDetector(

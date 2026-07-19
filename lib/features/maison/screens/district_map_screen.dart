@@ -438,27 +438,66 @@ class _DistrictDetailsSheet extends StatelessWidget {
 
           const SizedBox(height: 24.0),
 
-          // Action button
+          Semantics(
+            container: true,
+            liveRegion: true,
+            label: 'District sieges are temporarily unavailable.',
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: AurelianPalette.ivoryDark,
+                borderRadius: BorderRadius.circular(12.0),
+                border: Border.all(
+                  color: AurelianPalette.champagneGold.withValues(alpha: 0.35),
+                ),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'SIEGES PAUSED',
+                    style: TextStyle(
+                      fontFamily: 'SpaceGrotesk',
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                      color: AurelianPalette.champagneGold,
+                    ),
+                  ),
+                  SizedBox(height: 8.0),
+                  Text(
+                    'Territory outcomes are being secured. No capital or '
+                    'district control can change from this screen.',
+                    style: TextStyle(
+                      fontFamily: 'SpaceGrotesk',
+                      fontSize: 14.0,
+                      height: 1.4,
+                      color: AurelianPalette.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16.0),
+
+          // Keep the intended control visible but unavailable.
           if (!district.isControlled)
             SizedBox(
               width: double.infinity,
               height: 56.0,
               child: ElevatedButton(
-                onPressed: () {
-                  // Navigate to siege preparation
-                  Navigator.pop(context);
-                  // context.push('/maison/siege/${district.id}');
-                },
+                onPressed: null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AurelianPalette.champagneGold,
-                  foregroundColor: AurelianPalette.textPrimary,
                   elevation: 0.0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                 ),
                 child: const Text(
-                  'INITIATE SIEGE',
+                  'SIEGES PAUSED',
                   style: TextStyle(
                     fontFamily: 'SpaceGrotesk',
                     fontSize: 14.0,

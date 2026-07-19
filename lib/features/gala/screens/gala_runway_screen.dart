@@ -453,15 +453,58 @@ class _VotingConsole extends ConsumerWidget {
 
             const SizedBox(height: 16.0),
 
-            // Vote buttons row
+            Semantics(
+              container: true,
+              liveRegion: true,
+              label: 'Gala judging is temporarily unavailable.',
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.72),
+                  border: Border.all(
+                    color: AurelianPalette.champagneGold.withValues(alpha: 0.4),
+                  ),
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'JUDGING PAUSED',
+                      style: TextStyle(
+                        color: AurelianPalette.champagneGold,
+                        fontFamily: 'SpaceGrotesk',
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    SizedBox(height: 8.0),
+                    Text(
+                      kGalaVotingUnavailableMessage,
+                      style: TextStyle(
+                        color: AurelianPalette.textSecondary,
+                        fontFamily: 'SpaceGrotesk',
+                        fontSize: 14.0,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16.0),
+
+            // Retain the tier hierarchy as disabled context; no paid scoring
+            // action can be sent while the formula is quarantined.
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: VoteTier.values.map((VoteTier tier) {
                 return _VoteButton(
                   tier: tier,
-                  onTap: submission != null && !castState.isCasting
-                      ? () => _castVote(ref, tier)
-                      : null,
+                  onTap: null,
                 );
               }).toList(),
             ),
@@ -469,12 +512,6 @@ class _VotingConsole extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  void _castVote(WidgetRef ref, VoteTier tier) {
-    if (submission == null) return;
-
-    ref.read(voteCastingProvider.notifier).castVote(submission!.id, tier);
   }
 }
 

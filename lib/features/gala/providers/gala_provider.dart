@@ -10,6 +10,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/gala_models.dart';
 import '../services/gala_scoring_engine.dart';
 
+const String kGalaVotingUnavailableMessage =
+    'Gala judging is temporarily unavailable while its authoritative scoring '
+    'and settlement rules are being corrected.';
+
 Map<String, dynamic> _firstRpcRow(Object? response) {
   if (response is Map<String, dynamic>) {
     return response;
@@ -407,44 +411,17 @@ class VoteCastingState {
 class VoteCastingNotifier extends StateNotifier<VoteCastingState> {
   VoteCastingNotifier() : super(const VoteCastingState());
 
-  Future<void> castVote(String submissionId, VoteTier tier) async {
-    if (state.isCasting) return;
+  Future<void> castVote(String _submissionId, VoteTier _tier) {
+    if (state.isCasting) return Future<void>.value();
 
-    // Execute haptic first (immediate feedback)
-    await tier.executeHaptic();
-
-    state =
-        state.copyWith(isCasting: true, clearError: true, clearResult: true);
-
-    try {
-      final SupabaseClient supabase = Supabase.instance.client;
-
-      final Object? response = await supabase.rpc(
-        'cast_gala_vote',
-        params: <String, dynamic>{
-          'p_submission_id': submissionId,
-          'p_vote_tier': tier.name.toLowerCase(),
-        },
-      );
-      final Map<String, dynamic> result = _firstRpcRow(response);
-
-      final VoteResult voteResult = VoteResult(
-        success: result['success'] as bool,
-        finalPoints: (result['final_points'] as num).toDouble(),
-        message: result['message'] as String?,
-        submissionId: submissionId,
-      );
-
-      state = state.copyWith(
-        isCasting: false,
-        lastResult: voteResult,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isCasting: false,
-        errorMessage: 'Failed to cast vote: $e',
-      );
-    }
+    // Paid, client-triggered vote scoring is quarantined until the GDD v7 Gala
+    // formula and single-settlement rules are implemented.
+    state = state.copyWith(
+      isCasting: false,
+      errorMessage: kGalaVotingUnavailableMessage,
+      clearResult: true,
+    );
+    return Future<void>.value();
   }
 }
 
