@@ -13,6 +13,17 @@ import '../../../domain/models/brand.dart';
 import '../../hq/providers/hq_provider.dart';
 import '../models/talent.dart';
 
+/// Parameters accepted by the player-owned Casting RPC.
+///
+/// The database derives the player from the authenticated request context;
+/// callers must never provide a player identifier.
+Map<String, dynamic> castingPullRequestParams({required bool isTenPull}) {
+  return <String, dynamic>{
+    'p_banner_id': 'standard',
+    'p_is_ten_pull': isTenPull,
+  };
+}
+
 // =============================================================================
 // Casting State
 // =============================================================================
@@ -79,16 +90,11 @@ class CastingNotifier extends StateNotifier<CastingState> {
 
     try {
       final SupabaseClient supabase = Supabase.instance.client;
-      final String userId = supabase.auth.currentUser!.id;
 
       // Server-authoritative pull
       final Map<String, dynamic> result = await supabase.rpc(
         SupabaseConstants.fnExecuteCastingPull,
-        params: <String, dynamic>{
-          'p_player_id': userId,
-          'p_banner_id': 'standard',
-          'p_is_ten_pull': isTenPull,
-        },
+        params: castingPullRequestParams(isTenPull: isTenPull),
       );
 
       if (result['success'] == true) {
