@@ -18,21 +18,66 @@ SELECT
 
 INSERT INTO public.players (id, brand_name, path, hq_city)
 VALUES
-  ('00000000-0000-4000-8000-00000000c101', 'M3A1 Single', 'mogul', 'Paris'),
-  ('00000000-0000-4000-8000-00000000c102', 'M3A1 Ten', 'mogul', 'Paris'),
-  ('00000000-0000-4000-8000-00000000c103', 'M3A1 Insufficient', 'mogul', 'Paris'),
+  ('00000000-0000-4000-8000-00000000c101', 'Casting Pity 88', 'mogul', 'Paris'),
+  ('00000000-0000-4000-8000-00000000c102', 'Casting Pity 89', 'mogul', 'Paris'),
+  ('00000000-0000-4000-8000-00000000c103', 'Casting Pity 90', 'mogul', 'Paris'),
   ('00000000-0000-4000-8000-00000000c104', 'M3A1 District', 'mogul', 'Paris'),
   ('00000000-0000-4000-8000-00000000c105', 'M3A1 Gala', 'mogul', 'Paris'),
   ('00000000-0000-4000-8000-00000000c106', 'M3A1 Mini', 'mogul', 'Paris');
 
 INSERT INTO public.brand_state (player_id, luxe_tokens)
 VALUES
-  ('00000000-0000-4000-8000-00000000c101', 100),
+  ('00000000-0000-4000-8000-00000000c101', 1000),
   ('00000000-0000-4000-8000-00000000c102', 1000),
-  ('00000000-0000-4000-8000-00000000c103', 99),
+  ('00000000-0000-4000-8000-00000000c103', 1000),
   ('00000000-0000-4000-8000-00000000c104', 500),
   ('00000000-0000-4000-8000-00000000c105', 500),
   ('00000000-0000-4000-8000-00000000c106', 500);
+
+INSERT INTO public.gacha_pity_state (
+  player_id,
+  banner_id,
+  pulls_since_sovereign,
+  total_pulls,
+  last_pull_at
+)
+VALUES
+  ('00000000-0000-4000-8000-00000000c101', 'standard', 88, 188, '2026-01-01T00:00:00Z'),
+  ('00000000-0000-4000-8000-00000000c102', 'standard', 89, 189, '2026-01-02T00:00:00Z'),
+  ('00000000-0000-4000-8000-00000000c103', 'standard', 90, 190, '2026-01-03T00:00:00Z');
+
+INSERT INTO public.player_roster (player_id, talent_id, acquisition_source)
+SELECT fixture.player_id, talent.id, 'historical_casting'
+FROM (
+  VALUES
+    ('00000000-0000-4000-8000-00000000c101'::UUID),
+    ('00000000-0000-4000-8000-00000000c102'::UUID),
+    ('00000000-0000-4000-8000-00000000c103'::UUID)
+) AS fixture(player_id)
+CROSS JOIN LATERAL (
+  SELECT id FROM public.talent_pool ORDER BY id LIMIT 1
+) AS talent;
+
+CREATE TEMP TABLE casting_quarantine_snapshot AS
+SELECT
+  pity.player_id,
+  brand.luxe_tokens,
+  pity.banner_id,
+  pity.pulls_since_sovereign,
+  pity.total_pulls,
+  pity.last_pull_at,
+  (
+    SELECT count(*)::INTEGER
+    FROM public.player_roster AS roster
+    WHERE roster.player_id = pity.player_id
+  ) AS roster_count
+FROM public.gacha_pity_state AS pity
+JOIN public.brand_state AS brand ON brand.player_id = pity.player_id
+WHERE pity.player_id IN (
+  '00000000-0000-4000-8000-00000000c101',
+  '00000000-0000-4000-8000-00000000c102',
+  '00000000-0000-4000-8000-00000000c103'
+);
 
 -- Effective privilege checks include a direct ACL test for PUBLIC (grantee 0)
 -- and role-effective checks for anon, authenticated, and service_role.
@@ -60,10 +105,10 @@ SELECT ok(
         AND privilege.grantee = 0
         AND privilege.privilege_type = 'EXECUTE'
     )
-    AND has_function_privilege('authenticated', 'public.execute_casting_pull(text,boolean)', 'EXECUTE')
+    AND NOT has_function_privilege('authenticated', 'public.execute_casting_pull(text,boolean)', 'EXECUTE')
     AND NOT has_function_privilege('anon', 'public.execute_casting_pull(text,boolean)', 'EXECUTE')
     AND NOT has_function_privilege('service_role', 'public.execute_casting_pull(text,boolean)', 'EXECUTE'),
-  'only authenticated callers can execute the auth-derived Casting signature'
+  'Casting is not executable by PUBLIC, anon, authenticated, or service_role'
 );
 SELECT ok(
   NOT EXISTS (
@@ -152,31 +197,92 @@ RESET ROLE;
 SELECT is((SELECT COALESCE(sum(treasury), 0)::numeric FROM public.maisons), (SELECT treasury_total FROM m3a1_snapshot), 'denied district bids leave treasury unchanged');
 SELECT is((SELECT count(*)::bigint FROM public.fashion_districts), (SELECT district_count FROM m3a1_snapshot), 'denied district bids leave district records unchanged');
 
--- AUD-003: accepted calls derive identity from the request JWT and settle all
--- balance, pity, and roster changes together.
-SELECT set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-00000000c101","role":"authenticated","is_anonymous":false}', true);
-SET LOCAL ROLE authenticated;
-SELECT is((SELECT luxe_spent FROM public.execute_casting_pull('standard', FALSE)), 100, 'single pull deducts exactly one 100-Luxe cost');
-RESET ROLE;
-SELECT is((SELECT luxe_tokens FROM public.brand_state WHERE player_id = '00000000-0000-4000-8000-00000000c101'), 0, 'single pull balance is exact and non-negative');
-SELECT is((SELECT total_pulls FROM public.gacha_pity_state WHERE player_id = '00000000-0000-4000-8000-00000000c101' AND banner_id = 'standard'), 1, 'single pull increments pity once');
-SELECT is((SELECT count(*)::integer FROM public.player_roster WHERE player_id = '00000000-0000-4000-8000-00000000c101'), 1, 'single pull creates one roster award for an empty fixture');
+-- AUD-003 / Directive 26: GDD v7 quarantines Luxe-funded functional Talent.
+-- The owner-level call below reaches the deterministic body while every API
+-- role remains revoked. Boundary fixtures prove zero mutation at pity 88/89/90.
+SELECT throws_ok(
+  format(
+    $call$
+      WITH claims AS MATERIALIZED (
+        SELECT set_config(
+          'request.jwt.claims',
+          %L,
+          true
+        )
+      )
+      SELECT casting.*
+      FROM claims
+      CROSS JOIN LATERAL public.execute_casting_pull('standard', FALSE) AS casting
+    $call$,
+    jsonb_build_object(
+      'sub', snapshot.player_id,
+      'role', 'authenticated',
+      'is_anonymous', FALSE
+    )::TEXT
+  ),
+  'P0001',
+  'CASTING_UNAVAILABLE',
+  format(
+    'pity %s Casting call is deterministically unavailable',
+    snapshot.pulls_since_sovereign
+  )
+)
+FROM casting_quarantine_snapshot AS snapshot
+ORDER BY snapshot.pulls_since_sovereign;
 
-SELECT set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-00000000c102","role":"authenticated","is_anonymous":false}', true);
-SET LOCAL ROLE authenticated;
-SELECT is((SELECT luxe_spent FROM public.execute_casting_pull('standard', TRUE)), 1000, 'ten pull deducts exactly one 1000-Luxe cost');
-RESET ROLE;
-SELECT is((SELECT luxe_tokens FROM public.brand_state WHERE player_id = '00000000-0000-4000-8000-00000000c102'), 0, 'ten pull balance is exact and non-negative');
-SELECT is((SELECT total_pulls FROM public.gacha_pity_state WHERE player_id = '00000000-0000-4000-8000-00000000c102' AND banner_id = 'standard'), 10, 'ten pull increments pity per completed pull');
-SELECT ok((SELECT count(*) FROM public.player_roster WHERE player_id = '00000000-0000-4000-8000-00000000c102') BETWEEN 1 AND 10, 'ten pull roster awards are bounded by accepted pull results');
+SELECT is(
+  brand.luxe_tokens,
+  snapshot.luxe_tokens,
+  format('pity %s leaves Luxe unchanged', snapshot.pulls_since_sovereign)
+)
+FROM casting_quarantine_snapshot AS snapshot
+JOIN public.brand_state AS brand ON brand.player_id = snapshot.player_id
+ORDER BY snapshot.pulls_since_sovereign;
 
-SELECT set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-00000000c103","role":"authenticated","is_anonymous":false}', true);
-SET LOCAL ROLE authenticated;
-SELECT ok(NOT (SELECT success FROM public.execute_casting_pull('standard', FALSE)), 'insufficient Luxe rejects Casting');
-RESET ROLE;
-SELECT is((SELECT luxe_tokens FROM public.brand_state WHERE player_id = '00000000-0000-4000-8000-00000000c103'), 99, 'rejected Casting does not change Luxe');
-SELECT is((SELECT count(*)::integer FROM public.gacha_pity_state WHERE player_id = '00000000-0000-4000-8000-00000000c103'), 0, 'rejected Casting does not create or increment pity');
-SELECT is((SELECT count(*)::integer FROM public.player_roster WHERE player_id = '00000000-0000-4000-8000-00000000c103'), 0, 'rejected Casting does not create roster ownership');
+SELECT is(
+  pity.pulls_since_sovereign,
+  snapshot.pulls_since_sovereign,
+  format('pity %s leaves pity unchanged', snapshot.pulls_since_sovereign)
+)
+FROM casting_quarantine_snapshot AS snapshot
+JOIN public.gacha_pity_state AS pity
+  ON pity.player_id = snapshot.player_id
+  AND pity.banner_id = snapshot.banner_id
+ORDER BY snapshot.pulls_since_sovereign;
+
+SELECT is(
+  pity.total_pulls,
+  snapshot.total_pulls,
+  format('pity %s leaves pull history unchanged', snapshot.pulls_since_sovereign)
+)
+FROM casting_quarantine_snapshot AS snapshot
+JOIN public.gacha_pity_state AS pity
+  ON pity.player_id = snapshot.player_id
+  AND pity.banner_id = snapshot.banner_id
+ORDER BY snapshot.pulls_since_sovereign;
+
+SELECT is(
+  pity.last_pull_at,
+  snapshot.last_pull_at,
+  format('pity %s leaves banner state unchanged', snapshot.pulls_since_sovereign)
+)
+FROM casting_quarantine_snapshot AS snapshot
+JOIN public.gacha_pity_state AS pity
+  ON pity.player_id = snapshot.player_id
+  AND pity.banner_id = snapshot.banner_id
+ORDER BY snapshot.pulls_since_sovereign;
+
+SELECT is(
+  (
+    SELECT count(*)::INTEGER
+    FROM public.player_roster AS roster
+    WHERE roster.player_id = snapshot.player_id
+  ),
+  snapshot.roster_count,
+  format('pity %s leaves roster ownership unchanged', snapshot.pulls_since_sovereign)
+)
+FROM casting_quarantine_snapshot AS snapshot
+ORDER BY snapshot.pulls_since_sovereign;
 
 -- AUD-004/005: denials and repeated privileged body calls cannot change Gala.
 SELECT set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-00000000c105","role":"authenticated","is_anonymous":false}', true);
