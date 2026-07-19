@@ -12,8 +12,10 @@ void main() {
     );
 
     expect(find.text('REWARDS PAUSED'), findsOneWidget);
-    expect(find.textContaining('No currency, progression, or inventory'),
-        findsOneWidget);
+    expect(
+      find.textContaining('No currency, progression, or inventory'),
+      findsOneWidget,
+    );
     expect(find.text('RETURN'), findsOneWidget);
   });
 }

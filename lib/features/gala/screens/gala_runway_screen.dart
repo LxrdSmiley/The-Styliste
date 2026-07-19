@@ -504,7 +504,7 @@ class _VotingConsole extends ConsumerWidget {
               children: VoteTier.values.map((VoteTier tier) {
                 return _VoteButton(
                   tier: tier,
-                  onTap: null,
+                  isEnabled: false,
                 );
               }).toList(),
             ),
@@ -518,16 +518,15 @@ class _VotingConsole extends ConsumerWidget {
 class _VoteButton extends StatelessWidget {
   const _VoteButton({
     required this.tier,
-    this.onTap,
+    required this.isEnabled,
   });
 
   final VoteTier tier;
-  final VoidCallback? onTap;
+  final bool isEnabled;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -536,19 +535,19 @@ class _VoteButton extends StatelessWidget {
             width: 64.0,
             height: 64.0,
             decoration: BoxDecoration(
-              color: onTap != null
+              color: isEnabled
                   ? tier.tierColor.withValues(alpha: 0.2)
                   : Colors.white.withValues(alpha: 0.05),
               shape: BoxShape.circle,
               border: Border.all(
-                color: onTap != null
+                color: isEnabled
                     ? tier.tierColor
                     : Colors.white.withValues(alpha: 0.1),
                 width: 2.0,
               ),
             ),
             child: Center(
-              child: _getTierIcon(tier, onTap != null),
+              child: _getTierIcon(tier, isEnabled),
             ),
           ),
           const SizedBox(height: 8.0),
@@ -559,7 +558,7 @@ class _VoteButton extends StatelessWidget {
               fontFamily: 'SpaceGrotesk',
               fontSize: 10.0,
               letterSpacing: 1.5,
-              color: onTap != null
+              color: isEnabled
                   ? tier.tierColor
                   : Colors.white.withValues(alpha: 0.3),
             ),
@@ -571,7 +570,7 @@ class _VoteButton extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'JetBrainsMono',
                 fontSize: 8.0,
-                color: onTap != null
+                color: isEnabled
                     ? const Color(0xFFD4AF37)
                     : Colors.white.withValues(alpha: 0.3),
               ),

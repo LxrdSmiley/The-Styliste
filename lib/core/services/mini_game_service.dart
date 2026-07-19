@@ -20,15 +20,15 @@ abstract final class MiniGameService {
   /// containment for already-shipped clients.
   static bool get rewardsAreAvailable => false;
 
-  static Future<MiniGameAttempt> start(String _gameKey) {
+  static Future<MiniGameAttempt> start(String gameKey) {
     return Future<MiniGameAttempt>.error(
       const MiniGameRewardsUnavailableException(),
     );
   }
 
   static Future<Map<String, dynamic>> claim(
-    String _attemptId,
-    Map<String, dynamic> _proof,
+    String attemptId,
+    Map<String, dynamic> proof,
   ) {
     return Future<Map<String, dynamic>>.error(
       const MiniGameRewardsUnavailableException(),

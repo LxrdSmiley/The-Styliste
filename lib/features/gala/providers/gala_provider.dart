@@ -411,7 +411,7 @@ class VoteCastingState {
 class VoteCastingNotifier extends StateNotifier<VoteCastingState> {
   VoteCastingNotifier() : super(const VoteCastingState());
 
-  Future<void> castVote(String _submissionId, VoteTier _tier) {
+  Future<void> castVote(String submissionId, VoteTier tier) {
     if (state.isCasting) return Future<void>.value();
 
     // Paid, client-triggered vote scoring is quarantined until the GDD v7 Gala
