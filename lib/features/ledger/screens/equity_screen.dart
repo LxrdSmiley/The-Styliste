@@ -11,8 +11,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/aurelian_theme.dart';
-import '../../../domain/models/brand.dart';
-import '../../hq/providers/hq_provider.dart';
 import '../providers/equity_provider.dart';
 
 /// Equity Screen — Corporate warfare dashboard
@@ -22,8 +20,8 @@ class EquityScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<Brand> brandAsync = ref.watch(hqBrandStreamProvider);
-    final EquityState equityState = ref.watch(equityProvider);
+    final AsyncValue<EquitySnapshot?> equityAsync =
+        ref.watch(authoritativeEquityProvider);
 
     return Scaffold(
       backgroundColor: AurelianPalette.textPrimary,
@@ -39,11 +37,10 @@ class EquityScreen extends ConsumerWidget {
         ),
         centerTitle: true,
       ),
-      body: brandAsync.when(
-        data: (Brand brand) => _EquityContent(
-          brand: brand,
-          equityState: equityState,
-        ),
+      body: equityAsync.when(
+        data: (EquitySnapshot? snapshot) => snapshot == null
+            ? const _EquityUnavailable()
+            : _EquityContent(snapshot: snapshot),
         loading: () => const Center(
           child: CircularProgressIndicator(
             color: AurelianPalette.champagneGold,
@@ -60,18 +57,38 @@ class EquityScreen extends ConsumerWidget {
   }
 }
 
+class _EquityUnavailable extends StatelessWidget {
+  const _EquityUnavailable();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(32.0),
+        child: Text(
+          'EQUITY DATA IS NOT YET AVAILABLE.\nNO CLIENT-SIDE VALUATION IS SHOWN.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: AurelianPalette.textTertiary,
+            fontFamily: 'JetBrainsMono',
+            fontSize: 11.0,
+            height: 1.6,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _EquityContent extends StatelessWidget {
   const _EquityContent({
-    required this.brand,
-    required this.equityState,
+    required this.snapshot,
   });
 
-  final Brand brand;
-  final EquityState equityState;
+  final EquitySnapshot snapshot;
 
-  double get _stockPrice => brand.hypeScore * 1.5;
-  double get _marketShare =>
-      math.min(brand.totalRevenue / 1000000, 100); // Mock calculation
+  double get _stockPrice => snapshot.sharePrice;
+  double get _marketShare => 0.0;
 
   @override
   Widget build(BuildContext context) {
@@ -170,16 +187,16 @@ class _EquityContent extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    _LegendItem(
+                    const _LegendItem(
                       color: AurelianPalette.champagneGold,
                       label: 'YOUR SHARE',
-                      value: '${_marketShare.toStringAsFixed(1)}%',
+                      value: 'UNAVAILABLE',
                     ),
                     const SizedBox(height: 12),
-                    _LegendItem(
+                    const _LegendItem(
                       color: AurelianPalette.danger,
                       label: 'COMPETITION',
-                      value: '${(100 - _marketShare).toStringAsFixed(1)}%',
+                      value: 'UNAVAILABLE',
                     ),
                     const SizedBox(height: 12),
                     _LegendItem(

@@ -3,9 +3,10 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/constants/supabase_constants.dart';
+import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/mini_game_service.dart';
-import '../../../domain/models/brand.dart';
-import '../../hq/providers/hq_provider.dart';
+import '../../../core/services/supabase_service.dart';
 
 // =============================================================================
 // Equity State
@@ -13,22 +14,16 @@ import '../../hq/providers/hq_provider.dart';
 
 class EquityState {
   const EquityState({
-    this.stockPrice = 0.0,
-    this.marketShare = 0.0,
     this.isLoading = false,
     this.errorMessage,
     this.activeTakeover,
   });
 
-  final double stockPrice; // Derived from Hype Score * 1.5
-  final double marketShare; // Percentage of global market
   final bool isLoading;
   final String? errorMessage;
   final TakeoverState? activeTakeover;
 
   EquityState copyWith({
-    double? stockPrice,
-    double? marketShare,
     bool? isLoading,
     String? errorMessage,
     TakeoverState? activeTakeover,
@@ -36,8 +31,6 @@ class EquityState {
     bool clearTakeover = false,
   }) {
     return EquityState(
-      stockPrice: stockPrice ?? this.stockPrice,
-      marketShare: marketShare ?? this.marketShare,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       activeTakeover:
@@ -68,14 +61,6 @@ class TakeoverState {
 
 class EquityNotifier extends StateNotifier<EquityState> {
   EquityNotifier() : super(const EquityState());
-
-  /// Calculate stock price from brand state
-  /// Stock Price = Hype Score * 1.5
-  void calculateStockPrice(double hypeScore) {
-    state = state.copyWith(
-      stockPrice: hypeScore * 1.5,
-    );
-  }
 
   /// Initiate a hostile takeover
   void startTakeover({
@@ -153,12 +138,44 @@ final StateNotifierProvider<EquityNotifier, EquityState> equityProvider =
 
 /// Computed stock price from brand hype score
 final Provider<double> stockPriceProvider = Provider<double>(
-  (Ref<double> ref) {
-    final AsyncValue<Brand> brandAsync = ref.watch(hqBrandStreamProvider);
-    return brandAsync.when(
-      data: (Brand brand) => brand.hypeScore * 1.5,
-      loading: () => 0.0,
-      error: (_, __) => 0.0,
-    );
-  },
+  (Ref<double> ref) => ref.watch(authoritativeEquityProvider).maybeWhen(
+        data: (EquitySnapshot? snapshot) => snapshot?.sharePrice ?? 0.0,
+        orElse: () => 0.0,
+      ),
 );
+
+class EquitySnapshot {
+  const EquitySnapshot({
+    required this.sharePrice,
+    required this.valuation,
+    required this.updatedAt,
+  });
+
+  final double sharePrice;
+  final double valuation;
+  final DateTime updatedAt;
+
+  factory EquitySnapshot.fromJson(Map<String, dynamic> json) {
+    return EquitySnapshot(
+      sharePrice: (json['share_price'] as num?)?.toDouble() ?? 0.0,
+      valuation: (json['valuation'] as num?)?.toDouble() ?? 0.0,
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+    );
+  }
+}
+
+final FutureProvider<EquitySnapshot?> authoritativeEquityProvider =
+    FutureProvider<EquitySnapshot?>(
+        (Ref<AsyncValue<EquitySnapshot?>> ref) async {
+  ref.watch(supabaseAuthRevisionProvider);
+  final String uid = ref.watch(activeUidProvider);
+  if (uid.isEmpty) return null;
+  await SupabaseService.ensureFreshSession();
+  final Map<String, dynamic>? row = await SupabaseService.client
+      .from(SupabaseConstants.tableBrandsEquity)
+      .select('share_price, valuation, updated_at')
+      .eq('brand_id', uid)
+      .maybeSingle();
+  return row == null ? null : EquitySnapshot.fromJson(row);
+});

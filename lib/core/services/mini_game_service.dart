@@ -1,4 +1,6 @@
-import 'supabase_service.dart';
+class MiniGameRewardsUnavailableException implements Exception {
+  const MiniGameRewardsUnavailableException();
+}
 
 class MiniGameAttempt {
   const MiniGameAttempt({
@@ -11,34 +13,25 @@ class MiniGameAttempt {
 }
 
 abstract final class MiniGameService {
-  static Future<MiniGameAttempt> start(String gameKey) async {
-    final Map<String, dynamic> response = await SupabaseService.invokeFunction(
-      'claim-mini-game-reward',
-      body: <String, dynamic>{
-        'action': 'start',
-        'game_key': gameKey,
-      },
+  /// Client evidence is not sufficient to settle an economic reward.
+  ///
+  /// This is intentionally false until a server-verifiable game protocol is
+  /// authorized. The Edge Function and database functions enforce the same
+  /// containment for already-shipped clients.
+  static bool get rewardsAreAvailable => false;
+
+  static Future<MiniGameAttempt> start(String _gameKey) {
+    return Future<MiniGameAttempt>.error(
+      const MiniGameRewardsUnavailableException(),
     );
-    final String? id = response['attempt_id'] as String?;
-    final Map<String, dynamic>? challenge =
-        response['challenge'] as Map<String, dynamic>?;
-    if (id == null || challenge == null) {
-      throw const FormatException('Mini-game attempt was not created.');
-    }
-    return MiniGameAttempt(id: id, challenge: challenge);
   }
 
   static Future<Map<String, dynamic>> claim(
-    String attemptId,
-    Map<String, dynamic> proof,
+    String _attemptId,
+    Map<String, dynamic> _proof,
   ) {
-    return SupabaseService.invokeFunction(
-      'claim-mini-game-reward',
-      body: <String, dynamic>{
-        'action': 'claim',
-        'attempt_id': attemptId,
-        'proof': proof,
-      },
+    return Future<Map<String, dynamic>>.error(
+      const MiniGameRewardsUnavailableException(),
     );
   }
 }

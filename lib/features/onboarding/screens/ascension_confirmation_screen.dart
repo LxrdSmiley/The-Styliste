@@ -1,5 +1,5 @@
 // Directive G — Screen 7: Ascension Confirmation
-// GDD §1.1 — The climax. The Sovereign Dossier. The Radiant White-Out.
+// GDD v7 §§5.1, 19.1–19.3, 22 — fail-closed identity before Genesis.
 // Kode's Final Polish: Premium card aesthetic, haptic ramp-up, expanding RadialGradient
 
 import 'dart:async';
@@ -9,22 +9,23 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/onboarding_provider.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/widgets/styliste_buttons.dart';
 import '../../../domain/models/player.dart';
+import '../providers/sovereign_genesis_provider.dart';
 
 /// Ascension Confirmation Screen — The Sovereign Genesis
 ///
 /// Features:
 /// - Sovereign Dossier: Premium card showing all choices
 /// - SEAL THE STANDARD button (massive, gold)
-/// - Heavy haptic ramp-up on press
+/// - Heavy haptic ramp-up after confirmed Genesis
 /// - Radiant White-Out transition (RadialGradient expansion)
-/// - 1.5s hold while backend provisions
+/// - 1.5s completion presentation after server confirmation
 /// - Crossfade to Golden Hour HQ
 class AscensionConfirmationScreen extends ConsumerStatefulWidget {
   const AscensionConfirmationScreen({super.key});
@@ -39,8 +40,16 @@ class _AscensionConfirmationScreenState
     with TickerProviderStateMixin {
   late final AnimationController _whiteOutController;
   bool _isSealing = false;
+  bool _isRetrying = false;
+  bool _isSigningOut = false;
   bool _showWhiteOut = false;
+  bool _hasIdentityFailure = false;
   String? _errorMessage;
+
+  static const String _identityFailureMessage =
+      'Your secure game session could not be established. You can retry or restart safely.';
+  static const String _genesisFailureMessage =
+      'Your founding record could not be sealed. Please try again.';
 
   @override
   void initState() {
@@ -69,7 +78,7 @@ class _AscensionConfirmationScreenState
   }
 
   Future<void> _sealTheStandard() async {
-    if (_isSealing) return;
+    if (_isSealing || _isRetrying || _isSigningOut) return;
 
     final OnboardingState state = ref.read(onboardingProvider);
 
@@ -81,68 +90,119 @@ class _AscensionConfirmationScreenState
       return;
     }
 
-    setState(() => _isSealing = true);
+    setState(() {
+      _isSealing = true;
+      _hasIdentityFailure = false;
+      _errorMessage = null;
+    });
 
-    // Step 1: Haptic ramp-up
-    await _hapticRampUp();
-
-    // Step 2: Start white-out animation
-    setState(() => _showWhiteOut = true);
-    unawaited(_whiteOutController.forward());
-
-    // Step 3: Execute genesis RPC while animation plays
     try {
-      final SupabaseClient supabase = Supabase.instance.client;
-      final String userId = await _resolveSupabaseUserId(supabase);
+      final String userId = await ref
+          .read(identityBridgeActionsProvider)
+          .requireEstablishedSupabaseUserId();
+      await _executeGenesis(state: state, userId: userId);
+    } catch (_) {
+      _handleIdentityFailure();
+    }
+  }
 
-      final Object? rpcResult = await supabase.rpc(
-        'execute_sovereign_genesis',
-        params: <String, dynamic>{
-          'p_user_id': userId,
-          'p_brand_name': state.brandName,
-          'p_career_path': state.selectedPath!.apiValue,
-          'p_city': state.selectedCity!.apiValue,
-          'p_market_tier': state.selectedTier!.apiValue,
-          'p_avatar_config':
-              state.avatarConfig?.toJson() ?? <String, dynamic>{},
-        },
+  Future<void> _retryIdentity() async {
+    if (_isSealing || _isRetrying || _isSigningOut) return;
+
+    final OnboardingState state = ref.read(onboardingProvider);
+    if (!state.isReadyToCommit) {
+      setState(
+        () => _errorMessage = 'Please complete all choices before sealing.',
       );
-      final Map<String, dynamic> result = _firstRpcRow(rpcResult);
+      return;
+    }
 
-      if (result['success'] == true) {
-        // Success: White-out will complete and navigate automatically
-        // Animation continues to completion...
-      } else {
-        _handleGenesisError(result['message'] as String? ?? 'Unknown error');
+    setState(() {
+      _isRetrying = true;
+      _hasIdentityFailure = false;
+      _errorMessage = null;
+    });
+
+    try {
+      final String userId =
+          await ref.read(identityBridgeActionsProvider).retryBridge();
+      if (!mounted) return;
+      setState(() => _isRetrying = false);
+      setState(() => _isSealing = true);
+      await _executeGenesis(state: state, userId: userId);
+    } catch (_) {
+      _handleIdentityFailure();
+    }
+  }
+
+  Future<void> _signOutAndRestart() async {
+    if (_isSealing || _isRetrying || _isSigningOut) return;
+
+    setState(() {
+      _isSigningOut = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await ref.read(identityBridgeActionsProvider).signOutAndRestart();
+      if (!mounted) return;
+      ref.read(onboardingProvider.notifier).reset();
+      context.go(AppRouter.onboardingAurelianGate);
+    } catch (_) {
+      _handleIdentityFailure();
+    }
+  }
+
+  Future<void> _executeGenesis({
+    required OnboardingState state,
+    required String userId,
+  }) async {
+    try {
+      final SovereignGenesisResult result = await ref
+          .read(sovereignGenesisGatewayProvider)
+          .execute(
+            SovereignGenesisRequest(
+              userId: userId,
+              brandName: state.brandName,
+              careerPath: state.selectedPath!.apiValue,
+              city: state.selectedCity!.apiValue,
+              marketTier: state.selectedTier!.apiValue,
+              avatarConfig: state.avatarConfig?.toJson() ?? <String, dynamic>{},
+            ),
+          );
+
+      if (!result.success) {
+        _handleGenesisError(result.message);
+        return;
       }
-    } catch (e) {
-      _handleGenesisError(e.toString());
+
+      // Success presentation begins only after the server-confirmed result.
+      await _hapticRampUp();
+      if (!mounted) return;
+      setState(() => _showWhiteOut = true);
+      unawaited(_whiteOutController.forward());
+    } catch (_) {
+      _handleGenesisError(null);
     }
   }
 
-  Future<String> _resolveSupabaseUserId(SupabaseClient supabase) async {
-    final String? existingSupabaseUserId = supabase.auth.currentUser?.id;
-    if (existingSupabaseUserId != null) return existingSupabaseUserId;
-
-    final Session session = await SupabaseService.ensureFreshSession();
-    return session.user.id;
+  void _handleIdentityFailure() {
+    _whiteOutController.stop();
+    _whiteOutController.reset();
+    if (!mounted) return;
+    setState(() {
+      _isSealing = false;
+      _isRetrying = false;
+      _isSigningOut = false;
+      _showWhiteOut = false;
+      _hasIdentityFailure = true;
+      _errorMessage = _identityFailureMessage;
+    });
   }
 
-  Map<String, dynamic> _firstRpcRow(Object? rpcResult) {
-    if (rpcResult is Map<String, dynamic>) return rpcResult;
-
-    if (rpcResult is List && rpcResult.isNotEmpty) {
-      final Object? firstRow = rpcResult.first;
-      if (firstRow is Map<String, dynamic>) return firstRow;
-      if (firstRow is Map) return Map<String, dynamic>.from(firstRow);
-    }
-
-    throw StateError('Genesis returned an unexpected response.');
-  }
-
-  void _handleGenesisError(String error) {
-    if (error == 'PLAYER_ALREADY_EXISTS' ||
-        error.contains('PLAYER_ALREADY_EXISTS')) {
+  void _handleGenesisError(String? errorCode) {
+    if (errorCode == 'PLAYER_ALREADY_EXISTS' ||
+        (errorCode?.contains('PLAYER_ALREADY_EXISTS') ?? false)) {
       if (mounted) {
         context.go(AppRouter.hq);
       }
@@ -151,10 +211,12 @@ class _AscensionConfirmationScreenState
 
     _whiteOutController.stop();
     _whiteOutController.reset();
+    if (!mounted) return;
     setState(() {
       _isSealing = false;
+      _isRetrying = false;
       _showWhiteOut = false;
-      _errorMessage = 'Genesis failed: $error';
+      _errorMessage = _genesisFailureMessage;
     });
   }
 
@@ -201,25 +263,7 @@ class _AscensionConfirmationScreenState
                 ),
 
                 // --- Error message ---
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(12.0),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontSize: 12.0,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
+                if (_errorMessage != null) _buildErrorPanel(),
 
                 // --- SEAL THE STANDARD button ---
                 _buildSealButton()
@@ -235,6 +279,7 @@ class _AscensionConfirmationScreenState
           // --- Radiant White-Out overlay ---
           if (_showWhiteOut)
             AnimatedBuilder(
+              key: const Key('success-whiteout'),
               animation: _whiteOutController,
               builder: (BuildContext context, Widget? child) {
                 return _WhiteOutOverlay(
@@ -291,61 +336,127 @@ class _AscensionConfirmationScreenState
   Widget _buildSealButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: GestureDetector(
-        onTap: _isSealing ? null : _sealTheStandard,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 24.0),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: <Color>[
-                AurelianPalette.champagneGold,
-                Color(0xFFE8D4B8),
+      child: Semantics(
+        button: true,
+        enabled: !_isSealing && !_isRetrying && !_isSigningOut,
+        label: 'Seal the standard',
+        child: GestureDetector(
+          key: const Key('seal-the-standard'),
+          onTap: _isSealing || _isRetrying || _isSigningOut
+              ? null
+              : _sealTheStandard,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 24.0),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: <Color>[
+                  AurelianPalette.champagneGold,
+                  Color(0xFFE8D4B8),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20.0),
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: AurelianPalette.champagneGold.withValues(
+                    alpha: _isSealing ? 0.6 : 0.3,
+                  ),
+                  blurRadius: _isSealing ? 32.0 : 16.0,
+                  spreadRadius: _isSealing ? 4.0 : 2.0,
+                  offset: const Offset(0.0, 8.0),
+                ),
               ],
             ),
-            borderRadius: BorderRadius.circular(20.0),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: AurelianPalette.champagneGold.withValues(
-                  alpha: _isSealing ? 0.6 : 0.3,
-                ),
-                blurRadius: _isSealing ? 32.0 : 16.0,
-                spreadRadius: _isSealing ? 4.0 : 2.0,
-                offset: const Offset(0.0, 8.0),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              if (_isSealing)
-                const SizedBox(
-                  width: 20.0,
-                  height: 20.0,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.0,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(Color(0xFF2A2A2A)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                if (_isSealing)
+                  const SizedBox(
+                    width: 20.0,
+                    height: 20.0,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.0,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFF2A2A2A)),
+                    ),
+                  )
+                else
+                  const Icon(
+                    Icons.verified,
+                    size: 24.0,
+                    color: Color(0xFF2A2A2A),
                   ),
-                )
-              else
-                const Icon(
-                  Icons.verified,
-                  size: 24.0,
-                  color: Color(0xFF2A2A2A),
+                const SizedBox(width: 12.0),
+                Text(
+                  _isSealing ? 'ESTABLISHING EMPIRE...' : 'SEAL THE STANDARD',
+                  style: const TextStyle(
+                    fontFamily: 'SpaceGrotesk',
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 3.0,
+                    color: Color(0xFF2A2A2A),
+                  ),
                 ),
-              const SizedBox(width: 12.0),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorPanel() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 12.0),
+      child: Semantics(
+        container: true,
+        liveRegion: true,
+        label: 'Identity recovery',
+        child: Container(
+          padding: const EdgeInsets.all(12.0),
+          decoration: BoxDecoration(
+            color: AurelianPalette.danger.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8.0),
+            border: Border.all(
+              color: AurelianPalette.danger.withValues(alpha: 0.35),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
               Text(
-                _isSealing ? 'ESTABLISHING EMPIRE...' : 'SEAL THE STANDARD',
+                _errorMessage!,
                 style: const TextStyle(
-                  fontFamily: 'SpaceGrotesk',
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 3.0,
-                  color: Color(0xFF2A2A2A),
+                  color: AurelianPalette.textPrimary,
+                  fontSize: 12.0,
                 ),
+                textAlign: TextAlign.center,
               ),
+              if (_hasIdentityFailure) ...<Widget>[
+                const SizedBox(height: 12.0),
+                GoldPrimaryButton(
+                  key: const Key('retry-secure-sign-in'),
+                  label: 'Retry Secure Sign-In',
+                  icon: Icons.refresh,
+                  onPressed:
+                      _isRetrying || _isSigningOut ? null : _retryIdentity,
+                  isLoading: _isRetrying,
+                  disabledReason:
+                      _isRetrying ? 'Secure sign-in is in progress.' : null,
+                ),
+                const SizedBox(height: 8.0),
+                IvorySecondaryButton(
+                  key: const Key('sign-out-and-restart'),
+                  label: 'Sign Out & Restart',
+                  icon: Icons.logout,
+                  onPressed:
+                      _isRetrying || _isSigningOut ? null : _signOutAndRestart,
+                  isLoading: _isSigningOut,
+                  disabledReason:
+                      _isSigningOut ? 'Restarting authentication.' : null,
+                ),
+              ],
             ],
           ),
         ),

@@ -1,11 +1,15 @@
-// PROJECT_RULES §2 — Firebase Auth state provider + Supabase Auth bootstrap
+// PROJECT_RULES §2 — Firebase Auth state provider + Supabase JWT bridge
 // GDD §8.15.1 — Anonymous-first sign-in with progressive account linking.
 //
-// Game identity is the Supabase anonymous session UUID. Firebase auth state is
-// available for future account linking, but Firebase auth is not started during
-// first-session gameplay.
+// Token refresh strategy:
+//   idTokenChanges() emits on every Firebase token refresh (~60min) AND on
+//   initial sign-in. supabaseBridgeProvider (keepAlive) listens to this stream
+//   and calls signInWithIdToken on the Supabase client, keeping the Supabase
+//   session and Realtime WebSocket JWT in sync without reconnection.
 
-import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart' hide OAuthProvider;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
@@ -31,26 +35,208 @@ final StreamProvider<User?> authStateProvider = StreamProvider<User?>(
 );
 
 // ---------------------------------------------------------------------------
-// supabaseAnonSignInProvider — establishes the authoritative game identity.
-// Supabase UUID auth is required by existing RLS policies and gameplay RPCs.
+// firebaseAnonSignInProvider — triggers anonymous sign-in exactly once.
+// Watched in app.dart to boot the auth chain before routing begins.
 // ---------------------------------------------------------------------------
 
-final FutureProvider<Session> supabaseAnonSignInProvider =
-    FutureProvider<Session>((Ref<AsyncValue<Session>> ref) async {
-  if (SupabaseService.hasFreshSession) {
-    return SupabaseService.ensureFreshSession();
+final FutureProvider<User> firebaseAnonSignInProvider =
+    FutureProvider<User>((Ref<AsyncValue<User>> ref) async {
+  final FirebaseAuth auth = ref.watch(firebaseAuthProvider);
+
+  // If already signed in (e.g. hot-restart), reuse the existing session.
+  final User? existing = auth.currentUser;
+  if (existing != null) return existing;
+
+  final UserCredential credential = await auth.signInAnonymously();
+  return credential.user!;
+});
+
+// ---------------------------------------------------------------------------
+// supabaseBridgeProvider — keepAlive: bridges Firebase ID token → Supabase.
+// Must be watched in app.dart to stay alive for the entire app lifecycle.
+// On each idTokenChanges emission: extracts fresh token and calls
+// supabase.auth.signInWithIdToken, which also fires tokenRefreshed on
+// the Realtime client — no WebSocket reconnect required.
+// ---------------------------------------------------------------------------
+
+final StreamProvider<void> supabaseBridgeProvider = StreamProvider<void>(
+  (Ref<AsyncValue<void>> ref) {
+    // keepAlive: directive §1 — never dispose this bridge.
+    ref.keepAlive();
+
+    final StreamController<void> controller = StreamController<void>();
+    Future<void> bridgeQueue = Future<void>.value();
+    int authGeneration = 0;
+
+    final StreamSubscription<User?> subscription =
+        FirebaseAuth.instance.idTokenChanges().listen(
+      (User? user) {
+        final int eventGeneration = ++authGeneration;
+        bridgeQueue = bridgeQueue.then((_) async {
+          if (eventGeneration != authGeneration) return;
+          if (user == null) {
+            await SupabaseService.signOutAndCleanup();
+            _BridgeIdentity.clear();
+            if (!controller.isClosed) {
+              controller.addError(const SupabaseSessionExpiredException());
+            }
+            return;
+          }
+          try {
+            await _syncSupabaseSession(user);
+            if (eventGeneration == authGeneration && !controller.isClosed) {
+              controller.add(null);
+            }
+          } catch (_) {
+            await SupabaseService.signOutAndCleanup();
+            _BridgeIdentity.clear();
+            if (!controller.isClosed) {
+              controller.addError(const SupabaseSessionExpiredException());
+            }
+          }
+        });
+      },
+      onError: (Object _) {
+        if (!controller.isClosed) {
+          controller.addError(const SupabaseSessionExpiredException());
+        }
+      },
+    );
+
+    ref.onDispose(() {
+      unawaited(subscription.cancel());
+      unawaited(controller.close());
+    });
+
+    return controller.stream;
+  },
+);
+
+/// Narrow recovery surface for the existing Firebase-to-Supabase bridge.
+/// It does not create an identity or establish a second authentication path.
+abstract interface class IdentityBridgeActions {
+  Future<String> requireEstablishedSupabaseUserId();
+
+  Future<String> retryBridge();
+
+  Future<void> signOutAndRestart();
+}
+
+final Provider<IdentityBridgeActions> identityBridgeActionsProvider =
+    Provider<IdentityBridgeActions>((Ref<IdentityBridgeActions> ref) {
+  return _IdentityBridgeActions(
+    auth: ref.watch(firebaseAuthProvider),
+    restart: () {
+      ref.invalidate(firebaseAnonSignInProvider);
+      ref.invalidate(supabaseBridgeProvider);
+    },
+  );
+});
+
+final class _IdentityBridgeActions implements IdentityBridgeActions {
+  _IdentityBridgeActions({required this.auth, required this.restart});
+
+  final FirebaseAuth auth;
+  final void Function() restart;
+
+  @override
+  Future<String> requireEstablishedSupabaseUserId() async {
+    final User? firebaseUser = auth.currentUser;
+    if (firebaseUser == null) {
+      throw const SupabaseSessionExpiredException();
+    }
+
+    late final Session session;
+    try {
+      session = await SupabaseService.ensureFreshSession();
+    } catch (_) {
+      _BridgeIdentity.clear();
+      rethrow;
+    }
+    final String? bridgedFirebaseUid = _BridgeIdentity.firebaseUid;
+    final String? bridgedSupabaseUserId = _BridgeIdentity.supabaseUserId;
+
+    if (bridgedFirebaseUid != firebaseUser.uid ||
+        bridgedSupabaseUserId == null ||
+        bridgedSupabaseUserId != session.user.id) {
+      _BridgeIdentity.clear();
+      try {
+        await SupabaseService.signOutAndCleanup();
+      } catch (_) {}
+      throw const SupabaseSessionExpiredException();
+    }
+
+    return session.user.id;
   }
 
-  final AuthResponse response =
-      await SupabaseService.client.auth.signInAnonymously();
-  final Session? session =
-      response.session ?? SupabaseService.client.auth.currentSession;
-  if (session == null) {
+  @override
+  Future<String> retryBridge() async {
+    final User? firebaseUser = auth.currentUser;
+    if (firebaseUser == null) {
+      throw const SupabaseSessionExpiredException();
+    }
+
+    try {
+      await _syncSupabaseSession(firebaseUser);
+      return requireEstablishedSupabaseUserId();
+    } catch (_) {
+      _BridgeIdentity.clear();
+      try {
+        await SupabaseService.signOutAndCleanup();
+      } catch (_) {}
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> signOutAndRestart() async {
+    await SupabaseService.signOut();
+    _BridgeIdentity.clear();
+    restart();
+  }
+}
+
+Future<void> _syncSupabaseSession(User user) async {
+  if (_BridgeIdentity.firebaseUid != null &&
+      _BridgeIdentity.firebaseUid != user.uid) {
+    await SupabaseService.signOutAndCleanup();
+    _BridgeIdentity.clear();
+  }
+  final bool forceFirebaseRefresh = !SupabaseService.hasFreshSession;
+  final String? idToken = await user.getIdToken(forceFirebaseRefresh);
+  if (idToken == null) {
     throw const SupabaseSessionExpiredException();
   }
 
-  return SupabaseService.ensureFreshSession();
-});
+  final AuthResponse response =
+      await Supabase.instance.client.auth.signInWithIdToken(
+    provider: const OAuthProvider('firebase'),
+    idToken: idToken,
+  );
+  final String? supabaseUserId = response.user?.id;
+  if (supabaseUserId == null) {
+    throw const SupabaseSessionExpiredException();
+  }
+  if (_BridgeIdentity.firebaseUid == user.uid &&
+      _BridgeIdentity.supabaseUserId != null &&
+      _BridgeIdentity.supabaseUserId != supabaseUserId) {
+    await SupabaseService.signOutAndCleanup();
+    throw const SupabaseSessionExpiredException();
+  }
+  _BridgeIdentity.firebaseUid = user.uid;
+  _BridgeIdentity.supabaseUserId = supabaseUserId;
+  await SupabaseService.ensureFreshSession();
+}
+
+abstract final class _BridgeIdentity {
+  static String? firebaseUid;
+  static String? supabaseUserId;
+
+  static void clear() {
+    firebaseUid = null;
+    supabaseUserId = null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Convenience providers

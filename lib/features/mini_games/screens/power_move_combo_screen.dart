@@ -11,6 +11,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/services/mini_game_service.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../features/ledger/providers/ledger_provider.dart';
+import '../widgets/mini_game_rewards_unavailable.dart';
 
 /// Power Move Combo — Sequence memorization and drag mini-game
 /// Memorize 4-icon sequence, then drag scrambled icons to match
@@ -39,6 +40,7 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
   @override
   void initState() {
     super.initState();
+    if (!MiniGameService.rewardsAreAvailable) return;
     _targetSequence = _targetSymbols.map(_iconForSymbol).toList();
     _scrambled = List<IconData>.from(_targetSequence)..shuffle();
     _prepareAttempt();
@@ -129,12 +131,19 @@ class _PowerMoveComboScreenState extends ConsumerState<PowerMoveComboScreen>
 
   @override
   void dispose() {
+    if (!MiniGameService.rewardsAreAvailable) {
+      super.dispose();
+      return;
+    }
     _timer.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!MiniGameService.rewardsAreAvailable) {
+      return const MiniGameRewardsUnavailableScreen();
+    }
     return Scaffold(
       backgroundColor: AurelianPalette.textPrimary,
       body: SafeArea(

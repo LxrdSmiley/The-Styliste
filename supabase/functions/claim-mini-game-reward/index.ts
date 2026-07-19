@@ -12,6 +12,10 @@ const ACTIVE_GAME_KEYS = new Set([
   'price_war',
 ]);
 
+// Kept explicit rather than inferred from the client: only a future
+// server-verifiable protocol may re-enable reward settlement.
+const REWARDS_ARE_AVAILABLE = false;
+
 function json(body: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -23,6 +27,9 @@ function safeError(error: unknown): Response {
   const correlationId = crypto.randomUUID();
   console.error('claim-mini-game-reward', correlationId, error);
   const message = error instanceof Error ? error.message : '';
+  if (message.includes('MINI_GAME_REWARDS_UNAVAILABLE')) {
+    return json({ error: 'MINI_GAME_REWARDS_UNAVAILABLE' }, 503);
+  }
   if (message.includes('COOLDOWN')) return json({ error: 'GAME_ON_COOLDOWN' }, 409);
   if (message.includes('DAILY_ATTEMPT_LIMIT')) return json({ error: 'DAILY_LIMIT_REACHED' }, 429);
   if (message.includes('ALREADY_CLAIMED')) return json({ error: 'ATTEMPT_ALREADY_CLAIMED' }, 409);
@@ -49,6 +56,14 @@ Deno.serve(async (req: Request) => {
     );
     const { data: { user }, error: userError } = await verifyClient.auth.getUser(token);
     if (userError || !user) return json({ error: 'UNAUTHORIZED' }, 401);
+
+    // Milestone 3A1: client-supplied mini-game proofs are not an
+    // authoritative basis for economy or progression rewards. Return before
+    // rate-limit, attempt, proof, or reward mutations until a verified flow is
+    // separately authorized.
+    if (!REWARDS_ARE_AVAILABLE) {
+      return json({ error: 'MINI_GAME_REWARDS_UNAVAILABLE' }, 503);
+    }
 
     const admin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',

@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/services/mini_game_service.dart';
 import '../../../core/theme/aurelian_theme.dart';
 import '../../../features/ledger/providers/ledger_provider.dart';
+import '../widgets/mini_game_rewards_unavailable.dart';
 
 /// Price War Blitz — Rhythm-based price alignment mini-game
 /// Tap when gold slider aligns with target zone
@@ -33,6 +34,7 @@ class _PriceWarScreenState extends ConsumerState<PriceWarScreen>
   @override
   void initState() {
     super.initState();
+    if (!MiniGameService.rewardsAreAvailable) return;
     _startRound();
     _prepareAttempt();
   }
@@ -114,6 +116,10 @@ class _PriceWarScreenState extends ConsumerState<PriceWarScreen>
 
   @override
   void dispose() {
+    if (!MiniGameService.rewardsAreAvailable) {
+      super.dispose();
+      return;
+    }
     if (!_gameOver) {
       _sliderAnim.dispose();
     }
@@ -122,6 +128,9 @@ class _PriceWarScreenState extends ConsumerState<PriceWarScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (!MiniGameService.rewardsAreAvailable) {
+      return const MiniGameRewardsUnavailableScreen();
+    }
     return Scaffold(
       backgroundColor: AurelianPalette.textPrimary,
       body: GestureDetector(

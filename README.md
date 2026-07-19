@@ -83,7 +83,7 @@ Post to Global Feed → Gain Reactions → Compete for Status → Join Maisons �
 
 The Styliste is currently in **alpha remediation**.
 
-The repository covers broad feature areas specified in the v6 Game Design Document (GDD), but several gameplay, legal, security, and verification items still pose alpha blockers.
+The repository covers broad feature areas specified in the canonical GDD v7, but several gameplay, legal, security, and verification items still pose alpha blockers.
 
 Current focus areas include:
 
@@ -100,7 +100,7 @@ Current focus areas include:
 
 The following requirements must be met before any system can be considered production-ready:
 
-- Gameplay must align with `THE_STYLISTE_GDD_v6.md`.
+- Gameplay must align with `THE_STYLISTE_GDD_v7.md`.
 - Economic paths must be server-authoritative.
 - No fake local rewards.
 - No client-side ownership transfers.
@@ -108,19 +108,21 @@ The following requirements must be met before any system can be considered produ
 - No placeholder security rules.
 - No unverified Supabase schema changes.
 - No exposed secrets or real credentials.
-- All major systems must pass verification.
+- All major systems must pass the applicable verification evidence gates.
 
 ## Priority Checks
 
-Run manually:
+Run only against an identified local or approved test environment:
 
 ```bash
+dart format --output=none --set-exit-if-changed .
 dart analyze
 flutter analyze
 flutter test
-supabase db reset
 supabase db lint
 ```
+
+`supabase db reset` is destructive and must only be used against an explicitly identified disposable database with authorization. An analyzer result is not runtime proof; Flutter tests do not prove Android behavior; an APK build does not prove installation or gameplay correctness; SQL inspection does not prove deployed RLS behavior; and a Git push does not deploy Supabase changes.
 
 ## Tech Stack
 
@@ -128,11 +130,11 @@ supabase db lint
 - **Riverpod:** State management solution.
 - **go_router:** Application routing.
 - **Flame:** Lightweight embedded game-feel scenes.
-- **Supabase:** Authoritative backend for Postgres, RPC, RLS, real-time data synchronization, and media storage.
-- **Supabase Edge Functions / TypeScript:** Server-authoritative gameplay logic.
-- **Firebase Auth:** User authentication.
-- **Firebase Messaging:** Push notifications.
-- **Firebase App Check:** Abuse protection.
+- **Supabase:** Authoritative backend for gameplay records, ownership, Postgres, RPC, RLS, real-time data synchronization, media storage, economy, progression, and sensitive settlement.
+- **Supabase Edge Functions / TypeScript:** Server-side orchestration and validated gameplay operations; PostgreSQL remains authoritative for transactional state.
+- **Firebase Auth:** Active identity integration bridged into Supabase Auth; not interchangeable with Supabase gameplay authority.
+- **Firebase Messaging:** Notification delivery.
+- **Firebase App Check:** Device/app attestation support; not complete anti-cheat protection.
 - **Flutter in_app_purchase:** Framework for managing mobile purchases.
 - **PostHog:** Optional future analytics solution, subject to privacy controls and legal documentation.
 - **CodeRabbit:** Development-only PR review tooling.
@@ -140,7 +142,7 @@ supabase db lint
 
 ## Documents
 
-- [Game Design Document v6](THE_STYLISTE_GDD_v6.md)
+- [Canonical Game Design Document v7](THE_STYLISTE_GDD_v7.md)
 - [IDE Directives](IDE_DIRECTIVES.md)
 - [Manual Tasks](MANUAL_TASKS.md)
 - [Project Rules](PROJECT_RULES.md)
@@ -149,7 +151,7 @@ supabase db lint
 
 ## Development Direction
 
-The project's main directive is to reach full GDD v6 alignment across:
+The project's main directive is to reach full GDD v7 alignment across:
 
 | Area | Target |
 |---|---:|

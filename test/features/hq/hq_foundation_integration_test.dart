@@ -23,6 +23,7 @@ void main() {
       _hqHarness(child: HqArtisanView(player: _player(CareerPath.designer))),
     );
     await tester.pump();
+    await tester.pump();
 
     final StylisteScaffold scaffold =
         tester.widget<StylisteScaffold>(find.byType(StylisteScaffold));
@@ -37,6 +38,7 @@ void main() {
     await tester.pumpWidget(
       _hqHarness(child: HqArchitectView(player: _player(CareerPath.mogul))),
     );
+    await tester.pump();
     await tester.pump();
 
     final StylisteScaffold scaffold =
@@ -109,4 +111,17 @@ class _FakeFirstObjectiveRepository implements FirstObjectiveRepository {
 
   @override
   Future<bool> hasServerConfirmedAlphaDrop(String playerId) async => false;
+
+  @override
+  Stream<List<FirstWeekObjective>> watchObjectives(String playerId) {
+    return Stream<List<FirstWeekObjective>>.value(
+      const <FirstWeekObjective>[],
+    );
+  }
+
+  @override
+  Future<void> recordValidatedEvent(
+    String eventKey, {
+    String? entityId,
+  }) async {}
 }
