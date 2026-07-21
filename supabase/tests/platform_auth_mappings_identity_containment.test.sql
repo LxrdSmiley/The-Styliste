@@ -79,8 +79,11 @@ SELECT is(
 );
 RESET ROLE;
 
-SELECT set_config('request.jwt.claim.role', 'authenticated', true);
-SELECT set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000a1', true);
+SELECT set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-4000-8000-0000000000a1","role":"authenticated","is_anonymous":false}',
+  true
+);
 SET LOCAL ROLE authenticated;
 
 SELECT is(
