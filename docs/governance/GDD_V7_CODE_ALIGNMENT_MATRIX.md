@@ -107,6 +107,10 @@ Smiley-run Flutter gates remain open.
 - Historical tests that require authenticated direct `public` relation or RPC
   access fail under the final API-only boundary. The protected identity tests
   were not modified; their contract conflict remains explicit.
+- A fresh detached checkout of local HEAD passes the committed database and
+  Edge scopes but fails the Early Game static guard because the matching
+  nonvisual Flutter caller corrections are still uncommitted. Dirty-tree static
+  success is not branch-readiness evidence.
 - Flutter/UI rows cannot advance to aligned while the repository's required
   `frontend-design` skill is absent and Smiley-run format/analyze/test/build
   output has not been observed.
