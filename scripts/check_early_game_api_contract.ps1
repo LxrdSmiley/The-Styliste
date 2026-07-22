@@ -11,7 +11,7 @@ $correction = Get-Content -Raw -Encoding utf8 $correctionPath
 $routes = Get-Content -Raw -Encoding utf8 'supabase/functions/_shared/kingston_routes.ts'
 $gdd = Get-Content -Raw -Encoding utf8 'THE_STYLISTE_GDD_v7.md'
 
-if ($config -notmatch '(?m)^schemas = \["api"\]$' -or
+if ($config -notmatch '(?m)^schemas\s*=\s*\["api"\][\t ]*\r?$' -or
     $config -match '(?m)^schemas\s*=.*"public"') {
   throw 'Only the api schema may be exposed through the gameplay Data API.'
 }
