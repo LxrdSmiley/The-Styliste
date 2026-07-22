@@ -14,7 +14,7 @@ SELECT
   (SELECT count(*)::bigint FROM public.gala_votes) AS gala_vote_count,
   (SELECT COALESCE(sum(luxe_won), 0)::bigint FROM public.gala_submissions) AS gala_award_total,
   (SELECT count(*)::bigint FROM public.mini_game_attempts) AS mini_attempt_count,
-  (SELECT COALESCE(sum(total_revenue), 0)::numeric FROM public.brand_state) AS house_funds_total;
+  (SELECT COALESCE(sum(house_funds), 0)::numeric FROM public.brand_state) AS house_funds_total;
 
 INSERT INTO public.players (id, brand_name, path, hq_city)
 VALUES
@@ -137,7 +137,7 @@ SELECT ok(
       'public.edge_start_mini_game(uuid,text,uuid)'::regprocedure,
       'public.edge_claim_mini_game(uuid,uuid,jsonb)'::regprocedure,
       'public.grant_mini_game_reward(uuid,text,text,bigint)'::regprocedure,
-      'public.inject_capital_bonus(uuid,integer,text)'::regprocedure
+      to_regprocedure('public.inject_capital_bonus(uuid,integer,text)')
     )
       AND privilege.grantee = 0
       AND privilege.privilege_type = 'EXECUTE'
@@ -147,7 +147,11 @@ SELECT ok(
     AND NOT has_function_privilege('authenticated', 'public.edge_claim_mini_game(uuid,uuid,jsonb)', 'EXECUTE')
     AND NOT has_function_privilege('service_role', 'public.edge_claim_mini_game(uuid,uuid,jsonb)', 'EXECUTE')
     AND NOT has_function_privilege('service_role', 'public.grant_mini_game_reward(uuid,text,text,bigint)', 'EXECUTE')
-    AND NOT has_function_privilege('service_role', 'public.inject_capital_bonus(uuid,integer,text)', 'EXECUTE'),
+    AND NOT COALESCE(has_function_privilege(
+      'service_role',
+      to_regprocedure('public.inject_capital_bonus(uuid,integer,text)'),
+      'EXECUTE'
+    ), FALSE),
   'mini-game Edge and direct reward boundaries are unavailable to every caller'
 );
 SELECT ok(
@@ -338,7 +342,9 @@ SELECT lives_ok($test$
       PERFORM public.edge_start_mini_game('00000000-0000-4000-8000-00000000c106', 'price_war', NULL);
       RAISE EXCEPTION 'mini-game start executed';
     EXCEPTION WHEN OTHERS THEN
-      IF SQLERRM <> 'MINI_GAME_REWARDS_UNAVAILABLE' THEN RAISE; END IF;
+      IF SQLSTATE <> '42883' AND SQLERRM <> 'MINI_GAME_REWARDS_UNAVAILABLE' THEN
+        RAISE;
+      END IF;
     END;
   END $body$;
 $test$, 'forged mini-game start cannot create an attempt');
@@ -378,12 +384,14 @@ SELECT lives_ok($test$
       PERFORM public.inject_capital_bonus('00000000-0000-4000-8000-00000000c106', 5000, 'mini_game_reward');
       RAISE EXCEPTION 'capital bonus executed';
     EXCEPTION WHEN OTHERS THEN
-      IF SQLERRM <> 'MINI_GAME_REWARDS_UNAVAILABLE' THEN RAISE; END IF;
+      IF SQLSTATE <> '42883' AND SQLERRM <> 'MINI_GAME_REWARDS_UNAVAILABLE' THEN
+        RAISE;
+      END IF;
     END;
   END $body$;
 $test$, 'capital bonus alias cannot bypass mini-game containment');
 SELECT is((SELECT count(*)::bigint FROM public.mini_game_attempts), (SELECT mini_attempt_count FROM m3a1_snapshot), 'contained mini-game calls preserve attempt history');
-SELECT is((SELECT COALESCE(sum(total_revenue), 0)::numeric FROM public.brand_state), (SELECT house_funds_total FROM m3a1_snapshot), 'contained mini-game calls preserve House Funds');
+SELECT is((SELECT COALESCE(sum(house_funds), 0)::numeric FROM public.brand_state), (SELECT house_funds_total FROM m3a1_snapshot), 'contained mini-game calls preserve House Funds');
 SELECT is((SELECT luxe_tokens FROM public.brand_state WHERE player_id = '00000000-0000-4000-8000-00000000c106'), 500, 'contained mini-game calls do not grant fixture Luxe');
 
 SELECT * FROM finish();

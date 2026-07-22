@@ -3,5 +3,5 @@ import { handleKingstonRequest } from "../_shared/kingston_contract.ts";
 import { KINGSTON_ROUTES } from "../_shared/kingston_routes.ts";
 
 serve((request) =>
-  handleKingstonRequest(request, KINGSTON_ROUTES["calculate-idle-income"])
+  handleKingstonRequest(request, KINGSTON_ROUTES["progression-event"])
 );
