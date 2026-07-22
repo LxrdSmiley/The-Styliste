@@ -20,7 +20,7 @@ Before implementation or release review:
 
 1. Run `git status --short`, `git diff --check`, `git diff --name-status`, and `git ls-files --others --exclude-standard`.
 2. Confirm the intended files are the only files in scope.
-3. Inspect the current `THE_STYLISTE_GDD_v7.md`, `PROJECT_RULES.md`, and this protocol.
+3. Inspect the current `THE_STYLISTE_GDD_v7.md`, `PROJECT_RULES.md`, this protocol, `DEVELOPMENT_STATE.md`, and `BOTTLENECK_LOG.md`.
 4. Record inherited working-tree changes separately from current directive changes.
 5. Search for stale authority, GDD, Firebase, Supabase, RLS, anti-cheat, UI/UX, and performance terminology.
 
@@ -67,7 +67,7 @@ On a clean install or reset test account, manually observe:
 9. Enter Global Feed and confirm the new Alpha drop appears.
 10. Return to HQ and confirm Brand Heat, latest drop feedback, and next objective reflect the drop.
 
-Firebase authentication, App Check behavior, and Messaging delivery remain valid checks. They must be reported separately from Supabase gameplay authority and must not be treated as interchangeable systems.
+Supabase Auth, Storage, Realtime, and Edge Function behavior remain separate checks. Authentication success must not be treated as proof of gameplay authority, RLS isolation, Storage isolation, or notification delivery.
 
 Result: **Passed** only for directly observed behavior. A route, widget, provider, or schema alone is **Static pass**, not runtime completion.
 
@@ -84,6 +84,17 @@ An APK build does not prove installation, launch, gameplay correctness, signing 
 Record device model, Android version, build mode, signing state, and result label.
 
 Result: **Passed** applies only to the directly observed build or device check being reported.
+
+## 5A. Browser and GitHub Pages behavior — deferred
+
+Flutter Web, Chrome runtime, GitHub Pages deployment, and public-browser
+behavior are outside the current Android/iOS milestone by project-owner
+decision. Do not run or require these checks in current readiness reports.
+
+Result: **Not applicable** for the current milestone. A later, separately
+authorized Web target must restore distinct compilation, browser, hosting,
+authentication, RLS, Storage, Realtime, accessibility, performance, and
+public-configuration checks before any browser-readiness claim.
 
 ## 6. Supabase database and migration validation
 
@@ -176,3 +187,8 @@ Every report must include:
 - observed output or behavior;
 - limitations and unresolved uncertainty;
 - separation of static, runtime, Android, database, RLS/security, accessibility, and performance evidence.
+
+After every Codex task, update `DEVELOPMENT_STATE.md` with the current checkout,
+active Feature ID, completed and blocked work, next safe action, evidence, and
+prohibited scope. Add recurring failure prevention to `BOTTLENECK_LOG.md` and
+completed player-facing changes to `CHANGELOG.md` when applicable.
