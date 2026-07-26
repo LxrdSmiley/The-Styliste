@@ -51,7 +51,8 @@ class SupabaseFirstObjectiveRepository implements FirstObjectiveRepository {
     try {
       await SupabaseService.ensureFreshSession();
       final List<dynamic> rows = await SupabaseService.client
-          .from(SupabaseConstants.tableFeedPosts)
+          .schema('api')
+          .from('feed_projection')
           .select('id')
           .eq('player_id', playerId)
           .filter('content->>event', 'eq', 'alpha_dropped')
@@ -63,24 +64,26 @@ class SupabaseFirstObjectiveRepository implements FirstObjectiveRepository {
   }
 
   @override
-  Stream<List<FirstWeekObjective>> watchObjectives(String playerId) {
-    return SupabaseService.client
-        .from(SupabaseConstants.tableFirstWeekObjectives)
-        .stream(primaryKey: const <String>['player_id', 'objective_key'])
-        .eq('player_id', playerId)
-        .map(
-          (List<Map<String, dynamic>> rows) =>
-              rows.map(FirstWeekObjective.fromJson).toList(growable: false),
-        );
+  Stream<List<FirstWeekObjective>> watchObjectives(String playerId) async* {
+    while (true) {
+      final List<Map<String, dynamic>> rows = await SupabaseService.client
+          .schema('api')
+          .from('first_week_objectives')
+          .select()
+          .eq('player_id', playerId);
+      yield rows.map(FirstWeekObjective.fromJson).toList(growable: false);
+      await Future<void>.delayed(const Duration(seconds: 30));
+    }
   }
 
   @override
   Future<void> recordValidatedEvent(String eventKey, {String? entityId}) async {
-    await SupabaseService.client.rpc<void>(
-      'record_progression_event',
-      params: <String, dynamic>{
-        'p_event_key': eventKey,
-        'p_entity_id': entityId,
+    await SupabaseService.invokeFunction(
+      SupabaseConstants.fnProgressionEvent,
+      body: <String, dynamic>{
+        'event_key': eventKey,
+        if (entityId != null) 'entity_id': entityId,
+        if (entityId != null) 'idempotency_key': entityId,
       },
     );
   }

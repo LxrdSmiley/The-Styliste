@@ -1,6 +1,71 @@
 {
   "version": 1,
   "skills": {
+    "agent-development": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "d1b651e2d9c1ebefeecbd88be824013cd9693a4f1268404b571d18f396bc18b5"
+    },
+    "ai-sdk": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "da25c27a274ef2b71017c255f95a26350d2519765a75cb54ee1a37872b121dab"
+    },
+    "applying-brand-guidelines": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "e74925ac6b9d20e39a685c79847e6043c965f60e6af4dd814153e98155a4c681"
+    },
+    "competitive-intelligence": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "ab05e382d9c42e8ea630aa64b2f479cbc04887ed0707a4eec3f7b40a853f50a2"
+    },
+    "creating-financial-models": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "10793f1c4d6d397d0aa61e70f13838461bcaaa6410d432fac024499d82a97d4a"
+    },
+    "figma-implement-design": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "3d5a363ef4414bcc5b3ec92138d18504fa8b89c1790e619ff1ade21929764a84"
+    },
+    "frontend-design": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "3e0be122a3db8206b6d0d6b07cca898b5c75fb9b7b2101abe143fb2851734d2e"
+    },
+    "knowledge-synthesis": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "f29d24bcd35f531c539a1f67f5cee3a525466ce9d10cffa53524a02fe4506feb"
+    },
+    "legal-risk-assessment": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "fbc4dffe38a8b8d59ccee1d016654497dc1d9f2f4ceb5ca632dcb4715d22c07f"
+    },
+    "pdf": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "cfbc539377088ca7e44a813b30c306327385bbd973cd7a721e1743f60837dd62"
+    },
+    "security-best-practices": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "c27616fb4e27999605b90b261dc729784420c8d77bd1a98748384ffaa5b35704"
+    },
+    "smithery-ai-cli": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "dc17f090c975afe1d96a25dbe843fc9c978e96d5699eed1bb7c12b411e10b830"
+    },
+    "statistical-analysis": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "6dba9b6a31e7ffc7205120700151a3522df91c19a6dba3d13bb9b4835e768feb"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
@@ -12,6 +77,21 @@
       "sourceType": "github",
       "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
       "computedHash": "768f9a7532780a72165f79c91d71a4bf82abd9ed31045238c2acb40322fc1d0a"
+    },
+    "task-management": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "a1f9389c1f06bb9c630001875e0801eb209b08818ba217f0114bc62d149eb056"
+    },
+    "ui-ux-pro-max": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "f0916ca326ad6dbde1d0770b46956a213406b8ea4a19ed931bb4f2dc7d04c16d"
+    },
+    "web-artifacts-builder": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "c3ec19f30fc85169bee9e0a10974ce6d1045e2068c559ca8739dc9297c8b71b3"
     }
   }
 }

@@ -6,10 +6,6 @@
 -keep class io.flutter.** { *; }
 -keep class io.flutter.plugins.** { *; }
 
-# Firebase App Check & Play Integrity
--keep class com.google.firebase.** { *; }
--keep class com.google.android.gms.** { *; }
-
 # Supabase / PostgREST (Prevent obfuscation of JSON serializable models if any)
 -keepattributes Signature
 -keepattributes *Annotation*

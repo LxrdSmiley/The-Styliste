@@ -81,20 +81,22 @@ Post to Global Feed → Gain Reactions → Compete for Status → Join Maisons �
 
 ## Current Status
 
-The Styliste is currently in **alpha remediation**.
+Current development version: `0.1.0-alpha.1+1` (**unreleased**).
 
-The repository covers broad feature areas specified in the canonical GDD v7, but several gameplay, legal, security, and verification items still pose alpha blockers.
+The Styliste is in **Kingston Early Game repository remediation**, not public
+Alpha, Beta, or production. The current dirty working tree contains broad
+server-authority, RLS, FTUE, route-containment, CI, and verification changes
+that have not yet been approved as a commit or GitHub Release.
 
-Current focus areas include:
+Current priorities are:
 
-- Security enhancements.
-- Supabase schema drift repairs.
-- Validation of the server-authoritative economy.
-- Visual alignment of the Global Feed.
-- Improvements to the Atelier and fashion experience.
-- Enhancements to HQ identity and post-drop feedback.
-- Upgrades to District Warfare and Maison prestige.
-- Removal of scaffolding, dead code, placeholder logic, and unsafe client-side mutations.
+- complete the Supabase-only authentication migration;
+- preserve server authority for economy, progression, ownership, Hype, and rewards;
+- finish the Luxe-led Kingston Founder Trial and proof-of-fun loop;
+- expand owner/stranger/blocked/former-member security tests;
+- obtain Android/iOS device, accessibility, and performance evidence; and
+- keep Gala, territory, Casting, trading, DMs, AR, ads, and other late-wave
+  systems disabled.
 
 ## Alpha Rules
 
@@ -132,9 +134,8 @@ supabase db lint
 - **Flame:** Lightweight embedded game-feel scenes.
 - **Supabase:** Authoritative backend for gameplay records, ownership, Postgres, RPC, RLS, real-time data synchronization, media storage, economy, progression, and sensitive settlement.
 - **Supabase Edge Functions / TypeScript:** Server-side orchestration and validated gameplay operations; PostgreSQL remains authoritative for transactional state.
-- **Firebase Auth:** Active identity integration bridged into Supabase Auth; not interchangeable with Supabase gameplay authority.
-- **Firebase Messaging:** Notification delivery.
-- **Firebase App Check:** Device/app attestation support; not complete anti-cheat protection.
+- **Supabase Auth:** The only approved player identity system across Android
+  and iOS, including anonymous founder-trial sessions.
 - **Flutter in_app_purchase:** Framework for managing mobile purchases.
 - **PostHog:** Optional future analytics solution, subject to privacy controls and legal documentation.
 - **CodeRabbit:** Development-only PR review tooling.
@@ -148,23 +149,37 @@ supabase db lint
 - [Project Rules](PROJECT_RULES.md)
 - [Verification Protocol](VERIFICATION_PROTOCOL.md)
 - [Agent Instructions](Agent.md)
+- [Development State](DEVELOPMENT_STATE.md)
+- [Changelog](CHANGELOG.md)
+- [Release Process](docs/RELEASE_PROCESS.md)
+
+## Supported Client Targets
+
+The current milestone targets Android and iOS only. Flutter Web, Chrome runtime,
+and GitHub Pages are deferred by project-owner decision and are not required for
+the mobile authentication/readiness commit.
+
+## Versioning, Releases, and Deployments
+
+- `pubspec.yaml` owns the application version.
+- `CHANGELOG.md` records unreleased changes and release history.
+- `DEVELOPMENT_STATE.md` records current implementation/evidence after every task.
+- `docs/releases/` contains version-specific release notes.
+- `.github/workflows/draft-release.yml` creates a guarded **draft prerelease**
+  only after the current commit has a successful readiness workflow.
+
+Version bumps occur at coherent release boundaries, not after every commit.
+GDD v7 is a design-document version and is independent of the application
+version.
 
 ## Development Direction
 
-The project's main directive is to reach full GDD v7 alignment across:
-
-| Area | Target |
-|---|---:|
-| Core architecture | 100% |
-| Server-authoritative drop loop | 100% |
-| Atelier presence | 100% |
-| Flame launch moment | 100% |
-| HQ identity | 100% |
-| Global Feed | 100% |
-| Fashion fantasy | 100% |
-| District Warfare | 100% |
-| Maison prestige | 100% |
-| Overall GDD feel | 100% |
+Development follows GDD v7 §21 one wave at a time. The current target is the
+Kingston proof-of-fun loop: Luxe-led Founder Trial → garment decision → release
+→ credible reaction → targeted revision → first-store diagnosis → recovery or
+improvement. Canonical multiplayer, Milan, Gala, territory, trading, and other
+future systems do not become current implementation scope merely because they
+exist in the GDD.
 
 ## License
 

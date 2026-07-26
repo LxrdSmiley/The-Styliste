@@ -1,0 +1,74 @@
+# Changelog
+
+Completed player-facing changes are recorded here. Verification status belongs
+in `docs/verification/early_game_readiness.md`, not in release-marketing claims.
+
+## [Unreleased]
+
+### Repository
+
+- Added Semantic Versioning and synchronized prerelease metadata for
+  `0.1.0-alpha.1+1`.
+- Added a guarded GitHub draft-prerelease workflow and version-specific release
+  notes.
+- Replaced the Firebase identity bridge with direct Supabase Auth session
+  bootstrap and recovery across Android and iOS.
+- Removed Firebase client packages, platform configuration, Messaging/App Check
+  startup, and the retired FCM Edge Function source.
+- Deferred Flutter Web, Chrome, and GitHub Pages work; removed Web compilation
+  from the active mobile readiness gates.
+- Required README, changelog, release-note, and development-state maintenance
+  after applicable implementation tasks.
+- Separated ordinary debug APK smoke CI from protected signed-release evidence,
+  removing an impossible requirement for ignored signing files on every push.
+
+### Fixed
+
+- Preserved Supabase identities when a session refresh fails for a temporary
+  connectivity reason; only terminal anonymous-session failure may create a new
+  founder-trial identity, while linked accounts require explicit sign-in.
+- Allowed the service-role design-release wrapper to execute for an actor whose
+  bearer token was verified by the Edge Function.
+- Made first and replayed design-release receipts identical and keyed each
+  design-release ledger entry by design ID.
+- Separated spendable House Funds from lifetime gross revenue, costs, net
+  result, and idle-source rates in the forward-only Kingston authority model.
+- Preserved non-store idle sources when the first Kingston store opens.
+- Required server-owned starter-catalog validation and explicit Vex opt-in for
+  design release without count-based score inflation.
+
+### Security
+
+- Kept raw `public`, `private`, and `ledger` relations outside the gameplay Data
+  API throughout the new migration sequence; authenticated gameplay uses only
+  reviewed `api` projections while enabled Edge mutations use service-only API
+  wrappers.
+- Added strict shared Edge validation for verified actor derivation, unknown
+  keys, malformed JSON, UUID idempotency, body size, exact replay, and conflict
+  responses across the six Kingston routes.
+
+## [0.1.0-alpha.1] - Unreleased
+
+### Changed
+
+- Limited the default Early Game navigation to HQ, Atelier, Empire, Feed, and House.
+- Disabled late-wave deep links and sensitive mutation surfaces behind the feature registry.
+- Changed the first-store tutorial contract to the Kingston Founder Trial flow.
+- Added a versioned Early Game Design Blueprint with local Riverpod draft state and server-validated release intent.
+- Made idle-income receipts and design-release results server-owned and replay-safe at the database boundary.
+- Removed the Google Mobile Ads sample application ID and Early Game ad dependency.
+
+### Security
+
+- Removed direct authenticated writes to economic, progression, ownership, score, Maison-governance, and moderation data.
+- Moved privileged database behavior behind reviewed service-only API wrappers and an append-only ledger.
+- Added an API schema boundary, fail-closed authority matrix, RLS contract tests, and generated API inventory checks.
+- Added full-history secret scanning to CI and documented placeholder-only environment names.
+
+### Deferred
+
+- User-run Flutter dependency resolution, analysis, tests, and Android build.
+- Flutter Web, Chrome runtime, Pages deployment, and public-browser support are
+  outside the current mobile milestone.
+- Anonymous-sign-in CAPTCHA, account-upgrade UX, device performance,
+  accessibility, purchase sandbox, and penetration verification.

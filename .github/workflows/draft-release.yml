@@ -1,0 +1,82 @@
+name: Create GitHub Draft Prerelease
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Exact tag matching pubspec.yaml, for example v0.1.0-alpha.1"
+        required: true
+        type: string
+      confirmation:
+        description: "Type CREATE DRAFT"
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    environment: github-release
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate release metadata
+        shell: pwsh
+        run: ./scripts/check_release_metadata.ps1
+
+      - name: Validate requested tag and confirmation
+        id: metadata
+        shell: pwsh
+        run: |
+          if ('${{ inputs.confirmation }}' -cne 'CREATE DRAFT') {
+            throw 'Confirmation must be exactly CREATE DRAFT.'
+          }
+          $pubspec = Get-Content -Raw pubspec.yaml
+          $match = [regex]::Match($pubspec, '(?m)^version:\s*([^\s]+)\s*$')
+          if (-not $match.Success) { throw 'Missing pubspec version.' }
+          $version = ($match.Groups[1].Value -split '\+', 2)[0]
+          $expectedTag = "v$version"
+          if ('${{ inputs.tag }}' -cne $expectedTag) {
+            throw "Requested tag must be $expectedTag."
+          }
+          "tag=$expectedTag" >> $env:GITHUB_OUTPUT
+          "notes=docs/releases/$expectedTag.md" >> $env:GITHUB_OUTPUT
+
+      - name: Require successful readiness CI for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          conclusion="$(gh run list \
+            --workflow 'Early Game Readiness CI' \
+            --commit "$GITHUB_SHA" \
+            --status completed \
+            --limit 1 \
+            --json conclusion \
+            --jq '.[0].conclusion // "missing"')"
+          test "$conclusion" = "success" || {
+            echo "Early Game Readiness CI is not successful for $GITHUB_SHA: $conclusion"
+            exit 1
+          }
+
+      - name: Create draft prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.metadata.outputs.tag }}
+          RELEASE_NOTES: ${{ steps.metadata.outputs.notes }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists."
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" \
+            --target "$GITHUB_SHA" \
+            --title "The Styliste $RELEASE_TAG" \
+            --notes-file "$RELEASE_NOTES" \
+            --draft \
+            --prerelease

@@ -10,7 +10,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/constants/supabase_constants.dart';
 import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/design.dart';
@@ -46,12 +45,6 @@ DateTime _safeDateTime(Object? value) {
     return DateTime.tryParse(value) ?? DateTime.now();
   }
   return DateTime.now();
-}
-
-Map<String, dynamic>? _safeJsonObject(Object? value) {
-  if (value is Map<String, dynamic>) return value;
-  if (value is Map) return Map<String, dynamic>.from(value);
-  return null;
 }
 
 class PendingAlphaDrop {
@@ -250,6 +243,19 @@ final StateProvider<FeedMode> feedModeProvider =
 // Global feed stream — Realtime-backed, newest-first, capped at 50 posts.
 // ---------------------------------------------------------------------------
 
+Stream<List<FeedPost>> _pollFeedProjection() async* {
+  while (true) {
+    final List<Map<String, dynamic>> rows = await SupabaseService.client
+        .schema('api')
+        .from('feed_projection')
+        .select()
+        .order('created_at', ascending: false)
+        .limit(50);
+    yield rows.map(FeedPost.fromJson).toList(growable: false);
+    await Future<void>.delayed(const Duration(seconds: 30));
+  }
+}
+
 final StreamProvider<List<FeedPost>> feedStreamProvider =
     StreamProvider<List<FeedPost>>((Ref<AsyncValue<List<FeedPost>>> ref) {
   final AsyncValue<Session> session =
@@ -259,17 +265,9 @@ final StreamProvider<List<FeedPost>> feedStreamProvider =
     return Stream<List<FeedPost>>.error(_safeSessionError(session.error!));
   }
 
-  return SupabaseService.guardRealtimeStream(
-    SupabaseService.client
-        .from(SupabaseConstants.tableFeedPosts)
-        .stream(primaryKey: <String>['id'])
-        .order('created_at')
-        .limit(50)
-        .map(
-          (List<Map<String, dynamic>> rows) =>
-              rows.map(FeedPost.fromJson).toList(),
-        ),
-  );
+  // The reviewed API relation is a security-invoker view, which Postgres
+  // Changes cannot subscribe to. Keep this read inside the api boundary.
+  return SupabaseService.guardRealtimeStream(_pollFeedProjection());
 });
 
 // ---------------------------------------------------------------------------
@@ -284,45 +282,23 @@ final StateProvider<Map<String, int>> feedLikeOverrideProvider =
     StateProvider<Map<String, int>>((_) => <String, int>{});
 
 final Provider<FeedActions> feedActionsProvider =
-    Provider<FeedActions>((Ref<FeedActions> ref) => FeedActions(ref));
+    Provider<FeedActions>((_) => const FeedActions());
 
 class FeedActions {
-  const FeedActions(this._ref);
-
-  final Ref _ref;
+  const FeedActions();
 
   Future<FeedReactionResult> react({
     required String postId,
     required String reactionType,
   }) async {
-    await SupabaseService.ensureFreshSession();
-    final Map<String, dynamic> response = await SupabaseService.invokeFunction(
-      SupabaseConstants.fnFeedReact,
-      body: <String, dynamic>{
-        'post_id': postId,
-        'reaction_type': reactionType,
-      },
-    );
-    return FeedReactionResult.fromJson(response);
+    throw StateError('KINGSTON_FEATURE_UNAVAILABLE');
   }
 
   Future<FeedComment> comment({
     required String postId,
     required String body,
   }) async {
-    await SupabaseService.ensureFreshSession();
-    final Map<String, dynamic> response = await SupabaseService.invokeFunction(
-      SupabaseConstants.fnFeedComment,
-      body: <String, dynamic>{
-        'post_id': postId,
-        'body': body,
-      },
-    );
-    final Object? comment = response['comment'];
-    final FeedComment parsed =
-        FeedComment.fromJson(_safeJsonObject(comment) ?? response);
-    _ref.invalidate(feedCommentsProvider(postId));
-    return parsed;
+    throw StateError('KINGSTON_FEATURE_UNAVAILABLE');
   }
 
   Future<FeedReactionResult> save({required String postId}) {
@@ -353,31 +329,7 @@ class FeedActions {
     required FeedSocialRequest request,
     required bool approve,
   }) async {
-    await SupabaseService.ensureFreshSession();
-    final String action =
-        request.requestType == FeedRequestType.designInspiration
-            ? 'respond_inspiration'
-            : 'respond_collab';
-    final Map<String, dynamic> response = await SupabaseService.invokeFunction(
-      SupabaseConstants.fnFeedInspiration,
-      body: <String, dynamic>{
-        'action': action,
-        'request_id': request.id,
-        'approve': approve,
-      },
-    );
-    final FeedSocialRequest parsed = FeedSocialRequest.fromJson(response);
-    _ref
-      ..invalidate(feedIncomingRequestsProvider(request.postId))
-      ..invalidate(
-        feedRequestStatusProvider(
-          FeedRequestQuery(
-            postId: request.postId,
-            requestType: request.requestType,
-          ),
-        ),
-      );
-    return parsed;
+    throw StateError('KINGSTON_FEATURE_UNAVAILABLE');
   }
 
   Future<Design> loadApprovedInspirationDesign(
@@ -387,19 +339,7 @@ class FeedActions {
       throw StateError('INSPIRATION_NOT_APPROVED');
     }
 
-    await SupabaseService.ensureFreshSession();
-
-    final Map<String, dynamic>? row = await SupabaseService.client
-        .from(SupabaseConstants.tableDesigns)
-        .select()
-        .eq('id', request.approvedDesignId!)
-        .maybeSingle();
-
-    if (row == null) {
-      throw StateError('APPROVED_DESIGN_NOT_FOUND');
-    }
-
-    return Design.fromJson(row);
+    throw StateError('KINGSTON_FEATURE_UNAVAILABLE');
   }
 
   Future<FeedSocialRequest> _invokeFeedRequest({
@@ -407,21 +347,7 @@ class FeedActions {
     required String postId,
     required FeedRequestType requestType,
   }) async {
-    await SupabaseService.ensureFreshSession();
-    final Map<String, dynamic> response = await SupabaseService.invokeFunction(
-      SupabaseConstants.fnFeedInspiration,
-      body: <String, dynamic>{
-        'action': action,
-        'post_id': postId,
-      },
-    );
-    final FeedSocialRequest parsed = FeedSocialRequest.fromJson(response);
-    _ref.invalidate(
-      feedRequestStatusProvider(
-        FeedRequestQuery(postId: postId, requestType: requestType),
-      ),
-    );
-    return parsed;
+    throw StateError('KINGSTON_FEATURE_UNAVAILABLE');
   }
 }
 
@@ -441,83 +367,22 @@ final FutureProviderFamily<void, String> hypePostProvider =
 
 final FutureProviderFamily<List<FeedComment>, String> feedCommentsProvider =
     FutureProvider.family<List<FeedComment>, String>(
-  (Ref<AsyncValue<List<FeedComment>>> ref, String postId) async {
-    ref.watch(supabaseAuthRevisionProvider);
-    await SupabaseService.ensureFreshSession();
-
-    final List<dynamic> rows = await SupabaseService.client
-        .from(SupabaseConstants.tableFeedComments)
-        .select('id, post_id, player_id, brand_name, body, created_at')
-        .eq('post_id', postId)
-        .order('created_at');
-
-    return rows.map<FeedComment>((Object? row) {
-      final Map<String, dynamic>? comment = _safeJsonObject(row);
-      if (comment == null) {
-        throw const FormatException('Invalid feed comment row.');
-      }
-      return FeedComment.fromJson(comment);
-    }).toList(growable: false);
-  },
+  (Ref<AsyncValue<List<FeedComment>>> ref, String postId) async =>
+      const <FeedComment>[],
 );
 
 final FutureProviderFamily<FeedSocialRequest?, FeedRequestQuery>
     feedRequestStatusProvider =
     FutureProvider.family<FeedSocialRequest?, FeedRequestQuery>(
-  (Ref<AsyncValue<FeedSocialRequest?>> ref, FeedRequestQuery query) async {
-    ref.watch(supabaseAuthRevisionProvider);
-    await SupabaseService.ensureFreshSession();
-
-    final String uid = ref.watch(activeUidProvider);
-    if (uid.isEmpty) return null;
-
-    final List<dynamic> rows = await SupabaseService.client
-        .from(SupabaseConstants.tableCollabRequests)
-        .select(
-          'id, post_id, requester_id, recipient_id, message, status, '
-          'request_type, source_design_id, approved_design_id, created_at, '
-          'responded_at',
-        )
-        .eq('post_id', query.postId)
-        .eq('requester_id', uid)
-        .eq('request_type', query.requestType.apiValue)
-        .order('created_at', ascending: false)
-        .limit(1);
-
-    if (rows.isEmpty) return null;
-    return FeedSocialRequest.fromJson(
-      Map<String, dynamic>.from(rows.first as Map<Object?, Object?>),
-    );
-  },
+  (Ref<AsyncValue<FeedSocialRequest?>> ref, FeedRequestQuery query) async =>
+      null,
 );
 
 final FutureProviderFamily<List<FeedSocialRequest>, String>
     feedIncomingRequestsProvider =
     FutureProvider.family<List<FeedSocialRequest>, String>(
-  (Ref<AsyncValue<List<FeedSocialRequest>>> ref, String postId) async {
-    ref.watch(supabaseAuthRevisionProvider);
-    await SupabaseService.ensureFreshSession();
-
-    final String uid = ref.watch(activeUidProvider);
-    if (uid.isEmpty) return const <FeedSocialRequest>[];
-
-    final List<dynamic> rows = await SupabaseService.client
-        .from(SupabaseConstants.tableCollabRequests)
-        .select(
-          'id, post_id, requester_id, recipient_id, message, status, '
-          'request_type, source_design_id, approved_design_id, created_at, '
-          'responded_at',
-        )
-        .eq('post_id', postId)
-        .eq('recipient_id', uid)
-        .eq('status', 'pending')
-        .order('created_at');
-
-    return rows
-        .cast<Map<String, dynamic>>()
-        .map(FeedSocialRequest.fromJson)
-        .toList(growable: false);
-  },
+  (Ref<AsyncValue<List<FeedSocialRequest>>> ref, String postId) async =>
+      const <FeedSocialRequest>[],
 );
 
 // ---------------------------------------------------------------------------
@@ -526,29 +391,8 @@ final FutureProviderFamily<List<FeedSocialRequest>, String>
 // ---------------------------------------------------------------------------
 
 final StreamProvider<Set<String>> followingIdsProvider =
-    StreamProvider<Set<String>>((Ref<AsyncValue<Set<String>>> ref) {
-  final AsyncValue<Session> session =
-      ref.watch(supabaseRealtimeSessionProvider);
-  if (session.isLoading) return const Stream<Set<String>>.empty();
-  if (session.hasError) {
-    return Stream<Set<String>>.error(_safeSessionError(session.error!));
-  }
-
-  final String uid = ref.watch(activeUidProvider);
-  if (uid.isEmpty) return const Stream<Set<String>>.empty();
-
-  return SupabaseService.guardRealtimeStream(
-    SupabaseService.client
-        .from(SupabaseConstants.tableFollows)
-        .stream(primaryKey: <String>['follower_id', 'following_id'])
-        .eq('follower_id', uid)
-        .map(
-          (List<Map<String, dynamic>> rows) => rows
-              .map((Map<String, dynamic> r) => r['following_id'] as String)
-              .toSet(),
-        ),
-  );
-});
+    StreamProvider<Set<String>>((Ref<AsyncValue<Set<String>>> ref) =>
+        Stream<Set<String>>.value(const <String>{}));
 
 // ---------------------------------------------------------------------------
 // Syndicate feed — one-shot RPC for initial SYNDICATE tab load.
@@ -556,16 +400,8 @@ final StreamProvider<Set<String>> followingIdsProvider =
 // ---------------------------------------------------------------------------
 
 final FutureProvider<List<FeedPost>> syndicateFeedProvider =
-    FutureProvider<List<FeedPost>>((Ref<AsyncValue<List<FeedPost>>> ref) async {
-  ref.watch(supabaseAuthRevisionProvider);
-  await SupabaseService.ensureFreshSession();
-
-  final List<dynamic> rows = await SupabaseService.client.rpc<List<dynamic>>(
-    'get_syndicate_feed',
-    params: <String, dynamic>{'p_limit': 50},
-  );
-  return rows.cast<Map<String, dynamic>>().map(FeedPost.fromJson).toList();
-});
+    FutureProvider<List<FeedPost>>(
+        (Ref<AsyncValue<List<FeedPost>>> ref) async => const <FeedPost>[]);
 
 Object _safeSessionError(Object error) {
   return SupabaseService.isRecoverableAuthError(error)

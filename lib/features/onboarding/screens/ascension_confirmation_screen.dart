@@ -98,8 +98,8 @@ class _AscensionConfirmationScreenState
 
     try {
       final String userId = await ref
-          .read(identityBridgeActionsProvider)
-          .requireEstablishedSupabaseUserId();
+          .read(supabaseAuthActionsProvider)
+          .requireEstablishedUserId();
       await _executeGenesis(state: state, userId: userId);
     } catch (_) {
       _handleIdentityFailure();
@@ -125,7 +125,7 @@ class _AscensionConfirmationScreenState
 
     try {
       final String userId =
-          await ref.read(identityBridgeActionsProvider).retryBridge();
+          await ref.read(supabaseAuthActionsProvider).retrySession();
       if (!mounted) return;
       setState(() => _isRetrying = false);
       setState(() => _isSealing = true);
@@ -144,7 +144,7 @@ class _AscensionConfirmationScreenState
     });
 
     try {
-      await ref.read(identityBridgeActionsProvider).signOutAndRestart();
+      await ref.read(supabaseAuthActionsProvider).signOutAndRestart();
       if (!mounted) return;
       ref.read(onboardingProvider.notifier).reset();
       context.go(AppRouter.onboardingAurelianGate);

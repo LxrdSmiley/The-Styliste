@@ -62,8 +62,6 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
-	<key>NSCameraUsageDescription</key>
-	<string>The Styliste needs camera access for AR Try-On of your designs.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>The Styliste needs photo library access to save your collection screenshots.</string>
 </dict>

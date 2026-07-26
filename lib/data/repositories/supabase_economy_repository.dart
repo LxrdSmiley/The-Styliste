@@ -15,7 +15,8 @@ class SupabaseEconomyRepository implements EconomyRepository {
   @override
   Future<Brand?> fetchBrandState(String playerId) async {
     final Map<String, dynamic>? data = await SupabaseService.client
-        .from(SupabaseConstants.tableBrandState)
+        .schema('api')
+        .from('brand_summary')
         .select()
         .eq('player_id', playerId)
         .maybeSingle();
@@ -24,19 +25,20 @@ class SupabaseEconomyRepository implements EconomyRepository {
   }
 
   @override
-  Stream<Brand> watchBrandState(String playerId) {
-    return SupabaseService.client
-        .from(SupabaseConstants.tableBrandState)
-        .stream(primaryKey: <String>['player_id'])
-        .eq('player_id', playerId)
-        .where((List<Map<String, dynamic>> rows) => rows.isNotEmpty)
-        .map((List<Map<String, dynamic>> rows) => Brand.fromJson(rows.first));
+  Stream<Brand> watchBrandState(String playerId) async* {
+    // api.brand_summary is a security-invoker view, not a replication table.
+    while (true) {
+      final Brand? brand = await fetchBrandState(playerId);
+      if (brand != null) yield brand;
+      await Future<void>.delayed(const Duration(seconds: 30));
+    }
   }
 
   @override
   Future<List<Store>> fetchStores(String playerId) async {
     final List<Map<String, dynamic>> data = await SupabaseService.client
-        .from(SupabaseConstants.tableStores)
+        .schema('api')
+        .from('store_summary')
         .select()
         .eq('player_id', playerId);
 

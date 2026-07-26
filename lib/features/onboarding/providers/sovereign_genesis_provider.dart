@@ -47,8 +47,8 @@ final class SovereignGenesisResult {
     }
 
     return SovereignGenesisResult(
-      success: row['success'] == true,
-      message: row['message'] as String?,
+      success: row['success'] == true || row['status'] == 'initialized',
+      message: (row['message'] ?? row['status']) as String?,
     );
   }
 }
@@ -68,15 +68,13 @@ final class _SupabaseSovereignGenesisGateway
   Future<SovereignGenesisResult> execute(
     SovereignGenesisRequest request,
   ) async {
-    final Object? rpcResult = await SupabaseService.client.rpc(
-      SupabaseConstants.fnExecuteSovereignGenesis,
-      params: <String, dynamic>{
-        'p_user_id': request.userId,
-        'p_brand_name': request.brandName,
-        'p_career_path': request.careerPath,
-        'p_city': request.city,
-        'p_market_tier': request.marketTier,
-        'p_avatar_config': request.avatarConfig,
+    final Map<String, dynamic> rpcResult = await SupabaseService.invokeFunction(
+      SupabaseConstants.fnFounderTrial,
+      body: <String, dynamic>{
+        'action': 'initialize',
+        'brand_name': request.brandName,
+        'career_path': request.careerPath,
+        'idempotency_key': request.userId,
       },
     );
 

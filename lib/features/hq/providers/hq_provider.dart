@@ -5,7 +5,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../core/constants/supabase_constants.dart';
 import '../../../core/providers/active_player_provider.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../data/repositories/supabase_economy_repository.dart';
@@ -119,7 +118,8 @@ final FutureProvider<LatestAlphaDropSummary?> latestAlphaDropProvider =
 
   await SupabaseService.ensureFreshSession();
   final Map<String, dynamic>? row = await SupabaseService.client
-      .from(SupabaseConstants.tableFeedPosts)
+      .schema('api')
+      .from('feed_projection')
       .select('id, content, hype, created_at')
       .eq('player_id', uid)
       .inFilter('type', <String>['design_flex', 'design_drop'])

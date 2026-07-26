@@ -3,10 +3,18 @@
 
 import 'dart:convert';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 abstract final class SupabaseService {
+  static const Set<String> _kingstonMutationEndpoints = <String>{
+    'founder-trial',
+    'drop-design',
+    'open-first-store',
+    'calculate-idle-income',
+    'progression-event',
+    'submit-player-report',
+  };
   static const Duration _sessionRefreshMargin = Duration(minutes: 2);
 
   static const String noInternetMessage =
@@ -16,7 +24,7 @@ abstract final class SupabaseService {
   /// Always use this getter — never construct a new client.
   static SupabaseClient get client => Supabase.instance.client;
 
-  /// Current authenticated user's ID (Firebase UID linked to Supabase).
+  /// Current authenticated Supabase user's ID.
   static String? get currentUserId => client.auth.currentUser?.id;
 
   /// True when the current session exists and is not near expiry.
@@ -51,8 +59,13 @@ abstract final class SupabaseService {
       }
       await _setRealtimeAuth(refreshedSession);
       return refreshedSession;
-    } catch (_) {
-      throw const SupabaseSessionExpiredException();
+    } on SupabaseSessionExpiredException {
+      rethrow;
+    } on Object catch (error) {
+      if (isRecoverableAuthError(error)) {
+        throw const SupabaseSessionExpiredException();
+      }
+      rethrow;
     }
   }
 
@@ -107,12 +120,7 @@ abstract final class SupabaseService {
     } catch (_) {}
 
     try {
-      // 2. Sign out of Firebase-linked surfaces, if any are active.
-      await FirebaseAuth.instance.signOut();
-    } catch (_) {}
-
-    try {
-      // 3. Sign out of Supabase
+      // Sign out of the only approved identity provider.
       await client.auth.signOut();
     } catch (_) {}
   }
@@ -124,6 +132,10 @@ abstract final class SupabaseService {
     final String message = error.toString().toLowerCase();
     return message.contains('invalidjwttoken') ||
         message.contains('invalid jwt') ||
+        message.contains('invalid refresh token') ||
+        message.contains('refresh token not found') ||
+        message.contains('refresh_token_not_found') ||
+        message.contains('refresh token already used') ||
         message.contains('token has expired') ||
         message.contains('jwt expired') ||
         message.contains('session expired') ||
@@ -145,8 +157,11 @@ abstract final class SupabaseService {
   static Future<void> _setRealtimeAuth(Session session) async {
     try {
       await client.realtime.setAuth(session.accessToken);
-    } catch (_) {
-      throw const SupabaseSessionExpiredException();
+    } on Object catch (error) {
+      if (isRecoverableAuthError(error)) {
+        throw const SupabaseSessionExpiredException();
+      }
+      rethrow;
     }
   }
 
@@ -157,9 +172,19 @@ abstract final class SupabaseService {
     Map<String, dynamic>? body,
   }) async {
     await ensureFreshSession();
+    final Map<String, dynamic>? requestBody = body == null
+        ? (_kingstonMutationEndpoints.contains(functionName)
+            ? <String, dynamic>{'idempotency_key': const Uuid().v4()}
+            : null)
+        : <String, dynamic>{
+            ...body,
+            if (_kingstonMutationEndpoints.contains(functionName) &&
+                !body.containsKey('idempotency_key'))
+              'idempotency_key': const Uuid().v4(),
+          };
     final FunctionResponse response = await client.functions.invoke(
       functionName,
-      body: body,
+      body: requestBody,
     );
     if (response.data == null) {
       throw Exception('Edge function $functionName returned null data.');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/constants/supabase_constants.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/app_colors.dart';
 
 class ReportModal extends StatefulWidget {
@@ -36,45 +37,31 @@ class _ReportModalState extends State<ReportModal> {
   Future<void> _submit() async {
     final String? category = _selectedCategory;
     if (category == null || _isSubmitting) return;
-    final String? reporterId = Supabase.instance.client.auth.currentUser?.id;
-    if (reporterId == null) {
-      setState(() => _error = 'Please sign in again before reporting.');
-      return;
-    }
-
     setState(() {
       _isSubmitting = true;
       _error = null;
     });
 
     try {
-      await Supabase.instance.client
-          .from('player_reports')
-          .insert(<String, dynamic>{
-        'reporter_id': reporterId,
-        'reported_player_id': widget.reportedPlayerId,
-        'reported_id': widget.reportedPlayerId,
-        'category': category,
-        'reason': category,
-        'description': _descriptionController.text.trim(),
-      });
+      await SupabaseService.invokeFunction(
+        SupabaseConstants.fnSubmitPlayerReport,
+        body: <String, dynamic>{
+          'reported_player_id': widget.reportedPlayerId,
+          'category': category,
+          'description': _descriptionController.text.trim(),
+        },
+      );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Report submitted')),
       );
       Navigator.of(context).pop();
-    } on PostgrestException catch (error) {
+    } catch (error) {
       if (!mounted) return;
       setState(() {
         _isSubmitting = false;
-        _error = _reportErrorMessage(error.message);
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _isSubmitting = false;
-        _error = 'Report failed. Please try again.';
+        _error = _reportErrorMessage(error.toString());
       });
     }
   }

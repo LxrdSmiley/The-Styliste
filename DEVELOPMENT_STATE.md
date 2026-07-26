@@ -20,7 +20,12 @@ Baseline and checkout:
   - `f61d874` — `fix: enforce Kingston API authority boundaries`;
   - `8889d66` — `test: make authority guard line-ending safe`;
   - `ca72fa3` — `test: preserve Deno source line endings`.
-- No commit has been pushed. `origin/master` remains the baseline.
+- No commit has been pushed. A final fetch observed `origin/master` advance
+  after implementation from the baseline to
+  `937b0e4c232c9ce80043ce58b588eb81bb5add90` (`Include MIT License in README`).
+  The merge base remains `ea5a6675ceb13772401d3b819f7566a313ec7a79`, so
+  current `origin/master` is not an ancestor of local HEAD. No merge or rebase
+  was attempted against the preserved dirty tree.
 - The dirty tree was externally preserved before Directive 1X changes at
   `C:\Users\Karriene Hall\AppData\Local\Temp\the-styliste-directive-1x-preservation-20260722-115940-131.zip`
   with SHA-256
@@ -99,6 +104,8 @@ Known required failures/blockers:
 - The local commit sequence is intentionally not review-ready: a fresh checkout
   still has the baseline Flutter actor-ID contradiction until the uncommitted
   caller fixes pass Smiley validation and receive a separate commit.
+- The review branch also requires a safe reconciliation with the one-commit
+  `origin/master` README/license advance before any publication check can pass.
 - Physical Android QA, accessibility observation, profile performance, signing,
   production deployment, and production data access remain not performed.
 
@@ -338,3 +345,12 @@ Do not stage or commit the entire dirty tree as one change. Do not restore `publ
 - No deletion of historical migrations.
 - No deletion of source based only on a text reachability heuristic.
 - No `Passed`, Alpha-ready, security-ready, performance-ready, or production-ready claim without the exact observed evidence required by `VERIFICATION_PROTOCOL.md`.
+
+## Tooling update — 2026-07-22
+
+- Installed the repository-local `frontend-design` skill at
+  `.agents/skills/frontend-design/SKILL.md` through the requested Smithery
+  installer command for use in subsequent UI tasks.
+- This installation changes no Feature ID, implementation status, or readiness
+  evidence. Any future use remains governed by `PROJECT_RULES.md` and
+  `VERIFICATION_PROTOCOL.md`.

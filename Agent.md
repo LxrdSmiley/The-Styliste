@@ -33,28 +33,29 @@ Fashion first. Hype second. Empire third.
 Use these as the project authority:
 
 ```text
-THE_STYLISTE_GDD_v6.md
+THE_STYLISTE_GDD_v7.md
 PROJECT_RULES.md
 VERIFICATION_PROTOCOL.md
+DEVELOPMENT_STATE.md
+BOTTLENECK_LOG.md
+CHANGELOG.md
 ```
 
-If a duplicate file named `THE_STYLISTE_GDD_v6-1.md` exists, treat it as the same GDD v6 duplicate, not a newer version.
+`THE_STYLISTE_GDD_v6.md` is historical context only. It is not an active
+implementation authority.
 
 Before implementing a feature, inspect the relevant GDD section and align the code to it.
 
 Common references:
 
 ```text
-GDD v6 §2 Core Gameplay Loops
-GDD v6 §4 Atelier
-GDD v6 §4.1 Hype Score
-GDD v6 §4.2 60fps target / Atelier simulation constraints
-GDD v6 §4.5 HQ Dashboard
-GDD v6 §5 Mogul Mechanics
-GDD v6 §6.1 Global Live Feed
-GDD v6 §6.3 Maisons
-GDD v6 §8.7.1 Vex
-GDD v6 §12.3 Trend Tsunami
+GDD v7 §4 Core Gameplay Loop
+GDD v7 §§5–6 Luxe FTUE and player paths
+GDD v7 §§8–10 Atelier, Architect, and economy systems
+GDD v7 §§11–12 Feed, multiplayer, Luxe, Vex, and living world
+GDD v7 §17 Monetization and F2P integrity
+GDD v7 §§18–19 UI/UX, performance, architecture, and security
+GDD v7 §§21–22 implementation staging and acceptance criteria
 ```
 
 Do not rely on memory, previous chat summaries, or assumptions when the repo contains the current implementation.
@@ -488,7 +489,7 @@ Short description of what changed.
 Explain server-authority, provider, route, or UI implications.
 
 ## GDD Alignment
-- GDD v6 §X — reason
+- GDD v7 §X — reason
 
 ## Manual Terminal Commands for Smiley
 ```bash
@@ -529,7 +530,7 @@ For small compile fixes, proceed surgically without broad refactors.
 
 ## 17. Final Rule
 
-Every code change must make *The Styliste* more like the GDD v6 game:
+Every code change must make *The Styliste* more like the staged GDD v7 game:
 
 ```text
 create fashion

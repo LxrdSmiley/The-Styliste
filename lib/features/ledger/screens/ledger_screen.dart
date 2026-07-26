@@ -211,7 +211,7 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                           ),
                           const SizedBox(height: 10.0),
                           Text(
-                            'Choose your first city, format, price posture, and inventory risk.',
+                            'Open in Kingston: choose format, price posture, and inventory risk.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: AppColors.lime.withValues(alpha: 0.45),
@@ -293,7 +293,6 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
     );
     if (draft == null || !mounted) return;
     final bool opened = await ref.read(firstStoreProvider.notifier).open(
-          city: draft.city,
           storeType: draft.storeType,
           priceTier: draft.priceTier,
           inventoryCapacity: draft.inventoryCapacity,
@@ -369,13 +368,11 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
 
 class FirstStoreDraft {
   const FirstStoreDraft({
-    required this.city,
     required this.storeType,
     required this.priceTier,
     required this.inventoryCapacity,
   });
 
-  final String city;
   final String storeType;
   final String priceTier;
   final int inventoryCapacity;
@@ -391,12 +388,11 @@ class FirstStoreDialog extends StatefulWidget {
 }
 
 class _FirstStoreDialogState extends State<FirstStoreDialog> {
-  String _city = 'new_york';
   String _storeType = 'ecommerce';
   String _priceTier = 'signature';
   double _inventoryCapacity = 24;
 
-  double get _openingCost => _storeType == 'flagship' ? 15000 : 8000;
+  double get _openingCost => 0;
   double get _demand => switch (_priceTier) {
         'accessible' => 18,
         'luxury' => 5,
@@ -422,12 +418,8 @@ class _FirstStoreDialogState extends State<FirstStoreDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            _select<String>(
-              'CITY',
-              _city,
-              <String>['new_york', 'paris', 'tokyo'],
-              (String value) => setState(() => _city = value),
-            ),
+            const Text('KINGSTON FOUNDER TRIAL',
+                style: TextStyle(color: AppColors.lime, fontSize: 10.0)),
             _select<String>(
               'FORMAT',
               _storeType,
@@ -491,7 +483,6 @@ class _FirstStoreDialogState extends State<FirstStoreDialog> {
               ? () => Navigator.pop(
                     context,
                     FirstStoreDraft(
-                      city: _city,
                       storeType: _storeType,
                       priceTier: _priceTier,
                       inventoryCapacity: _inventoryCapacity.round(),

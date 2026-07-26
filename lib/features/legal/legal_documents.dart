@@ -66,10 +66,10 @@ abstract final class LegalDocuments {
         ),
         LegalSection(
           heading: 'Core providers',
-          body: 'The current app stack includes Firebase services, Supabase '
-              'database and Edge Functions, platform purchase providers, and '
-              'device notification services. Any analytics or crash reporting '
-              'must be disclosed here before public launch.',
+          body: 'The current app stack includes Supabase Auth, database, '
+              'Storage, Realtime, and Edge Functions, plus platform purchase '
+              'providers where enabled. Any analytics, crash reporting, or '
+              'notification provider must be disclosed before public launch.',
         ),
         LegalSection(
           heading: 'Player rights',
@@ -293,8 +293,8 @@ abstract final class LegalDocuments {
         LegalSection(
           heading: 'Known providers to review',
           body:
-              'Firebase, Supabase, app stores, notification services, payment '
-              'processors, support tools, analytics, crash reporting, hosting, '
+              'Supabase, app stores, notification services, payment processors, '
+              'support tools, analytics, crash reporting, hosting, '
               'and CDN vendors must be validated before public launch.',
         ),
       ],

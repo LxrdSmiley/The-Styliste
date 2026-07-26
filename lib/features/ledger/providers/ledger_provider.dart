@@ -16,22 +16,26 @@ import '../../../domain/models/store.dart';
 class FirstStoreState {
   const FirstStoreState({
     this.isSubmitting = false,
+    this.idempotencyKey,
     this.errorMessage,
     this.result,
   });
 
   final bool isSubmitting;
+  final String? idempotencyKey;
   final String? errorMessage;
   final Map<String, dynamic>? result;
 
   FirstStoreState copyWith({
     bool? isSubmitting,
+    String? idempotencyKey,
     String? errorMessage,
     Map<String, dynamic>? result,
     bool clearError = false,
   }) {
     return FirstStoreState(
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       result: result ?? this.result,
     );
@@ -42,30 +46,38 @@ class FirstStoreNotifier extends StateNotifier<FirstStoreState> {
   FirstStoreNotifier() : super(const FirstStoreState());
 
   Future<bool> open({
-    required String city,
     required String storeType,
     required String priceTier,
     required int inventoryCapacity,
   }) async {
     if (state.isSubmitting) return false;
-    state = const FirstStoreState(isSubmitting: true);
+    final String idempotencyKey = state.idempotencyKey ?? const Uuid().v4();
+    state = FirstStoreState(
+      isSubmitting: true,
+      idempotencyKey: idempotencyKey,
+    );
     try {
       final Map<String, dynamic> result = await SupabaseService.invokeFunction(
         SupabaseConstants.fnOpenFirstStore,
         body: <String, dynamic>{
-          'city': city,
           'store_type': storeType,
           'price_tier': priceTier,
           'inventory_capacity': inventoryCapacity,
-          'idempotency_key': const Uuid().v4(),
+          'idempotency_key': idempotencyKey,
         },
       );
-      if (mounted) state = FirstStoreState(result: result);
+      if (mounted) {
+        state = FirstStoreState(
+          idempotencyKey: idempotencyKey,
+          result: result,
+        );
+      }
       return result['success'] == true;
     } on Exception catch (error) {
       if (mounted) {
         final String raw = error.toString();
         state = FirstStoreState(
+          idempotencyKey: idempotencyKey,
           errorMessage: raw.contains('INSUFFICIENT_CAPITAL')
               ? 'INSUFFICIENT CAPITAL'
               : raw.contains('MOGUL_ONLY')
@@ -94,16 +106,23 @@ final StateNotifierProvider<FirstStoreNotifier, FirstStoreState>
 // Store stream — Realtime-backed list of the authenticated player's stores.
 // ---------------------------------------------------------------------------
 
+Stream<List<Store>> _pollStores(String playerId) async* {
+  while (true) {
+    final List<Map<String, dynamic>> rows = await SupabaseService.client
+        .schema('api')
+        .from('store_summary')
+        .select()
+        .eq('player_id', playerId);
+    yield rows.map(Store.fromJson).toList(growable: false);
+    await Future<void>.delayed(const Duration(seconds: 30));
+  }
+}
+
 final StreamProvider<List<Store>> ledgerStoresStreamProvider =
     StreamProvider<List<Store>>((Ref<AsyncValue<List<Store>>> ref) {
   final String uid = ref.watch(activeUidProvider);
-  return SupabaseService.client
-      .from(SupabaseConstants.tableStores)
-      .stream(primaryKey: <String>['id'])
-      .eq('player_id', uid)
-      .map(
-        (List<Map<String, dynamic>> rows) => rows.map(Store.fromJson).toList(),
-      );
+  if (uid.isEmpty) return const Stream<List<Store>>.empty();
+  return _pollStores(uid);
 });
 
 // ---------------------------------------------------------------------------
@@ -158,36 +177,9 @@ class UpgradeStoreNotifier extends StateNotifier<UpgradeStoreState> {
     required double currentBalance,
   }) async {
     if (state.upgradingStoreId != null) return; // already upgrading something
-
-    final double cost = upgradeCost(store.tier);
-
-    // 1. Optimistic lock — show spinner on this card, preview balance deduction.
-    state = UpgradeStoreState(
-      upgradingStoreId: store.id,
-      optimisticBalance: currentBalance - cost,
+    state = const UpgradeStoreState(
+      errorMessage: 'STORE UPGRADES ARE UNAVAILABLE IN THE KINGSTON BUILD',
     );
-
-    try {
-      await SupabaseService.invokeFunction(
-        SupabaseConstants.fnProcessTransaction,
-        body: <String, dynamic>{
-          'action': 'upgrade_store',
-          'store_id': store.id,
-          'idempotency_key': const Uuid().v4(),
-        },
-      );
-      // 2. Success: clear optimistic state. Realtime stream provides truth.
-      if (mounted) state = const UpgradeStoreState();
-    } on Exception catch (e) {
-      // 3. On 400 or any error: revert optimistic state, surface message.
-      if (mounted) {
-        state = UpgradeStoreState(
-          errorMessage: e.toString().contains('INSUFFICIENT_CAPITAL')
-              ? 'INSUFFICIENT CAPITAL'
-              : 'UPGRADE FAILED — TRY AGAIN',
-        );
-      }
-    }
   }
 
   /// Called by UI after SnackBar has displayed the error.

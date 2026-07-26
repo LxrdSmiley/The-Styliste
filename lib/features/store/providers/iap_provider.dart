@@ -5,8 +5,7 @@
 //   Optimistic spinner on active product; error SnackBar via ref.listen.
 //   Token balance reconciled by Realtime hqBrandStreamProvider on success.
 
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -41,6 +40,7 @@ const Map<String, int> kLuxeGrants = <String, int>{
 final FutureProvider<List<ProductDetails>> iapProductsProvider =
     FutureProvider<List<ProductDetails>>(
   (Ref<AsyncValue<List<ProductDetails>>> ref) async {
+    if (kIsWeb) return <ProductDetails>[];
     final ProductDetailsResponse response =
         await InAppPurchase.instance.queryProductDetails(kLuxeProductIds);
     return response.productDetails
@@ -57,8 +57,9 @@ final FutureProvider<List<ProductDetails>> iapProductsProvider =
 // ---------------------------------------------------------------------------
 final StreamProvider<List<PurchaseDetails>> iapPurchaseStreamProvider =
     StreamProvider<List<PurchaseDetails>>(
-  (Ref<AsyncValue<List<PurchaseDetails>>> ref) =>
-      InAppPurchase.instance.purchaseStream,
+  (Ref<AsyncValue<List<PurchaseDetails>>> ref) => kIsWeb
+      ? Stream<List<PurchaseDetails>>.value(<PurchaseDetails>[])
+      : InAppPurchase.instance.purchaseStream,
 );
 
 // ---------------------------------------------------------------------------
@@ -112,13 +113,32 @@ class IapNotifier extends StateNotifier<IapState> {
   final Ref<IapState> _ref;
 
   Future<void> _handlePurchaseUpdate(PurchaseDetails purchase) async {
+    if (kIsWeb) {
+      if (mounted) {
+        state = const IapState(
+          errorMessage: 'PURCHASES ARE AVAILABLE IN THE MOBILE APP',
+        );
+      }
+      return;
+    }
     if (purchase.status == PurchaseStatus.pending) return;
 
     if (purchase.status == PurchaseStatus.purchased ||
         purchase.status == PurchaseStatus.restored) {
-      // Determine platform via dart:io — purchase.verificationData.source
-      // is not a stable API across in_app_purchase versions.
-      final String platform = Platform.isIOS ? 'ios' : 'android';
+      // Purchases remain mobile-only; the web preview returns a disabled state.
+      final String? platform = switch (defaultTargetPlatform) {
+        TargetPlatform.iOS => 'ios',
+        TargetPlatform.android => 'android',
+        _ => null,
+      };
+      if (platform == null) {
+        if (mounted) {
+          state = const IapState(
+            errorMessage: 'PURCHASES ARE UNAVAILABLE ON THIS PLATFORM',
+          );
+        }
+        return;
+      }
       final String receiptData =
           purchase.verificationData.serverVerificationData;
 
@@ -170,6 +190,12 @@ class IapNotifier extends StateNotifier<IapState> {
   /// Initiate a purchase flow for the given product.
   Future<void> buyProduct(ProductDetails product) async {
     if (state.purchasingProductId != null) return;
+    if (kIsWeb) {
+      state = const IapState(
+        errorMessage: 'PURCHASES ARE AVAILABLE IN THE MOBILE APP',
+      );
+      return;
+    }
     state = IapState(purchasingProductId: product.id);
 
     final String? accountToken = SupabaseService.currentUserId;

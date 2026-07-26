@@ -1,80 +1,67 @@
-// GDD §1 — The Styliste entry point
-// PROJECT_RULES §2 — Firebase Auth + App Check + Supabase initialised here
-// Env strategy: --dart-define-from-file=.env.json (never hardcode keys)
-
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+// GDD v7 §§19.1–19.9 — fail-closed Supabase startup for Android and iOS.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
-import 'core/services/firebase_service.dart';
 
-// --- Environment constants via --dart-define-from-file=.env.json ---
-// Usage: flutter run --dart-define-from-file=.env.json
 const String _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-const String _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
-
-// GDD §8 — FCM background handler (rival alerts, daily check-in reminders)
-// Must be a top-level function annotated with @pragma('vm:entry-point')
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  try {
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-        options: FirebaseService.currentPlatformOptions,
-      );
-    }
-  } catch (e) {
-    debugPrint('Firebase background already initialized: $e');
-  }
-  // Background message received — no UI interaction allowed here
-  // Payload handling (badge updates, local notification scheduling) added in Phase 2
-}
+const String _supabasePublishableKey =
+    String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+const String _legacySupabaseAnonKey =
+    String.fromEnvironment('SUPABASE_ANON_KEY');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Lock orientation to portrait (GDD §1 — portrait-first)
   await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
     DeviceOrientation.portraitUp,
   ]);
 
-  // Register FCM background handler before Firebase.initializeApp (GDD §8)
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  // Initialise Firebase (PROJECT_RULES §2)
-  try {
-    if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp(
-        options: FirebaseService.currentPlatformOptions,
-      );
-    }
-  } catch (e) {
-    debugPrint('Firebase already initialized or failed: $e');
+  final String publicClientKey = _supabasePublishableKey.isNotEmpty
+      ? _supabasePublishableKey
+      : _legacySupabaseAnonKey;
+  if (_supabaseUrl.isEmpty || publicClientKey.isEmpty) {
+    runApp(const _StartupFailureApp(
+      'This build is missing its required game-service configuration.',
+    ));
+    return;
   }
 
-  // Activate Firebase App Check (Play Integrity / DeviceCheck — GDD §8.15.1)
-  await FirebaseService.activateAppCheck();
+  try {
+    await Supabase.initialize(
+      url: _supabaseUrl,
+      // supabase_flutter 2.x names this parameter `anonKey`, but it accepts
+      // the current publishable-key format as well as the legacy anon JWT.
+      anonKey: publicClientKey,
+    );
+  } catch (_) {
+    runApp(const _StartupFailureApp(
+      'Game services are unavailable. Please try again later.',
+    ));
+    return;
+  }
 
-  // Initialise Supabase (PROJECT_RULES §2 — source of truth for economy)
-  if (_supabaseUrl.isEmpty || _supabaseAnonKey.isEmpty) {
-    throw StateError(
-      'SUPABASE_URL and SUPABASE_ANON_KEY must be set via --dart-define-from-file',
+  runApp(const ProviderScope(child: TheStyliste()));
+}
+
+class _StartupFailureApp extends StatelessWidget {
+  const _StartupFailureApp(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(message, textAlign: TextAlign.center),
+          ),
+        ),
+      ),
     );
   }
-
-  await Supabase.initialize(
-    url: _supabaseUrl,
-    anonKey: _supabaseAnonKey,
-  );
-
-  runApp(
-    // Riverpod scope wraps the entire app (PROJECT_RULES §3)
-    const ProviderScope(
-      child: TheStyliste(),
-    ),
-  );
 }

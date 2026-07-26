@@ -151,7 +151,7 @@ final FutureProviderFamily<FirstObjectiveState, Player> firstObjectiveProvider =
           : 'Open your first store',
       description: player.path == CareerPath.designer
           ? 'Make a design decision in the Atelier.'
-          : 'Choose a city, format, and operating strategy.',
+          : 'Open in Kingston and choose a format and operating strategy.',
       status: 'pending',
     );
     final FirstWeekObjective current = next ?? fallback;
