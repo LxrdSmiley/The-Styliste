@@ -4,6 +4,8 @@ import '../../../core/services/supabase_service.dart';
 abstract interface class FirstObjectiveRepository {
   Future<bool> hasServerConfirmedAlphaDrop(String playerId);
 
+  Future<bool> hasServerConfirmedStarterStore(String playerId);
+
   Stream<List<FirstWeekObjective>> watchObjectives(String playerId);
 
   Future<void> recordValidatedEvent(String eventKey, {String? entityId});
@@ -56,6 +58,23 @@ class SupabaseFirstObjectiveRepository implements FirstObjectiveRepository {
           .select('id')
           .eq('player_id', playerId)
           .filter('content->>event', 'eq', 'alpha_dropped')
+          .limit(1);
+      return rows.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> hasServerConfirmedStarterStore(String playerId) async {
+    try {
+      await SupabaseService.ensureFreshSession();
+      final List<dynamic> rows = await SupabaseService.client
+          .schema('api')
+          .from('store_summary')
+          .select('id')
+          .eq('player_id', playerId)
+          .eq('type', 'ecommerce')
           .limit(1);
       return rows.isNotEmpty;
     } catch (_) {

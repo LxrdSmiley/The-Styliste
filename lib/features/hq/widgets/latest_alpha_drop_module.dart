@@ -42,9 +42,13 @@ class _LatestAlphaDropCard extends StatelessWidget {
     final List<String> metrics = <String>[
       if ((drop.followersDelta ?? 0) > 0) '+${drop.followersDelta} followers',
       if ((drop.brandHeatDelta ?? 0) > 0) '+${drop.brandHeatDelta} heat',
-      if ((drop.xpDelta ?? 0) > 0) '+${drop.xpDelta} XP',
-      if ((drop.rankProgressDelta ?? 0.0) > 0.0)
+      if ((drop.rankUpOccurred ?? false) && drop.currentRank != null)
+        'Rank ${drop.currentRank} unlocked'
+      else if ((drop.rankProgressPercent ?? 0.0) > 0.0)
+        '${drop.rankProgressPercent!.toStringAsFixed(1)}% rank'
+      else if ((drop.rankProgressDelta ?? 0.0) > 0.0)
         '+${drop.rankProgressDelta!.toStringAsFixed(1)}% rank',
+      if ((drop.xpDelta ?? 0) > 0) '+${drop.xpDelta} XP',
     ];
     final String? nextMove = _firstText(<String?>[drop.nextObjective]);
     final String? vexLine = _firstText(<String?>[

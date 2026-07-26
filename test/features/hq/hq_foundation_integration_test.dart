@@ -113,6 +113,9 @@ class _FakeFirstObjectiveRepository implements FirstObjectiveRepository {
   Future<bool> hasServerConfirmedAlphaDrop(String playerId) async => false;
 
   @override
+  Future<bool> hasServerConfirmedStarterStore(String playerId) async => false;
+
+  @override
   Stream<List<FirstWeekObjective>> watchObjectives(String playerId) {
     return Stream<List<FirstWeekObjective>>.value(
       const <FirstWeekObjective>[],

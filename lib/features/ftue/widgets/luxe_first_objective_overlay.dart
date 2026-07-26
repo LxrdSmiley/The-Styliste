@@ -32,8 +32,8 @@ class _LuxeFirstObjectiveDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDesigner = player.path == CareerPath.designer;
     final String body = isDesigner
-        ? 'Open the Atelier. Mint your first Alpha. Let the Feed judge it.'
-        : 'Open the Ledger. Review your empire. Watch the Feed for market movement.';
+        ? 'Open the Atelier. Mint your first Alpha. Drop it to Feed, then return HQ.'
+        : 'Open the Ledger. Launch your first store, then return HQ.';
     final String cta = isDesigner ? 'Open Atelier' : 'Open Ledger';
 
     return Dialog(

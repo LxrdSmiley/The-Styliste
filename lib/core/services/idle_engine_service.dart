@@ -27,6 +27,20 @@ class IdleIncomeResult {
     this.idleRevenuePerHour = 0.0,
   });
 
+  factory IdleIncomeResult.fromRpcResponse(Object? response) {
+    final Map<String, dynamic> row = _firstRpcRow(response);
+    return IdleIncomeResult(
+      addedToInventory: (row['added_to_inventory'] as num?)?.toDouble() ?? 0.0,
+      inventoryValue: (row['new_inventory'] as num?)?.toDouble() ?? 0.0,
+      warehouseCapacity:
+          (row['warehouse_capacity'] as num?)?.toDouble() ?? 5000.0,
+      isWarehouseFull: row['is_full'] as bool? ?? false,
+      secondsElapsed: (row['seconds_elapsed'] as num?)?.toDouble() ?? 0.0,
+      idleRevenuePerHour:
+          (row['idle_revenue_per_hour'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
   final double addedToInventory; // Amount actually added (capped)
   final double inventoryValue; // Current inventory level
   final double warehouseCapacity; // Max capacity
@@ -39,6 +53,20 @@ class IdleIncomeResult {
       warehouseCapacity > 0 ? (inventoryValue / warehouseCapacity) * 100 : 0.0;
 
   bool get needsLiquidation => isWarehouseFull;
+
+  static Map<String, dynamic> _firstRpcRow(Object? response) {
+    if (response is Map<String, dynamic>) return response;
+    if (response is Map) return Map<String, dynamic>.from(response);
+    if (response is List && response.isNotEmpty) {
+      final Object? first = response.first;
+      if (first is Map<String, dynamic>) return first;
+      if (first is Map) return Map<String, dynamic>.from(first);
+    }
+
+    throw FormatException(
+      'process_idle_income returned ${response.runtimeType}, expected row.',
+    );
+  }
 }
 
 /// Callback type: invoked every time the edge function returns a result.

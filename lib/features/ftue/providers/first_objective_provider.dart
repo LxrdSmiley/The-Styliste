@@ -132,6 +132,50 @@ final FutureProviderFamily<FirstObjectiveState, Player> firstObjectiveProvider =
         )
         .expand((Iterable<FirstWeekObjective> matches) => matches)
         .toList(growable: false);
+    if (ordered.isEmpty) {
+      final FirstObjectiveMarkers markers =
+          ref.watch(firstObjectiveActionsProvider);
+      final FirstObjectiveRepository repository =
+          ref.watch(firstObjectiveRepositoryProvider);
+      final String effectivePlayerId = playerId.isEmpty ? player.id : playerId;
+
+      if (player.path == CareerPath.designer) {
+        final bool hasServerConfirmedAlphaDrop =
+            await repository.hasServerConfirmedAlphaDrop(effectivePlayerId);
+        final bool complete =
+            hasServerConfirmedAlphaDrop && markers.returnedToHq;
+        final bool needsHqReturn =
+            hasServerConfirmedAlphaDrop && !markers.returnedToHq;
+        return FirstObjectiveState(
+          playerId: effectivePlayerId,
+          path: player.path,
+          title: 'Launch your first Alpha Drop',
+          description:
+              'Open Atelier, mint an Alpha, drop it to Feed, then return HQ.',
+          progressLabel: complete ? '1/1' : '0/1',
+          ctaLabel: needsHqReturn ? 'Return HQ' : 'Open Atelier',
+          ctaRoute: needsHqReturn ? AppRouter.hq : AppRouter.atelier,
+          isComplete: complete,
+        );
+      }
+
+      final bool hasServerConfirmedStarterStore =
+          await repository.hasServerConfirmedStarterStore(effectivePlayerId);
+      final bool complete =
+          hasServerConfirmedStarterStore && markers.returnedToHq;
+      final bool needsHqReturn =
+          hasServerConfirmedStarterStore && !markers.returnedToHq;
+      return FirstObjectiveState(
+        playerId: effectivePlayerId,
+        path: player.path,
+        title: 'Open your first store',
+        description: 'Open Ledger, launch a starter store, then return HQ.',
+        progressLabel: complete ? '1/1' : '0/1',
+        ctaLabel: needsHqReturn ? 'Return HQ' : 'Open Ledger',
+        ctaRoute: needsHqReturn ? AppRouter.hq : AppRouter.ledger,
+        isComplete: complete,
+      );
+    }
     final int completed = ordered
         .where((FirstWeekObjective objective) => objective.isComplete)
         .length;

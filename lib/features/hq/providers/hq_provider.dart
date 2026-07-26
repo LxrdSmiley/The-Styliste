@@ -65,6 +65,9 @@ class LatestAlphaDropSummary {
     this.brandHeatDelta,
     this.xpDelta,
     this.rankProgressDelta,
+    this.currentRank,
+    this.rankProgressPercent,
+    this.rankUpOccurred,
     this.idleRevenueDelta,
   });
 
@@ -80,6 +83,9 @@ class LatestAlphaDropSummary {
   final int? brandHeatDelta;
   final int? xpDelta;
   final double? rankProgressDelta;
+  final int? currentRank;
+  final double? rankProgressPercent;
+  final bool? rankUpOccurred;
   final double? idleRevenueDelta;
 
   factory LatestAlphaDropSummary.fromFeedRow(Map<String, dynamic> row) {
@@ -104,6 +110,9 @@ class LatestAlphaDropSummary {
       brandHeatDelta: _intValue(result['brand_heat_delta']),
       xpDelta: _intValue(result['xp_delta']),
       rankProgressDelta: _doubleValueOrNull(result['rank_progress_delta']),
+      currentRank: _intValue(result['current_rank']),
+      rankProgressPercent: _doubleValueOrNull(result['rank_progress_percent']),
+      rankUpOccurred: result['rank_up_occurred'] as bool?,
       idleRevenueDelta: _doubleValueOrNull(result['idle_revenue_delta']),
     );
   }

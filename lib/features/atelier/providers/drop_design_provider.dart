@@ -17,6 +17,12 @@ int? _safeInt(Object? value) {
   return null;
 }
 
+double? _safeDouble(Object? value) {
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
+}
+
 String? _safeString(Object? value) {
   if (value is String && value.trim().isNotEmpty) return value.trim();
   return null;
@@ -150,6 +156,12 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
         followersDelta: _safeInt(response['followers_delta']),
         brandHeatDelta: _safeInt(response['brand_heat_delta']),
         xpDelta: _safeInt(response['xp_delta']),
+        rankProgressDelta: _safeDouble(response['rank_progress_delta']),
+        currentRank: _safeInt(response['current_rank']),
+        rankProgressPercent: _safeDouble(response['rank_progress_percent']),
+        rankUpOccurred: response['rank_up_occurred'] as bool?,
+        idleRevenueDelta: _safeDouble(response['idle_revenue_delta']),
+        marketReaction: _safeString(response['market_reaction']),
         nextObjective: _safeString(response['next_objective']),
       );
       state = state.copyWith(
