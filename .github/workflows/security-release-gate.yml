@@ -8,6 +8,8 @@ on:
       - "lib/core/providers/auth_provider.dart"
       - "lib/core/services/**"
       - "lib/features/store/**"
+      - "lib/main.dart"
+      - "pubspec.yaml"
   workflow_dispatch:
 
 permissions:
@@ -47,8 +49,20 @@ jobs:
         shell: bash
         run: |
           if grep -R -n -E "SUPABASE_SERVICE_ROLE_KEY|APPLE_SHARED_SECRET|GOOGLE_SERVICE_ACCOUNT_KEY|BEGIN PRIVATE KEY" \
-            lib android ios web 2>/dev/null; then
+            lib android ios 2>/dev/null; then
             echo "Server secret marker found in client source."
+            exit 1
+          fi
+
+      - name: Reject retired Firebase client and deployment surfaces
+        shell: bash
+        run: |
+          test ! -f firebase.json
+          test ! -f android/app/google-services.json
+          test ! -f lib/core/services/firebase_service.dart
+          test ! -f supabase/functions/send-fcm-notification/index.ts
+          if git grep -n -I -E 'package:firebase_(auth|core|app_check|messaging)' -- lib pubspec.yaml; then
+            echo "Retired Firebase client dependency found."
             exit 1
           fi
 
@@ -64,5 +78,4 @@ jobs:
           deno check supabase/functions/process-transaction/index.ts
           deno check supabase/functions/maison-donate/index.ts
           deno check supabase/functions/trend-decay/index.ts
-          deno check supabase/functions/send-fcm-notification/index.ts
           deno check supabase/functions/validate-iap/index.ts

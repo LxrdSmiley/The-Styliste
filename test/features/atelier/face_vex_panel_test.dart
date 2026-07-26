@@ -155,7 +155,7 @@ void main() {
     expect(const DropDesignState().vexOptedIn, isFalse);
   });
 
-  test('initDropFlow does not generate VexReview until player opts in', () {
+  test('local Vex selection never creates an authoritative review', () {
     final ProviderContainer container = ProviderContainer();
     addTearDown(container.dispose);
 
@@ -172,7 +172,7 @@ void main() {
     notifier.setVexOptIn(true);
 
     expect(container.read(dropDesignProvider).vexOptedIn, isTrue);
-    expect(container.read(dropDesignProvider).vexReview, isNotNull);
+    expect(container.read(dropDesignProvider).vexReview, isNull);
 
     notifier.setVexOptIn(false);
 

@@ -1,0 +1,112 @@
+name: Deploy Flutter Web Preview to GitHub Pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_preview:
+        description: Deploy the reviewed staging Flutter Web build
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: flutter-web-preview
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    if: ${{ inputs.deploy_preview }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      PREVIEW_ENVIRONMENT: ${{ vars.PREVIEW_ENVIRONMENT }}
+      PREVIEW_SUPABASE_URL: ${{ vars.PREVIEW_SUPABASE_URL }}
+      PREVIEW_SUPABASE_PUBLISHABLE_KEY: ${{ vars.PREVIEW_SUPABASE_PUBLISHABLE_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Validate staging-only public configuration
+        shell: bash
+        run: |
+          test "$PREVIEW_ENVIRONMENT" = "staging"
+          test -n "$PREVIEW_SUPABASE_URL"
+          test -n "$PREVIEW_SUPABASE_PUBLISHABLE_KEY"
+          python - <<'PY'
+          import base64
+          import json
+          import os
+          from urllib.parse import urlparse
+
+          url = os.environ['PREVIEW_SUPABASE_URL']
+          key = os.environ['PREVIEW_SUPABASE_PUBLISHABLE_KEY']
+          parsed = urlparse(url)
+          if parsed.scheme != 'https' or not parsed.netloc:
+              raise SystemExit('Preview Supabase URL must be an HTTPS staging origin.')
+          if key.startswith('sb_publishable_'):
+              raise SystemExit(0)
+          if not key.startswith('eyJ'):
+              raise SystemExit('Preview key is not a Supabase publishable/legacy anon key.')
+          try:
+              payload = key.split('.')[1]
+              payload += '=' * (-len(payload) % 4)
+              role = json.loads(base64.urlsafe_b64decode(payload))['role']
+          except Exception as error:
+              raise SystemExit('Legacy preview key could not be classified safely.') from error
+          if role != 'anon':
+              raise SystemExit('Only a legacy anon key may be embedded in Flutter Web.')
+          PY
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify web-preview contract
+        shell: pwsh
+        run: ./scripts/check_web_preview.ps1
+
+      - name: Build Flutter Web preview
+        shell: bash
+        run: |
+          flutter build web --release \
+            --base-href "/The-Styliste/" \
+            --dart-define=APP_ENV=preview \
+            --dart-define=SUPABASE_URL="$PREVIEW_SUPABASE_URL" \
+            --dart-define=SUPABASE_PUBLISHABLE_KEY="$PREVIEW_SUPABASE_PUBLISHABLE_KEY"
+          touch build/web/.nojekyll
+
+      - name: Reject private configuration in public artifact
+        shell: bash
+        run: |
+          if grep -R -n -E \
+            'SUPABASE_SERVICE_ROLE_KEY|BEGIN PRIVATE KEY|GOOGLE_SERVICE_ACCOUNT_KEY|APPLE_SHARED_SECRET' \
+            build/web; then
+            echo 'Private credential marker found in the public Pages artifact.'
+            exit 1
+          fi
+          test -f build/web/index.html
+          test -f build/web/main.dart.js
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Flutter Web artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -69,7 +69,8 @@ abstract final class SupabaseConstants {
 
   // --- Edge Function Names ---
   static const String fnCalculateIdleIncome = 'calculate-idle-income';
-  static const String fnMintDesign = 'mint-design';
+  static const String fnFounderTrial = 'founder-trial';
+  static const String fnMintDesign = 'drop-design';
   static const String fnDropDesign = 'drop-design';
   static const String fnFeedReact = 'feed-react';
   static const String fnFeedComment = 'feed-comment';
@@ -81,6 +82,8 @@ abstract final class SupabaseConstants {
   static const String fnAttemptDistrictTakeover = 'attempt_district_takeover';
   static const String fnEclipseEventTick = 'eclipse-event-tick';
   static const String fnTrendDecay = 'trend-decay';
+  static const String fnSubmitPlayerReport = 'submit-player-report';
+  static const String fnProgressionEvent = 'progression-event';
 
   // --- RPC Functions ---
   static const String fnCalculateTrendTsunami =

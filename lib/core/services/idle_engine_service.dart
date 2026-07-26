@@ -9,6 +9,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
+import 'package:uuid/uuid.dart';
 
 import '../constants/supabase_constants.dart';
 import 'supabase_service.dart';
@@ -55,6 +56,7 @@ class IdleEngineService with WidgetsBindingObserver {
 
   /// Concurrency mutex — prevents overlapping edge function calls.
   bool _isCalculating = false;
+  String? _pendingIdempotencyKey;
 
   // ---------------------------------------------------------------------------
   // Lifecycle
@@ -103,28 +105,21 @@ class IdleEngineService with WidgetsBindingObserver {
 
   Future<void> _invokeAndNotify() async {
     try {
-      // Directive L: Atomic catch-up using process_idle_income RPC
-      // O(1) complexity - single call handles all offline time calculation
-      // Server clamps inventory to warehouse_capacity automatically
+      // Kingston contract: server time and economic state are authoritative.
+      final String idempotencyKey = _pendingIdempotencyKey ?? const Uuid().v4();
+      _pendingIdempotencyKey = idempotencyKey;
       final Map<String, dynamic> response =
           await SupabaseService.invokeFunction(
-        SupabaseConstants.fnProcessIdleIncome,
+        SupabaseConstants.fnCalculateIdleIncome,
+        body: <String, dynamic>{'idempotency_key': idempotencyKey},
       );
-
-      final IdleIncomeResult result = IdleIncomeResult(
-        addedToInventory:
-            (response['added_to_inventory'] as num?)?.toDouble() ?? 0.0,
-        inventoryValue: (response['new_inventory'] as num?)?.toDouble() ?? 0.0,
-        warehouseCapacity:
-            (response['warehouse_capacity'] as num?)?.toDouble() ?? 5000.0,
-        isWarehouseFull: response['is_full'] as bool? ?? false,
-        secondsElapsed:
-            (response['seconds_elapsed'] as num?)?.toDouble() ?? 0.0,
-        idleRevenuePerHour:
-            (response['idle_revenue_per_hour'] as num?)?.toDouble() ?? 0.0,
-      );
-
-      onResult(result);
+      if (response['receipt_version'] != 'kingston-idle-settlement.v1') {
+        throw const FormatException('Unsupported idle receipt version.');
+      }
+      _pendingIdempotencyKey = null;
+      // The active widget still expects later-wave warehouse fields. Returning
+      // invented inventory values would violate the authority contract.
+      throw const IdleIncomePresentationUnavailableException();
     } catch (e) {
       // Non-fatal: economy errors must never crash the app.
       debugPrint('IdleEngineService: edge function error — $e');
@@ -139,4 +134,12 @@ class IdleEngineService with WidgetsBindingObserver {
     _periodicTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
   }
+}
+
+class IdleIncomePresentationUnavailableException implements Exception {
+  const IdleIncomePresentationUnavailableException();
+
+  @override
+  String toString() =>
+      'Idle settlement confirmed; warehouse presentation is unavailable.';
 }

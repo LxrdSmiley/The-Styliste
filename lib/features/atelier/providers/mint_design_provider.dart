@@ -64,8 +64,7 @@ final FutureProviderFamily<Design, MintDesignInput> mintDesignProvider =
       body: <String, dynamic>{
         'action': 'mint',
         'session_id': input.sessionId,
-        'fabric_color_hex': input.fabricColorHex,
-        'style_tags': input.styleTags,
+        'idempotency_key': input.sessionId,
       },
     );
     return Design.fromJson(response);

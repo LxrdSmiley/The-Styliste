@@ -1,8 +1,4 @@
-// GDD §3.0 — App root widget: MaterialApp.router with portrait lock and theming
-// PROJECT_RULES §3 — go_router manages all navigation
-// Phase 2 — Auth gate: holds pure obsidian SizedBox until the Firebase
-// anonymous identity and its Supabase bridge resolve.
-
+// GDD v7 §3.0 — MaterialApp.router with fail-closed Supabase Auth startup.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -17,24 +13,15 @@ class TheStyliste extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<Object?> firebaseSignIn =
-        ref.watch(firebaseAnonSignInProvider);
-    final AsyncValue<Object?> supabaseBridge =
-        ref.watch(supabaseBridgeProvider);
+    final AsyncValue<Object?> sessionBootstrap =
+        ref.watch(supabaseSessionBootstrapProvider);
 
-    // Auth gate: hold obsidian until the game identity is bridged to Supabase.
-    // On error: surface a minimal danger-coloured message for debugging.
-    if (firebaseSignIn.isLoading || supabaseBridge.isLoading) {
+    if (sessionBootstrap.isLoading) {
       return const _ObsidianGate();
     }
-    if (firebaseSignIn.hasError) {
+    if (sessionBootstrap.hasError) {
       return _ObsidianGate(
-        errorMessage: _authErrorMessage(firebaseSignIn.error!),
-      );
-    }
-    if (supabaseBridge.hasError) {
-      return _ObsidianGate(
-        errorMessage: _authErrorMessage(supabaseBridge.error!),
+        errorMessage: _authErrorMessage(sessionBootstrap.error!),
       );
     }
 
@@ -49,8 +36,7 @@ class TheStyliste extends ConsumerWidget {
   }
 }
 
-/// Pure obsidian loading gate — rendered until Firebase auth resolves.
-/// Strictly enforces no white flash or Material loader bleed-through.
+/// Prevents a white flash while Supabase restores or creates the session.
 class _ObsidianGate extends StatelessWidget {
   const _ObsidianGate({this.errorMessage});
 
@@ -83,6 +69,7 @@ class _ObsidianGate extends StatelessWidget {
 }
 
 String _authErrorMessage(Object error) {
+  if (error is SupabaseAuthException) return error.safeMessage;
   return SupabaseService.playerSafeErrorMessage(
     error,
     fallback: 'Authentication unavailable. Please try again.',

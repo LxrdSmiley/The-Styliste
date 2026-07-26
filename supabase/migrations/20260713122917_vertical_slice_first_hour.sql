@@ -80,7 +80,7 @@ JOIN (
     ('designer_first_design', 'designer', 'Create your first design', 'Make a design decision in the Atelier.', 'first_design_created'),
     ('designer_first_drop', 'designer', 'Release your first drop', 'Put your first design in front of the world.', 'first_drop_released'),
     ('designer_react_to_result', 'designer', 'React to the result', 'Read the market response and choose your next move.', 'first_drop_result_viewed'),
-    ('mogul_first_store', 'mogul', 'Open your first store', 'Choose a city, format, and operating strategy.', 'first_store_opened'),
+    ('mogul_first_store', 'mogul', 'Open your first store', 'Open in Kingston and choose its format and operating strategy.', 'first_store_opened'),
     ('mogul_first_store_decision', 'mogul', 'Make a store decision', 'Set the price and inventory posture for your first location.', 'first_store_decision'),
     ('mogul_react_to_sales', 'mogul', 'React to the result', 'Review your first sales result and adapt the empire.', 'store_result_viewed')
 ) AS x(objective_key, path, title, description, completion_event_key)
@@ -124,7 +124,7 @@ BEGIN
     (NEW.id, 'designer_react_to_result', 'designer', 'React to the result',
       'Read the market response and choose your next move.', 'first_drop_result_viewed'),
     (NEW.id, 'mogul_first_store', 'mogul', 'Open your first store',
-      'Choose a city, format, and operating strategy.', 'first_store_opened'),
+      'Open in Kingston and choose its format and operating strategy.', 'first_store_opened'),
     (NEW.id, 'mogul_first_store_decision', 'mogul', 'Make a store decision',
       'Set the price and inventory posture for your first location.', 'first_store_decision'),
     (NEW.id, 'mogul_react_to_sales', 'mogul', 'React to the result',
@@ -335,19 +335,21 @@ BEGIN
   IF EXISTS (SELECT 1 FROM public.stores WHERE player_id = p_player_id) THEN
     RAISE EXCEPTION 'FIRST_STORE_ALREADY_OPEN';
   END IF;
-  IF p_city NOT IN ('new_york', 'paris', 'tokyo') THEN RAISE EXCEPTION 'INVALID_STARTER_CITY'; END IF;
+  -- The Founder Trial is a single, debt-free Kingston scenario. Expansion
+  -- cities are a later-wave unlock, never a starter-city client choice.
+  IF p_city <> 'kingston' THEN RAISE EXCEPTION 'INVALID_STARTER_CITY'; END IF;
   IF p_store_type NOT IN ('flagship', 'ecommerce') THEN RAISE EXCEPTION 'INVALID_STORE_TYPE'; END IF;
   IF p_price_tier NOT IN ('accessible', 'signature', 'luxury') THEN RAISE EXCEPTION 'INVALID_PRICE_TIER'; END IF;
   IF p_inventory_capacity NOT BETWEEN 12 AND 60 THEN RAISE EXCEPTION 'INVALID_INVENTORY_CAPACITY'; END IF;
 
-  v_cost := CASE p_store_type WHEN 'flagship' THEN 15000 ELSE 8000 END;
+  v_cost := 0;
   v_audience := CASE p_price_tier WHEN 'accessible' THEN 'emerging' WHEN 'signature' THEN 'design-conscious' ELSE 'collector' END;
   v_demand := CASE p_price_tier WHEN 'accessible' THEN 18 WHEN 'signature' THEN 10 ELSE 5 END;
   v_operating_cost := CASE p_store_type WHEN 'flagship' THEN 140 ELSE 35 END;
 
   SELECT * INTO v_brand FROM public.brand_state WHERE player_id = p_player_id FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'BRAND_STATE_NOT_FOUND'; END IF;
-  IF v_brand.total_revenue < v_cost THEN RAISE EXCEPTION 'INSUFFICIENT_CAPITAL'; END IF;
+  -- Trial failure never creates debt or an unrecoverable first-store state.
 
   INSERT INTO public.stores(
     player_id, type, city, tier, revenue_per_hour, loyalty, market_share,

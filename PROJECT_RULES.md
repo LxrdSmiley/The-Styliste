@@ -8,7 +8,7 @@ This project is a high-performance fashion simulation. All development must adhe
 
 **Orchestration:** Dart (Flutter) handles the UI, local state management, and application flow. Use the Impeller rendering engine exclusively.
 
-**Authentication:** Firebase Auth is the active identity integration. The current implementation bridges Firebase identity tokens into Supabase Auth. Firebase App Check provides device/app attestation support only; it is not complete anti-cheat protection. Firebase Messaging is notification delivery only.
+**Authentication:** Supabase Auth is the only approved player identity system on Android and iOS. Do not add Firebase or another identity/backend service unless an approved requirement is documented as impossible to satisfy with the existing stack. Anonymous founder-trial users are still authenticated Supabase users and must remain constrained by ownership RLS, server authority, rate limits, and abuse controls.
 
 **Authoritative data & economy:** Supabase/PostgreSQL is authoritative for gameplay records, ownership, RLS, economy, progression, player equity, market saturation, and sensitive settlement. No sensitive economic math or trusted gameplay state should happen on the client side.
 
@@ -22,11 +22,13 @@ This project is a high-performance fashion simulation. All development must adhe
 
 ## 3. State Management & Data Integrity
 
-Use a robust, reactive state management pattern (e.g., Riverpod or Bloc) to keep the UI in sync with the underlying simulation engine.
+Use Riverpod as the single reactive state-management framework. Do not add Bloc or another state-management framework.
 
 All "Mogul" path transactions must be server-authoritative to prevent local save-file manipulation.
 
 Implement a "Source of Truth" hierarchy: Database > Edge Functions > Local State > UI.
+
+Create reuse inside the established application architecture: Flutter widgets, Riverpod providers, validation utilities, result models, Supabase RPC wrappers, idempotency helpers, loading/error states, and test fixtures. Do not create a generic package, universal framework, or cross-project abstraction until at least two implemented Styliste features require the same behavior.
 
 ## 4. Performance Constraints
 
@@ -42,11 +44,42 @@ Prioritize memory efficiency for portrait-mode mobile hardware.
 
 **Follow the Rules:** Always check this file for the "how" (technical stack, performance limits).
 
+**Repository memory:** Treat `THE_STYLISTE_GDD_v7.md`, this file, `VERIFICATION_PROTOCOL.md`, `DEVELOPMENT_STATE.md`, `BOTTLENECK_LOG.md`, `CHANGELOG.md`, and chronological Supabase migrations as the project memory. Chat transcripts are not authoritative. Update `DEVELOPMENT_STATE.md` after every Codex task.
+
 **UI/UX authority:** For UI/UX, accessibility, layout, motion, HUD, visual hierarchy, responsive behavior, or performance-sensitive visual work, load and follow the repository’s `frontend-design` skill while preserving the established Flutter design system, Aurelian identity, Riverpod patterns, portrait-first layout, and performance constraints. Do not read or use `ui_ux_design.md`.
 
 **Verification boundary:** Documentation of a security, RLS, authority, accessibility, or performance requirement does not prove that the implementation satisfies it. Report static inspection, runtime behavior, database/RLS validation, device behavior, and performance evidence separately.
 
 **No Hallucinations:** If a requested feature violates the performance mandate (e.g., cloth physics in Dart), suggest a shader-based or low-level alternative immediately.
+
+## 6. Repository Versioning and Publication
+
+The application version in `pubspec.yaml` is the only authoritative product
+version. The GDD version, database migration timestamps, GitHub Release tags,
+and build numbers serve different purposes and must not be substituted for the
+application version.
+
+After every implementation task:
+
+- update `DEVELOPMENT_STATE.md` with the exact scope and evidence;
+- update `CHANGELOG.md` when player-facing behavior, security posture, public
+  documentation, deployment behavior, or release tooling changed;
+- update `README.md` only when its current status, supported platforms,
+  verification evidence, or run instructions materially changed;
+- keep release notes under `docs/releases/` synchronized with the active
+  prerelease version; and
+- run `scripts/check_release_metadata.ps1` before proposing a release.
+
+Version numbers are not bumped for every commit. Use Semantic Versioning while
+the game is pre-1.0: patch prereleases for fixes, minor prereleases for coherent
+playable slices, and `1.0.0` only after the first public-launch gates in GDD v7
+§§21–22 have Passed evidence.
+
+Flutter Web and GitHub Pages are deferred and are not current build, CI,
+verification, release, or deployment targets. Do not build, run, stage, publish,
+or configure them without a separate authorization that restores the necessary
+browser security and verification gates. Web evidence is not required for the
+current Android/iOS mobile milestone.
 
 ## Background Task Cleanup
 

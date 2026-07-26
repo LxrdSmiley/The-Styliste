@@ -26,8 +26,7 @@ CREATE TABLE IF NOT EXISTS public.players (
 );
 ALTER TABLE public.players ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Players: read own" ON public.players FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Players: update own" ON public.players FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Players: insert own" ON public.players FOR INSERT WITH CHECK (auth.uid() = id);
+-- Player state is created and changed only by trusted server workflows.
 
 -- =============================================================================
 -- BRAND STATE (GDD §8.9.7 — Brand Heat, idle revenue, hype)
@@ -75,8 +74,7 @@ CREATE TABLE IF NOT EXISTS public.designs (
 CREATE INDEX designs_player_idx ON public.designs(player_id);
 ALTER TABLE public.designs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Designs: read own" ON public.designs FOR SELECT USING (auth.uid() = player_id);
-CREATE POLICY "Designs: insert own" ON public.designs FOR INSERT WITH CHECK (auth.uid() = player_id);
-CREATE POLICY "Designs: update own" ON public.designs FOR UPDATE USING (auth.uid() = player_id);
+-- Design drafts and releases are server-owned; clients submit validated intent.
 
 -- =============================================================================
 -- STORES (GDD §5.2)
@@ -176,7 +174,7 @@ CREATE TABLE IF NOT EXISTS public.maisons (
 );
 ALTER TABLE public.maisons ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Maisons: read all" ON public.maisons FOR SELECT USING (TRUE);
-CREATE POLICY "Maisons: insert by founder" ON public.maisons FOR INSERT WITH CHECK (auth.uid() = founder_id);
+-- Maison creation and governance are server-owned.
 
 -- =============================================================================
 -- MAISON MEMBERS (GDD §6.3.1)
@@ -191,8 +189,7 @@ CREATE TABLE IF NOT EXISTS public.maison_members (
 CREATE INDEX maison_members_player_idx ON public.maison_members(player_id);
 ALTER TABLE public.maison_members ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Maison members: read all" ON public.maison_members FOR SELECT USING (TRUE);
-CREATE POLICY "Maison members: insert own" ON public.maison_members FOR INSERT WITH CHECK (auth.uid() = player_id);
-CREATE POLICY "Maison members: delete own" ON public.maison_members FOR DELETE USING (auth.uid() = player_id);
+-- Membership and roles are server-owned.
 
 -- =============================================================================
 -- FEED POSTS (GDD §6.1 — Realtime)
@@ -210,8 +207,7 @@ CREATE INDEX feed_posts_player_idx ON public.feed_posts(player_id);
 CREATE INDEX feed_posts_created_idx ON public.feed_posts(created_at DESC);
 ALTER TABLE public.feed_posts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Feed posts: read all" ON public.feed_posts FOR SELECT USING (TRUE);
-CREATE POLICY "Feed posts: insert own" ON public.feed_posts FOR INSERT WITH CHECK (auth.uid() = player_id);
-CREATE POLICY "Feed posts: update own" ON public.feed_posts FOR UPDATE USING (auth.uid() = player_id);
+-- Feed publication and counters are server-owned.
 
 -- =============================================================================
 -- PARTNERSHIPS (GDD §6.2)
@@ -276,7 +272,7 @@ CREATE TABLE IF NOT EXISTS public.player_events (
 );
 ALTER TABLE public.player_events ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Player events: read own" ON public.player_events FOR SELECT USING (auth.uid() = player_id);
-CREATE POLICY "Player events: insert own" ON public.player_events FOR INSERT WITH CHECK (auth.uid() = player_id);
+-- Event entry, score, and reward state are server-owned.
 
 -- =============================================================================
 -- LOANS (GDD §5.5)
@@ -324,7 +320,7 @@ CREATE TABLE IF NOT EXISTS public.player_reports (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ALTER TABLE public.player_reports ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Reports: insert own" ON public.player_reports FOR INSERT WITH CHECK (auth.uid() = reporter_id);
+-- Moderation reports are accepted only through a constrained server workflow.
 CREATE POLICY "Reports: read own" ON public.player_reports FOR SELECT USING (auth.uid() = reporter_id);
 
 -- =============================================================================

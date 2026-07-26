@@ -1,4 +1,4 @@
-// GDD §3.6 — Settings: Expert/Casual toggle, notifications, legal
+// GDD §3.6 — Settings: Expert/Casual toggle, accessibility, legal
 // Expert Mode: shows live demand variables in Ledger (GDD §8.9.11)
 // Luxe acknowledges every mode switch with a personalised line
 
@@ -10,7 +10,6 @@ import '../../legal/legal_documents.dart';
 import '../../legal/screens/legal_document_screen.dart';
 
 const String _kExpertModeKey = 'expert_mode_enabled';
-const String _kNotificationsKey = 'notifications_enabled';
 const String _kReducedMotionKey = 'reduced_motion_enabled';
 const String _kHighContrastKey = 'high_contrast_enabled';
 const String _kTextScaleKey = 'accessibility_text_scale';
@@ -24,7 +23,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _expertMode = false;
-  bool _notifications = true;
   bool _reducedMotion = false;
   bool _highContrast = false;
   double _textScale = 1.0;
@@ -40,7 +38,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       _expertMode = prefs.getBool(_kExpertModeKey) ?? false;
-      _notifications = prefs.getBool(_kNotificationsKey) ?? true;
       _reducedMotion = prefs.getBool(_kReducedMotionKey) ?? false;
       _highContrast = prefs.getBool(_kHighContrastKey) ?? false;
       _textScale = prefs.getDouble(_kTextScaleKey) ?? 1.0;
@@ -52,12 +49,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kExpertModeKey, value);
     setState(() => _expertMode = value);
-  }
-
-  Future<void> _setNotifications({required bool value}) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kNotificationsKey, value);
-    setState(() => _notifications = value);
   }
 
   Future<void> _setReducedMotion({required bool value}) async {
@@ -282,20 +273,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 // ── NOTIFICATIONS ─────────────────────────────────────────
                 const _SectionHeader(label: 'NOTIFICATIONS'),
-                _SettingsTile(
+                const _SettingsTile(
                   icon: Icons.notifications_outlined,
-                  title: 'Push Notifications',
-                  subtitle:
-                      'Idle income milestones, event alerts, and Maison activity.',
-                  trailing: Switch(
-                    value: _notifications,
-                    onChanged: (bool v) => _setNotifications(value: v),
-                    activeThumbColor: AurelianPalette.champagneGold,
-                    activeTrackColor:
-                        AurelianPalette.champagneGold.withValues(alpha: 0.3),
-                    inactiveThumbColor: AurelianPalette.textTertiary,
-                    inactiveTrackColor:
-                        AurelianPalette.textTertiary.withValues(alpha: 0.2),
+                  title: 'Push Notifications — Not Available',
+                  subtitle: 'Disabled in the current Early Game mobile build.',
+                  trailing: Icon(
+                    Icons.lock_outline,
+                    color: AurelianPalette.textTertiary,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -314,7 +298,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // ── VERSION ────────────────────────────────────────────────
                 Center(
                   child: Text(
-                    'THE STYLISTE  v1.0.0\nSkinTeethNerd Studios',
+                    'THE STYLISTE  v0.1.0-alpha.1\nSkinTeethNerd Studios',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color:

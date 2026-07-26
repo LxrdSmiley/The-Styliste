@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show User;
 
 import 'package:the_styliste/app.dart';
 import 'package:the_styliste/core/providers/auth_provider.dart';
@@ -10,19 +10,16 @@ import 'package:the_styliste/core/providers/onboarding_provider.dart';
 import 'package:the_styliste/domain/models/player.dart';
 
 void main() {
-  testWidgets('auth gate renders while Firebase sign-in is pending', (
+  testWidgets('auth gate renders while Supabase session bootstrap is pending', (
     WidgetTester tester,
   ) async {
-    final Completer<User> pendingSignIn = Completer<User>();
+    final Completer<User> pendingSession = Completer<User>();
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: <Override>[
-          firebaseAnonSignInProvider.overrideWith(
-            (Ref ref) => pendingSignIn.future,
-          ),
-          supabaseBridgeProvider.overrideWith(
-            (Ref ref) => Stream<void>.value(null),
+          supabaseSessionBootstrapProvider.overrideWith(
+            (Ref ref) => pendingSession.future,
           ),
         ],
         child: const TheStyliste(),

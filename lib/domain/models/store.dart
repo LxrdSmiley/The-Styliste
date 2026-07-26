@@ -27,6 +27,8 @@ enum StoreType {
 }
 
 enum StoreCity {
+  @JsonValue('kingston')
+  kingston,
   @JsonValue('new_york')
   newYork,
   @JsonValue('paris')

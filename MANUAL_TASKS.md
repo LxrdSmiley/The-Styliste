@@ -1,182 +1,288 @@
-# Security Hardening Audit Pass 1 — Manual Tasks
+# Manual Tasks — GDD v7 Audit Follow-Up
 
-These actions require Smiley or an authorized operator in Supabase, Firebase, Google Cloud, App Store Connect, Google Play Console, CI, or the release environment. Do not place secret values in source control, screenshots, chat, fixtures, or issue trackers.
+Audit date: 2026-07-22
+Repository: `C:\STN\The-Styliste`
+Audited HEAD: `ea5a6675ceb13772401d3b819f7566a313ec7a79`
 
-## Execution status — June 23, 2026
+These actions require Smiley or an authorized operator. They are not safe to infer from source inspection and must not be marked `Passed` until the result is observed. Do not paste credentials, access tokens, receipts, private keys, database passwords, recovery codes, or service-role values into chat, source, screenshots, fixtures, or issue text.
 
-Completed by Codex:
+## 1. Preserve and review the Git pull state
 
-- Applied eight security/GDD-hardening migrations to Supabase project `xzzklkmkjmwzpiedkwho`.
-- Deployed all 13 hardened Edge Functions. JWT-backed functions reject unauthenticated requests with `401`; secret-backed jobs fail closed with `503` while their required secrets are absent.
-- Re-ran linked database lint with no error-level findings.
-- Re-ran Supabase Security Advisor and Performance Advisor after the final schema change.
-- Re-ran the rollback-only database security regression harness successfully.
-- Type-checked every changed Edge Function with `deno check`.
-- Resolved the follow-up merge conflicts in `trend-decay`,
-  `send-fcm-notification`, `claim-mini-game-reward`, and this file.
-- Redeployed `trend-decay`, `send-fcm-notification`, and
-  `claim-mini-game-reward` to Supabase project `xzzklkmkjmwzpiedkwho`.
-- Added a CI release-gate check that rejects unresolved Git merge conflict
-  markers.
-- Ran `dart format lib`, `flutter analyze`, and `flutter test` successfully.
-- Re-ran `supabase db reset --local` successfully with Docker running on
-  June 25, 2026; the full migration chain and `supabase/seed.sql` applied.
-- Re-ran `supabase db lint --local` successfully with Docker running on
-  June 25, 2026. It exited `0` with warning-level findings only in
-  `public.execute_casting_pull` and `public.rotate_gala_event`.
-- Smiley re-ran `dart format lib test`, `flutter analyze`, and `flutter test`
-  successfully on June 25, 2026.
-- Added database rate limits, replay protection, atomic economy/payment RPCs, server-owned mini-game attempts, authoritative Atelier sessions, safe error surfaces, release-signing failure guards, tracked Gradle wrapper files, and the security release-gate workflow.
-- Added database-enforced report categories, description limits, target integrity, a 15-minute same-target cooldown, and a 10-report daily cap.
-- Reduced `player_reports` grants to authenticated `SELECT`/`INSERT` only and removed all `anon` table privileges.
-- Added covering indexes for both player-report target foreign keys.
-- Retired Staff Rally and Supplier Raid from the standalone mini-game API and
-  removed their unreachable client screens; the replacement community events
-  remain future implementation work.
-- Replaced blunt World Map, Profile, Events, and AR unavailable screens with honest premium later-build previews.
-- Confirmed the canonical Luxe IDs are aligned in Flutter and `validate-iap`: `initiates_cache`, `artisans_reserve`, `architects_vault`, and `sovereign_syndicate`.
-- Confirmed `APPLE_BUNDLE_ID`, `APPLE_SHARED_SECRET`, `GOOGLE_PACKAGE_NAME`, and `GOOGLE_SERVICE_ACCOUNT_KEY` are configured by secret name. Secret values were not read or exposed.
+The requested pull is complete. `master` and `origin/master` both point to `ea5a6675ceb13772401d3b819f7566a313ec7a79`. The pull changed the repository GDD v7. Existing unrelated local work remains dirty and must be preserved.
 
-Still requires an authorized operator:
+One local pre-pull GDD patch is stored at:
 
-- Generate and securely configure `CRON_INVOKE_SECRET`, `WEBHOOK_SECRET`, and `ECLIPSE_EVENT_TICK_SECRET`, then configure the matching scheduler/webhook callers. Do not enable those callers before both sides share the secret.
-- Configure `FIREBASE_PROJECT_ID` and `FIREBASE_SERVICE_ACCOUNT` for FCM.
-- Enable PITR/backups and perform a restore drill. Current linked-project status is WALG enabled, PITR disabled, with no available backup timestamps.
-- Complete the Supabase Auth, Firebase/App Check, store-console, signing-certificate, monitoring, alerting, storage, and incident-readiness tasks below.
-- Run the manual runtime checks at the end of this file.
-- Triage the remaining Advisor backlog separately: legacy callable `SECURITY DEFINER` RPCs, anonymous-access policy notices, `pg_net` in `public`, leaked-password protection, RLS performance plans, and unindexed foreign keys. The new service-only security tables intentionally have RLS with no client policies and revoked client grants.
-- Replace the bundled closed-alpha legal placeholders with counsel-approved, versioned documents published at stable public URLs before external testing.
-
-## 1. Credential and configuration classification
-
-### Safe public configuration
-
-- Supabase project URL and anon/publishable client key are public client configuration. Keep RLS and grants correct; do not treat the anon key as authorization.
-- `android/app/google-services.json`, `ios/Runner/GoogleService-Info.plist`, and `lib/firebase_options.dart` contain Firebase client configuration. Their API keys are identifiers, not server secrets, but must be restricted by Android package/SHA, iOS bundle ID, and required APIs in Google Cloud.
-
-No client-side `SUPABASE_SERVICE_ROLE_KEY`, Apple shared secret, Google service-account private key, webhook secret, or PEM private key was confirmed by this audit.
-
-### Secrets that must remain server/console-only
-
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `FIREBASE_SERVICE_ACCOUNT`
-- `GOOGLE_SERVICE_ACCOUNT_KEY`
-- `APPLE_SHARED_SECRET`
-- `WEBHOOK_SECRET`
-- Android upload keystore, alias, and passwords
-- Any cron/scheduler invocation secret added for privileged jobs
-
-Verify each is stored only in Supabase secrets, CI secret storage, or the appropriate platform console. Rotate immediately if any value was previously committed, pasted into logs/chat, included in an artifact, or shared outside the authorized team.
-
-### Unknown exposure requiring owner confirmation
-
-- `.env.json` is ignored in the current checkout. Confirm through repository history, cloud backups, shared archives, and CI artifacts that it was never committed or uploaded.
-- `android/key.properties` and `android/upload-keystore.jks` are ignored. Confirm they have never entered repository history or distributable build artifacts.
-- Confirm prior Edge Function logs did not print authorization headers, receipts, service-account JSON, or secret values.
-
-## 2. Supabase dashboard actions
-
-1. Configure a scheduler-only `CRON_INVOKE_SECRET` for `trend-decay`. It is deployed but fails closed until configured.
-2. Configure `WEBHOOK_SECRET`, `FIREBASE_PROJECT_ID`, and `FIREBASE_SERVICE_ACCOUNT` before enabling database webhooks for `send-fcm-notification`. It is deployed but fails closed until configured.
-3. Configure `ECLIPSE_EVENT_TICK_SECRET` before enabling the Eclipse scheduler. It is deployed but fails closed until configured.
-4. Review and disposition the remaining Security/Performance Advisor backlog. The final Advisor runs are complete, and linked CLI database lint passes. Relevant guidance: [callable definer RPCs](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable), [anonymous policies](https://supabase.com/docs/guides/database/database-advisors?queryGroups=lint&lint=0012_auth_allow_anonymous_sign_ins), [extensions in public](https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public), and [leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
-5. Confirm reward, IAP, store-upgrade, Maison-donation, cooldown, and mint RPCs are executable only by the intended service role/Edge Function paths.
-6. Enable leaked-password protection if email/password authentication is available.
-7. Review password minimum length, password-change reauthentication, anonymous-sign-in policy, OTP expiry, redirect URLs, and allowed auth providers.
-8. Configure per-user/server rate limits for auth attempts, drop mint/publish, feed reactions/comments, mini-game attempts/claims, IAP validation, store upgrades, Maison donations, gala votes, and casting pulls.
-9. Verify production and development use separate Supabase projects, secrets, auth redirect URLs, storage buckets, and scheduled jobs.
-10. Enable production backups and PITR appropriate to the launch tier. Perform and document a restore drill before public testing.
-11. Configure alerts/log review for repeated `401/403/409/429/5xx`, reward-claim spikes, receipt replay, unusual service-role calls, and privileged scheduled-job frequency.
-12. Review Storage buckets: no public write access, user-owned paths where applicable, MIME allowlists, upload-size limits, and no executable/script uploads.
-
-## 3. Firebase and Google Cloud actions
-
-1. Fix and verify the Firebase-to-Supabase provider configuration. Do not rely on the app's fallback to an unrelated Supabase anonymous identity.
-2. Restrict Firebase client API keys by application identity and only the APIs the app needs.
-3. Confirm Android package name, SHA-1/SHA-256 fingerprints, iOS bundle ID, APNs configuration, and Firebase Auth providers match production builds.
-4. Enforce Firebase App Check for every Firebase resource used by the app. App Check activation in Flutter is not equivalent to console enforcement.
-5. Decide how Supabase Edge Functions will validate app attestation for abuse-sensitive mobile calls; Supabase does not automatically enforce Firebase App Check.
-6. Enable Crashlytics or an approved equivalent and verify auth/session failures, purchase validation failures, and fatal startup errors are visible without logging tokens or personal data.
-7. Review FCM service-account scope and rotate the account key if its historical handling is uncertain.
-
-## 4. Apple and Google Play purchase checks
-
-1. Create one canonical product catalog and align product IDs/grants across App Store Connect, Google Play Console, Flutter, Edge Functions, and legal/refund copy.
-2. Confirm the store-console products exactly match the now-aligned code catalog: `initiates_cache`, `artisans_reserve`, `architects_vault`, and `sovereign_syndicate`.
-3. Configure Apple transaction verification credentials and Google Play service-account access only in server-side secrets.
-4. Require App Account Token on Apple and obfuscated account identifiers on Google purchases, mapped to the authenticated player.
-5. Test low-tier/high-tier substitution, restored purchases, refunds/revocations, pending purchases, sandbox/TestFlight, receipt replay, concurrent redemption, and account switching.
-6. Confirm no raw receipt or purchase token is retained longer than needed and no receipt appears in client/server logs.
-
-## 5. Release signing and CI
-
-1. Confirm the committed release-signing guard fails in the controlled CI environment when signing material is absent.
-2. Store the Android upload keystore and passwords in the release secret manager; keep them out of source control.
-3. Ensure the newly added Gradle wrapper scripts and wrapper JAR are included in the next commit.
-4. Extend the added security release gate with environment-owned checks for the expected certificate fingerprint, version, environment/project IDs, and minification.
-5. Protect production deployment branches and require review for migrations, Edge Functions, auth configuration, payment code, and signing changes.
-
-## 6. Bot and abuse-control decisions
-
-- Do not add a Flutter CAPTCHA dependency in this pass.
-- Decide whether Supabase Auth CAPTCHA/bot protection is appropriate for account creation and recovery.
-- Prefer server-side cooldowns, unique constraints, idempotency keys, attempt records, and per-user/IP/device rate limits for gameplay and social abuse.
-- Establish moderation limits for comments, reactions, reports, follows, gala votes, casting pulls, mini-game claims, and drop publishing.
-- Document escalation thresholds and an emergency kill switch for reward and purchase endpoints.
-
-## 7. Monitoring, backups, and incident readiness
-
-1. Create dashboards/alerts for auth bridge failures, mismatched identities, expired-session loops, Realtime reconnect failures, reward volume, currency deltas, IAP rejection/replay, and privileged function invocation.
-2. Define log retention and redact authorization headers, JWTs, receipts, device tokens, email addresses, and secret values.
-3. Document credential rotation, compromised-account response, fraudulent-currency rollback, purchase reconciliation, database restore, and player notification procedures.
-4. Confirm Play Console and App Store crash/ANR/payment reports are monitored by an owner with an escalation path.
-5. Perform a staging restore test and a tabletop incident exercise before public testing.
-
-## 8. Dependency audit — no updates in this pass
-
-Smiley should run these manually and save the output for a separate dependency decision:
-
-```bash
-flutter pub outdated
-dart pub deps
+```text
+stash@{0}: codex-pre-audit-local-gdd-v7-2026-07-22
 ```
 
-This repository uses Deno Edge Functions and has no applicable Node package audit requirement unless a `package.json`/npm runtime is added later.
+Review it without applying it:
 
-Review Deno import versions and advisories separately. Pin or update them only in an approved dependency-hardening pass.
+```powershell
+Set-Location 'C:\STN\The-Styliste'
+git stash show --stat 'stash@{0}'
+git stash show -p 'stash@{0}'
+```
 
-## Manual Terminal Commands for Smiley
+Developer decision required:
 
-After approved code fixes are implemented, run:
+- Identify any genuinely unique local GDD text that belongs in the detailed first GDD body.
+- Do not run `git stash pop` or apply the entire stash. The pulled GDD already contains a duplicated older body, and a wholesale apply could reintroduce conflicting authority.
+- Approve Directive 0’s GDD cleanup as its own reviewable commit before gameplay work.
+- Keep all other pre-existing dirty files intact. Do not use reset/checkout/clean to erase them.
 
-```bash
-dart format lib
+## 2. Approve the recovery milestone and work order
+
+Approve the current label as:
+
+```text
+Pre-Alpha — Kingston Proof-of-Fun Recovery
+```
+
+Do not authorize “implement the GDD.” Give the IDE agent one numbered directive from `IDE_DIRECTIVES.md` at a time. The safe starting order is:
+
+1. Directive 0 — one canonical GDD.
+2. Directive 1 — fail-closed Early Game Supabase/API allowlist.
+3. Directive 2 — Luxe Founder Trial.
+4. Directive 3 — economy field separation and parity simulator.
+5. Directives 4–8 — the playable Kingston causal loop.
+6. Directives 9–12 — quarantine, performance, verification, and external-test readiness.
+
+At any time, permit at most one gameplay task, one backend/security task, and one polish/tooling task. Do not approve Milan, player Feed, Maisons, Gala, DMs, territory, store trading, IAP, ads, generative AI, advanced finance, or endgame work during this recovery milestone.
+
+## 3. Run the current mobile baseline after GDD cleanup
+
+Codex is prohibited from running Dart and Flutter commands. After Directive 0 is reviewed, run these from the repository root and return the complete output for any failure:
+
+```powershell
+Set-Location 'C:\STN\The-Styliste'
+powershell -ExecutionPolicy Bypass -File .\scripts\check_gdd_registry.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\check_deferred_todos.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\check_authority_matrix.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\check_release_metadata.ps1
+flutter pub get
+dart format --output=none --set-exit-if-changed lib test integration_test
 flutter analyze
 flutter test
 ```
 
-If Supabase migrations or Edge Functions change, also run:
+Record each result independently. A formatting pass does not prove analysis; unit tests do not prove integration, security, startup, device behavior, or performance.
 
-```bash
-supabase db reset --local
+Do not run Web/Chrome/Pages commands. They are `Not applicable` to the mobile milestone.
+
+## 4. Create a disposable local Supabase verification environment
+
+Only reset a target you have positively identified as local and disposable. Never run a reset against the linked production project.
+
+After Directive 1 supplies the new forward migration and executable contracts:
+
+```powershell
+Set-Location 'C:\STN\The-Styliste'
+supabase start
+supabase db reset --local --no-seed
 supabase db lint --local
+$dbContainer = docker ps --filter 'name=supabase_db_' --format '{{.Names}}' | Select-Object -First 1
+if (-not $dbContainer) { throw 'Disposable local Supabase database container not found.' }
+Get-Content -Raw .\supabase\tests\rls_authority_contract.sql |
+  docker exec -i $dbContainer psql -U postgres -d postgres -v ON_ERROR_STOP=1
 ```
 
-Smiley last ran `dart format lib test`, `flutter analyze`, and `flutter test`
-successfully on June 25, 2026. Codex last ran `supabase db reset --local` and
-`supabase db lint --local` successfully on June 25, 2026. Verification is not
-complete until the manual runtime/security checks succeed.
+Developer verification required:
 
-## 9. Manual runtime and security checks
+- Confirm the container name belongs to the disposable local project before piping SQL.
+- Confirm all enabled Edge Functions type-check after the function allowlist changes.
+- Confirm owner, stranger, anonymous-authenticated, malformed-input, replay, and concurrency cases actually execute. Comment-only cases are `Blocked`.
+- Save redacted output in the verification evidence location; never save tokens or service credentials.
 
-First run the Required Runtime Smoke Test in `VERIFICATION_PROTOCOL.md`.
+Do not deploy the migrations or functions to the hosted project until local reset, lint, authority contract, and app integration tests pass.
 
-1. Launch with an expired saved session; refresh or safe sign-in recovery must occur without raw Supabase errors.
-2. Sign out and confirm both Firebase and Supabase sessions are gone and Realtime channels are closed.
-3. Switch accounts and confirm no previous-player profile, feed, inventory, store, or economy data appears.
-4. Attempt direct/replayed/concurrent mini-game claims and confirm one valid attempt can pay at most once.
-5. Tamper with mint score fields and confirm authoritative Hype is unchanged.
-6. Invoke privileged cron/webhook functions with missing or incorrect credentials and confirm no mutation.
-7. Run concurrent store upgrades and Maison donations and reconcile exact balances/tiers/ledger rows.
-8. Run Apple/Google sandbox purchase substitution, replay, restore, refund, and account-binding tests.
-9. Build through the controlled release pipeline and verify the production signing certificate.
+## 5. Review hosted Supabase settings manually
+
+Source configuration does not prove hosted configuration. In the Supabase dashboard for each environment, inspect and record the following without exposing values:
+
+### Data API and database
+
+- Confirm only the reviewed `api` schema is exposed. Do not expose `public` as a workaround.
+- Confirm production, staging, and development are separate projects.
+- Confirm client roles have no direct write authority over balances, rewards, scores, progression, ownership, inventory outcomes, or timestamps.
+- Confirm every enabled Edge Function maps to an approved Early Game Feature ID and reviewed `api` wrapper.
+- Disable or remove deployed later-wave functions: player Feed reactions/comments/inspiration, Maison donation, mini-game rewards, IAP validation, Eclipse events, and any unapproved scheduled/live-event job.
+- Review Realtime publications. Do not publish global `feed_posts`, Maison, territory, trend, wallet, or private player tables during Early Game.
+- Keep Storage buckets disabled/uncreated until owner-path, stranger, blocked-user, MIME, size, malware/content, and signed-URL tests exist.
+
+### Auth and account recovery
+
+- Decide whether anonymous sign-in remains enabled for the closed test. Remember that anonymous users use the `authenticated` Postgres role; RLS must distinguish identity/ownership, not merely role.
+- Enable CAPTCHA/bot protection before external sign-ups.
+- Review sign-up, sign-in, OTP, password-reset, and anonymous-session rate limits.
+- Enable leaked-password protection when password auth is enabled.
+- Review password length, password-change reauthentication, session duration, device/session revocation, and recovery behavior.
+- Remove obsolete Web/Pages redirect URLs. Keep only authorized mobile/staging callbacks.
+- Require MFA for every Supabase organization/staff account. Player MFA may remain optional until the account UI is ready, but sensitive account changes must require recent authentication.
+- Configure production SMTP/recovery delivery before public account creation.
+
+### Staff, secrets, and network
+
+- Use individual staff identities and least privilege; no shared administrator account.
+- Verify service-role, store, webhook, cron, signing, and database credentials exist only in the appropriate secret store.
+- Review hosted network restrictions and database access controls. Local `config.toml` defaults do not configure the hosted project.
+- Configure domain-specific freeze switches for currency grants, purchases, trading, messaging, uploads, Gala claims, and other future sensitive operations before those domains launch.
+
+### Backup and response
+
+- Select and document backup/PITR policy appropriate to the economy risk.
+- Back up Storage separately if/when Storage is enabled; database backups do not restore deleted Storage objects.
+- Perform a restore drill in a non-production project and reconcile the economy ledger afterward.
+- Configure redacted monitoring for unusual `401/403/409/429/5xx`, replay attempts, balance anomalies, service-role calls, and endpoint spikes.
+- Document incident ownership, secret rotation, evidence preservation, user notification, and recovery steps.
+
+## 6. Inspect credentials and Git history
+
+The static current-tree review did not identify an obvious real service-role key or private key. That is not proof that repository history, CI artifacts, logs, or shared files are clean.
+
+Actions:
+
+1. Install `gitleaks` from its official release or inspect the full-history GitHub Actions scan.
+2. Fetch full history and run:
+
+```powershell
+Set-Location 'C:\STN\The-Styliste'
+git fetch --all --tags --prune
+gitleaks git . --redact=100 --no-banner
+```
+
+3. Review the history of `android/app/google-services.json`, `.firebaserc`, `firebase.json`, `.env.json`, signing files, Supabase config, and workflow artifacts.
+4. Rotate any secret that was ever committed, logged, pasted, uploaded, or shared outside the intended secret store. Deleting it from the current tree does not revoke it.
+5. Confirm `.env.json` remains ignored and contains only the public Supabase URL/publishable key required by the mobile client. Never place a service-role key in it.
+6. Review repository Actions secrets and Supabase function secrets by name and age; do not export or display their values.
+
+Firebase client keys are not substitutes for authorization, but retired Firebase project configuration still requires owner review and deletion/rotation where appropriate.
+
+## 7. Observe GitHub Actions instead of inferring it
+
+After a reviewable branch/PR exists:
+
+- Open the latest workflow run for that exact commit.
+- Confirm the GDD registry job executes and passes.
+- Confirm the authority inventory is labeled `Static pass`, not behavioral RLS success.
+- Confirm the disposable database reset, lint, executed SQL contract, Edge type-check, secret scan, dependency audit, analyzer, unit tests, explicit integration tests, and Android build are separate results.
+- Confirm disabled later-wave functions are not type-checked/deployed as though they are current milestone dependencies.
+- Confirm the debug APK job is described as compilation evidence if it has no runtime Supabase configuration.
+- Do not approve a release based on green workflow status if device, live Auth/RLS, performance, legal, or penetration gates remain `Blocked`.
+
+The current repository contains uncommitted workflow changes. No workflow execution for those changes was observed in this audit.
+
+## 8. Free disk space before any Android build
+
+Drive C has about 1.27 GB free. The project guard requires at least 5 GB before an Android build.
+
+Developer action:
+
+- Close running emulators, IDE tasks, or browsers that hold generated build files.
+- Use Windows Storage settings or another deliberate, recoverable method to free at least 5 GB.
+- Do not delete repository source, migrations, the Git directory, user documents, or unknown cache directories.
+- After source verification passes, you may run `flutter clean`; this removes generated Flutter build output, not source.
+- Recheck free space before building.
+
+Then run the mobile build with public client configuration only:
+
+```powershell
+Set-Location 'C:\STN\The-Styliste'
+powershell -ExecutionPolicy Bypass -File .\scripts\maintenance\check_build_space.ps1
+flutter clean
+flutter pub get
+flutter build apk --debug --dart-define-from-file=.env.json
+```
+
+An APK build is not runtime proof. Do not create or dispatch a Web/Pages build.
+
+## 9. Run integration and device tests after Directives 1–8
+
+Use a disposable local or isolated staging Supabase project. Never run destructive fixtures against production.
+
+### Auth and isolation
+
+- Fresh anonymous session.
+- Restored valid session.
+- Expired/invalid session.
+- Temporary network loss without identity replacement.
+- Anonymous-to-linked account upgrade after that feature is approved.
+- Owner versus stranger access to every enabled projection and mutation.
+- No client can supply another player’s UUID and act for them.
+
+### Kingston core loop
+
+- Luxe-led Founder Trial without developer explanation.
+- Force-close/reconnect at each server-confirmed step.
+- Same starter garment used for both path samples.
+- Actual saved garment differences from the same brief.
+- Named-customer, Vex, and Luxe reactions match saved choices.
+- Architect diagnosis and two viable recovery choices.
+- Both paths can fund the next meaningful action within the approved pacing band.
+- House While Away settles once and explains changes.
+- Daily Brief cannot require a disabled or paid feature.
+
+### Accessibility and performance
+
+Run on the Galaxy A55 and at least one weaker supported Android device in profile/release mode:
+
+- portrait navigation and one-handed reach;
+- largest supported text scaling;
+- screen reader semantics/focus order;
+- high contrast and color-independent status;
+- reduced motion;
+- offline, loading, empty, error, and retry states;
+- Atelier manipulation, shader/cloth fallback, Store activity, Feed cards, and result screens;
+- frame/raster timing, jank, memory, battery/network polling, thermals, and resume behavior.
+
+Record device model, OS, build mode, commit SHA, frame evidence, failures, and reproduction steps. Source inspection or widget tests alone cannot change `PERF-01` from `Blocked`.
+
+## 10. Conduct human proof-of-fun and balance testing
+
+After the recovery slice is stable, recruit a small closed group. Do not use public acquisition yet.
+
+Ask testers to complete the game without coaching and measure:
+
+- meaningful input within 45 seconds;
+- Founder Trial within 4–6 minutes;
+- causal loop within 8–12 minutes;
+- whether two players’ same-brief garments are visibly distinct;
+- whether the player understands why customer/Vex opinions differ;
+- whether the Architect can diagnose a struggling store quickly;
+- whether failure produces an interesting recovery rather than a delay;
+- whether a tester voluntarily starts another design/release cycle;
+- whether the player can describe what their House represents.
+
+Run the path-parity simulator and compare it with real sessions at 1 hour, 24 hours, and 7 days. Do not tune from intuition alone. Record time to next action, active/idle ratio, House Funds, failure recovery, and drop-off separately for Artisan and Architect. No premium purchase variable is allowed in this test.
+
+If the core loop fails, simplify or revise it. Do not add Milan, multiplayer, monetization, or more currencies to hide the failure.
+
+## 11. Obtain legal and operational review before external testing
+
+The in-app policies are explicit closed-alpha placeholders and are not ready for public players.
+
+Developer-only actions:
+
+- Decide the countries and minimum age for the test.
+- Obtain qualified legal review for privacy, terms, age assurance/COPPA risk, GDPR/UK GDPR, CCPA/CPRA applicability, consumer rights, refunds, UGC/IP, DMCA, retention, subprocessors, and breach obligations.
+- Establish a real support contact and response process.
+- Implement and test access, correction, export, deletion, account recovery, and appeal workflows before promising them.
+- Version and publish approved policies at stable URLs and preserve the version each player accepted.
+- Do not describe disabled IAP, ads, DMs, Maisons, social Feed, talent pulls, or other deferred systems as active data uses.
+- Keep external testing blocked until age/eligibility handling and privacy operations are real, not text-only.
+
+## 12. Independent security review gate
+
+Before public multiplayer, private messaging, player trading, premium currency purchases, or real-money products:
+
+- commission an independent penetration test covering mobile API abuse, RLS/grants, Edge Functions, Auth/account recovery, Storage, Realtime, replay/concurrency, receipt validation, rate limiting, and administrative access;
+- resolve all critical/high findings and retest them;
+- perform a privileged-function/RLS audit against the deployed schema;
+- run an incident/restore exercise; and
+- publish a responsible-disclosure process.
+
+No system can be made literally impossible to hack. The release standard is defense in depth, least privilege, small attack surface, detection, containment, evidence, and tested recovery.
+
+## Manual milestone decision
+
+Do not promote beyond **Pre-Alpha / Kingston Proof-of-Fun Recovery** until every promotion gate at the end of `IDE_DIRECTIVES.md` has observed evidence. In particular, do not treat a passing analyzer, CI run, or APK build as proof of fun, F2P parity, security, legal readiness, or 60 fps.

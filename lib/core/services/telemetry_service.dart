@@ -5,10 +5,9 @@
 // Server-authoritative with client-side batching for performance
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -71,18 +70,25 @@ class TelemetryService {
     final Map<String, dynamic> info = <String, dynamic>{};
 
     try {
-      if (Platform.isAndroid) {
+      if (kIsWeb) {
+        final WebBrowserInfo webInfo = await deviceInfo.webBrowserInfo;
+        info['platform'] = 'web';
+        info['browser'] = webInfo.browserName.name;
+        info['user_agent'] = webInfo.userAgent;
+      } else if (defaultTargetPlatform == TargetPlatform.android) {
         final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
         info['platform'] = 'android';
         info['os_version'] = 'Android ${androidInfo.version.release}';
         info['model'] = androidInfo.model;
         info['brand'] = androidInfo.brand;
-      } else if (Platform.isIOS) {
+      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
         final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
         info['platform'] = 'ios';
         info['os_version'] = 'iOS ${iosInfo.systemVersion}';
         info['model'] = iosInfo.model;
         info['name'] = iosInfo.name;
+      } else {
+        info['platform'] = defaultTargetPlatform.name;
       }
     } catch (e) {
       info['platform'] = 'unknown';

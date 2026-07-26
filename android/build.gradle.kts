@@ -1,15 +1,3 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        // START: FlutterFire Configuration
-        classpath("com.google.gms:google-services:4.4.2")
-        // END: FlutterFire Configuration
-    }
-}
-
 allprojects {
     repositories {
         google()

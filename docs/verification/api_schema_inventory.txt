@@ -1,0 +1,11 @@
+function|server_record_progression_event(uuid, text, uuid)|function
+function|server_release_design(uuid, uuid, text, jsonb)|function
+function|server_settle_idle_income(uuid, uuid)|function
+function|server_submit_player_report(uuid, uuid, text, text)|function
+relation|brand_summary|view
+relation|feed_projection|view
+relation|first_week_objectives|view
+relation|owned_designs|view
+relation|player_summary|view
+relation|public_profiles|view
+relation|store_summary|view

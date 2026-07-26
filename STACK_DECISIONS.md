@@ -28,13 +28,16 @@ Client state may only display server-confirmed values or hold temporary UI state
 
 **Cites:** GDD v6 sections 3.3, 8.18, 9.1, 9.2; PROJECT_RULES.md section 3.
 
-## Clerk
+## Player Identity
 
-**Decision:** Reject Clerk as primary auth for now.
+**Decision:** Supabase Auth is the only approved player identity system.
 
-Firebase Auth + Firebase App Check remains the approved auth and security stack. Clerk may only be reconsidered after a later migration plan proves parity for anonymous-first auth, account linking, Play Integrity/App Check, Supabase RLS claims, and Google Play Games alignment.
+Firebase Auth and Firebase App Check are retired from the client. Clerk remains
+rejected because a second identity source would complicate anonymous founder
+trials, account linking, server-issued ownership, and Supabase RLS. Any future
+identity migration requires a separately approved plan and observed parity.
 
-**Cites:** GDD v6 sections 8.15.1, 8.15.2, 8.18; PROJECT_RULES.md section 2.
+**Cites:** GDD v7 §§19.6–19.9; PROJECT_RULES.md sections 2 and 3.
 
 ## Stream Voice Agents
 

@@ -1,10 +1,9 @@
-name: Flutter CI
+name: Early Game Readiness CI
 
 on:
   pull_request:
   push:
-    branches:
-      - master
+    branches: [master]
   workflow_dispatch:
 
 permissions:
@@ -15,27 +14,100 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
-
       - name: Install dependencies
         run: flutter pub get
-
       - name: Format check
-        run: dart format --set-exit-if-changed lib test
-
+        run: dart format --set-exit-if-changed lib test integration_test
       - name: Analyze
         run: flutter analyze
-
       - name: Test
         run: flutter test
-
       - name: Reject unresolved merge conflict markers
         run: |
           if git grep -n -I -E '^(<{7}|={7}|>{7})' -- .; then
-            echo "Unresolved merge conflict marker found."
+            echo 'Failed: unresolved merge conflict marker.'
             exit 1
           fi
+          echo 'Static pass: no unresolved merge conflict markers.'
+
+  authority-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.104.0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: GDD and deferred-feature registry
+        shell: pwsh
+        run: |
+          ./scripts/maintenance/check_repository_health.ps1 -DryRun
+          ./scripts/check_gdd_registry.ps1
+          ./scripts/check_deferred_todos.ps1
+          ./scripts/check_authority_matrix.ps1
+          ./scripts/check_release_metadata.ps1
+      - name: Type check Edge Functions
+        run: |
+          find supabase/functions -name index.ts -print0 | xargs -0 -n1 deno check --config supabase/functions/tsconfig.json
+          echo 'Static pass: Edge Function type checks completed.'
+      - name: Start disposable database
+        # `supabase start` applies migrations before PostgREST loads the reviewed
+        # `api` schema. This is the supported fresh-project bootstrap path.
+        run: supabase start
+      - name: Apply and lint migrations
+        run: |
+          supabase db reset --local --no-seed
+          supabase db lint --local
+          echo 'Passed: disposable migration lint completed.'
+      - name: Run RLS authority contract
+        run: |
+          db_container="$(docker ps --filter 'name=supabase_db_' --format '{{.Names}}' | head -n 1)"
+          test -n "$db_container"
+          docker exec -i "$db_container" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            < supabase/tests/rls_authority_contract.sql
+          echo 'Passed: RLS authority-contract catalog assertions completed.'
+      - name: Detect generated API inventory drift
+        run: |
+          db_container="$(docker ps --filter 'name=supabase_db_' --format '{{.Names}}' | head -n 1)"
+          test -n "$db_container"
+          docker exec "$db_container" psql -U postgres -d postgres -At -F '|' -c "
+            SELECT 'relation', c.relname, CASE c.relkind WHEN 'v' THEN 'view' ELSE 'table' END
+            FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE n.nspname = 'api' AND c.relkind IN ('r','v','m','p')
+            UNION ALL
+            SELECT 'function', p.proname || '(' || oidvectortypes(p.proargtypes) || ')', 'function'
+            FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'api'
+            ORDER BY 1, 2;" > .api_schema_inventory.actual
+          diff -u docs/verification/api_schema_inventory.txt .api_schema_inventory.actual
+          echo 'Passed: generated API schema inventory matches review.'
+
+  supply-chain-and-android-build-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Dependency audit
+        run: |
+          flutter pub get
+          dart pub outdated --no-dev
+          echo 'Static pass: dependency audit command completed.'
+      - name: Protect release signing material
+        run: |
+          test ! -f android/key.properties
+          test ! -f android/upload-keystore.jks
+          ! grep -R 'signingConfigs.getByName("debug")' android/app/build.gradle.kts
+          echo 'Static pass: signing secrets are absent and release has no debug fallback.'
+      - name: Debug APK build smoke test
+        run: flutter build apk --debug

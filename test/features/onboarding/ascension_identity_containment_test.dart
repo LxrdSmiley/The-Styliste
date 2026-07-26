@@ -23,12 +23,13 @@ void main() {
         .setMockMethodCallHandler(SystemChannels.platform, null);
   });
 
-  testWidgets('unresolved bridge prevents Genesis and exposes recovery', (
+  testWidgets(
+      'unresolved Supabase session prevents Genesis and exposes recovery', (
     WidgetTester tester,
   ) async {
-    final Completer<String> bridgePending = Completer<String>();
-    final _FakeIdentityBridge actions = _FakeIdentityBridge(
-      require: () => bridgePending.future,
+    final Completer<String> sessionPending = Completer<String>();
+    final _FakeSupabaseAuthActions actions = _FakeSupabaseAuthActions(
+      require: () => sessionPending.future,
     );
     final _FakeGenesisGateway genesis = _FakeGenesisGateway();
 
@@ -39,7 +40,7 @@ void main() {
     expect(genesis.calls, 0);
     expect(find.byKey(const Key('success-whiteout')), findsNothing);
 
-    bridgePending.completeError(StateError('credential-token-secret'));
+    sessionPending.completeError(StateError('credential-token-secret'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 2));
 
@@ -54,8 +55,8 @@ void main() {
     WidgetTester tester,
   ) async {
     final Completer<String> retryPending = Completer<String>();
-    final _FakeIdentityBridge actions = _FakeIdentityBridge(
-      require: () async => throw StateError('bridge-unavailable'),
+    final _FakeSupabaseAuthActions actions = _FakeSupabaseAuthActions(
+      require: () async => throw StateError('session-unavailable'),
       retry: () => retryPending.future,
     );
     final _FakeGenesisGateway genesis = _FakeGenesisGateway(
@@ -84,8 +85,8 @@ void main() {
   });
 
   testWidgets('failed retry remains recoverable', (WidgetTester tester) async {
-    final _FakeIdentityBridge actions = _FakeIdentityBridge(
-      require: () async => throw StateError('bridge-unavailable'),
+    final _FakeSupabaseAuthActions actions = _FakeSupabaseAuthActions(
+      require: () async => throw StateError('session-unavailable'),
       retry: () async => throw StateError('retry-failed'),
     );
 
@@ -109,7 +110,7 @@ void main() {
   ) async {
     final Completer<SovereignGenesisResult> genesisPending =
         Completer<SovereignGenesisResult>();
-    final _FakeIdentityBridge actions = _FakeIdentityBridge(
+    final _FakeSupabaseAuthActions actions = _FakeSupabaseAuthActions(
       require: () async => 'established-supabase-uuid',
     );
     final _FakeGenesisGateway genesis = _FakeGenesisGateway(
@@ -134,8 +135,8 @@ void main() {
   testWidgets('sign-out uses the auth action and restarts at the gate', (
     WidgetTester tester,
   ) async {
-    final _FakeIdentityBridge actions = _FakeIdentityBridge(
-      require: () async => throw StateError('bridge-unavailable'),
+    final _FakeSupabaseAuthActions actions = _FakeSupabaseAuthActions(
+      require: () async => throw StateError('session-unavailable'),
     );
 
     final ProviderContainer container = _configuredContainer(
@@ -175,7 +176,7 @@ void main() {
 
 Future<void> _pumpScreen(
   WidgetTester tester, {
-  required _FakeIdentityBridge actions,
+  required _FakeSupabaseAuthActions actions,
   required _FakeGenesisGateway genesis,
 }) async {
   final ProviderContainer container = _configuredContainer(
@@ -194,12 +195,12 @@ Future<void> _pumpScreen(
 }
 
 ProviderContainer _configuredContainer({
-  required _FakeIdentityBridge actions,
+  required _FakeSupabaseAuthActions actions,
   required _FakeGenesisGateway genesis,
 }) {
   final ProviderContainer container = ProviderContainer(
     overrides: <Override>[
-      identityBridgeActionsProvider.overrideWithValue(actions),
+      supabaseAuthActionsProvider.overrideWithValue(actions),
       sovereignGenesisGatewayProvider.overrideWithValue(genesis),
     ],
   );
@@ -213,8 +214,8 @@ ProviderContainer _configuredContainer({
   return container;
 }
 
-final class _FakeIdentityBridge implements IdentityBridgeActions {
-  _FakeIdentityBridge({this.require, this.retry});
+final class _FakeSupabaseAuthActions implements SupabaseAuthActions {
+  _FakeSupabaseAuthActions({this.require, this.retry});
 
   final Future<String> Function()? require;
   final Future<String> Function()? retry;
@@ -222,11 +223,11 @@ final class _FakeIdentityBridge implements IdentityBridgeActions {
   int signOutCalls = 0;
 
   @override
-  Future<String> requireEstablishedSupabaseUserId() =>
+  Future<String> requireEstablishedUserId() =>
       require?.call() ?? Future<String>.value('established-supabase-uuid');
 
   @override
-  Future<String> retryBridge() {
+  Future<String> retrySession() {
     retryCalls++;
     return retry?.call() ?? Future<String>.value('established-supabase-uuid');
   }

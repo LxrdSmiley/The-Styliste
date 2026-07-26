@@ -41,7 +41,7 @@ Use these as mandatory references:
   - Flutter + Dart
   - Riverpod
   - Supabase
-  - Firebase Auth/App Check
+  - Supabase Auth and owner-scoped server authority
   - Flutter shaders / CustomPainter where appropriate
   - Flame only for isolated mini-games
 

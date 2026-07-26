@@ -10,9 +10,9 @@ enabled = true
 port = 54321
 # Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
 # endpoints. `public` and `graphql_public` schemas are included by default.
-schemas = ["public", "graphql_public"]
+schemas = ["api"]
 # Extra schemas to add to the search_path of every request.
-extra_search_path = ["public", "extensions"]
+extra_search_path = ["api", "extensions"]
 # The maximum number of rows returns from a view, table, or stored procedure. Limits payload size
 # for accidental or malicious requests.
 max_rows = 1000
@@ -79,7 +79,7 @@ allowed_cidrs_v6 = ["::/0"]
 # enabled = true
 
 [realtime]
-enabled = true
+enabled = false
 # Bind realtime via either IPv4 or IPv6. (default: IPv4)
 # ip_version = "IPv6"
 # The maximum length in bytes of HTTP request headers. (default: 4096)
@@ -107,7 +107,7 @@ port = 54324
 # sender_name = "Admin"
 
 [storage]
-enabled = true
+enabled = false
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 
@@ -120,7 +120,7 @@ file_size_limit = "50MiB"
 
 # Allow connections via S3 compatible clients
 [storage.s3_protocol]
-enabled = true
+enabled = false
 
 # Image transformation API is available to Supabase Pro plan.
 # [storage.image_transformation]
@@ -151,11 +151,11 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "http://127.0.0.1:3000"
+site_url = "http://localhost:3000"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://127.0.0.1:3000"]
+additional_redirect_urls = ["http://127.0.0.1:3000", "http://localhost:3000"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -213,7 +213,7 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
-enable_signup = true
+enable_signup = false
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true
@@ -334,12 +334,6 @@ email_optional = false
 [auth.web3.solana]
 enabled = false
 
-# Use Firebase Auth as a third-party provider alongside Supabase Auth.
-# GDD §8.15.1 — Firebase JWTs validated via securetoken.google.com JWKS endpoint.
-[auth.third_party.firebase]
-enabled = true
-project_id = "the-styliste"
-
 # Use Auth0 as a third-party provider alongside Supabase Auth.
 [auth.third_party.auth0]
 enabled = false
@@ -420,7 +414,7 @@ entrypoint = "./functions/drop-design/index.ts"
 # static_files = [ "./functions/drop-design/*.html" ]
 
 [functions.feed-react]
-enabled = true
+enabled = false
 verify_jwt = true
 import_map = "./functions/feed-react/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
@@ -431,7 +425,7 @@ entrypoint = "./functions/feed-react/index.ts"
 # static_files = [ "./functions/feed-react/*.html" ]
 
 [functions.feed-comment]
-enabled = true
+enabled = false
 verify_jwt = true
 import_map = "./functions/feed-comment/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
@@ -442,7 +436,7 @@ entrypoint = "./functions/feed-comment/index.ts"
 # static_files = [ "./functions/feed-comment/*.html" ]
 
 [functions.feed-inspiration]
-enabled = true
+enabled = false
 verify_jwt = true
 import_map = "./functions/feed-inspiration/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
@@ -453,41 +447,51 @@ entrypoint = "./functions/feed-inspiration/index.ts"
 # static_files = [ "./functions/feed-inspiration/*.html" ]
 
 [functions.mint-design]
-enabled = true
+enabled = false
 verify_jwt = true
 entrypoint = "./functions/mint-design/index.ts"
 
-[functions.claim-mini-game-reward]
+[functions.open-first-store]
 enabled = true
+verify_jwt = true
+entrypoint = "./functions/open-first-store/index.ts"
+
+[functions.claim-mini-game-reward]
+enabled = false
 verify_jwt = true
 entrypoint = "./functions/claim-mini-game-reward/index.ts"
 
 [functions.process-transaction]
-enabled = true
+enabled = false
 verify_jwt = true
 import_map = "./functions/process-transaction/deno.json"
 entrypoint = "./functions/process-transaction/index.ts"
 
 [functions.maison-donate]
-enabled = true
+enabled = false
 verify_jwt = true
 entrypoint = "./functions/maison-donate/index.ts"
 
 [functions.validate-iap]
-enabled = true
+enabled = false
 verify_jwt = true
 entrypoint = "./functions/validate-iap/index.ts"
 
 [functions.trend-decay]
-enabled = true
+enabled = false
 verify_jwt = false
 import_map = "./functions/trend-decay/deno.json"
 entrypoint = "./functions/trend-decay/index.ts"
 
-[functions.send-fcm-notification]
+[functions.submit-player-report]
 enabled = true
-verify_jwt = false
-entrypoint = "./functions/send-fcm-notification/index.ts"
+verify_jwt = true
+entrypoint = "./functions/submit-player-report/index.ts"
+
+[functions.progression-event]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/progression-event/index.ts"
 
 [functions.calculate-idle-income]
 enabled = true
@@ -496,7 +500,12 @@ import_map = "./functions/calculate-idle-income/deno.json"
 entrypoint = "./functions/calculate-idle-income/index.ts"
 
 [functions.eclipse-event-tick]
-enabled = true
+enabled = false
 verify_jwt = false
 import_map = "./functions/eclipse-event-tick/deno.json"
 entrypoint = "./functions/eclipse-event-tick/index.ts"
+
+[functions.founder-trial]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/founder-trial/index.ts"

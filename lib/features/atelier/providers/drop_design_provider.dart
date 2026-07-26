@@ -1,22 +1,14 @@
-// GDD v6 — Drop to Feed Provider with Vex AI Critic Integration
-// Two-phase flow: Mint Alpha → Preview Design → Drop to Feed with Vex Review
-// Alabaster Standard: Vex opt-in toggle, procedural critique, editorial snap animation
-
+// GDD v7 §§5, 11, 19 — preview intent is local; release authority is server-owned.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/design.dart';
 import '../../design/models/vex_review.dart';
 import '../../design/services/hype_calculator.dart';
-import '../../design/services/vex_ai_engine.dart';
 import '../../feed/providers/feed_provider.dart';
-
-double _safeDouble(Object? value, {double fallback = 0.0}) {
-  if (value is num) return value.toDouble();
-  if (value is String) return double.tryParse(value) ?? fallback;
-  return fallback;
-}
+import '../models/design_blueprint.dart';
 
 int? _safeInt(Object? value) {
   if (value is int) return value;
@@ -30,176 +22,140 @@ String? _safeString(Object? value) {
   return null;
 }
 
-/// State for the drop design flow
 class DropDesignState {
   const DropDesignState({
     this.design,
-    this.styleTags = const <String>[],
+    this.blueprint,
     this.vexOptedIn = false,
     this.isPreviewing = true,
     this.isDropping = false,
     this.hypeResult,
     this.vexReview,
+    this.releaseIdempotencyKey,
     this.error,
   });
 
   final Design? design;
-  final List<String> styleTags;
+  final DesignBlueprint? blueprint;
   final bool vexOptedIn;
   final bool isPreviewing;
   final bool isDropping;
   final HypeCalculationResult? hypeResult;
   final VexReview? vexReview;
+  final String? releaseIdempotencyKey;
   final String? error;
 
   DropDesignState copyWith({
     Design? design,
-    List<String>? styleTags,
+    DesignBlueprint? blueprint,
     bool? vexOptedIn,
     bool? isPreviewing,
     bool? isDropping,
     HypeCalculationResult? hypeResult,
     VexReview? vexReview,
+    String? releaseIdempotencyKey,
     String? error,
     bool clearError = false,
   }) {
     return DropDesignState(
       design: design ?? this.design,
-      styleTags: styleTags ?? this.styleTags,
+      blueprint: blueprint ?? this.blueprint,
       vexOptedIn: vexOptedIn ?? this.vexOptedIn,
       isPreviewing: isPreviewing ?? this.isPreviewing,
       isDropping: isDropping ?? this.isDropping,
       hypeResult: hypeResult ?? this.hypeResult,
-      vexReview: vexOptedIn == false ? null : (vexReview ?? this.vexReview),
+      vexReview: vexReview ?? this.vexReview,
+      releaseIdempotencyKey:
+          releaseIdempotencyKey ?? this.releaseIdempotencyKey,
       error: clearError ? null : (error ?? this.error),
     );
   }
 }
 
-/// Notifier for the drop design flow
 class DropDesignNotifier extends StateNotifier<DropDesignState> {
   DropDesignNotifier(this._ref) : super(const DropDesignState());
 
   final Ref _ref;
-  final VexAIEngine _vexEngine = vexEngine;
 
-  /// Initialize the drop flow with a minted design
-  ///
-  /// [design] — The freshly minted Alpha design
-  /// [styleTags] — User-selected style tags for tsunami matching
   void initDropFlow({
     required Design design,
     required List<String> styleTags,
   }) {
-    final HypeCalculationResult hypeResult = HypeCalculationResult(
-      totalScore: design.hypeScore,
-      baseScore: design.hypeScore,
-      tsunamiMultiplier: 1.0,
-      talentBonus: 0.0,
+    final DesignBlueprint blueprint = DesignBlueprint.starter(
+      materials: styleTags,
+      palette: <String>[design.fabricData['color_hex'] as String? ?? 'FAF7F0'],
     );
-
-    // Generate preview Vex review from the server-authoritative minted hype
-    // only after the player explicitly opts into critique.
-    final VexReview? previewReview =
-        state.vexOptedIn ? _vexEngine.generateReview(result: hypeResult) : null;
-
     state = state.copyWith(
       design: design,
-      styleTags: styleTags,
-      hypeResult: hypeResult,
-      vexReview: previewReview,
+      blueprint: blueprint,
+      hypeResult: HypeCalculationResult(
+        totalScore: design.hypeScore,
+        baseScore: design.hypeScore,
+        tsunamiMultiplier: 1.0,
+        talentBonus: 0.0,
+      ),
+      releaseIdempotencyKey: const Uuid().v4(),
       isPreviewing: true,
     );
   }
 
-  /// Explicitly set Vex opt-in (player can choose to face judgment or not)
+  void replaceBlueprint(DesignBlueprint blueprint) {
+    if (blueprint.isReleaseValid) state = state.copyWith(blueprint: blueprint);
+  }
+
   void setVexOptIn(bool value) {
-    if (state.vexOptedIn == value) return;
-
-    final VexReview? newReview = value && state.hypeResult != null
-        ? _vexEngine.generateReview(
-            result: state.hypeResult!,
-          )
-        : null;
-
-    state = state.copyWith(
-      vexOptedIn: value,
-      vexReview: newReview,
-    );
+    state = state.copyWith(vexOptedIn: value);
   }
 
-  /// Toggle Vex opt-in (player can choose to face judgment or not)
-  void toggleVexOptIn() {
-    setVexOptIn(!state.vexOptedIn);
-  }
+  void toggleVexOptIn() => setVexOptIn(!state.vexOptedIn);
 
-  /// Execute the drop to feed
-  ///
-  /// 1. Create garment_drops record
-  /// 2. Create feed_posts record
-  /// 3. Return final VexReview (if opted in)
   Future<VexReview?> executeDrop() async {
-    if (state.design == null || state.isDropping) return null;
+    final Design? design = state.design;
+    final DesignBlueprint? blueprint = state.blueprint;
+    if (design == null ||
+        blueprint == null ||
+        !blueprint.isReleaseValid ||
+        state.isDropping) {
+      return null;
+    }
 
     state = state.copyWith(isDropping: true, clearError: true);
-
     try {
-      final Design design = state.design!;
-      final VexReview? review = state.vexReview;
+      final String idempotencyKey =
+          state.releaseIdempotencyKey ?? const Uuid().v4();
       final Map<String, dynamic> response =
           await SupabaseService.invokeFunction(
         SupabaseConstants.fnDropDesign,
         body: <String, dynamic>{
+          'action': 'release',
           'design_id': design.id,
-          'style_tags': state.styleTags,
-          if (review != null) ...<String, dynamic>{
-            'vex_review': review.toJson(),
-            'vex_quote': review.quotableLine,
-            'vex_caption': review.body,
-          },
+          'release_intent': 'publish_first_drop',
+          'blueprint': blueprint.toJson(),
+          'vex_opt_in': state.vexOptedIn,
+          'idempotency_key': idempotencyKey,
         },
       );
-      final String feedPostId = response['feed_post_id'] as String;
-      final double hypeScore = _safeDouble(
-        response['hype_score'],
-        fallback: design.hypeScore,
-      );
-      final String? brandName = response['brand_name'] as String?;
-      final String? fabricColorHex = response['fabric_color_hex'] as String? ??
-          design.fabricData['color_hex'] as String?;
-
+      final double hypeScore = _requiredDouble(response, 'hype_score');
+      final String feedPostId = _requiredString(response, 'feed_post_id');
+      final VexReview? review =
+          state.vexOptedIn ? _serverVexReview(response, hypeScore) : null;
       _ref.read(pendingAlphaDropProvider.notifier).state = PendingAlphaDrop(
         feedPostId: feedPostId,
         designId: design.id,
         designName: design.name,
         hypeScore: hypeScore,
-        brandName: brandName,
-        fabricColorHex: fabricColorHex,
         vexVerdict: _safeString(response['vex_verdict']),
         vexHeadline: _safeString(response['vex_headline']),
         vexQuote: _safeString(response['vex_quote']),
         followersDelta: _safeInt(response['followers_delta']),
         brandHeatDelta: _safeInt(response['brand_heat_delta']),
         xpDelta: _safeInt(response['xp_delta']),
-        rankProgressDelta: _safeDouble(
-          response['rank_progress_delta'],
-        ),
-        idleRevenueDelta: _safeDouble(
-          response['idle_revenue_delta'],
-        ),
-        marketReaction: _safeString(response['market_reaction']),
         nextObjective: _safeString(response['next_objective']),
       );
-
-      // Final state transition
       state = state.copyWith(
-        isPreviewing: false,
-        isDropping: false,
-      );
-
-      // Return final review for display
-      return state.vexReview;
-    } catch (e) {
+          isPreviewing: false, isDropping: false, vexReview: review);
+      return review;
+    } catch (_) {
       state = state.copyWith(
         isDropping: false,
         error: 'The Feed missed that drop. Your design is safe.',
@@ -208,59 +164,74 @@ class DropDesignNotifier extends StateNotifier<DropDesignState> {
     }
   }
 
-  /// Regenerate Vex review (for "roll again" feature if desired)
-  void regenerateReview() {
-    if (state.hypeResult == null) return;
-
-    final VexReview newReview = _vexEngine.generateReview(
-      result: state.hypeResult!,
-      optedIn: state.vexOptedIn,
-    );
-
-    state = state.copyWith(vexReview: newReview);
-  }
-
-  /// Reset the flow
-  void reset() {
-    state = const DropDesignState();
-  }
+  void reset() => state = const DropDesignState();
 }
 
-/// StateNotifierProvider for drop design flow
+VexReview _serverVexReview(Map<String, dynamic> result, double hypeScore) {
+  final VexVerdict verdict = switch (_requiredString(result, 'vex_verdict')) {
+    'Alpha' => VexVerdict.sovereign,
+    'Noticed' => VexVerdict.visionary,
+    'Developing' => VexVerdict.derivative,
+    _ => throw const FormatException('Unsupported Vex verdict.'),
+  };
+  return VexReview(
+    headline: _requiredString(result, 'vex_headline'),
+    body: _requiredString(result, 'vex_quote'),
+    verdict: verdict,
+    hypeScore: hypeScore,
+    generatedAt: _requiredDateTime(result, 'settled_at'),
+  );
+}
+
+double _requiredDouble(Map<String, dynamic> result, String key) {
+  final Object? value = result[key];
+  if (value is num) return value.toDouble();
+  if (value is String) {
+    final double? parsed = double.tryParse(value);
+    if (parsed != null) return parsed;
+  }
+  throw FormatException('Release receipt is missing $key.');
+}
+
+String _requiredString(Map<String, dynamic> result, String key) {
+  final Object? value = result[key];
+  if (value is String && value.trim().isNotEmpty) return value.trim();
+  throw FormatException('Release receipt is missing $key.');
+}
+
+DateTime _requiredDateTime(Map<String, dynamic> result, String key) {
+  final String value = _requiredString(result, key);
+  final DateTime? parsed = DateTime.tryParse(value);
+  if (parsed == null) {
+    throw FormatException('Release receipt contains an invalid $key.');
+  }
+  return parsed;
+}
+
 final StateNotifierProvider<DropDesignNotifier, DropDesignState>
     dropDesignProvider =
     StateNotifierProvider<DropDesignNotifier, DropDesignState>(
   (Ref<DropDesignState> ref) => DropDesignNotifier(ref),
 );
 
-/// Provider for just the Vex review (convenience)
 final Provider<AsyncValue<VexReview?>> currentVexReviewProvider =
     Provider<AsyncValue<VexReview?>>((Ref<AsyncValue<VexReview?>> ref) {
   final DropDesignState state = ref.watch(dropDesignProvider);
-
-  if (state.error != null) {
-    return AsyncValue<VexReview?>.error(state.error!, StackTrace.current);
-  }
-
-  return AsyncValue<VexReview?>.data(state.vexReview);
+  return state.error == null
+      ? AsyncValue<VexReview?>.data(state.vexReview)
+      : AsyncValue<VexReview?>.error(state.error!, StackTrace.current);
 });
 
-/// Provider for the projected hype score (for Atelier UI preview)
 final Provider<AsyncValue<double>> projectedHypeScoreProvider =
     Provider<AsyncValue<double>>((Ref<AsyncValue<double>> ref) {
   final DropDesignState state = ref.watch(dropDesignProvider);
-
-  if (state.error != null) {
-    return AsyncValue<double>.error(state.error!, StackTrace.current);
-  }
-
-  return AsyncValue<double>.data(state.hypeResult?.totalScore ?? 0.0);
+  return state.error == null
+      ? AsyncValue<double>.data(state.hypeResult?.totalScore ?? 0.0)
+      : AsyncValue<double>.error(state.error!, StackTrace.current);
 });
 
-/// Provider for tsunami multiplier (for UI badges)
 final Provider<AsyncValue<double>> tsunamiMultiplierProvider =
     Provider<AsyncValue<double>>((Ref<AsyncValue<double>> ref) {
-  final DropDesignState state = ref.watch(dropDesignProvider);
-
-  return AsyncValue<double>.data(state.hypeResult?.tsunamiMultiplier ?? 1.0);
+  return AsyncValue<double>.data(
+      ref.watch(dropDesignProvider).hypeResult?.tsunamiMultiplier ?? 1.0);
 });
