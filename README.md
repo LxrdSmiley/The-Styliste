@@ -183,6 +183,34 @@ exist in the GDD.
 
 ## License
 
+MIT License
+
+Copyright (c) 2026 SkinTeethNerd Studios
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of the source code files in this repository (the "Software"), to deal in the
+Software without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+This license applies to source code only.
+
+The game title, game concept, branding, logos, artwork, animation, music, sound
+effects, written story content, design documents, marketing materials, and
+other non-code assets are not licensed for reuse unless a separate written
+license clearly says they are.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 Proprietary. All rights reserved.
 
 SkinTeethNerd Studios © 2026.
