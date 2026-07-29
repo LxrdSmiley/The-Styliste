@@ -14,6 +14,43 @@ Authority: `THE_STYLISTE_GDD_v8.md` sections 4–8, 12, 18, 21–22;
 `ART_DIRECTION_BIBLE.md`; the ranked companion authorities;
 `PROJECT_RULES.md`; and `VERIFICATION_PROTOCOL.md`.
 
+## Post-handoff Founder Trial remote unblock
+
+On 2026-07-29, Smiley explicitly authorized the configured **The Styliste**
+Supabase project for the complete pending migration set and the
+`founder-trial` Edge Function.
+
+```text
+Supabase CLI: Updated from 2.104.0 to 2.110.0 with the published checksum
+Remote migration deployment: Passed — 13 migrations applied with --include-all
+Remote migration inventory: Passed — 61/61 local and remote versions match
+Founder Trial Function deployment: Passed — ACTIVE with verify_jwt=true
+Unauthenticated Function boundary: Passed — HTTP 401
+First post-deployment A55 retry: Failed — hosted Data API rejected api schema
+Remote Data API boundary: Passed — api schema is now exposed
+Authenticated Galaxy A55 retry after Data API correction: Blocked — awaiting observation
+```
+
+Remote logs explain the reported device failure: every captured Founder Trial
+attempt before deployment returned HTTP 404 because the Function did not
+exist. After Function deployment, authentication succeeded but PostgREST
+returned HTTP 406 / `PGRST106` because the hosted project still exposed only
+`public` and `graphql_public`. The repository's reviewed `api` boundary is now
+active; an unauthenticated `api` request reaches that schema and is denied by
+its database permissions instead of failing schema selection.
+
+The CLI configuration command used to inspect this mismatch did not honor the
+piped negative response as a preview. It synchronized both the reviewed API
+configuration and the repository's Auth configuration. No further
+configuration write or rollback was attempted. The Auth result matches the
+repository configuration—anonymous sign-in enabled, email sign-up disabled,
+and stricter password/rate-limit settings—but remains runtime-unverified and
+the broader-than-requested write is recorded in `BOTTLENECK_LOG.md`.
+
+This addendum supersedes only the original handoff's statements that no remote
+action had occurred. It does not promote staging, device, security,
+accessibility, performance, or release readiness.
+
 ## Repository position
 
 ```text
@@ -27,9 +64,10 @@ Pull request: Not created
 GitHub Actions matching this branch: 0
 ```
 
-The implementation branch was pushed normally to `origin`. No direct
-`master` push, force-push, pull request, workflow dispatch, tag, release,
-deployment, or remote Supabase action occurred.
+The implementation branch was pushed normally to `origin`. At the original
+handoff, no direct `master` push, force-push, pull request, workflow dispatch,
+tag, release, deployment, or remote Supabase action had occurred. The
+authorized post-handoff Founder Trial deployment is recorded above.
 
 ## UI/UX skill audit
 

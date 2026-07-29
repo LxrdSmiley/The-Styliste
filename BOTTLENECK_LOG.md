@@ -767,3 +767,59 @@ not unknown artifacts.
 - Verification command: `./scripts/check_deferred_todos.ps1`.
 - Latest result: `Passed` on 2026-07-29 — direct exit code 0; repository health
   then reached its independent Gitleaks availability blocker.
+
+## B-040 — Device Founder Trial reached an undeployed authority path
+
+- Symptom: the Galaxy A55 preserved the House name but Founder Trial remained
+  at step 0/6 and displayed the safe retry state.
+- Root cause: the configured remote project was 13 migrations behind the
+  repository and had no deployed `founder-trial` Function. Remote logs showed
+  the reported pre-deployment attempts returning HTTP 404. After deployment,
+  hosted PostgREST still exposed only `public` and `graphql_public`, so
+  authenticated Edge requests failed with HTTP 406 / `PGRST106` when selecting
+  the reviewed `api` schema.
+- Permanent prevention: before handing a server-authoritative device flow to a
+  tester, compare local and linked migration history, list the required Edge
+  Function, and run its authenticated staging smoke test separately from
+  local source and contract tests.
+- Automated check: require 61/61 migration-version parity, an `ACTIVE`
+  Function with `verify_jwt=true`, the hosted Data API schema inventory, the
+  unauthenticated HTTP 401 boundary, and an authenticated owner success receipt
+  before promoting deployed evidence.
+- Affected files and systems: `supabase/migrations/`,
+  `supabase/functions/founder-trial/`, the shared Kingston Edge contract, the
+  configured Supabase project, and the Galaxy A55 Founder Trial flow.
+- Verification command: `supabase migration list --linked`,
+  `supabase functions list --project-ref <configured project>`,
+  `deno test --allow-env --allow-net
+  supabase/tests/kingston_edge_identity_test.ts`, a redacted
+  `Accept-Profile: api` probe, followed by the A55 retry.
+- Latest result: remote authority deployment `Passed` on 2026-07-29 — all 61
+  migration versions match, the Function is active with JWT verification, the
+  hosted Data API recognizes `api`, the unauthenticated boundary returns 401,
+  focused Flutter tests pass 5/5, and Edge contracts pass 16/16. The first
+  post-Function device requests failed before the Data API correction. The
+  post-correction authenticated A55 retry remains `Blocked` pending Smiley
+  observation.
+
+## B-041 — Supabase config push is not a safe noninteractive preview
+
+- Symptom: a piped negative response intended to inspect
+  `supabase config push` still applied the reported service diffs.
+- Root cause: Supabase CLI 2.110.0 treated the noninteractive invocation as an
+  executable push rather than a cancellable preview.
+- Permanent prevention: do not use `config push` to preview remote
+  configuration and do not pipe confirmation input to it. Read the current
+  service configuration through the Management API or dashboard, compare only
+  the intended service fields, obtain explicit approval, and apply the smallest
+  reviewed patch.
+- Automated check: compare the hosted Data API/Auth configuration with the
+  reviewed inventory before and after any approved configuration operation;
+  fail when an unrelated service field changes.
+- Affected files and systems: `supabase/config.toml`, hosted Data API
+  configuration, and hosted Auth configuration.
+- Verification command: Management API read-back plus redacted Data API/Auth
+  contract probes; never use `supabase config push` as the read-only check.
+- Latest result: `Failed` process control on 2026-07-29. The reviewed Data API
+  correction and repository Auth settings were synchronized, no secret was
+  printed, and no further configuration write or rollback was attempted.

@@ -184,7 +184,7 @@ class _HouseMetrics extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Brand? value = brand.value;
+    final Brand? value = brand.asData?.value;
     final List<Widget> cards = <Widget>[
       GlassMetricCard(
         label: 'Brand rank',

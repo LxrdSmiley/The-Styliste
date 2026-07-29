@@ -1,5 +1,27 @@
 # Human-only verification tasks
 
+## Immediate Galaxy A55 Founder Trial retry
+
+With the existing debug session still open, tap **Begin the Founder Trial** or
+**Retry the same step** once on the Founder Trial error panel. No rebuild is
+required because the missing remote Function, migrations, and reviewed Data
+API schema boundary are now active server-side.
+
+Confirm that:
+
+- the screen advances from step 0/6 to step 1/6;
+- the House name remains unchanged;
+- no raw backend error is shown; and
+- retrying does not create a duplicate House or duplicate receipt.
+
+Current status:
+
+```text
+Pre-deployment A55 attempts: Failed — remote Founder Trial endpoint returned 404
+First post-deployment retry: Failed — remote Data API rejected the api schema
+Post-Data-API-correction retry: Blocked — awaiting Smiley observation
+```
+
 ## Smiley's expansion-pass visual review
 
 Review the committed deterministic renders in:

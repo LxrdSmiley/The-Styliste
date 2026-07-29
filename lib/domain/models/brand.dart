@@ -15,7 +15,12 @@ part 'brand.g.dart';
 class _SafeDouble implements JsonConverter<double, Object?> {
   const _SafeDouble();
   @override
-  double fromJson(Object? value) => (value as num?)?.toDouble() ?? 0.0;
+  double fromJson(Object? value) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
   @override
   Object? toJson(double value) => value;
 }
@@ -55,4 +60,72 @@ class Brand with _$Brand {
   }) = _Brand;
 
   factory Brand.fromJson(Map<String, dynamic> json) => _$BrandFromJson(json);
+
+  /// Decodes only the reviewed `api.brand_summary` owner projection.
+  ///
+  /// Wallet and private-profile fields are deliberately absent from that
+  /// projection, so they retain the domain defaults instead of being inferred
+  /// or fetched through a broader client authority path.
+  static Brand fromSummaryJson(Map<String, dynamic> json) {
+    return Brand(
+      playerId: _requiredSummaryString(json['player_id'], 'player_id'),
+      heat: _summaryInt(json['heat'], fallback: 50),
+      hypeScore: const _SafeDouble().fromJson(json['hype_score']),
+      followers: _summaryInt(json['followers']),
+      idleRevenuePerHour:
+          const _SafeDouble().fromJson(json['idle_revenue_per_hour']),
+      totalRevenue: const _SafeDouble().fromJson(json['total_revenue']),
+      momentumBuffActive: _summaryBool(json['momentum_buff_active']),
+      momentumBuffUntil: _summaryDateTime(json['momentum_buff_until']),
+      lastActiveAt: _summaryDateTime(json['last_active_at']),
+      sustainabilityTier: _summaryInt(json['sustainability_tier']),
+      dppEnabled: _summaryBool(json['dpp_enabled']),
+      dppFullyMapped: _summaryBool(json['dpp_fully_mapped']),
+      founderRep: _summaryInt(json['founder_rep'], fallback: 50),
+      currentTarnish: _summaryInt(json['current_tarnish']),
+      kintsugiLevel: _summaryInt(json['kintsugi_level']),
+      totalScandalsSurvived: _summaryInt(json['total_scandals_survived']),
+      marketTier: _summaryString(json['market_tier']),
+      warehouseCapacity:
+          _summaryInt(json['warehouse_capacity'], fallback: 5000),
+      currentInventoryValue: _summaryInt(json['current_inventory_value']),
+      logisticsLevel: _summaryInt(json['logistics_level'], fallback: 1),
+    );
+  }
+}
+
+String _requiredSummaryString(Object? value, String field) {
+  final String? result = _summaryString(value);
+  if (result == null) {
+    throw FormatException('Missing required brand summary field: $field');
+  }
+  return result;
+}
+
+String? _summaryString(Object? value) {
+  if (value is String && value.trim().isNotEmpty) return value.trim();
+  return null;
+}
+
+int _summaryInt(Object? value, {int fallback = 0}) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? fallback;
+  return fallback;
+}
+
+bool _summaryBool(Object? value, {bool fallback = false}) {
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  if (value is String) {
+    if (value.toLowerCase() == 'true') return true;
+    if (value.toLowerCase() == 'false') return false;
+  }
+  return fallback;
+}
+
+DateTime? _summaryDateTime(Object? value) {
+  if (value is DateTime) return value;
+  if (value is String) return DateTime.tryParse(value);
+  return null;
 }

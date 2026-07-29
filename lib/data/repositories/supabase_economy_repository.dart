@@ -21,7 +21,7 @@ class SupabaseEconomyRepository implements EconomyRepository {
         .eq('player_id', playerId)
         .maybeSingle();
 
-    return data != null ? Brand.fromJson(data) : null;
+    return data != null ? Brand.fromSummaryJson(data) : null;
   }
 
   @override

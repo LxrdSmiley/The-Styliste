@@ -76,9 +76,31 @@ void main() {
       expect(tester.takeException(), isNull, reason: path.name);
     }
   });
+
+  testWidgets('brand projection errors stay inside player-safe metric states', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      _hqHarness(
+        child: HqArtisanView(player: _player(CareerPath.designer)),
+        brandStream: Stream<Brand>.error(
+          const FormatException('projection fixture rejected'),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Projection unavailable'), findsNWidgets(3));
+    expect(find.textContaining('FormatException'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }
 
-Widget _hqHarness({required Widget child}) {
+Widget _hqHarness({
+  required Widget child,
+  Stream<Brand>? brandStream,
+}) {
   final Player designer = _player(CareerPath.designer);
   final Brand brand = _brand();
 
@@ -92,7 +114,7 @@ Widget _hqHarness({required Widget child}) {
         (Ref ref) => Stream<Player>.value(designer),
       ),
       hqBrandStreamProvider.overrideWith(
-        (Ref ref) => Stream<Brand>.value(brand),
+        (Ref ref) => brandStream ?? Stream<Brand>.value(brand),
       ),
       latestAlphaDropProvider.overrideWith(
         (Ref ref) async => const LatestAlphaDropSummary(

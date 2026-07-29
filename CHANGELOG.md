@@ -69,6 +69,11 @@ in `docs/verification/early_game_readiness.md`, not in release-marketing claims.
 
 ### Fixed
 
+- Deployed the missing server-authoritative Founder Trial endpoint and its
+  complete reviewed migration history to the configured Supabase project, and
+  activated the reviewed hosted `api` schema boundary required by that
+  endpoint. Existing A55 sessions can retry the preserved House-name intent
+  without rebuilding the app; device confirmation remains pending.
 - Preserved Supabase identities when a session refresh fails for a temporary
   connectivity reason; only terminal anonymous-session failure may create a new
   founder-trial identity, while linked accounts require explicit sign-in.
