@@ -14,6 +14,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/styliste_colors.dart';
 import '../../../core/theme/styliste_motion.dart';
+import '../../../core/theme/styliste_radii.dart';
 import '../../../core/theme/styliste_spacing.dart';
 import '../../../core/theme/styliste_typography.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
@@ -306,8 +307,8 @@ class _AtelierTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
         StylisteSpacing.lg,
         StylisteSpacing.sm,
         StylisteSpacing.lg,
@@ -319,10 +320,7 @@ class _AtelierTopBar extends StatelessWidget {
             child: Text(
               'ATELIER',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: StylisteText.displayFamily,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+              style: StylisteText.labelCaps.copyWith(
                 letterSpacing: 4,
                 color: StylisteColors.textPrimary,
               ),
@@ -368,16 +366,19 @@ class _AtelierStatePanel extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 12.0),
-          const Text(
-            'This garment study stays local. Only the capsule submits bounded, authenticated intents.',
-            style: StylisteText.bodySmall,
+          const SizedBox(height: StylisteSpacing.sm),
+          const AurelianEvidenceBand(
+            label: 'Study authority',
+            value: 'Local garment exploration',
+            detail:
+                'This garment study stays local. Only the capsule submits bounded, authenticated intents.',
+            icon: Icons.edit_note_outlined,
           ),
-          const SizedBox(height: 12.0),
+          const SizedBox(height: StylisteSpacing.sm),
           IvorySecondaryButton(
-            label: 'Open Kingston Capsule',
-            icon: Icons.auto_awesome_outlined,
-            onPressed: () => context.push(AppRouter.atelierCapsule),
+            label: 'Review study boundary',
+            icon: Icons.info_outline,
+            onPressed: () => _showStudyBoundary(context),
           ),
         ],
       ),
@@ -385,50 +386,50 @@ class _AtelierStatePanel extends StatelessWidget {
   }
 }
 
+void _showStudyBoundary(BuildContext context) {
+  showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    builder: (BuildContext context) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(
+          StylisteSpacing.lg,
+          StylisteSpacing.lg,
+          StylisteSpacing.lg,
+          StylisteSpacing.lg + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: const AurelianStatePanel(
+          kind: AurelianStateKind.editing,
+          title: 'This study stays in the Atelier',
+          message:
+              'Dye, drape interaction, and style signals help you read the garment. They do not create a score, reward, release, or authoritative blueprint.',
+          authorityLabel: 'Local editor state',
+          preservationLabel:
+              'The study remains visible while this Atelier route is retained.',
+          retrySafetyLabel:
+              'No server mutation is attached to this explanatory sheet.',
+          compact: true,
+        ),
+      );
+    },
+  );
+}
+
 class _LockedToolNotice extends StatelessWidget {
   const _LockedToolNotice();
 
   @override
   Widget build(BuildContext context) {
-    return _StudioPanel(
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final bool stacked = constraints.maxWidth < 360 ||
-              MediaQuery.textScalerOf(context).scale(1) > 1.3;
-          const Widget badge = PillBadge(
-            label: 'Later Build',
-            icon: Icons.lock_outline,
-            mode: StylisteVisualMode.atelierWarmStudio,
-          );
-          final Widget detail = Text(
-            'AR try-on, generative styling, launch, and advanced cloth tools '
-            'remain deliberately unavailable. Gate A stops at capsule readiness.',
-            style: TextStyle(
-              color: StylisteColors.textSecondary.withValues(alpha: 0.84),
-              fontSize: 12.0,
-              fontWeight: FontWeight.w600,
-              height: 1.3,
-            ),
-          );
-          if (stacked) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                badge,
-                const SizedBox(height: StylisteSpacing.sm),
-                detail,
-              ],
-            );
-          }
-          return Row(
-            children: <Widget>[
-              badge,
-              const SizedBox(width: 12.0),
-              Expanded(child: detail),
-            ],
-          );
-        },
-      ),
+    return const AurelianStatePanel(
+      kind: AurelianStateKind.unavailable,
+      title: 'Advanced studio tools are held',
+      message:
+          'AR try-on, generative styling, launch, and advanced cloth tools remain unavailable. Gate A stops at capsule readiness.',
+      authorityLabel: 'Gate A feature registry',
+      preservationLabel:
+          'The local garment study and capsule remain available.',
+      compact: true,
     );
   }
 }
@@ -458,12 +459,12 @@ class _StudioStage extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration:
-          reduceMotion ? Duration.zero : const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
+          reduceMotion ? Duration.zero : StylisteMotion.screenTransitionMin,
+      curve: StylisteMotion.standardCurve,
       height: height,
       decoration: BoxDecoration(
         color: StylisteColors.alabaster,
-        borderRadius: BorderRadius.circular(14.0),
+        borderRadius: BorderRadius.circular(StylisteRadii.control),
         border: Border.all(
           color: ready
               ? StylisteColors.deepGold
@@ -849,15 +850,20 @@ class _AtelierReadinessPanel extends StatelessWidget {
           ),
           const SizedBox(height: 16.0),
           AurelianStatePanel(
-            kind: ready
-                ? AurelianStateKind.confirmed
-                : AurelianStateKind.disabled,
+            kind:
+                ready ? AurelianStateKind.confirmed : AurelianStateKind.editing,
             title: ready
                 ? 'Your visual study is ready'
                 : 'Keep shaping the garment',
             message: ready
                 ? 'These choices remain a local study. The Kingston capsule uses its own validated brief and three canonical look roles.'
                 : 'Move across the garment to inspect its drape. No Hype, reward, or release result is calculated here.',
+            authorityLabel:
+                ready ? 'Local study completion' : 'Local editor state',
+            preservationLabel:
+                'Dye, style signals, and active-drape progress on this retained route.',
+            retrySafetyLabel:
+                'Opening the capsule starts no release, reward, or score request.',
             compact: true,
           ),
         ],

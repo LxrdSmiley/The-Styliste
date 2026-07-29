@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -51,6 +49,15 @@ class HqFoundationView extends ConsumerWidget {
             FirstObjectiveCard(player: player),
             _HqGarmentSignal(mode: mode, lens: lens),
             const SizedBox(height: StylisteSpacing.lg),
+            AurelianEvidenceBand(
+              label: 'Recent confirmed evidence',
+              value: 'Founder Trial recorded',
+              detail:
+                  '${player.brandName} is established in Kingston with the ${lens.toLowerCase()} lead lens. No reward or market result is implied.',
+              icon: Icons.receipt_long_outlined,
+              tone: AurelianStatusTone.positive,
+            ),
+            const SizedBox(height: StylisteSpacing.lg),
             const AurelianSectionHeader(
               eyebrow: 'House pulse',
               title: 'A visual read of server-owned state',
@@ -65,13 +72,6 @@ class HqFoundationView extends ConsumerWidget {
               message:
                   'Build the three-look Kingston capsule first. Sampling, launch, Vex results, and rewards remain behind later gates.',
             ),
-            const SizedBox(height: StylisteSpacing.md),
-            GoldPrimaryButton(
-              label: 'Open Kingston Capsule',
-              icon: Icons.checkroom_outlined,
-              onPressed: () =>
-                  unawaited(context.push(AppRouter.atelierCapsule)),
-            ),
             const SizedBox(height: StylisteSpacing.sm),
             IvorySecondaryButton(
               label: 'Enter Atelier',
@@ -84,6 +84,9 @@ class HqFoundationView extends ConsumerWidget {
               title: 'Launch outcomes are held',
               message:
                   'No drop, Vex review, territory, Gala, contract, or reward action is reachable from HQ in Gate A.',
+              authorityLabel: 'Gate A feature registry',
+              preservationLabel:
+                  'Your House, capsule draft, and confirmed receipts remain available.',
               compact: true,
             ),
           ],

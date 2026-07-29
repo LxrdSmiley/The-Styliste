@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/styliste_colors.dart';
+import '../../../core/theme/styliste_radii.dart';
 import '../../../core/theme/styliste_spacing.dart';
 import '../../../core/theme/styliste_typography.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
@@ -309,6 +310,18 @@ class _HouseResolutionCard extends StatelessWidget {
               'Luxe keeps the creative and business lenses in view. Neither changes your access to the capsule or its readiness rule.',
               style: TextStyle(color: StylisteColors.warmGrey, height: 1.35),
             ),
+            const SizedBox(height: StylisteSpacing.stackMd),
+            AurelianEvidenceBand(
+              icon: restored
+                  ? Icons.history_outlined
+                  : Icons.verified_user_outlined,
+              label: restored ? 'Receipt state' : 'Authority',
+              value: restored ? 'Restored' : 'Server confirmed',
+              detail:
+                  'The authenticated House owns this capsule. Specialization changes the lens, never the ceiling.',
+              tone: AurelianStatusTone.positive,
+              dark: true,
+            ),
           ],
         ),
       ),
@@ -455,37 +468,20 @@ class _InitialState extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool loading = state.phase == CapsuleFoundationPhase.loading ||
         state.phase == CapsuleFoundationPhase.submitting;
-    return _Panel(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          if (loading) ...<Widget>[
-            const Center(child: CircularProgressIndicator()),
-            const SizedBox(height: StylisteSpacing.stackMd),
-            const Text(
-              'Luxe is restoring your Kingston House record.',
-              textAlign: TextAlign.center,
-              style: StylisteText.body,
-            ),
-          ] else ...<Widget>[
-            Semantics(
-              liveRegion: true,
-              child: Text(
-                state.error ?? 'Your capsule is temporarily unavailable.',
-                style: StylisteText.body.copyWith(
-                  color: StylisteColors.rivalRed,
-                ),
-              ),
-            ),
-            const SizedBox(height: StylisteSpacing.stackMd),
-            GoldPrimaryButton(
-              label: 'Retry restoration',
-              icon: Icons.refresh,
-              onPressed: onRetry,
-            ),
-          ],
-        ],
-      ),
+    return AurelianStatePanel(
+      kind: loading
+          ? AurelianStateKind.loading
+          : AurelianStateKind.retryableError,
+      title: loading ? 'Restoring your capsule' : 'Capsule not restored',
+      message: loading
+          ? 'Luxe is checking the authenticated Kingston House record.'
+          : state.error ?? 'Your capsule is temporarily unavailable.',
+      authorityLabel: 'Secure session and server-owned House record',
+      preservationLabel: 'No local garment choice is discarded',
+      retrySafetyLabel:
+          loading ? 'Wait for this check to finish' : 'Safe and idempotent',
+      actionLabel: loading ? null : 'Retry restoration',
+      onAction: loading ? null : onRetry,
     );
   }
 }
@@ -530,53 +526,67 @@ class _ReliabilityNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String? message = switch (state.phase) {
-      CapsuleFoundationPhase.empty =>
-        'Your House is ready for its first Collection Brief.',
-      CapsuleFoundationPhase.editing =>
-        'Your choices are local until Luxe confirms this step.',
-      CapsuleFoundationPhase.confirmed =>
-        'Luxe confirmed your last capsule step.',
-      CapsuleFoundationPhase.offline ||
-      CapsuleFoundationPhase.retryableError =>
-        state.error ?? 'That step was not confirmed. Your capsule is safe.',
+    final (AurelianStateKind, String, String)? presentation =
+        switch (state.phase) {
+      CapsuleFoundationPhase.empty => (
+          AurelianStateKind.empty,
+          'Collection Brief ready',
+          'Your House has one active Kingston capsule and is ready for its first brief.',
+        ),
+      CapsuleFoundationPhase.editing => (
+          AurelianStateKind.editing,
+          'Editing locally',
+          'Your choices remain local until Luxe confirms this step.',
+        ),
+      CapsuleFoundationPhase.submitting => (
+          AurelianStateKind.submitting,
+          'Submitting intent',
+          'The server is validating this bounded capsule step.',
+        ),
+      CapsuleFoundationPhase.confirmed => (
+          AurelianStateKind.confirmed,
+          'Step confirmed',
+          'Luxe recorded the authoritative receipt and advanced the capsule.',
+        ),
+      CapsuleFoundationPhase.restored => (
+          AurelianStateKind.restored,
+          'Capsule restored',
+          'This view was rebuilt from the existing server receipt.',
+        ),
+      CapsuleFoundationPhase.offline => (
+          AurelianStateKind.offline,
+          'Connection unavailable',
+          state.error ?? 'That step was not confirmed. Your capsule is safe.',
+        ),
+      CapsuleFoundationPhase.retryableError => (
+          AurelianStateKind.retryableError,
+          'Confirmation interrupted',
+          state.error ?? 'That step was not confirmed. Your capsule is safe.',
+        ),
       _ => null,
     };
-    if (message == null) {
+    if (presentation == null) {
       return const SizedBox.shrink();
     }
-    final bool isError = state.phase == CapsuleFoundationPhase.offline ||
+    final bool canRetry = state.phase == CapsuleFoundationPhase.offline ||
         state.phase == CapsuleFoundationPhase.retryableError;
     return Padding(
       padding: const EdgeInsets.only(bottom: StylisteSpacing.stackMd),
-      child: _Panel(
-        color: isError ? StylisteColors.ivory : StylisteColors.alabaster,
-        borderColor:
-            isError ? StylisteColors.rivalRed : StylisteColors.profitGreen,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Semantics(
-              liveRegion: true,
-              child: Text(
-                message,
-                style: StylisteText.body.copyWith(
-                  color: isError
-                      ? StylisteColors.rivalRed
-                      : StylisteColors.profitGreen,
-                ),
-              ),
-            ),
-            if (isError) ...<Widget>[
-              const SizedBox(height: StylisteSpacing.stackSm),
-              IvorySecondaryButton(
-                label: 'Retry safely',
-                icon: Icons.refresh,
-                onPressed: onRetry,
-              ),
-            ],
-          ],
-        ),
+      child: AurelianStatePanel(
+        kind: presentation.$1,
+        title: presentation.$2,
+        message: presentation.$3,
+        authorityLabel: state.phase == CapsuleFoundationPhase.editing
+            ? 'Local editor state'
+            : 'Authenticated server receipt',
+        preservationLabel:
+            'Collection Brief and confirmed look receipts remain intact',
+        retrySafetyLabel: canRetry
+            ? 'Reuses the original idempotency key'
+            : 'No retry required',
+        actionLabel: canRetry ? 'Retry safely' : null,
+        onAction: canRetry ? onRetry : null,
+        compact: true,
       ),
     );
   }
@@ -623,11 +633,19 @@ class _CollectionBriefForm extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            const Text('COLLECTION BRIEF', style: StylisteText.labelCaps),
-            const SizedBox(height: StylisteSpacing.stackSm),
-            const Text(
-              'Give the three looks one unmistakable Kingston point of view.',
-              style: StylisteText.body,
+            const AurelianSectionHeader(
+              eyebrow: 'Collection Brief',
+              title: 'Set the capsule’s point of view',
+              detail:
+                  'One bounded brief aligns all three garments without calculating readiness on this device.',
+            ),
+            const SizedBox(height: StylisteSpacing.stackMd),
+            const AurelianEvidenceBand(
+              icon: Icons.edit_note_outlined,
+              label: 'Current state',
+              value: 'Local draft',
+              detail:
+                  'Title, narrative, audience, House code, palette, and material are submitted as one validated intent.',
             ),
             const SizedBox(height: StylisteSpacing.stackMd),
             TextFormField(
@@ -760,19 +778,46 @@ class _LookRoleCard extends StatelessWidget {
             Row(
               children: <Widget>[
                 Expanded(child: Text(label, style: StylisteText.headline)),
-                Text(
-                  stateLabel.toUpperCase(),
-                  style: StylisteText.labelCaps.copyWith(
-                    color: complete
-                        ? StylisteColors.profitGreen
-                        : StylisteColors.deepGold,
-                  ),
+                AurelianStatusChip(
+                  label: stateLabel,
+                  icon: complete
+                      ? Icons.check
+                      : active
+                          ? Icons.edit_outlined
+                          : Icons.lock_clock_outlined,
+                  tone: complete
+                      ? AurelianStatusTone.positive
+                      : AurelianStatusTone.neutral,
                 ),
               ],
             ),
             const SizedBox(height: StylisteSpacing.stackSm),
             Text(detail, style: StylisteText.body),
+            const SizedBox(height: StylisteSpacing.stackMd),
+            AurelianCutLineFrame(
+              semanticLabel: '$label garment study',
+              emphasis: active ? 1 : 0.55,
+              padding: const EdgeInsets.all(StylisteSpacing.stackSm),
+              child: SizedBox(
+                height: 132,
+                child: CustomPaint(
+                  painter: _LookRolePainter(
+                    role: role,
+                    active: active,
+                    complete: complete,
+                  ),
+                ),
+              ),
+            ),
             if (active) ...<Widget>[
+              const SizedBox(height: StylisteSpacing.stackMd),
+              const AurelianEvidenceBand(
+                icon: Icons.tune_outlined,
+                label: 'Inspector',
+                value: 'Bounded design grammar',
+                detail:
+                    'Silhouette, material, palette, and construction only. Scores and progression stay server-owned.',
+              ),
               const SizedBox(height: StylisteSpacing.stackMd),
               _ChoiceField(
                 label: 'Silhouette',
@@ -913,12 +958,15 @@ class _SamplingBoundary extends StatelessWidget {
               style: TextStyle(color: StylisteColors.warmGrey, height: 1.35),
             ),
             const SizedBox(height: StylisteSpacing.stackSm),
-            const IvorySecondaryButton(
-              label: 'Sampling unavailable in this build',
-              icon: Icons.lock_outline,
-              onPressed: null,
-              disabledReason:
-                  'This boundary protects the approved Early Game scope.',
+            const AurelianStatePanel(
+              kind: AurelianStateKind.unavailable,
+              title: 'Sampling deliberately unavailable',
+              message:
+                  'This is the end of the approved Kingston capsule foundation. No production, launch, score, reward, or Vex result is created.',
+              authorityLabel: 'Gate A scope boundary',
+              preservationLabel: 'Readiness receipt remains confirmed',
+              retrySafetyLabel: 'No mutation is available beyond this point',
+              compact: true,
             ),
           ],
         ),
@@ -940,7 +988,7 @@ class _Panel extends StatelessWidget {
       padding: const EdgeInsets.all(StylisteSpacing.gutter),
       decoration: BoxDecoration(
         color: color ?? StylisteColors.surfaceGlass,
-        borderRadius: BorderRadius.circular(16.0),
+        borderRadius: BorderRadius.circular(StylisteRadii.card),
         border: Border.all(
           color: borderColor ??
               StylisteColors.outlineSubtle.withValues(alpha: 0.72),
@@ -948,6 +996,93 @@ class _Panel extends StatelessWidget {
       ),
       child: child,
     );
+  }
+}
+
+class _LookRolePainter extends CustomPainter {
+  const _LookRolePainter({
+    required this.role,
+    required this.active,
+    required this.complete,
+  });
+
+  final String role;
+  final bool active;
+  final bool complete;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Color signal = complete
+        ? StylisteColors.profitGreen
+        : active
+            ? StylisteColors.deepGold
+            : StylisteColors.outlineSubtle;
+    final Paint seam = Paint()
+      ..color = signal
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = active || complete ? 2.2 : 1.2;
+    final Paint guide = Paint()
+      ..color = StylisteColors.outlineSubtle.withValues(alpha: 0.62)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    final Offset center = Offset(size.width * 0.5, size.height * 0.52);
+    final double halfWidth = switch (role) {
+      'commercial_anchor' => size.width * 0.16,
+      'experimental_piece' => size.width * 0.25,
+      _ => size.width * 0.2,
+    };
+    final double hemFlare = switch (role) {
+      'commercial_anchor' => 0.84,
+      'experimental_piece' => 1.3,
+      _ => 1.05,
+    };
+    final Path garment = Path()
+      ..moveTo(center.dx - halfWidth * 0.28, center.dy - 54)
+      ..quadraticBezierTo(
+        center.dx,
+        center.dy - 68,
+        center.dx + halfWidth * 0.28,
+        center.dy - 54,
+      )
+      ..lineTo(center.dx + halfWidth, center.dy - 32)
+      ..lineTo(center.dx + halfWidth * 0.58, center.dy - 4)
+      ..lineTo(center.dx + halfWidth * hemFlare, center.dy + 52)
+      ..lineTo(center.dx - halfWidth * hemFlare, center.dy + 52)
+      ..lineTo(center.dx - halfWidth * 0.58, center.dy - 4)
+      ..lineTo(center.dx - halfWidth, center.dy - 32)
+      ..close();
+    canvas
+      ..drawLine(
+        Offset(center.dx, 8),
+        Offset(center.dx, size.height - 8),
+        guide,
+      )
+      ..drawLine(
+        Offset(8, center.dy + 52),
+        Offset(size.width - 8, center.dy + 52),
+        guide,
+      )
+      ..drawPath(garment, seam);
+    if (role == 'experimental_piece') {
+      canvas.drawArc(
+        Rect.fromCenter(
+          center: Offset(center.dx + halfWidth * 0.72, center.dy - 2),
+          width: halfWidth,
+          height: halfWidth * 1.3,
+        ),
+        -1.5,
+        2.5,
+        false,
+        seam,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _LookRolePainter oldDelegate) {
+    return role != oldDelegate.role ||
+        active != oldDelegate.active ||
+        complete != oldDelegate.complete;
   }
 }
 

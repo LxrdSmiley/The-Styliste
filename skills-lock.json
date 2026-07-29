@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "accessibility-compliance": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/ui-design/skills/accessibility-compliance/SKILL.md",
+      "computedHash": "689b0c2a2e399bfff0581f0ba3cbefc6c7b5806c6dbc8cb1a172cf055bff0c91"
+    },
     "agent-development": {
       "source": "smithery.ai",
       "sourceType": "well-known",
@@ -30,6 +36,18 @@
       "source": "smithery.ai",
       "sourceType": "well-known",
       "computedHash": "3d5a363ef4414bcc5b3ec92138d18504fa8b89c1790e619ff1ade21929764a84"
+    },
+    "flutter-build-responsive-layout": {
+      "source": "flutter/skills",
+      "sourceType": "github",
+      "skillPath": "skills/flutter-build-responsive-layout/SKILL.md",
+      "computedHash": "6d74a9504c4e355c4c62f6fcb6c6dc0df67b56dd6616bea199e4e58f75b7729b"
+    },
+    "flutter-design-system": {
+      "source": "hoangnguyen0403/agent-skills-standard",
+      "sourceType": "github",
+      "skillPath": "skills/flutter/flutter-design-system/SKILL.md",
+      "computedHash": "359ef6ae0d9b1f526671a7873b0f6f7cf351576d2b4e5b1156e3e0fb9903cfb7"
     },
     "frontend-design": {
       "source": "smithery.ai",
@@ -87,6 +105,12 @@
       "source": "smithery.ai",
       "sourceType": "well-known",
       "computedHash": "f0916ca326ad6dbde1d0770b46956a213406b8ea4a19ed931bb4f2dc7d04c16d"
+    },
+    "visual-testing": {
+      "source": "petrkindlmann/qa-skills",
+      "sourceType": "github",
+      "skillPath": "skills/visual-testing/SKILL.md",
+      "computedHash": "f9ec1ac4ac4aa07010cfbbe3526cb32d477fef83ad06dd83aa73928e3c9b9651"
     },
     "web-artifacts-builder": {
       "source": "smithery.ai",

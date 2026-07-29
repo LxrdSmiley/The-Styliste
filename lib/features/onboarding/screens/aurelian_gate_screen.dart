@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/styliste_colors.dart';
+import '../../../core/theme/styliste_radii.dart';
 import '../../../core/theme/styliste_spacing.dart';
 import '../../../core/theme/styliste_typography.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
@@ -75,12 +76,18 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen> {
                   kind: AurelianStateKind.loading,
                   title: 'Preparing the Sanctuary',
                   message: 'Checking the local age-gate record.',
+                  authorityLabel: 'Local eligibility record only.',
+                  preservationLabel:
+                      'No House or gameplay state has been created.',
                 ),
               _GateState.denied => const AurelianStatePanel(
                   kind: AurelianStateKind.permissionDenied,
                   title: 'The Sanctuary cannot open',
                   message:
                       'The Styliste is available only to players who meet the minimum age requirement.',
+                  authorityLabel: 'Eligibility gate',
+                  preservationLabel:
+                      'No account progression or economic state was created.',
                 ),
               _GateState.ready => const _SanctuaryInvitation(),
             },
@@ -100,13 +107,15 @@ class _SanctuaryInvitation extends StatelessWidget {
       container: true,
       label:
           'Opening Sanctuary. Your House begins in Kingston. Enter the Sanctuary.',
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
+      child: AurelianEditorialHero(
+        dark: true,
+        eyebrow: 'Kingston · Opening appointment',
+        title: 'The Opening\nSanctuary',
+        detail:
+            'Your House begins where tailoring, sound, streetwear, and global creative ambition meet.',
+        visual: Row(
+          children: <Widget>[
+            Container(
               width: 64,
               height: 64,
               alignment: Alignment.center,
@@ -115,48 +124,38 @@ class _SanctuaryInvitation extends StatelessWidget {
                   color: StylisteColors.champagneGold,
                   width: 1.5,
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(StylisteRadii.card),
               ),
-              child: const Text(
+              child: Text(
                 'S',
-                style: TextStyle(
+                style: StylisteText.displayEditorial.copyWith(
                   color: StylisteColors.champagneGold,
-                  fontFamily: StylisteText.displayFamily,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: StylisteSpacing.xl),
-          Text(
-            'THE OPENING\nSANCTUARY',
-            style: StylisteText.displayHero.copyWith(
-              color: StylisteColors.ivory,
+            const SizedBox(width: StylisteSpacing.md),
+            Expanded(
+              child: Text(
+                'Fashion authorship\nHouse identity\nKingston authority',
+                style: StylisteText.labelCaps.copyWith(
+                  color: StylisteColors.warmGrey,
+                  height: 1.7,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: StylisteSpacing.md),
-          Text(
-            'Your House begins in Kingston: at the meeting point of tailoring, sound, streetwear, and global creative ambition.',
-            style: StylisteText.bodyLarge.copyWith(
-              color: StylisteColors.warmGrey,
-            ),
-          ),
-          const SizedBox(height: StylisteSpacing.xl),
-          GoldPrimaryButton(
-            label: 'Enter the Sanctuary',
-            icon: Icons.arrow_forward,
-            onPressed: () => context.go(AppRouter.onboardingOriginScript),
-          ),
-          const SizedBox(height: StylisteSpacing.sm),
-          Text(
+          ],
+        ),
+        status: const AurelianStatusChip(
+          label: 'Founder trial begins here',
+          icon: Icons.content_cut_outlined,
+        ),
+        primaryAction: GoldPrimaryButton(
+          label: 'Enter the Sanctuary',
+          icon: Icons.arrow_forward,
+          onPressed: () => context.go(AppRouter.onboardingOriginScript),
+        ),
+        footnote:
             'No purchase, reward, or progression is created on this screen.',
-            textAlign: TextAlign.center,
-            style: StylisteText.bodySmall.copyWith(
-              color: StylisteColors.warmGreyDark,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -168,9 +167,16 @@ class _AgeGateDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      icon: const Icon(
+        Icons.shield_outlined,
+        semanticLabel: 'Age eligibility',
+      ),
       title: const Text('Before the Sanctuary opens'),
-      content: const Text(
-        'Please confirm that you meet the minimum age requirement for The Styliste.',
+      content: const AurelianCutLineFrame(
+        padding: EdgeInsets.all(StylisteSpacing.md),
+        child: Text(
+          'Please confirm that you meet the minimum age requirement for The Styliste. This choice does not create gameplay progress.',
+        ),
       ),
       actionsOverflowDirection: VerticalDirection.up,
       actionsOverflowAlignment: OverflowBarAlignment.center,

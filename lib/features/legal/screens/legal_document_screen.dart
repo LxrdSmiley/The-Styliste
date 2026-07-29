@@ -40,6 +40,16 @@ class LegalDocumentScreen extends StatelessWidget {
               _LegalSectionBlock(section: section),
               const SizedBox(height: StylisteSpacing.md),
             ],
+            const AurelianStatePanel(
+              kind: AurelianStateKind.unavailable,
+              title: 'Launch legal approval is pending',
+              message:
+                  'This bundled alpha copy supports review only. Final counsel and public-URL verification remain required before release.',
+              authorityLabel: 'Bundled alpha document',
+              preservationLabel: 'Readable in-app review copy',
+              retrySafetyLabel: 'No acceptance or account mutation occurs here',
+              compact: true,
+            ),
           ],
         ),
       ),
@@ -54,9 +64,12 @@ class _DocumentHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AurelianCard(
-      emphasized: true,
-      child: Column(
+    return AurelianEditorialHero(
+      dark: true,
+      eyebrow: 'Alpha document · review copy',
+      title: document.title,
+      detail: document.summary,
+      visual: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Icon(
@@ -65,30 +78,33 @@ class _DocumentHero extends StatelessWidget {
             size: StylisteSpacing.iconLg,
             semanticLabel: document.shortTitle,
           ),
-          const SizedBox(height: StylisteSpacing.md),
-          Text(document.title, style: StylisteText.headline),
-          const SizedBox(height: StylisteSpacing.xs),
-          Text(
-            document.summary,
-            style: StylisteText.body.copyWith(
-              color: StylisteColors.warmGrey,
+          const SizedBox(width: StylisteSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                const _MetaLine(
+                  label: 'Version',
+                  value: LegalDocuments.alphaVersion,
+                ),
+                const _MetaLine(
+                  label: 'Updated',
+                  value: LegalDocuments.lastUpdated,
+                ),
+                _MetaLine(label: 'Source', value: document.gddReference),
+                _MetaLine(
+                  label: 'Public URL',
+                  value: document.publicUrl ?? 'Bundled in-app alpha copy',
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: StylisteSpacing.md),
-          const _MetaLine(
-            label: 'Version',
-            value: LegalDocuments.alphaVersion,
-          ),
-          const _MetaLine(
-            label: 'Updated',
-            value: LegalDocuments.lastUpdated,
-          ),
-          _MetaLine(label: 'Source', value: document.gddReference),
-          _MetaLine(
-            label: 'Public URL',
-            value: document.publicUrl ?? 'Bundled in-app alpha copy',
-          ),
         ],
+      ),
+      status: const AurelianStatusChip(
+        label: 'Not launch-approved',
+        icon: Icons.gavel_outlined,
+        tone: AurelianStatusTone.warning,
       ),
     );
   }

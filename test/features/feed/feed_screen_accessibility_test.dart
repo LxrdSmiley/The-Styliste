@@ -56,7 +56,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('GLOBAL FEED'), findsOneWidget);
+    expect(find.text('HOUSE SIGNAL'), findsWidgets);
     expect(find.text('HELD'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

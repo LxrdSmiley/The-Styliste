@@ -74,6 +74,12 @@ class AurelianSessionGate extends StatelessWidget {
                   kind: AurelianStateKind.sessionExpired,
                   title: 'Your House is still secure',
                   message: errorMessage!,
+                  authorityLabel:
+                      'The secure game service must confirm your player identity.',
+                  preservationLabel:
+                      'No gameplay write or progression change was started.',
+                  retrySafetyLabel:
+                      'Retry restores or replaces the session without granting rewards.',
                   actionLabel: 'Retry secure session',
                   onAction:
                       onRetry == null ? null : () => unawaited(onRetry!()),
@@ -94,56 +100,46 @@ class _SessionRestoring extends StatelessWidget {
       container: true,
       liveRegion: true,
       label: 'Restoring your secure House session.',
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Container(
-            width: 72,
-            height: 72,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: StylisteColors.champagneGold,
-                width: 1.5,
+      child: AurelianEditorialHero(
+        dark: true,
+        eyebrow: 'Secure House entry',
+        title: 'Restoring your House',
+        detail:
+            'The session is resolved before any player-owned projection or gameplay intent can load.',
+        visual: Row(
+          children: <Widget>[
+            Container(
+              width: 64,
+              height: 64,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: StylisteColors.champagneGold,
+                  width: 1.5,
+                ),
+                borderRadius: BorderRadius.circular(24),
               ),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: const Text(
-              'S',
-              style: TextStyle(
-                color: StylisteColors.champagneGold,
-                fontFamily: StylisteText.displayFamily,
-                fontSize: 30,
-                fontWeight: FontWeight.w700,
+              child: Text(
+                'S',
+                style: StylisteText.displayEditorial.copyWith(
+                  color: StylisteColors.champagneGold,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: StylisteSpacing.lg),
-          Text(
-            'THE STYLISTE',
-            style: StylisteText.labelCaps.copyWith(
-              color: StylisteColors.champagneGold,
-              letterSpacing: 2.4,
+            const SizedBox(width: StylisteSpacing.md),
+            const Expanded(
+              child: LinearProgressIndicator(
+                minHeight: StylisteSpacing.xxs,
+                color: StylisteColors.champagneGold,
+                backgroundColor: StylisteColors.outlineDark,
+              ),
             ),
-          ),
-          const SizedBox(height: StylisteSpacing.md),
-          const SizedBox(
-            width: 28,
-            height: 28,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: StylisteColors.champagneGold,
-            ),
-          ),
-          const SizedBox(height: StylisteSpacing.md),
-          Text(
-            'Restoring your secure House session',
-            textAlign: TextAlign.center,
-            style: StylisteText.body.copyWith(
-              color: StylisteColors.warmGrey,
-            ),
-          ),
-        ],
+          ],
+        ),
+        status: const AurelianStatusChip(
+          label: 'No gameplay request started',
+          icon: Icons.shield_outlined,
+        ),
       ),
     );
   }

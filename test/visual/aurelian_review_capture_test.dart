@@ -12,6 +12,9 @@ import 'package:the_styliste/core/providers/active_player_provider.dart';
 import 'package:the_styliste/core/providers/auth_provider.dart';
 import 'package:the_styliste/core/router/feature_unavailable_screen.dart';
 import 'package:the_styliste/core/theme/aurelian_theme.dart';
+import 'package:the_styliste/core/theme/styliste_colors.dart';
+import 'package:the_styliste/core/theme/styliste_spacing.dart';
+import 'package:the_styliste/core/theme/styliste_typography.dart';
 import 'package:the_styliste/core/theme/styliste_visual_mode.dart';
 import 'package:the_styliste/core/widgets/aurelian_components.dart';
 import 'package:the_styliste/core/widgets/aurelian_navigation.dart';
@@ -249,6 +252,78 @@ void main() {
         _capsuleReceipt(stage: 'brief_confirmed'),
       ),
       pumpFor: const Duration(milliseconds: 80),
+      prepare: (WidgetTester tester) =>
+          _scrollToText(tester, 'CONFIRM HERO PIECE'),
+    );
+  });
+
+  testWidgets('capture Commercial Anchor workspace', (
+    WidgetTester tester,
+  ) async {
+    await _capture(
+      tester,
+      name: 'capsule_commercial_anchor',
+      app: _capsuleHarness(
+        _capsuleReceipt(
+          stage: 'hero_piece_complete',
+          completedLooks: 1,
+        ),
+      ),
+      pumpFor: const Duration(milliseconds: 80),
+      prepare: (WidgetTester tester) =>
+          _scrollToText(tester, 'CONFIRM COMMERCIAL ANCHOR'),
+    );
+  });
+
+  testWidgets('capture Experimental Piece workspace', (
+    WidgetTester tester,
+  ) async {
+    await _capture(
+      tester,
+      name: 'capsule_experimental_piece',
+      app: _capsuleHarness(
+        _capsuleReceipt(
+          stage: 'commercial_anchor_complete',
+          completedLooks: 2,
+        ),
+      ),
+      pumpFor: const Duration(milliseconds: 80),
+      prepare: (WidgetTester tester) =>
+          _scrollToText(tester, 'CONFIRM EXPERIMENTAL PIECE'),
+    );
+  });
+
+  testWidgets('capture capsule readiness review', (
+    WidgetTester tester,
+  ) async {
+    await _capture(
+      tester,
+      name: 'capsule_readiness_review',
+      app: _capsuleHarness(
+        _capsuleReceipt(
+          stage: 'experimental_piece_complete',
+          completedLooks: 3,
+        ),
+      ),
+      pumpFor: const Duration(milliseconds: 80),
+      prepare: (WidgetTester tester) =>
+          _scrollToText(tester, 'CONFIRM CAPSULE READINESS'),
+    );
+  });
+
+  testWidgets('capture restored capsule receipt', (
+    WidgetTester tester,
+  ) async {
+    await _capture(
+      tester,
+      name: 'capsule_restored_receipt',
+      app: _capsuleHarness(
+        _capsuleReceipt(
+          stage: 'brief_confirmed',
+          status: 'restored',
+        ),
+      ),
+      pumpFor: const Duration(milliseconds: 80),
     );
   });
 
@@ -266,6 +341,8 @@ void main() {
         ),
       ),
       pumpFor: const Duration(milliseconds: 80),
+      prepare: (WidgetTester tester) =>
+          _scrollToText(tester, 'Sampling deliberately unavailable'),
     );
   });
 
@@ -386,18 +463,121 @@ void main() {
       ),
     );
   });
+
+  testWidgets('capture 320px large-text House identity', (
+    WidgetTester tester,
+  ) async {
+    await _capture(
+      tester,
+      name: 'house_identity_large_text_320',
+      size: const Size(320, 844),
+      app: _houseHarness(textScale: 1.6),
+    );
+  });
+
+  testWidgets('capture 412px reduced-motion Atelier', (
+    WidgetTester tester,
+  ) async {
+    await _capture(
+      tester,
+      name: 'atelier_reduced_motion_412',
+      size: const Size(412, 844),
+      app: ProviderScope(
+        overrides: <Override>[
+          activeTsunamiProvider.overrideWith(
+            (Ref ref) => Stream<List<TrendTsunami>>.value(
+              const <TrendTsunami>[],
+            ),
+          ),
+        ],
+        child: const _ReviewApp(
+          home: AtelierScreen(prepareSessionOnStart: false),
+          reducedMotion: true,
+        ),
+      ),
+    );
+  });
+
+  const Map<String, AurelianStateKind> reliabilityStates =
+      <String, AurelianStateKind>{
+    'loading': AurelianStateKind.loading,
+    'empty': AurelianStateKind.empty,
+    'editing': AurelianStateKind.editing,
+    'submitting': AurelianStateKind.submitting,
+    'confirmed': AurelianStateKind.confirmed,
+    'restored': AurelianStateKind.restored,
+    'offline': AurelianStateKind.offline,
+    'retryable_error': AurelianStateKind.retryableError,
+    'terminal_error': AurelianStateKind.terminalError,
+    'permission_denied': AurelianStateKind.permissionDenied,
+    'session_expired': AurelianStateKind.sessionExpired,
+    'maintenance': AurelianStateKind.maintenance,
+    'disabled': AurelianStateKind.disabled,
+    'unavailable': AurelianStateKind.unavailable,
+  };
+  for (final MapEntry<String, AurelianStateKind> entry
+      in reliabilityStates.entries) {
+    testWidgets('capture reliability state ${entry.key}', (
+      WidgetTester tester,
+    ) async {
+      await _capture(
+        tester,
+        name: 'state_${entry.key}',
+        app: _ReviewApp(
+          home: Scaffold(
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(StylisteSpacing.lg),
+                child: AurelianStatePanel(
+                  kind: entry.value,
+                  title: _stateTitle(entry.key),
+                  message:
+                      'The player-safe presentation explains the current condition and the next available action.',
+                  authorityLabel: 'Fixture authority boundary',
+                  preservationLabel: 'Current player input',
+                  retrySafetyLabel: 'Explicit for this state',
+                  actionLabel:
+                      entry.value == AurelianStateKind.retryableError ||
+                              entry.value == AurelianStateKind.offline
+                          ? 'Retry safely'
+                          : null,
+                  onAction: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+  }
 }
 
 class _ReviewApp extends StatelessWidget {
-  const _ReviewApp({required this.home});
+  const _ReviewApp({
+    required this.home,
+    this.textScale = 1,
+    this.reducedMotion = false,
+  });
 
   final Widget home;
+  final double textScale;
+  final bool reducedMotion;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AurelianTheme.darkTheme,
+      builder: (BuildContext context, Widget? child) {
+        final MediaQueryData media = MediaQuery.of(context);
+        return MediaQuery(
+          data: media.copyWith(
+            textScaler: TextScaler.linear(textScale),
+            disableAnimations: reducedMotion,
+          ),
+          child: child!,
+        );
+      },
       home: home,
     );
   }
@@ -407,16 +587,35 @@ Future<void> _capture(
   WidgetTester tester, {
   required String name,
   required Widget app,
+  Size size = _phoneSize,
   Duration pumpFor = const Duration(milliseconds: 32),
   Future<void> Function(WidgetTester tester)? prepare,
 }) async {
-  await tester.binding.setSurfaceSize(_phoneSize);
+  await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
 
   await tester.pumpWidget(
     RepaintBoundary(
       key: _captureBoundaryKey,
-      child: SizedBox.fromSize(size: _phoneSize, child: app),
+      child: SizedBox.fromSize(
+        size: size,
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Stack(
+            alignment: Alignment.topLeft,
+            fit: StackFit.expand,
+            children: <Widget>[
+              app,
+              const Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: IgnorePointer(child: _EvidenceWatermark()),
+              ),
+            ],
+          ),
+        ),
+      ),
     ),
   );
   await tester.pump(pumpFor);
@@ -441,7 +640,7 @@ Future<void> _capture(
     }
 
     final Directory output = Directory(
-      'docs/verification/aurelian_ui_redesign/captures/$_captureSet',
+      'docs/verification/aurelian_ui_expansion_pass_2/captures/$_captureSet',
     );
     await output.create(recursive: true);
     await File('${output.path}/$name.png').writeAsBytes(
@@ -451,9 +650,48 @@ Future<void> _capture(
   });
 }
 
+class _EvidenceWatermark extends StatelessWidget {
+  const _EvidenceWatermark();
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: const Color(0xE6111111),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: StylisteSpacing.sm,
+          vertical: StylisteSpacing.xxs,
+        ),
+        child: Text(
+          'Deterministic source render — not physical-device evidence',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: StylisteText.labelCaps.copyWith(
+            color: StylisteColors.ivory,
+            fontSize: 7,
+            letterSpacing: 0.4,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 Future<void> _loadFont(String family, String asset) async {
   final FontLoader loader = FontLoader(family)..addFont(rootBundle.load(asset));
   await loader.load();
+}
+
+Future<void> _scrollToText(WidgetTester tester, String label) async {
+  final Finder target = find.text(label, skipOffstage: false);
+  expect(target, findsOneWidget, reason: label);
+  await tester.scrollUntilVisible(
+    target,
+    420,
+    scrollable: find.bySubtype<Scrollable>(),
+  );
+  await tester.pump();
 }
 
 Widget _hqHarness({required Widget child}) {
@@ -491,14 +729,17 @@ Widget _hqHarness({required Widget child}) {
   );
 }
 
-Widget _houseHarness() {
+Widget _houseHarness({double textScale = 1}) {
   return ProviderScope(
     overrides: <Override>[
       hqPlayerStreamProvider.overrideWith(
         (Ref ref) => Stream<Player>.value(_player(CareerPath.designer)),
       ),
     ],
-    child: const _ReviewApp(home: ProfileScreen()),
+    child: _ReviewApp(
+      textScale: textScale,
+      home: const ProfileScreen(),
+    ),
   );
 }
 
@@ -594,6 +835,7 @@ Map<String, dynamic> _capsuleReceipt({
   required String stage,
   int completedLooks = 0,
   bool samplingUnavailable = false,
+  String status = 'confirmed',
 }) {
   const Map<String, dynamic> grammar = <String, dynamic>{
     'silhouette': 'structured',
@@ -607,7 +849,7 @@ Map<String, dynamic> _capsuleReceipt({
     'experimental_piece',
   ];
   return <String, dynamic>{
-    'status': samplingUnavailable ? 'restored' : 'confirmed',
+    'status': samplingUnavailable ? 'restored' : status,
     'capsule': <String, dynamic>{
       'stage': stage,
       'founder_specialization': 'artisan',
@@ -634,6 +876,16 @@ Map<String, dynamic> _capsuleReceipt({
       },
     },
   };
+}
+
+String _stateTitle(String state) {
+  return state
+      .split('_')
+      .map(
+        (String word) =>
+            '${word.substring(0, 1).toUpperCase()}${word.substring(1)}',
+      )
+      .join(' ');
 }
 
 Brand _brand() {

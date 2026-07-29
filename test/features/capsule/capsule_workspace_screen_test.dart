@@ -37,7 +37,7 @@ void main() {
     expect(find.byType(TextFormField), findsNWidgets(2));
   });
 
-  testWidgets('all forward-only capsule stages expose one next action', (
+  testWidgets('forward-only capsule stages expose one action or boundary', (
     WidgetTester tester,
   ) async {
     const List<(String, String)> stages = <(String, String)>[
@@ -45,7 +45,7 @@ void main() {
       ('hero_piece_complete', 'Confirm Commercial Anchor'),
       ('commercial_anchor_complete', 'Confirm Experimental Piece'),
       ('experimental_piece_complete', 'Confirm capsule readiness'),
-      ('sampling_unavailable', 'Sampling unavailable in this build'),
+      ('sampling_unavailable', 'Sampling deliberately unavailable'),
     ];
 
     for (final (String stage, String action) in stages) {
@@ -65,12 +65,24 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      await tester.scrollUntilVisible(
-        find.text(action.toUpperCase()),
-        500,
-        scrollable: find.byType(Scrollable).first,
+      expect(
+        find.byType(SingleChildScrollView),
+        findsOneWidget,
+        reason: 'Capsule scroll surface for $stage',
       );
-      expect(find.text(action.toUpperCase()), findsOneWidget, reason: stage);
+      final String renderedLabel =
+          stage == 'sampling_unavailable' ? action : action.toUpperCase();
+      final Finder nextAction = find.text(
+        renderedLabel,
+        skipOffstage: false,
+      );
+      expect(nextAction, findsOneWidget, reason: 'Next action for $stage');
+      await tester.scrollUntilVisible(
+        nextAction,
+        500,
+        scrollable: find.bySubtype<Scrollable>(),
+      );
+      expect(nextAction, findsOneWidget, reason: stage);
       expect(find.text('Hero Piece'), findsWidgets);
       expect(find.text('Commercial Anchor'), findsWidgets);
       expect(find.text('Experimental Piece'), findsWidgets);

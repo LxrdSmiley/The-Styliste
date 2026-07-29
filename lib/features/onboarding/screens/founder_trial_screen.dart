@@ -8,6 +8,7 @@ import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/onboarding_provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/styliste_colors.dart';
+import '../../../core/theme/styliste_radii.dart';
 import '../../../core/theme/styliste_spacing.dart';
 import '../../../core/theme/styliste_typography.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
@@ -86,6 +87,8 @@ class _FounderTrialScreenState extends ConsumerState<FounderTrialScreen> {
           children: <Widget>[
             _TrialProgress(stage: state.stage),
             const SizedBox(height: StylisteSpacing.lg),
+            _FounderDualLensPanel(stage: state.stage),
+            const SizedBox(height: StylisteSpacing.lg),
             const LuxeGuidanceCard(
               mode: StylisteVisualMode.noirCinematic,
               message:
@@ -110,6 +113,12 @@ class _FounderTrialScreenState extends ConsumerState<FounderTrialScreen> {
                 kind: AurelianStateKind.retryableError,
                 title: 'The last step was not confirmed',
                 message: state.error!,
+                authorityLabel:
+                    'Only the authenticated server receipt can advance this trial.',
+                preservationLabel:
+                    'Your last confirmed Founder Trial stage remains unchanged.',
+                retrySafetyLabel:
+                    'The same idempotency key is reused for this step.',
                 actionLabel: 'Retry the same step',
                 onAction: () => unawaited(actions.retry()),
                 compact: true,
@@ -128,10 +137,15 @@ class _FounderTrialScreenState extends ConsumerState<FounderTrialScreen> {
   ) {
     if (state.isSubmitting) {
       return const AurelianStatePanel(
-        kind: AurelianStateKind.loading,
+        kind: AurelianStateKind.submitting,
         title: 'Confirming with your House record',
         message:
             'Your current choice is locked locally while the server records it once.',
+        authorityLabel: 'Authenticated Founder Trial intent',
+        preservationLabel:
+            'Your current step and House-name draft remain visible.',
+        retrySafetyLabel:
+            'A duplicate request returns the original authoritative receipt.',
       );
     }
 
@@ -144,8 +158,10 @@ class _FounderTrialScreenState extends ConsumerState<FounderTrialScreen> {
               'Choose how the shared starter garment carries your hand. This records a design cause, not a score.',
           firstLabel: 'Draped bodice',
           firstDetail: 'Fluid line, softer structure, movement first.',
+          firstVisual: _DecisionVisual.drape,
           secondLabel: 'Structured bodice',
           secondDetail: 'Defined line, tailored hold, construction first.',
+          secondVisual: _DecisionVisual.structure,
           onFirst: () => unawaited(
             actions.chooseArtisanSample('draped_bodice'),
           ),
@@ -160,9 +176,11 @@ class _FounderTrialScreenState extends ConsumerState<FounderTrialScreen> {
               'Choose how it reaches Kingston. The garment is unchanged; the operating decision is different.',
           firstLabel: 'Limited collector run',
           firstDetail: 'Narrow reach, controlled scarcity, focused signal.',
+          firstVisual: _DecisionVisual.limitedRun,
           secondLabel: 'Neighborhood run',
           secondDetail:
               'Broader local proof, community visibility, measured run.',
+          secondVisual: _DecisionVisual.neighborhoodRun,
           onFirst: () => unawaited(
             actions.chooseArchitectSample('limited_run'),
           ),
@@ -180,8 +198,10 @@ class _FounderTrialScreenState extends ConsumerState<FounderTrialScreen> {
               'Respond to the visible result. Luxe records your decision without hidden praise or a client-owned score.',
           firstLabel: 'Refine the silhouette',
           firstDetail: 'Return to authorship and clarify the garment line.',
+          firstVisual: _DecisionVisual.silhouetteRevision,
           secondLabel: 'Adjust the run plan',
           secondDetail: 'Return to positioning and revise the operating shape.',
+          secondVisual: _DecisionVisual.runRevision,
           onFirst: () => unawaited(
             actions.chooseResponse('refine_silhouette'),
           ),
@@ -218,6 +238,14 @@ class _FounderTrialScreenState extends ConsumerState<FounderTrialScreen> {
                 'This name is submitted with your authenticated founder identity and can be resumed safely.',
           ),
           const SizedBox(height: StylisteSpacing.lg),
+          const AurelianEvidenceBand(
+            label: 'Current state',
+            value: 'Local name · server-owned trial',
+            detail:
+                'The name stays editable here. The next stage exists only after authenticated confirmation.',
+            icon: Icons.verified_user_outlined,
+          ),
+          const SizedBox(height: StylisteSpacing.lg),
           TextField(
             controller: _brandNameController,
             textCapitalization: TextCapitalization.words,
@@ -236,6 +264,71 @@ class _FounderTrialScreenState extends ConsumerState<FounderTrialScreen> {
             label: 'Begin the Founder Trial',
             icon: Icons.arrow_forward,
             onPressed: _initialize,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FounderDualLensPanel extends StatelessWidget {
+  const _FounderDualLensPanel({required this.stage});
+
+  final FounderTrialStage stage;
+
+  @override
+  Widget build(BuildContext context) {
+    final String stateLabel = switch (stage) {
+      FounderTrialStage.notStarted => 'Awaiting House identity',
+      FounderTrialStage.sharedStarterGarment => 'Authorship lens active',
+      FounderTrialStage.artisanSample => 'Positioning lens active',
+      FounderTrialStage.architectSample => 'Two causes recorded',
+      FounderTrialStage.resultVisible => 'Result visible',
+      FounderTrialStage.revisionOrBusinessResponse => 'Lead lens decision',
+      FounderTrialStage.completed => 'Founder Path confirmed',
+    };
+    return AurelianCutLineFrame(
+      semanticLabel:
+          'Shared starter garment. Artisan authorship and Architect positioning have equal gameplay ceilings. $stateLabel.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  'ARTISAN · AUTHORSHIP',
+                  style: StylisteText.labelCaps.copyWith(
+                    color: StylisteColors.champagneGold,
+                  ),
+                ),
+              ),
+              Text(
+                'ARCHITECT · POSITIONING',
+                textAlign: TextAlign.right,
+                style: StylisteText.labelCaps.copyWith(
+                  color: StylisteColors.champagneGold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: StylisteSpacing.sm),
+          const SizedBox(
+            height: 164,
+            child: CustomPaint(
+              painter: _FounderDualLensPainter(
+                accent: StylisteColors.champagneGold,
+                guide: StylisteColors.outlineDark,
+              ),
+            ),
+          ),
+          const SizedBox(height: StylisteSpacing.sm),
+          AurelianStatusChip(
+            label: stateLabel,
+            icon: Icons.balance_outlined,
+            tone: stage == FounderTrialStage.completed
+                ? AurelianStatusTone.positive
+                : AurelianStatusTone.neutral,
           ),
         ],
       ),
@@ -284,7 +377,7 @@ class _TrialProgress extends StatelessWidget {
           ),
           const SizedBox(height: StylisteSpacing.xs),
           ClipRRect(
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(StylisteRadii.pill),
             child: LinearProgressIndicator(
               value: current / 6,
               minHeight: 6,
@@ -305,8 +398,10 @@ class _TrialChoiceStep extends StatelessWidget {
     required this.detail,
     required this.firstLabel,
     required this.firstDetail,
+    required this.firstVisual,
     required this.secondLabel,
     required this.secondDetail,
+    required this.secondVisual,
     required this.onFirst,
     required this.onSecond,
   });
@@ -316,8 +411,10 @@ class _TrialChoiceStep extends StatelessWidget {
   final String detail;
   final String firstLabel;
   final String firstDetail;
+  final _DecisionVisual firstVisual;
   final String secondLabel;
   final String secondDetail;
+  final _DecisionVisual secondVisual;
   final VoidCallback onFirst;
   final VoidCallback onSecond;
 
@@ -335,6 +432,7 @@ class _TrialChoiceStep extends StatelessWidget {
         _DecisionCard(
           label: firstLabel,
           detail: firstDetail,
+          visual: firstVisual,
           icon: Icons.gesture_outlined,
           onPressed: onFirst,
         ),
@@ -342,6 +440,7 @@ class _TrialChoiceStep extends StatelessWidget {
         _DecisionCard(
           label: secondLabel,
           detail: secondDetail,
+          visual: secondVisual,
           icon: Icons.architecture_outlined,
           onPressed: onSecond,
         ),
@@ -354,12 +453,14 @@ class _DecisionCard extends StatelessWidget {
   const _DecisionCard({
     required this.label,
     required this.detail,
+    required this.visual,
     required this.icon,
     required this.onPressed,
   });
 
   final String label;
   final String detail;
+  final _DecisionVisual visual;
   final IconData icon;
   final VoidCallback onPressed;
 
@@ -369,6 +470,17 @@ class _DecisionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
+          SizedBox(
+            height: 112,
+            child: CustomPaint(
+              painter: _TrialDecisionPainter(
+                visual: visual,
+                accent: StylisteColors.champagneGold,
+                guide: StylisteColors.outlineDark,
+              ),
+            ),
+          ),
+          const SizedBox(height: StylisteSpacing.sm),
           Icon(
             icon,
             color: StylisteColors.champagneGold,
@@ -510,6 +622,14 @@ class _FounderPathStep extends StatelessWidget {
           subtitle: 'Lead with authorship',
           detail:
               'Begin from silhouette, material, construction, and the emotional clarity of the garment.',
+          focusAreas: const <String>[
+            'Silhouette',
+            'Proportion',
+            'Material',
+            'Construction',
+            'Visual language',
+            'Narrative intent',
+          ],
           icon: Icons.draw_outlined,
           onPressed: onArtisan,
         ),
@@ -519,6 +639,14 @@ class _FounderPathStep extends StatelessWidget {
           subtitle: 'Lead with positioning',
           detail:
               'Begin from audience, run shape, operating trade-offs, and how the House enters the market.',
+          focusAreas: const <String>[
+            'Customer',
+            'Price',
+            'Positioning',
+            'Manufacturability',
+            'Operating logic',
+            'Commercial coherence',
+          ],
           icon: Icons.account_tree_outlined,
           onPressed: onArchitect,
         ),
@@ -538,6 +666,7 @@ class _PathCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.detail,
+    required this.focusAreas,
     required this.icon,
     required this.onPressed,
   });
@@ -545,6 +674,7 @@ class _PathCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String detail;
+  final List<String> focusAreas;
   final IconData icon;
   final VoidCallback onPressed;
 
@@ -580,6 +710,22 @@ class _PathCard extends StatelessWidget {
           ),
           const SizedBox(height: StylisteSpacing.sm),
           Text(detail, style: StylisteText.body),
+          const SizedBox(height: StylisteSpacing.md),
+          Wrap(
+            spacing: StylisteSpacing.xs,
+            runSpacing: StylisteSpacing.xs,
+            children: focusAreas
+                .map(
+                  (String area) => Chip(
+                    avatar: const Icon(
+                      Icons.add,
+                      size: StylisteSpacing.iconSm,
+                    ),
+                    label: Text(area),
+                  ),
+                )
+                .toList(growable: false),
+          ),
           const SizedBox(height: StylisteSpacing.md),
           GoldPrimaryButton(
             label: 'Lead as $title',
@@ -617,6 +763,11 @@ class _CompletedTrial extends StatelessWidget {
           title: '$lens lens confirmed',
           message:
               'Your server-owned Founder Path is recorded. Both lenses remain available with equal gameplay ceilings.',
+          authorityLabel: 'Authenticated server-owned Founder Path',
+          preservationLabel:
+              'The same Kingston House, capsule, and strategic ceiling remain available.',
+          retrySafetyLabel:
+              'A restored session returns the original completion receipt.',
         ),
         if (receiptId != null) ...<Widget>[
           const SizedBox(height: StylisteSpacing.md),
@@ -635,5 +786,188 @@ class _CompletedTrial extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+enum _DecisionVisual {
+  drape,
+  structure,
+  limitedRun,
+  neighborhoodRun,
+  silhouetteRevision,
+  runRevision,
+}
+
+class _FounderDualLensPainter extends CustomPainter {
+  const _FounderDualLensPainter({
+    required this.accent,
+    required this.guide,
+  });
+
+  final Color accent;
+  final Color guide;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint line = Paint()
+      ..color = accent
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    final Paint faint = Paint()
+      ..color = guide.withValues(alpha: 0.72)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    final double center = size.width / 2;
+
+    for (double x = 0; x <= size.width; x += size.width / 8) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), faint);
+    }
+    canvas.drawLine(
+      Offset(0, size.height * 0.78),
+      Offset(size.width, size.height * 0.78),
+      faint,
+    );
+
+    final Path garment = Path()
+      ..moveTo(center - 24, 12)
+      ..quadraticBezierTo(center, 0, center + 24, 12)
+      ..lineTo(center + 42, 58)
+      ..lineTo(center + 28, 76)
+      ..lineTo(center + 48, size.height - 16)
+      ..lineTo(center - 48, size.height - 16)
+      ..lineTo(center - 28, 76)
+      ..lineTo(center - 42, 58)
+      ..close();
+    canvas.drawPath(garment, line);
+    canvas.drawLine(
+      Offset(center, 16),
+      Offset(center, size.height - 16),
+      faint,
+    );
+
+    final Path authorship = Path()
+      ..moveTo(8, size.height * 0.66)
+      ..quadraticBezierTo(
+        size.width * 0.2,
+        size.height * 0.18,
+        center - 52,
+        size.height * 0.52,
+      );
+    canvas.drawPath(authorship, line);
+
+    final List<Offset> route = <Offset>[
+      Offset(center + 56, size.height * 0.32),
+      Offset(size.width * 0.78, size.height * 0.52),
+      Offset(size.width - 12, size.height * 0.26),
+    ];
+    canvas.drawLine(route[0], route[1], line);
+    canvas.drawLine(route[1], route[2], line);
+    for (final Offset point in route) {
+      canvas.drawCircle(point, 5, line);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_FounderDualLensPainter oldDelegate) {
+    return oldDelegate.accent != accent || oldDelegate.guide != guide;
+  }
+}
+
+class _TrialDecisionPainter extends CustomPainter {
+  const _TrialDecisionPainter({
+    required this.visual,
+    required this.accent,
+    required this.guide,
+  });
+
+  final _DecisionVisual visual;
+  final Color accent;
+  final Color guide;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint line = Paint()
+      ..color = accent
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    final Paint faint = Paint()
+      ..color = guide
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    final double center = size.width / 2;
+
+    canvas.drawLine(
+      Offset(0, size.height - 10),
+      Offset(size.width, size.height - 10),
+      faint,
+    );
+
+    switch (visual) {
+      case _DecisionVisual.drape:
+      case _DecisionVisual.structure:
+      case _DecisionVisual.silhouetteRevision:
+        final bool structured = visual == _DecisionVisual.structure;
+        final Path garment = Path()
+          ..moveTo(center - 22, 8)
+          ..quadraticBezierTo(center, structured ? 8 : -4, center + 22, 8)
+          ..lineTo(center + (structured ? 34 : 46), 48)
+          ..lineTo(center + (structured ? 26 : 36), size.height - 12)
+          ..lineTo(center - (structured ? 26 : 36), size.height - 12)
+          ..lineTo(center - (structured ? 34 : 46), 48)
+          ..close();
+        canvas.drawPath(garment, line);
+        if (visual == _DecisionVisual.silhouetteRevision) {
+          canvas.drawArc(
+            Rect.fromCenter(
+              center: Offset(center, size.height * 0.5),
+              width: 136,
+              height: 80,
+            ),
+            -2.6,
+            2.1,
+            false,
+            faint,
+          );
+        } else {
+          canvas.drawLine(
+            Offset(center, 12),
+            Offset(center, size.height - 12),
+            faint,
+          );
+        }
+      case _DecisionVisual.limitedRun:
+      case _DecisionVisual.neighborhoodRun:
+      case _DecisionVisual.runRevision:
+        final int points = visual == _DecisionVisual.limitedRun ? 3 : 5;
+        final List<Offset> route = List<Offset>.generate(
+          points,
+          (int index) => Offset(
+            24 + index * ((size.width - 48) / (points - 1)),
+            index.isEven ? size.height * 0.34 : size.height * 0.68,
+          ),
+        );
+        final Path path = Path()..moveTo(route.first.dx, route.first.dy);
+        for (final Offset point in route.skip(1)) {
+          path.lineTo(point.dx, point.dy);
+        }
+        canvas.drawPath(path, line);
+        for (final Offset point in route) {
+          canvas.drawCircle(point, 6, line);
+        }
+        if (visual == _DecisionVisual.runRevision) {
+          canvas.drawLine(
+            Offset(size.width * 0.24, 10),
+            Offset(size.width * 0.76, size.height - 12),
+            faint,
+          );
+        }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_TrialDecisionPainter oldDelegate) {
+    return oldDelegate.visual != visual ||
+        oldDelegate.accent != accent ||
+        oldDelegate.guide != guide;
   }
 }

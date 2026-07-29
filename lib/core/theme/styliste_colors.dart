@@ -8,6 +8,7 @@ abstract final class StylisteColors {
   static const Color champagneGold = Color(0xFFD6A84F);
   static const Color deepGold = Color(0xFF7C5800);
   static const Color paleGold = Color(0xFFF3DEAF);
+  static const Color oxidizedBronze = Color(0xFF765A38);
   static const Color roseAccent = Color(0xFFE19DAA);
   static const Color roseMuted = Color(0xFFF2CFD5);
   static const Color obsidianSurface = Color(0xFF151312);

@@ -33,7 +33,11 @@ class MainShell extends ConsumerWidget {
         mode: StylisteVisualMode.noirCinematic,
         applyHorizontalInset: false,
         useSafeArea: false,
-        body: navigationShell,
+        body: Semantics(
+          container: true,
+          label: '${AurelianBottomNavigation.labels[currentIndex]} destination',
+          child: navigationShell,
+        ),
         bottomNavigationBar: AurelianBottomNavigation(
           currentIndex: currentIndex,
           onDestinationSelected: (int index) {

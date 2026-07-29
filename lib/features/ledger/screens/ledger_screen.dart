@@ -111,6 +111,9 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                 kind: AurelianStateKind.retryableError,
                 title: 'Capital projection is unavailable',
                 message: 'No wallet or store value was changed.',
+                authorityLabel: 'Owner-safe read projection',
+                preservationLabel: 'Wallet and store state remain unchanged',
+                retrySafetyLabel: 'Safe read-only refresh',
                 actionLabel: 'Retry projection',
                 onAction: () => ref.invalidate(hqBrandStreamProvider),
                 compact: true,
@@ -122,6 +125,9 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                 kind: AurelianStateKind.retryableError,
                 title: 'The store intent was not confirmed',
                 message: firstStore.errorMessage!,
+                authorityLabel: 'Authenticated first-store intent',
+                preservationLabel: 'No store or capital change was confirmed',
+                retrySafetyLabel: 'Review before submitting another intent',
                 actionLabel: 'Dismiss and review',
                 onAction: () =>
                     ref.read(firstStoreProvider.notifier).clearError(),
@@ -141,11 +147,17 @@ class _LedgerScreenState extends ConsumerState<LedgerScreen> {
                 kind: AurelianStateKind.loading,
                 title: 'Restoring your store record',
                 message: 'Reading the owner-safe store projection.',
+                authorityLabel: 'Authenticated server projection',
+                preservationLabel: 'No store mutation is running',
+                retrySafetyLabel: 'Wait for this read to finish',
               ),
               error: (_, __) => AurelianStatePanel(
                 kind: AurelianStateKind.retryableError,
                 title: 'Store record is temporarily unavailable',
                 message: 'No store operation was started.',
+                authorityLabel: 'Owner-safe store projection',
+                preservationLabel: 'Existing store state is unchanged',
+                retrySafetyLabel: 'Safe read-only refresh',
                 actionLabel: 'Retry store record',
                 onAction: () => ref.invalidate(ledgerStoresStreamProvider),
               ),
@@ -247,6 +259,9 @@ class _NoStoreState extends StatelessWidget {
       title: 'No Kingston store is recorded',
       message:
           'Declare one bounded first-store intent. The server validates ownership, tutorial state, and the debt-free opening rule.',
+      authorityLabel: 'Authenticated first-store request',
+      preservationLabel: 'No capital is client-computed',
+      retrySafetyLabel: 'Server validates the stable intent receipt',
       actionLabel: 'Open first-store brief',
       onAction: isSubmitting ? null : onOpen,
     );
@@ -302,10 +317,80 @@ class _StoreProjectionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: StylisteSpacing.md),
-          const AurelianStatusChip(
-            label: 'Upgrades unavailable in Gate A',
-            icon: Icons.lock_outline,
-            tone: AurelianStatusTone.warning,
+          _OperationalSignal(
+            label: 'Loyalty condition',
+            value: store.loyalty / 100,
+            detail: '${store.loyalty} of 100 from the store projection',
+          ),
+          const SizedBox(height: StylisteSpacing.sm),
+          _OperationalSignal(
+            label: 'Market presence',
+            value: store.marketShare.clamp(0.0, 1.0).toDouble(),
+            detail:
+                '${(store.marketShare * 100).toStringAsFixed(1)} percent confirmed',
+          ),
+          const SizedBox(height: StylisteSpacing.md),
+          const AurelianStatePanel(
+            kind: AurelianStateKind.unavailable,
+            title: 'Store operations are held',
+            message:
+                'Upgrades, stock mutations, supply operations, expansion, and additional cities remain outside Gate A.',
+            authorityLabel: 'Current store projection only',
+            preservationLabel: 'Confirmed store receipt',
+            retrySafetyLabel: 'No unavailable action can be submitted',
+            compact: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OperationalSignal extends StatelessWidget {
+  const _OperationalSignal({
+    required this.label,
+    required this.value,
+    required this.detail,
+  });
+
+  final String label;
+  final double value;
+  final String detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final double boundedValue = value.clamp(0.0, 1.0).toDouble();
+    return Semantics(
+      label: '$label. $detail',
+      value: '${(boundedValue * 100).round()} percent',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(label.toUpperCase(), style: StylisteText.labelCaps),
+              ),
+              Text(
+                '${(boundedValue * 100).round()}%',
+                style: StylisteText.metricSmall,
+              ),
+            ],
+          ),
+          const SizedBox(height: StylisteSpacing.xs),
+          LinearProgressIndicator(
+            value: boundedValue,
+            minHeight: StylisteSpacing.xs,
+            color: StylisteColors.champagneGold,
+            backgroundColor:
+                StylisteColors.champagneGold.withValues(alpha: 0.12),
+          ),
+          const SizedBox(height: StylisteSpacing.xxs),
+          Text(
+            detail,
+            style: StylisteText.bodySmall.copyWith(
+              color: StylisteColors.warmGrey,
+            ),
           ),
         ],
       ),
@@ -374,6 +459,17 @@ class _FirstStoreDialogState extends State<FirstStoreDialog> {
               mode: StylisteVisualMode.noirCinematic,
               message:
                   'Declare format, price posture, and inventory intent. The server owns affordability, tutorial state, and every result.',
+            ),
+            const SizedBox(height: StylisteSpacing.md),
+            const AurelianStatePanel(
+              kind: AurelianStateKind.editing,
+              title: 'Store brief is local',
+              message:
+                  'Format, price posture, and inventory intent are editable until you submit.',
+              authorityLabel: 'Local form state',
+              preservationLabel: 'No store or balance change',
+              retrySafetyLabel: 'Server validates the submitted intent',
+              compact: true,
             ),
             const SizedBox(height: StylisteSpacing.md),
             _selector(

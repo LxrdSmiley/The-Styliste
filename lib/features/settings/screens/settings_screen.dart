@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/theme/styliste_colors.dart';
+import '../../../core/theme/styliste_radii.dart';
 import '../../../core/theme/styliste_spacing.dart';
 import '../../../core/theme/styliste_typography.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
@@ -31,6 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _highContrast = false;
   double _textScale = 1;
   bool _loading = true;
+  String? _preferenceError;
 
   @override
   void initState() {
@@ -39,20 +41,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadPreferences() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    setState(() {
-      _expertMode = prefs.getBool(_kExpertModeKey) ?? false;
-      _reducedMotion = prefs.getBool(_kReducedMotionKey) ?? false;
-      _highContrast = prefs.getBool(_kHighContrastKey) ?? false;
-      _textScale = prefs.getDouble(_kTextScaleKey) ?? 1;
-      _loading = false;
-    });
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      setState(() {
+        _expertMode = prefs.getBool(_kExpertModeKey) ?? false;
+        _reducedMotion = prefs.getBool(_kReducedMotionKey) ?? false;
+        _highContrast = prefs.getBool(_kHighContrastKey) ?? false;
+        _textScale = prefs.getDouble(_kTextScaleKey) ?? 1;
+        _loading = false;
+        _preferenceError = null;
+      });
+    } on Object {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _preferenceError =
+            'Your local preferences could not be restored. Gameplay state was not affected.';
+      });
+    }
   }
 
-  Future<void> _saveBool(String key, bool value) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(key, value);
+  Future<bool> _saveBool(String key, bool value) async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final bool saved = await prefs.setBool(key, value);
+      if (!saved && mounted) {
+        setState(() => _preferenceError =
+            'That presentation preference was not saved. Gameplay state was not affected.');
+      }
+      return saved;
+    } on Object {
+      if (mounted) {
+        setState(() => _preferenceError =
+            'That presentation preference was not saved. Gameplay state was not affected.');
+      }
+      return false;
+    }
   }
 
   Future<void> _onExpertModeToggle(bool value) async {
@@ -60,10 +85,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: Text(value ? 'Enable Expert Mode?' : 'Use guided presentation?'),
-        content: Text(
-          value
-              ? 'Expert Mode reveals more explanatory variables. It does not change outcomes, scoring ceilings, or rewards.'
-              : 'Guided presentation reduces information density. Server-owned rules remain identical.',
+        content: SingleChildScrollView(
+          child: AurelianStatePanel(
+            kind: AurelianStateKind.editing,
+            title: value ? 'Expert presentation' : 'Guided presentation',
+            message: value
+                ? 'Expert Mode reveals more explanatory variables. It does not change outcomes, scoring ceilings, or rewards.'
+                : 'Guided presentation reduces information density. Server-owned rules remain identical.',
+            authorityLabel: 'Local presentation preference',
+            preservationLabel: 'Gameplay outcomes and receipts',
+            retrySafetyLabel: 'Safe to change again',
+            compact: true,
+          ),
         ),
         actions: <Widget>[
           IvorySecondaryButton(
@@ -78,24 +111,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
     if (!(confirmed ?? false)) return;
-    await _saveBool(_kExpertModeKey, value);
-    if (mounted) setState(() => _expertMode = value);
+    final bool saved = await _saveBool(_kExpertModeKey, value);
+    if (mounted && saved) {
+      setState(() {
+        _expertMode = value;
+        _preferenceError = null;
+      });
+    }
   }
 
   Future<void> _toggleReducedMotion(bool value) async {
-    await _saveBool(_kReducedMotionKey, value);
-    if (mounted) setState(() => _reducedMotion = value);
+    final bool saved = await _saveBool(_kReducedMotionKey, value);
+    if (mounted && saved) {
+      setState(() {
+        _reducedMotion = value;
+        _preferenceError = null;
+      });
+    }
   }
 
   Future<void> _toggleHighContrast(bool value) async {
-    await _saveBool(_kHighContrastKey, value);
-    if (mounted) setState(() => _highContrast = value);
+    final bool saved = await _saveBool(_kHighContrastKey, value);
+    if (mounted && saved) {
+      setState(() {
+        _highContrast = value;
+        _preferenceError = null;
+      });
+    }
   }
 
   Future<void> _setTextScale(double value) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_kTextScaleKey, value);
-    if (mounted) setState(() => _textScale = value);
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final bool saved = await prefs.setDouble(_kTextScaleKey, value);
+      if (!mounted) return;
+      setState(() {
+        if (saved) _textScale = value;
+        _preferenceError = saved
+            ? null
+            : 'That text-scale preference was not saved. System text scaling still applies.';
+      });
+    } on Object {
+      if (!mounted) return;
+      setState(() => _preferenceError =
+          'That text-scale preference was not saved. System text scaling still applies.');
+    }
   }
 
   void _openLegalDocument(LegalDocument document) {
@@ -121,15 +181,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       body: _loading
-          ? Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
-                child: const AurelianStatePanel(
-                  kind: AurelianStateKind.loading,
-                  title: 'Restoring your preferences',
-                  message:
-                      'Reading local presentation and accessibility choices.',
-                ),
+          ? const AurelianResponsiveBody(
+              maxWidth: 480,
+              child: AurelianStatePanel(
+                kind: AurelianStateKind.loading,
+                title: 'Restoring your preferences',
+                message:
+                    'Reading local presentation and accessibility choices.',
+                authorityLabel: 'Local device preference storage',
+                preservationLabel: 'Gameplay state is not involved',
+                retrySafetyLabel: 'Wait for the read to finish',
               ),
             )
           : AurelianResponsiveBody(
@@ -143,6 +204,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     detail:
                         'These controls change presentation only. They never change economic or progression authority.',
                   ),
+                  const SizedBox(height: StylisteSpacing.md),
+                  const AurelianEvidenceBand(
+                    icon: Icons.tune_outlined,
+                    label: 'Authority boundary',
+                    value: 'Presentation only',
+                    detail:
+                        'These local choices cannot change Hype, progression, rewards, or server receipts.',
+                  ),
+                  if (_preferenceError != null) ...<Widget>[
+                    const SizedBox(height: StylisteSpacing.md),
+                    AurelianStatePanel(
+                      kind: AurelianStateKind.retryableError,
+                      title: 'Preference not saved',
+                      message: _preferenceError!,
+                      authorityLabel: 'Local device preference storage',
+                      preservationLabel: 'Gameplay state and prior preferences',
+                      retrySafetyLabel: 'Safe to try the control again',
+                      actionLabel: 'Dismiss',
+                      onAction: () => setState(() => _preferenceError = null),
+                      compact: true,
+                    ),
+                  ],
                   const SizedBox(height: StylisteSpacing.md),
                   AurelianCard(
                     child: Column(
@@ -339,7 +422,7 @@ class _LegalDocumentTile extends StatelessWidget {
       label: '${document.title}. ${document.summary}',
       child: AurelianCard(
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(StylisteRadii.card),
           onTap: onTap,
           child: ConstrainedBox(
             constraints: const BoxConstraints(

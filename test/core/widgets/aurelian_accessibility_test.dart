@@ -156,6 +156,52 @@ void main() {
 
     expect(find.text('0'), findsOneWidget);
   });
+
+  testWidgets('every canonical reliability state is semantic at large text', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    for (final AurelianStateKind kind in AurelianStateKind.values) {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AurelianTheme.lightTheme,
+          home: MediaQuery(
+            data: const MediaQueryData(
+              size: Size(320, 844),
+              textScaler: TextScaler.linear(1.6),
+              disableAnimations: true,
+            ),
+            child: Scaffold(
+              body: SingleChildScrollView(
+                child: AurelianStatePanel(
+                  kind: kind,
+                  title: '${kind.name} state',
+                  message:
+                      'The current condition is explained without relying on color.',
+                  authorityLabel: 'Explicit authority',
+                  preservationLabel: 'Player input',
+                  retrySafetyLabel: 'Explicit retry contract',
+                  actionLabel:
+                      kind == AurelianStateKind.retryableError ? 'Retry' : null,
+                  onAction: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        find.bySemanticsLabel(RegExp('${kind.name} state')),
+        findsOneWidget,
+        reason: kind.name,
+      );
+      expect(tester.takeException(), isNull, reason: kind.name);
+    }
+  });
 }
 
 class _MotionProbe extends StatelessWidget {

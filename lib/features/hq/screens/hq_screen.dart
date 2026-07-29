@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/services/supabase_service.dart';
+import '../../../core/theme/styliste_spacing.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
 import '../../../core/widgets/aurelian_components.dart';
 import '../../../core/widgets/styliste_buttons.dart';
@@ -52,6 +53,9 @@ class _HqScreenState extends ConsumerState<HqScreen> {
               kind: AurelianStateKind.loading,
               title: 'Restoring your Kingston HQ',
               message: 'Reading the authenticated House projection.',
+              authorityLabel: 'Authenticated House projection',
+              preservationLabel:
+                  'No rank, Hype, balance, or capsule state is changed.',
             ),
           ),
         ),
@@ -150,6 +154,14 @@ class _HqErrorView extends ConsumerWidget {
                     ? 'Your House has not been confirmed'
                     : 'HQ is temporarily unavailable',
                 message: message,
+                authorityLabel: missingProfile
+                    ? 'Authenticated profile requirement'
+                    : 'Read-only House projection',
+                preservationLabel:
+                    'No gameplay intent or economic write was started.',
+                retrySafetyLabel: missingProfile
+                    ? null
+                    : 'Reloads the projection without duplicating progress.',
                 actionLabel: missingProfile ? 'Start onboarding' : 'Retry HQ',
                 onAction: () {
                   if (missingProfile) {
@@ -161,7 +173,7 @@ class _HqErrorView extends ConsumerWidget {
                 },
               ),
               if (!missingProfile) ...<Widget>[
-                const SizedBox(height: 8),
+                const SizedBox(height: StylisteSpacing.xs),
                 IvorySecondaryButton(
                   label: 'Sign out securely',
                   icon: Icons.logout,

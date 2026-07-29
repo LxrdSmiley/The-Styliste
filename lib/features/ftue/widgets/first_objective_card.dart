@@ -25,12 +25,32 @@ class FirstObjectiveCard extends ConsumerWidget {
 
     return objectiveAsync.maybeWhen(
       data: (FirstObjectiveState objective) {
-        if (objective.isComplete) return const SizedBox.shrink();
         return Padding(
           padding: const EdgeInsets.only(bottom: StylisteSpacing.lg),
           child: _FirstObjectiveCardContent(objective: objective),
         );
       },
+      loading: () => const Padding(
+        padding: EdgeInsets.only(bottom: StylisteSpacing.lg),
+        child: AurelianStatePanel(
+          kind: AurelianStateKind.loading,
+          title: 'Reading the Kingston capsule',
+          message: 'Restoring the current server-confirmed objective.',
+          authorityLabel: 'Authenticated House projection',
+        ),
+      ),
+      error: (_, __) => Padding(
+        padding: const EdgeInsets.only(bottom: StylisteSpacing.lg),
+        child: AurelianStatePanel(
+          kind: AurelianStateKind.retryableError,
+          title: 'The next objective is temporarily unavailable',
+          message: 'Your House and capsule records have not been changed.',
+          preservationLabel: 'All confirmed House progress',
+          retrySafetyLabel: 'Reloads the projection without submitting intent.',
+          actionLabel: 'Retry objective',
+          onAction: () => ref.invalidate(firstObjectiveProvider(player)),
+        ),
+      ),
       orElse: () => const SizedBox.shrink(),
     );
   }
@@ -69,6 +89,17 @@ class _FirstObjectiveCardContent extends StatelessWidget {
               ),
             ],
           ),
+          if (objective.isComplete) ...<Widget>[
+            const SizedBox(height: StylisteSpacing.sm),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: AurelianStatusChip(
+                label: 'Server-confirmed readiness',
+                icon: Icons.verified_outlined,
+                tone: AurelianStatusTone.positive,
+              ),
+            ),
+          ],
           const SizedBox(height: StylisteSpacing.sm),
           Text(objective.title, style: StylisteText.title),
           const SizedBox(height: StylisteSpacing.xs),

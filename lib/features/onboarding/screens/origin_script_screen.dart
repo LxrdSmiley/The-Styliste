@@ -5,9 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/styliste_colors.dart';
 import '../../../core/theme/styliste_spacing.dart';
-import '../../../core/theme/styliste_typography.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
 import '../../../core/widgets/aurelian_components.dart';
 import '../../../core/widgets/styliste_buttons.dart';
@@ -31,34 +29,17 @@ class OriginScriptScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text(
-              'A HOUSE BEGINS WITH INTENT',
-              style: StylisteText.labelCaps.copyWith(
-                color: StylisteColors.champagneGold,
+            AurelianEditorialHero(
+              dark: true,
+              eyebrow: 'A House begins with intent',
+              title: manifesto.first,
+              detail: '${manifesto[1]}\n\n${manifesto[2]}',
+              status: const AurelianStatusChip(
+                label: 'Authorship before reward',
+                icon: Icons.edit_outlined,
               ),
             ),
-            const SizedBox(height: StylisteSpacing.xl),
-            ...manifesto.indexed.map(
-              ((int, String) entry) => Padding(
-                padding: const EdgeInsets.only(
-                  bottom: StylisteSpacing.lg,
-                ),
-                child: Semantics(
-                  label: 'Manifesto line ${entry.$1 + 1}. ${entry.$2}',
-                  child: Text(
-                    entry.$2,
-                    style: StylisteText.displayEditorial.copyWith(
-                      color: entry.$1 == 0
-                          ? StylisteColors.ivory
-                          : StylisteColors.warmGrey,
-                      fontSize: entry.$1 == 0 ? 34 : 25,
-                      height: 1.08,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: StylisteSpacing.md),
+            const SizedBox(height: StylisteSpacing.lg),
             const LuxeGuidanceCard(
               mode: StylisteVisualMode.noirCinematic,
               contextLabel: 'Meet Luxe',

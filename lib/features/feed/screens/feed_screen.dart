@@ -167,15 +167,25 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     String activeUid,
   ) {
     return async.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(
-            color: StylisteColors.champagneGold, strokeWidth: 1.5),
+      loading: () => _statusWidget(
+        kind: AurelianStateKind.loading,
+        title: 'Restoring editorial signals',
+        message: 'Reading the server-confirmed global Feed projection.',
       ),
       error: (Object e, _) => _statusWidget(
-        _feedStatusMessage(e, 'SIGNAL LOST'),
+        kind: AurelianStateKind.retryableError,
+        title: 'Global signal interrupted',
+        message: _feedStatusMessage(e, 'The Feed is temporarily unavailable.'),
+        actionLabel: 'Retry global Feed',
+        onAction: () => ref.invalidate(feedStreamProvider),
       ),
       data: (List<FeedPost> posts) => posts.isEmpty
-          ? _statusWidget('NO SIGNALS YET\nBE THE FIRST TO FLEX')
+          ? _statusWidget(
+              kind: AurelianStateKind.empty,
+              title: 'No confirmed signals yet',
+              message:
+                  'Editorial records appear only after the server confirms an implemented event.',
+            )
           : _postPager(posts, activeUid),
     );
   }
@@ -186,18 +196,33 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     String activeUid,
   ) {
     if (async.isLoading && posts.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(
-            color: StylisteColors.signalLime, strokeWidth: 1.5),
+      return _statusWidget(
+        kind: AurelianStateKind.loading,
+        title: 'Restoring your syndicate',
+        message: 'Reading followed Houses and their confirmed signals.',
       );
     }
     if (async.hasError && posts.isEmpty) {
       return _statusWidget(
-        _feedStatusMessage(async.error, 'SYNDICATE SIGNAL LOST'),
+        kind: AurelianStateKind.retryableError,
+        title: 'Syndicate signal interrupted',
+        message:
+            _feedStatusMessage(async.error, 'The syndicate is unavailable.'),
+        actionLabel: 'Retry syndicate',
+        onAction: () {
+          ref
+            ..invalidate(followingIdsProvider)
+            ..invalidate(syndicateFeedProvider);
+        },
       );
     }
     if (posts.isEmpty) {
-      return _statusWidget('FOLLOW PLAYERS TO\nBUILD YOUR SYNDICATE');
+      return _statusWidget(
+        kind: AurelianStateKind.empty,
+        title: 'Your syndicate is quiet',
+        message:
+            'Confirmed posts from followed Houses will appear here. Following mutations are not offered on this surface.',
+      );
     }
     return _postPager(posts, activeUid);
   }
@@ -249,15 +274,31 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     return type == 'design_flex' || type == 'design_drop';
   }
 
-  static Widget _statusWidget(String label) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(StylisteSpacing.lg),
-        child: AurelianStatePanel(
-          kind: AurelianStateKind.empty,
-          title: label.split('\n').first,
-          message: label.replaceAll('\n', ' '),
-          compact: true,
+  static Widget _statusWidget({
+    required AurelianStateKind kind,
+    required String title,
+    required String message,
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(StylisteSpacing.lg),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: AurelianStatePanel(
+            kind: kind,
+            title: title,
+            message: message,
+            authorityLabel: 'Authenticated Feed projection',
+            preservationLabel: 'No Hype, like, or progression mutation',
+            retrySafetyLabel: kind == AurelianStateKind.retryableError
+                ? 'Safe read-only refresh'
+                : 'No retry required',
+            actionLabel: actionLabel,
+            onAction: onAction,
+            compact: true,
+          ),
         ),
       ),
     );
@@ -311,15 +352,19 @@ class _FeedHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Widget title = Text(
-      'GLOBAL FEED',
-      style: TextStyle(
-        fontFamily: StylisteText.displayFamily,
-        color: StylisteColors.ivory,
-        fontSize: 12.0,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 2.2,
-      ),
+    const Widget title = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'HOUSE SIGNAL',
+          style: StylisteText.labelCaps,
+        ),
+        SizedBox(height: StylisteSpacing.xxs),
+        Text(
+          'Fashion-industry records',
+          style: StylisteText.bodySmall,
+        ),
+      ],
     );
     final Widget toggle = _ModeToggle(mode: mode, onChanged: onChanged);
     return Padding(
@@ -420,7 +465,7 @@ class _ModeSegment extends StatelessWidget {
             decoration: BoxDecoration(
               color: selected
                   ? selectedColor.withValues(alpha: 0.14)
-                  : Colors.transparent,
+                  : StylisteColors.transparent,
               borderRadius: BorderRadius.circular(StylisteRadii.pill),
             ),
             child: Center(
@@ -483,7 +528,7 @@ class _ArrivalBanner extends StatelessWidget {
                   decoration: BoxDecoration(
                     color:
                         StylisteColors.obsidianSurface.withValues(alpha: 0.94),
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(StylisteRadii.control),
                     border: Border.all(
                       color:
                           StylisteColors.champagneGold.withValues(alpha: 0.52),
@@ -496,26 +541,21 @@ class _ArrivalBanner extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: const Column(
+                  child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
                         'YOUR DESIGN RECORD IS LIVE',
-                        style: TextStyle(
+                        style: StylisteText.labelCaps.copyWith(
                           color: StylisteColors.champagneGold,
-                          fontSize: 11.0,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2.0,
                         ),
                       ),
-                      SizedBox(height: 3.0),
+                      const SizedBox(height: StylisteSpacing.xxs),
                       Text(
                         'The Feed is showing the server-confirmed result.',
-                        style: TextStyle(
+                        style: StylisteText.bodySmall.copyWith(
                           color: StylisteColors.ivory,
-                          fontSize: 12.0,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -563,6 +603,9 @@ class FeedRequestsSheet extends ConsumerWidget {
                       title: 'Restoring requests',
                       message:
                           'Reading the server-owned request state for this post.',
+                      authorityLabel: 'Authenticated owner-safe projection',
+                      preservationLabel: 'No request response is sent',
+                      retrySafetyLabel: 'Wait for this read to finish',
                       compact: true,
                     ),
                   ),
@@ -572,6 +615,9 @@ class FeedRequestsSheet extends ConsumerWidget {
                       title: 'Requests are unavailable',
                       message:
                           'Nothing changed. Retry the authenticated request list.',
+                      authorityLabel: 'Authenticated owner-safe projection',
+                      preservationLabel: 'Request state remains unchanged',
+                      retrySafetyLabel: 'Safe read-only refresh',
                       actionLabel: 'Retry',
                       onAction: () => ref.invalidate(
                         feedIncomingRequestsProvider(post.id),
@@ -587,6 +633,9 @@ class FeedRequestsSheet extends ConsumerWidget {
                           title: 'No pending requests',
                           message:
                               'New authenticated requests will appear here.',
+                          authorityLabel: 'Server-projected request list',
+                          preservationLabel: 'No response mutation',
+                          retrySafetyLabel: 'No retry required',
                           compact: true,
                         ),
                       );
@@ -710,6 +759,9 @@ class _RequestBoundary extends StatelessWidget {
       title: 'Request responses are held',
       message:
           'You can review server-projected requests. Approve, deny, collab, and inspiration mutations are unavailable in Gate A.',
+      authorityLabel: 'Read-only request projection',
+      preservationLabel: 'Every request and response state',
+      retrySafetyLabel: 'No response action can be sent',
       compact: true,
     );
   }
@@ -752,6 +804,9 @@ class _CommentSheetState extends ConsumerState<FeedCommentSheet> {
                       kind: AurelianStateKind.loading,
                       title: 'Restoring comments',
                       message: 'Reading the authenticated conversation.',
+                      authorityLabel: 'Authenticated comment projection',
+                      preservationLabel: 'No comment mutation is sent',
+                      retrySafetyLabel: 'Wait for this read to finish',
                       compact: true,
                     ),
                   ),
@@ -761,6 +816,9 @@ class _CommentSheetState extends ConsumerState<FeedCommentSheet> {
                       title: 'Comments are unavailable',
                       message:
                           'Nothing changed. Retry the authenticated conversation.',
+                      authorityLabel: 'Authenticated comment projection',
+                      preservationLabel: 'Conversation remains unchanged',
+                      retrySafetyLabel: 'Safe read-only refresh',
                       actionLabel: 'Retry',
                       onAction: () => ref.invalidate(
                         feedCommentsProvider(widget.post.id),
@@ -776,6 +834,9 @@ class _CommentSheetState extends ConsumerState<FeedCommentSheet> {
                           title: 'Start the conversation',
                           message:
                               'Comments appear only after the server confirms them.',
+                          authorityLabel: 'Server-confirmed conversation',
+                          preservationLabel: 'No local comment draft',
+                          retrySafetyLabel: 'No retry required',
                           compact: true,
                         ),
                       );
@@ -843,18 +904,21 @@ class _CommentStateList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
         StylisteSpacing.md,
         StylisteSpacing.sm,
         StylisteSpacing.md,
         StylisteSpacing.md,
       ),
-      children: <Widget>[
-        state,
-        const SizedBox(height: StylisteSpacing.sm),
-        const _CommentingBoundary(),
-      ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          const _CommentingBoundary(),
+          const SizedBox(height: StylisteSpacing.sm),
+          state,
+        ],
+      ),
     );
   }
 }
@@ -869,6 +933,9 @@ class _CommentingBoundary extends StatelessWidget {
       title: 'Commenting is held',
       message:
           'The conversation is read-only in Gate A. No comment mutation is sent from this screen.',
+      authorityLabel: 'Read-only comment projection',
+      preservationLabel: 'Confirmed conversation',
+      retrySafetyLabel: 'No comment action can be sent',
       compact: true,
     );
   }

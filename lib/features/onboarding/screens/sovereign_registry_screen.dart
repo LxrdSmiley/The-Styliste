@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/onboarding_provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/styliste_colors.dart';
+import '../../../core/theme/styliste_radii.dart';
 import '../../../core/theme/styliste_spacing.dart';
 import '../../../core/theme/styliste_typography.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
@@ -80,6 +81,14 @@ class _SovereignRegistryScreenState
                     'This is local draft intent until the authenticated Founder Trial confirms it server-side.',
               ),
               const SizedBox(height: StylisteSpacing.lg),
+              const AurelianEvidenceBand(
+                label: 'Draft state',
+                value: 'Local House-name intent',
+                detail:
+                    'Your input is preserved locally. Ownership is established only by the authenticated Founder Trial.',
+                icon: Icons.edit_note_outlined,
+              ),
+              const SizedBox(height: StylisteSpacing.lg),
               AurelianCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -125,7 +134,9 @@ class _SovereignRegistryScreenState
                                 alpha: 0.56,
                               ),
                             ),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              StylisteRadii.control,
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
