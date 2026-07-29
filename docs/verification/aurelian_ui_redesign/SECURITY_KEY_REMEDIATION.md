@@ -1,22 +1,22 @@
 # Historical key-remediation register
 
-Status: **Blocked — no Gitleaks exceptions have been added**
+Status: **Passed — reviewed exact Gitleaks exceptions are active**
 
 Authority: `THE_STYLISTE_GDD_v8.md` §§19, 21–22 and
 `VERIFICATION_PROTOCOL.md`.
 
 ## 2026-07-29 security-verification update
 
-Publication remains `Blocked` solely by the historical-secret verification
-gate. The original 20 redacted scanner occurrences remain preserved, and no
-exception, suppression, rule disablement, or broad path exclusion has been
-created.
+The original 20 redacted scanner occurrences remain preserved. Local security
+verification is `Passed`: provider remediation is recorded, final history and
+working-tree scans are clean, and the approved exception list contains only
+exact fingerprints. No rule disablement or broad path exclusion exists.
 
 - Findings 1–8 are each classified as `Documentation placeholder`.
 - Findings 9–14 are each classified as `Matrix test value`.
 - Findings 15–20 are each classified as `Confirmed historical credential`.
-- The final provider disposition for findings 15–20 is still unknown; these
-  six occurrences remain unresolved pending Smiley's redacted console review.
+- Findings 15–20 are externally deleted or inactive historical credentials;
+  Smiley supplied the required redacted console disposition.
 
 The legacy table below is the immutable one-occurrence register. Its
 `Example`, `Matrix fixture`, and `Confirmed key` labels are superseded by the
@@ -205,8 +205,18 @@ gate. This is not remote-provider, device, CI, or release-readiness evidence.
   current source; Supabase remains the application identity boundary.
 
 The historical register below remains intact as audit evidence. This receipt
-supersedes its earlier pending-provider language and authorizes no commit,
-push, deployment, remote Supabase action, or readiness promotion.
+supersedes its earlier pending-provider language. A later explicit publication
+directive authorized the dedicated-branch commit and push recorded below; it
+did not authorize deployment, remote Supabase action, or readiness promotion.
+
+## Publication addendum
+
+The reviewed implementation was published as
+`25b778d7cee6a2c973d5970aaa5440d287fdb61b` on
+`codex/gate-a-wave-2a-ui-redesign`. Local security verification is `Passed`:
+the final Gitleaks 8.30.1 history scan covered 97 commits and the final
+working-tree scan found zero unsuppressed findings. No remote Supabase action,
+deployment, release, or credential disclosure occurred.
 
 ### Exact-fingerprint cross-reference
 

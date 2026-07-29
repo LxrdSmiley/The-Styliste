@@ -1,11 +1,167 @@
 # The Styliste bottleneck log
 
-Last updated: 2026-07-22
+Last updated: 2026-07-29
 Authority: `PROJECT_RULES.md` and `VERIFICATION_PROTOCOL.md`
 
 Record a problem here when it recurs or when its failure mode can silently
 invalidate readiness evidence. Each entry must identify permanent prevention;
 chat history alone is not a prevention mechanism.
+
+## 2026-07-29 implementation publication outcome
+
+This checkpoint supersedes only matching historical local results. It does not
+promote a device, remote, CI, or release gate.
+
+| Record | Current result | Prevention/evidence update |
+|---|---|---|
+| B-007 / B-034 | `Passed` | Redacted provider dispositions, exact-only exceptions, and final Gitleaks 8.30.1 scans close the secret-history gate without a broad exclusion. |
+| B-022 / B-035 | `Passed` locally | Docker/Supabase recovery completed; the reset/lint/pgTAP/concurrency/API suite passed. Remote Supabase remains untested. |
+| B-038 | `Passed` | The explicit implementation staging audit rejected temporary paths, environment files, generated caches, personal paths, and key-shaped material before commit. |
+| B-039 | `Blocked/not triggered` | The dedicated branch has no matching Actions run because the push workflow is restricted to `master` and the remaining workflows are manual. Do not dispatch them while Android verification is creator-blocked. |
+
+## 2026-07-29 security-gate completion
+
+This checkpoint supersedes the prior `Failed` result for B-007 / B-034 only;
+it does not promote device, remote, CI, or release evidence.
+
+| Record | Current result | Prevention/evidence update |
+|---|---|---|
+| B-007 / B-034 | `Passed` | Smiley recorded redacted deletion/inactive dispositions for all three historical Firebase/GCP key groups. Gitleaks 8.30.1 then passed both the 97-commit history scan and the cleaned working-tree scan. The reviewed allowlist is exact-fingerprint-only: 20 historical and 25 current false-positive fingerprints, with no broad rule or path exclusion. |
+
+No credential value, replacement credential, or provider-console screenshot
+containing a credential was recorded. Current source remains Supabase-based;
+the seven unused local Firebase configuration fields were removed before the
+working-tree scan.
+
+## 2026-07-27 Aurelian redesign verification stop
+
+| Record | Current result | Prevention/evidence update |
+|---|---|---|
+| B-007 / B-034 | `Failed` | A checksum-verified Gitleaks 8.30.1 scan completed across 97 commits and found 20 items. Do not replace the prior tool-unavailable status with an allowlist-only pass; historical Firebase/GCP keys require external restriction/revocation review first. |
+| B-022 / B-035 | `Blocked` | Docker Desktop's WSL engine remains stopped because its restored version is waiting at an update-recovery dialog after an out-of-disk update failure. No images, volumes, or project data were deleted. |
+| B-036 | `Passed` | Run Flutter commands sequentially. Parallel Flutter invocations raced on SDK cache metadata; the sequential formatting, analysis, and 114-test suite completed successfully. |
+| B-037 | `Passed` | Large-text tests caught fixed-height reachable-state and Feed-card overflow. Scroll-safe responsive variants now cover 320px portrait at 200% text. |
+
+## B-037 — Fixed-height player surfaces overflowed at large text
+
+- Symptom: a 320px portrait Feed card overflowed by 184px at 200% text; earlier
+  fixed-height boundary panels had the same failure class.
+- Root cause: editorial and reliability content was placed in fixed vertical
+  compositions whose intrinsic height could exceed the viewport.
+- Permanent prevention: use responsive scroll-safe bodies for boundary states
+  and a dedicated large-text Feed layout with a bounded garment stage,
+  full-width editorial record, wrapped 48dp action targets, and vertical
+  scrolling.
+- Automated check: reachable-surface, Aurelian accessibility, and Feed
+  accessibility widget tests at 320px and large text.
+- Affected files: shared Aurelian boundary widgets,
+  `lib/features/feed/widgets/alpha_drop_feed_card.dart`, and focused tests.
+- Verification command: `flutter test`.
+- Latest result: `Passed` on 2026-07-27 — 114 Flutter tests passed.
+
+## B-036 — Concurrent Flutter commands raced on shared SDK metadata
+
+- Symptom: parallel Flutter verification produced a transient unreadable
+  `engine.realm` stream error despite unchanged application source.
+- Root cause: multiple Flutter processes wrote the same SDK/cache metadata at
+  once.
+- Permanent prevention: serialize Flutter formatting, analysis, tests, and
+  builds within one workspace; parallelize only independent non-Flutter checks.
+- Automated check: the documented local/CI verification order.
+- Affected area: local Flutter SDK cache and all Flutter verification commands.
+- Verification command: sequential formatting, `flutter analyze`, then
+  `flutter test`.
+- Latest result: `Passed` on 2026-07-27 — formatting was clean, analysis had no
+  issues, and 114 tests passed.
+
+## B-035 — Docker update recovery prevented the WSL engine from starting
+
+- Symptom: Docker Desktop processes ran, but `docker-desktop` stayed stopped
+  and the `dockerDesktopLinuxEngine` pipe did not exist.
+- Root cause: Docker's update-state recorded a failed copy of
+  `docker-desktop.iso` after the system disk ran out of space. The restored
+  Docker version waits for its built-in `Continue` acknowledgement.
+- Permanent prevention: keep the existing disk-space preflight, disable
+  unattended Docker updates during low-space verification windows, and require
+  `docker info` to succeed before starting Supabase.
+- Automated check: bounded Docker health preflight before local database
+  verification.
+- Affected area: workstation Docker Desktop only; no repository or Docker data
+  was deleted.
+- Verification command: `docker info`, then the complete local Supabase gate.
+- Latest result: `Blocked` on 2026-07-27.
+
+## B-034 — Full-history scanning found historical client-key material
+
+- Symptom: Gitleaks 8.30.1 reported 20 findings after scanning 97 commits.
+- Root cause: historical Firebase configuration contains six GCP client-key
+  matches; example design-skill text and authority-matrix API-wrapper strings
+  account for fourteen additional matches.
+- Permanent prevention: restrict or revoke the historical client keys outside
+  Git, document the review, and only then add commit-specific fingerprints for
+  proven non-secret examples. Never use broad path/rule exclusions.
+- Automated check: full-history Gitleaks with complete redaction in local
+  maintenance and CI.
+- Affected files in history:
+  `android/app/google-services.json`, `lib/firebase_options.dart`,
+  `.agents/skills/figma-implement-design/SKILL.md`, and
+  `supabase/tests/authority_contract_matrix.json`.
+- Verification command:
+  `gitleaks git . --redact=100 --no-banner`.
+- Latest result: `Failed` on 2026-07-27 — 20 findings; no suppression added.
+
+## 2026-07-26 remediation outcome
+
+The following current results supersede only the matching historical latest
+results below; they do not promote a device, staging, or release gate.
+
+| Record | Current result | Prevention/evidence update |
+|---|---|---|
+| B-003 / B-023 | `Passed` locally | After approved Docker reset, `supabase db reset --local --no-seed` replayed all migrations cleanly. Preserve the reset command in CI; Storage remains intentionally disabled, not passed as a feature. |
+| B-004 / B-024 | `Passed` locally | Reworked retired contracts as pgTAP tests of the reviewed API-only boundary. `supabase test db` now runs 11 files / 107 assertions; do not pipe pgTAP files directly to bare `psql`. |
+| B-014 / B-020 | `Passed` locally | Authority matrix, API wrapper checks, replay/owner cases, and the API schema inventory all agree after a fresh reset. CI compares the same inventory and fails on drift. |
+| B-028 | `Passed` locally | All 17 Edge entry points type-check and 16 mocked boundary tests pass with the pinned Deno configuration and lockfile. Serve/deployed behavior is still `Blocked`. |
+| B-029 | `Passed` locally | Founder Trial SQL covers both paths, forged actor rejection, resume, replay, and one ledger credit; Flutter provider tests cover bounded intent/retry. |
+| B-012 | `Blocked` | Creator direction defers Android verification. A debug build was deliberately stopped before completion and produced no APK; partial generated output was removed. C: now has 4.91 GB free, still below the 5 GB threshold. |
+
+Creator approval is recorded separately from readiness evidence: Android
+deferral/build-cleanup governance and the mandatory future UI/UX-skill workflow
+are `Approved`; no new player-facing UI was reviewed or approved. Wave 2A may
+start source work, but its UI remains subject to the new skill workflow and
+Smiley's final visual approval.
+
+## B-031 — Direct Deno test calls omitted required capability flags
+
+- Symptom: a direct Edge contract invocation failed before tests ran with
+  `NotCapable: Requires env access to "SUPABASE_URL"`.
+- Root cause: the shared Edge test intentionally configures mock Supabase
+  environment variables, but a bare `deno test` command does not grant that
+  capability.
+- Permanent prevention: treat the reviewed command as
+  `deno test --allow-env --allow-net --lock=supabase/functions/deno.lock
+  supabase/tests/kingston_edge_identity_test.ts`; document it with every Edge
+  contract run and retain the least-privilege flags.
+- Automated check: Edge contract CI job and the named Deno command.
+- Affected files: `supabase/tests/kingston_edge_identity_test.ts`,
+  `supabase/functions/_shared/kingston_contract.ts`, and CI Edge checks.
+- Verification command: the reviewed Deno command above after `deno check` of
+  every entry point.
+- Latest result: `Passed` locally on 2026-07-26 — 17 entries type-check and
+  16 mocked contract tests pass. Deployed Edge behavior remains `Blocked`.
+
+## B-030 — API inventory query silently truncated long function signatures
+
+- Symptom: a fresh inventory comparison initially reported a malformed Founder
+  Trial wrapper name, although the database function itself was correct.
+- Root cause: `UNION` selected `pg_class.relname` as PostgreSQL `name`, causing
+  longer function strings in the other branch to be coerced/truncated.
+- Permanent prevention: cast relation names to `text` before the `UNION`; keep
+  the checked-in inventory generated from a clean disposable reset.
+- Automated check: API-inventory comparison in `authority-contract` CI job.
+- Affected files: `.github/workflows/flutter-ci.yml`,
+  `docs/verification/api_schema_inventory.txt`.
+- Verification command: fresh reset followed by the CI inventory query.
+- Latest result: `Passed` locally on 2026-07-26.
 
 ## B-001 — Flutter integration tests missing from dependency graph
 
@@ -151,6 +307,9 @@ Storage inventory and usage baseline.
 
 ## B-013 — GDD v7 duplicated body recurrence
 
+> Historical archive: this v7 recurrence record is retained for migration and
+> audit context only. GDD v8 is the active canonical authority.
+
 - Symptom: top-level GDD sections restarted after the canonical Version 7
   changelog, creating a second stale whole-document body and conflicting rules.
 - Root cause: confirmed whole-document append/merge-boundary failure introduced
@@ -164,7 +323,7 @@ Storage inventory and usage baseline.
 - Required review rule: run the full-file numbered-heading inventory and never
   silently blend historical or contradictory GDD bodies into the canonical body.
 - Automated check: `scripts/check_gdd_registry.ps1`.
-- Affected file: `THE_STYLISTE_GDD_v7.md` (pre-existing committed content).
+- Affected historical file: `THE_STYLISTE_GDD_v7.md` (pre-existing committed content).
 - Verification command:
   `powershell -ExecutionPolicy Bypass -File scripts/check_gdd_registry.ps1`
   plus manual heading-inventory review.
@@ -422,3 +581,137 @@ Storage inventory and usage baseline.
   committed database and Edge scopes pass, while the branch-level caller and
   release-metadata guards remain blocked pending Smiley validation and scoped
   follow-up commits.
+
+## B-027 — Governance records drifted after GDD v8 was added
+
+- Symptom: `THE_STYLISTE_GDD_v8.md` and its companion bibles existed, while
+  `IDE_DIRECTIVES.md`, `MANUAL_TASKS.md`, `Agent.md`, `PROJECT_RULES.md`, and
+  the current heading in `DEVELOPMENT_STATE.md` still treated GDD v7 recovery
+  as the active direction.
+- Root cause: the product-authority update was added without an atomic
+  cross-document governance reconciliation.
+- Permanent prevention: every approved authority-version change updates the
+  authority list, active milestone, manual operating boundary, and agent
+  instructions in the same documentation-only change; historical authorities
+  are explicitly labeled historical rather than silently deleted.
+- Automated check: a repository text guard must fail if the active-authority
+  fields in `IDE_DIRECTIVES.md`, `PROJECT_RULES.md`, `Agent.md`, and the first
+  current-milestone section of `DEVELOPMENT_STATE.md` do not name the same GDD
+  version.
+- Affected files: `IDE_DIRECTIVES.md`, `MANUAL_TASKS.md`, `Agent.md`,
+  `PROJECT_RULES.md`, `DEVELOPMENT_STATE.md`, and the GDD/bible authority set.
+- Verification command: `rg -n 'THE_STYLISTE_GDD_v[0-9]+\.md|GDD v[0-9]'
+  IDE_DIRECTIVES.md MANUAL_TASKS.md Agent.md PROJECT_RULES.md
+  DEVELOPMENT_STATE.md`, followed by `git diff --check`.
+- Latest result: GDD v8 is now the active authority in the governance records;
+  v6/v7 references are retained only where explicitly historical or describing
+  the transition.
+
+## B-028 — Edge type checks depended on an incomplete Deno compiler contract
+
+- Symptom: CI-style `deno check` failed across the Edge Function surface even
+  though the affected source used supported Deno APIs.
+- Root cause: `supabase/functions/tsconfig.json` omitted the Deno standard
+  library and carried options incompatible with the pinned Deno 2 runtime.
+- Permanent prevention: keep the reviewed `deno.ns`, DOM, and ES libraries in
+  the shared configuration; type-check every function entry point, not only
+  enabled functions; commit the resulting Deno lockfile when remote imports
+  change.
+- Automated check: the `authority-contract` CI job checks every
+  `supabase/functions/**/index.ts` and runs the shared Edge identity suite.
+- Affected files: `supabase/functions/tsconfig.json`,
+  `supabase/functions/deno.lock`, shared Edge modules, and the CI workflow.
+- Verification command: `Get-ChildItem supabase/functions -Recurse -Filter
+  index.ts | ForEach-Object { deno check --config
+  supabase/functions/tsconfig.json $_.FullName }`, then `deno test
+  --allow-env --allow-net supabase/tests/kingston_edge_identity_test.ts`.
+- Latest result: `Passed` locally on 2026-07-26 — 16 entries type-check and 14
+  mocked contract tests pass. Local serving/deployed behavior remains
+  `Blocked`.
+
+## B-029 — Founder Trial tests drifted after client authority was removed
+
+- Symptom: database and concurrency fixtures still submitted the retired
+  `career_path` field after the Founder Trial request contract was narrowed to
+  server-owned path selection.
+- Root cause: the Edge schema, PostgreSQL state machine, and test fixtures
+  evolved on different changes without a single transition contract.
+- Permanent prevention: validate exact request keys at the Edge and RPC
+  boundaries; cover both Founder Paths, forged actor data, replay, resume, and
+  starting-ledger uniqueness in a disposable-local SQL test.
+- Automated check: `supabase test db`,
+  `scripts/check_early_game_api_contract.ps1`, and the economic concurrency
+  harness after a local reset.
+- Affected files: `supabase/functions/_shared/kingston_routes.ts`,
+  `supabase/migrations/20260726185809_kingston_founder_trial_state_machine.sql`,
+  `supabase/tests/founder_trial_state_machine.test.sql`,
+  `supabase/tests/kingston_early_game_api_contract.test.sql`, and
+  `supabase/tests/kingston_economic_concurrency.ps1`.
+- Verification command: `supabase db reset --local --no-seed && supabase test
+  db`, followed by the named concurrency harness.
+- Latest result: `Static Pass` on 2026-07-26 — exact Edge schema, Dart retry,
+  and source guards pass. Disposable database execution remains `Blocked`
+  pending explicit Docker-reset authorization.
+- Superseding update (2026-07-26): Docker reset was approved and completed;
+  the fresh disposable suite passed 107/107 tests. This record is now
+  `Passed` locally for the database contract; device/deployed behavior remains
+  `Blocked`.
+
+## B-038 — Migration hash evidence is incomplete
+
+- Symptom: the required migration-integrity check found 61 published local
+  migration files but only three migration rows in
+  `docs/verification/aurelian_ui_redesign/baseline_hashes.csv`.
+- Root cause: the baseline hash record was populated for the three current
+  Wave 2A migrations but was not established as a complete published-migration
+  manifest.
+- Permanent prevention: maintain one reviewed SHA-256 row for every published
+  migration and require an exact manifest/file-set comparison before a release
+  commit.
+- Automated check: compare `supabase/migrations/*.sql` with the migration rows
+  in `baseline_hashes.csv`, then verify each SHA-256 value.
+- Affected files: `docs/verification/aurelian_ui_redesign/baseline_hashes.csv`
+  and `supabase/migrations/`.
+- Verification command: the local PowerShell manifest comparison recorded in
+  `DEVELOPMENT_STATE.md`; it must report equal counts and no hash mismatch.
+- Latest result: `Passed` on 2026-07-29 — a dedicated 61-entry raw-byte
+  SHA-256 migration manifest, deterministic generator, validator, CI and
+  repository-health invocation, and nine-case tamper suite were added without
+  changing a migration file. The former three-row broad baseline capture is
+  retained as historical evidence and is not used as the migration contract.
+
+### Migration integrity acceptance record
+
+Status: Passed
+
+- Published migration files: 61
+- Manifest entries: 61
+- Missing entries: 0
+- Unexpected entries: 0
+- Digest mismatches: 0
+- Duplicate entries: 0
+- Hashing method: SHA-256 over exact raw bytes
+- Migration contents changed during remediation: No
+- Tamper scenarios: 9/9 correctly rejected or accepted
+
+The three untracked files are approved Wave 2A source awaiting publication,
+not unknown artifacts.
+
+## B-039 — Clean deferred-TODO scans returned a failure exit code
+
+- Symptom: `check_deferred_todos.ps1` printed a clean result but returned exit
+  code 1 when Ripgrep found no untracked TODOs, causing repository health to
+  stop before the intended Gitleaks gate.
+- Root cause: the script left Ripgrep's normal no-match exit code in
+  `$LASTEXITCODE` after emitting its success message.
+- Permanent prevention: explicitly classify Ripgrep exit codes 0 and 1 as scan
+  outcomes, reject codes greater than 1, and return 0 only after every TODO
+  policy check passes.
+- Automated check: direct `scripts/check_deferred_todos.ps1` execution and the
+  repository-health guard must both report a successful TODO check before later
+  gates run.
+- Affected files: `scripts/check_deferred_todos.ps1` and
+  `scripts/maintenance/check_repository_health.ps1`.
+- Verification command: `./scripts/check_deferred_todos.ps1`.
+- Latest result: `Passed` on 2026-07-29 — direct exit code 0; repository health
+  then reached its independent Gitleaks availability blocker.

@@ -5,6 +5,25 @@ in `docs/verification/early_game_readiness.md`, not in release-marketing claims.
 
 ## [Unreleased]
 
+### Added
+
+- Added the Gate A Kingston Capsule Foundation: a Collection Brief and exactly
+  three ordered Atelier looks—Hero Piece, Commercial Anchor, and Experimental
+  Piece—with a visible server-confirmed readiness result.
+- Added a deliberate sampling-unavailable boundary after capsule readiness;
+  this slice creates no production, launch, score, reward, or Vex outcome.
+
+### Changed
+
+- Founder Trial completion now leads into the Atelier capsule workspace. The
+  Artisan and Architect lenses remain equal in gameplay ceiling.
+- Redesigned all reachable Gate A player-facing surfaces with the canonical
+  Aurelian visual system, including session safety, onboarding, HQ, Atelier,
+  capsule, Empire, Feed, House, settings, legal, and the five-tab shell.
+- Replaced active mint-to-drop reachability with a clear capsule-readiness and
+  sampling-unavailable boundary. Deferred drop routes now present a safe
+  unavailable state.
+
 ### Repository
 
 - Added Semantic Versioning and synchronized prerelease metadata for
@@ -46,6 +65,9 @@ in `docs/verification/early_game_readiness.md`, not in release-marketing claims.
 - Added strict shared Edge validation for verified actor derivation, unknown
   keys, malformed JSON, UUID idempotency, body size, exact replay, and conflict
   responses across the six Kingston routes.
+- Completed redacted historical Firebase/GCP key remediation and final
+  Gitleaks 8.30.1 history/working-tree scans. Current source uses Supabase and
+  contains no Firebase runtime reference.
 
 ## [0.1.0-alpha.1] - Unreleased
 

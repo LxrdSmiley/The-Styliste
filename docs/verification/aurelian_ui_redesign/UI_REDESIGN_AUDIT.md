@@ -1,6 +1,16 @@
 # Repository-wide Aurelian UI redesign audit
 
-Status: **Blocked before commit — deterministic source evidence only**
+## 2026-07-29 publication addendum
+
+Local implementation and dedicated-branch publication are `Passed`.
+Implementation commit: `25b778d7cee6a2c973d5970aaa5440d287fdb61b` on
+`codex/gate-a-wave-2a-ui-redesign`. Gitleaks 8.30.1 history and working-tree
+scans are `Passed`; migration integrity is `Passed`; GitHub Actions are
+`Blocked/not triggered`; Android/device/performance evidence remains `Blocked`;
+remote Supabase and deployment were not performed; final Smiley visual approval
+is `Pending`; release is `Blocked`.
+
+Status: **Implementation publication passed — deterministic source evidence only**
 
 Authority: `THE_STYLISTE_GDD_v8.md` §§18, 21, and 22; the ranked companion
 bibles; `PROJECT_RULES.md`; and `VERIFICATION_PROTOCOL.md`.
@@ -112,16 +122,17 @@ timing, and creator visual approval remain `Blocked` or pending as required by
 | GDD/authority/release/API guards | `Static pass` | All named guards completed successfully |
 | Dependency audit | `Static pass` | Command completed; version drift remains visible |
 | Whitespace/conflict scan | `Static pass` | No errors or conflict markers |
-| Full-history secret scan | `Failed` | Gitleaks 8.30.1: 20 findings across 97 commits |
+| Full-history secret scan | `Passed` | Gitleaks 8.30.1 scanned 97 commits with zero unsuppressed findings after reviewed exact-fingerprint remediation. |
 | Local Supabase execution | `Passed` | Restart, reset, lint, 12 pgTAP files / 108 assertions, four 20-session economic cases, and 19-entry API inventory comparison passed locally. |
 | Migration hash verification | `Passed` | Dedicated 61-entry raw-byte SHA-256 manifest, deterministic generator/validator, reset-order comparison, and nine-case tamper suite passed. |
 | Android/device/performance | `Blocked` | Creator-directed deferral |
-| Final visual approval | `Blocked` | Pending Smiley review |
+| Final visual approval | `Pending` | Smiley review is required. |
 
 The Gitleaks findings were inspected only through fully redacted metadata.
 Fourteen point to examples or authority-matrix strings; six point to historical
-Firebase/GCP client keys. No allowlist or suppression was added. Because a
-required gate failed and the database gate is blocked, no implementation
-commit, push, report commit, workflow dispatch, or readiness promotion is
-permitted. Docker recovery and migration integrity no longer block local
-database execution; historical GCP/Firebase provider remediation does.
+Firebase/GCP client keys. Smiley's redacted provider disposition confirmed the
+three historical credential groups deleted and inactive. The final scanner
+configuration uses only 45 exact reviewed fingerprints, never a broad rule or
+path exclusion. This completed the local security gate and enabled the
+dedicated-branch implementation publication; it did not promote deployment or
+release readiness.

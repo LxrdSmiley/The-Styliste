@@ -60,4 +60,11 @@ capture smoke test reported no layout exception. Large-text, semantics,
 reduced-motion, and 320px behavior are recorded separately by automated tests;
 physical TalkBack and device evidence remain blocked.
 
+## Publication status
+
+The capture set was published with implementation commit
+`25b778d7cee6a2c973d5970aaa5440d287fdb61b` on the dedicated branch. It is
+still deterministic source-render evidence only. Final visual approval by
+Smiley is `Pending`; Android/device accessibility and performance are `Blocked`.
+
 Authority: GDD v8 §§18, 21, and 22; `VERIFICATION_PROTOCOL.md`.
