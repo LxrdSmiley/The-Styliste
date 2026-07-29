@@ -1,10 +1,26 @@
-# Early Game readiness evidence
+# Historical GDD v7 — Early Game readiness evidence
+
+> Historical archive only. This v7 evidence record is retained to explain prior
+> audit conclusions; it is not a current Feature ID, release, or authority
+> register. Current authority is GDD v8 and
+> `docs/verification/authority_inventory.json`.
 
 Generated: 2026-07-22  
 Reviewer: Codex static audit  
 Audit basis: repository inspection plus the recorded local Flutter static suite and disposable Supabase bootstrap below. No device, purchase sandbox, or penetration test evidence is available.
 
 Only the status labels in `VERIFICATION_PROTOCOL.md` are used. `Static pass` records repository evidence, not observed behavior. A release candidate must not claim Alpha or Beta readiness while any enabled prerequisite below lacks `Passed` evidence.
+
+## Gate A Wave 2A evidence update — 2026-07-26
+
+| Feature ID | Wave | Sources | Threat model / data owner | Flag | Test command | Status | Date | Reviewer |
+|---|---|---|---|---|---|---|---|---|
+| LOOP-02 | Gate A Wave 2A | `20260726231214_kingston_capsule_foundation.sql`, `capsule-foundation` Edge Function, `lib/features/capsule/`, Atelier route | Client-forged House/ownership/readiness/score or replayed capsule mutation / authenticated Edge identity plus private PostgreSQL state | `earlyGame` | `supabase db reset --local --no-seed`; `supabase test db`; `deno test --allow-env --allow-net ...kingston_edge_identity_test.ts`; `flutter analyze`; `flutter test` | Static pass | 2026-07-26 | Codex |
+
+The Wave 2A source slice has local command evidence, but final creator visual
+approval, physical-device accessibility/performance, and deployed behavior are
+not complete. It must not be used to claim Alpha, Beta, production, or a
+promoted Feature ID.
 
 ## Execution update — 2026-07-22
 

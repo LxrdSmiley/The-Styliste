@@ -10,15 +10,34 @@
       "verified_actor_source": "Supabase Auth user.id from verified bearer token",
       "api_wrapper": "api.server_founder_trial_intent_v1",
       "read_projections": ["api.player_summary", "api.brand_summary", "api.founder_trial_state"],
-      "tables_affected": ["private.auth_player_identities", "public.players", "public.brand_state", "public.founder_trials", "public.feed_posts", "ledger.economy_ledger", "ledger.kingston_operation_receipts"],
+      "tables_affected": ["private.auth_player_identities", "public.players", "public.brand_state", "public.founder_trials", "ledger.economy_ledger", "ledger.kingston_operation_receipts"],
       "economic_mutation": true,
       "idempotency_requirement": "required UUID; exact replay returns identical receipt; conflicting replay rejected",
-      "owner_test": "kingston_early_game_api_contract.test.sql: founder owner receipt/read",
+      "owner_test": "founder_trial_state_machine.test.sql: both verified Founder Paths complete server-side",
       "stranger_test": "kingston_early_game_api_contract.test.sql: stranger projection isolation",
       "anonymous_test": "kingston_early_game_api_contract.test.sql: anonymous JWT account mapped; anon role denied",
-      "replay_test": "kingston_early_game_api_contract.test.sql: founder exact/conflicting replay",
+      "replay_test": "founder_trial_state_machine.test.sql: exact replay and returning-account resume",
       "concurrency_test": "kingston_economic_concurrency.ps1: founder_trial 20 sessions",
-      "disable_switch": "supabase/config.toml:[functions.founder-trial].enabled=false",
+      "disable_switch": "supabase/config.toml:[functions.founder-trial].enabled=true only while the reviewed Founder Trial contract remains enabled",
+      "owner": "Backend/Security"
+    },
+    {
+      "endpoint": "capsule-foundation",
+      "feature_id": "LOOP-02",
+      "implementation_wave": "Gate A Wave 2A",
+      "auth_mode": "verify_jwt=true plus auth.getUser",
+      "verified_actor_source": "Supabase Auth user.id from verified bearer token",
+      "api_wrapper": "api.server_capsule_foundation_intent_v1",
+      "read_projections": [],
+      "tables_affected": ["private.kingston_capsules", "private.kingston_capsule_looks", "public.founder_trials", "ledger.kingston_operation_receipts"],
+      "economic_mutation": false,
+      "idempotency_requirement": "required UUID; exact replay returns the original receipt; conflicting replay is rejected deterministically",
+      "owner_test": "capsule_foundation_state_machine.test.sql: verified completed Founder creates and advances only their own three-look capsule",
+      "stranger_test": "capsule_foundation_state_machine.test.sql: foreign capsule identifier and owner mutation fields are rejected",
+      "anonymous_test": "kingston_edge_identity_test.ts: missing or invalid bearer token remains denied by the shared boundary",
+      "replay_test": "capsule_foundation_state_machine.test.sql: exact replay and conflicting replay",
+      "concurrency_test": "not economic; per-actor private.lock_kingston_actor lock and receipt key serialize capsule mutations",
+      "disable_switch": "supabase/config.toml:[functions.capsule-foundation].enabled=true only while the reviewed Gate A Wave 2A contract remains enabled",
       "owner": "Backend/Security"
     },
     {
@@ -129,7 +148,7 @@
     {"endpoint":"trend-decay","previous_state":"enabled","final_state":"disabled","implementation_wave":"Later-wave scheduled job","runtime_caller_remaining":false},
     {"endpoint":"eclipse-event-tick","previous_state":"enabled","final_state":"disabled","implementation_wave":"Later-wave scheduled job","runtime_caller_remaining":false}
   ],
-  "unconfigured_function_sources": ["send-fcm-notification"],
+  "unconfigured_function_sources": [],
   "api_relations": ["brand_summary", "design_release_receipts", "design_session_state", "feed_projection", "first_store_receipts", "first_week_objectives", "founder_trial_state", "idle_settlement_receipts", "owned_designs", "player_summary", "progression_state", "store_summary"],
-  "api_rpcs": ["server_design_intent_v1", "server_founder_trial_intent_v1", "server_open_first_store_v1", "server_progression_event_v1", "server_settle_idle_income_v1", "server_submit_player_report_v1"]
+  "api_rpcs": ["server_capsule_foundation_intent_v1", "server_design_intent_v1", "server_founder_trial_intent_v1", "server_open_first_store_v1", "server_progression_event_v1", "server_settle_idle_income_v1", "server_submit_player_report_v1"]
 }

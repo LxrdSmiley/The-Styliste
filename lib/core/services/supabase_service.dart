@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 abstract final class SupabaseService {
   static const Set<String> _kingstonMutationEndpoints = <String>{
     'founder-trial',
+    'capsule-foundation',
     'drop-design',
     'open-first-store',
     'calculate-idle-income',

@@ -33,7 +33,14 @@ Fashion first. Hype second. Empire third.
 Use these as the project authority:
 
 ```text
-THE_STYLISTE_GDD_v7.md
+THE_STYLISTE_GDD_v8.md
+PRODUCT_POSITIONING_BIBLE.md
+ART_DIRECTION_BIBLE.md
+EMOTIONAL_EXPERIENCE_BIBLE.md
+AUDIO_DIRECTION_BIBLE.md
+NARRATIVE_STYLE_GUIDE.md
+COMMUNITY_TRUST_CHARTER.md
+NON_FEATURE_COMPLETION_GATE.md
 PROJECT_RULES.md
 VERIFICATION_PROTOCOL.md
 DEVELOPMENT_STATE.md
@@ -41,21 +48,21 @@ BOTTLENECK_LOG.md
 CHANGELOG.md
 ```
 
-`THE_STYLISTE_GDD_v6.md` is historical context only. It is not an active
-implementation authority.
+`THE_STYLISTE_GDD_v6.md` and `THE_STYLISTE_GDD_v7.md` are historical context
+only. They are not active implementation authorities.
 
 Before implementing a feature, inspect the relevant GDD section and align the code to it.
 
 Common references:
 
 ```text
-GDD v7 §4 Core Gameplay Loop
-GDD v7 §§5–6 Luxe FTUE and player paths
-GDD v7 §§8–10 Atelier, Architect, and economy systems
-GDD v7 §§11–12 Feed, multiplayer, Luxe, Vex, and living world
-GDD v7 §17 Monetization and F2P integrity
-GDD v7 §§18–19 UI/UX, performance, architecture, and security
-GDD v7 §§21–22 implementation staging and acceptance criteria
+GDD v8 §4 Core and Collection Cycles
+GDD v8 §§5–6 Luxe Founder Trial and player paths
+GDD v8 §§8–10 Atelier, Architect, and economy systems
+GDD v8 §§11–12 Feed, multiplayer, Luxe, Vex, and the living fashion world
+GDD v8 §17 Monetization and F2P integrity
+GDD v8 §§18–19 UI/UX, performance, architecture, and security
+GDD v8 §§21–22 implementation staging and acceptance criteria
 ```
 
 Do not rely on memory, previous chat summaries, or assumptions when the repo contains the current implementation.
@@ -321,13 +328,12 @@ Prioritize work in this order:
 
 ```text
 1. Security and server authority
-2. Core Alpha Drop loop
-3. Global Feed as fashion-social battlefield
-4. HQ post-drop feedback from authoritative state
-5. Atelier fashion creation depth
-6. District Warfare clarity
-7. Maison prestige and utility
-8. Polish and optional effects
+2. Luxe-led Founder Trial and House creation
+3. One three-look Kingston capsule with meaningful Atelier choices
+4. Production bridge, first store, release, and named reactions
+5. One meaningful imperfection, recovery, and Archive record
+6. UI, accessibility, performance, art, audio, and human validation required
+   to prove the loop
 ```
 
 Do not start advanced systems before the current vertical slice feels like a game.
@@ -338,37 +344,23 @@ Avoid for now:
 full 3D cloth simulation
 AR try-on
 Unity migration
-large Maison expansion
-complex Central Bank expansion
-new monetization systems
+broad multiplayer, territory, Maison Wars, or private messaging
+additional cities, advanced finance, marketplace, ads, or full monetization
 ```
 
 ---
 
-## 11. Global Feed Rules
+## 11. Feed and social-scope rules
 
-The Global Feed is not a compact activity list.
+During the Kingston proof-of-fun slice, the Feed is an authored NPC
+consequence surface, not a cross-player social network. It may present the
+player’s release, Vex interpretation, named-customer response, buyer or stylist
+signal, and the next actionable consequence. It must not expose player
+profiles, likes, comments, follows, direct messages, collaborations, Maison
+governance, territory, or reward deltas.
 
-GDD target:
-
-```text
-Full-screen vertical fashion-social feed
-Designer Alpha Drops as dominant visual cards
-Hype Score visible immediately
-Vex verdict/quote visible when available
-Mogul posts visually distinct from Designer posts
-Trend Tsunami content treated like breaking fashion news
-```
-
-Feed rules:
-
-```text
-design_flex = current Designer Alpha Drop
-design_drop = legacy Designer Alpha Drop
-Mogul/Architect posts must not render as Designer Alpha Drops
-```
-
-Do not fake likes, comments, remix, stitch, saves, or reward deltas. If backend support is missing, render disabled visual placeholders only.
+Do not fake social activity or create a local authority path. Broad social
+systems remain disabled until their GDD v8 wave and safety gates pass.
 
 ---
 
@@ -441,35 +433,22 @@ manual runtime flow works
 
 For gameplay loop changes, request manual runtime verification.
 
-Alpha Drop loop test:
+Kingston proof-of-fun loop test:
 
 ```text
-1. Launch app.
-2. Enter HQ.
-3. Open Atelier.
-4. Interact with garment/design flow.
-5. Mint Alpha.
-6. Preview Drop.
-7. Drop To Feed.
-8. Confirm existing executeDrop() path is used.
-9. Confirm Flame Launch scene appears.
-10. Confirm Hype Score reveal appears.
-11. Enter Global Feed.
-12. Confirm Alpha Drop renders as Designer post, not Mogul post.
-13. Confirm no duplicate feed post.
-14. Confirm back navigation does not re-trigger executeDrop().
-```
-
-Global Feed test:
-
-```text
-1. Open Feed.
-2. Confirm vertical full-screen feed.
-3. Confirm design_flex renders as Alpha Drop.
-4. Confirm legacy design_drop renders as Alpha Drop.
-5. Confirm Mogul posts use distinct power/finance styling.
-6. Confirm no fake likes/comments/rewards are written.
-7. Confirm scrolling remains smooth on Android.
+1. Launch a fresh or reset test account.
+2. Create the House and meet Luxe.
+3. Complete both Founder Trial samples on the shared starter garment.
+4. Select Artisan or Architect, then establish a three-look Kingston capsule.
+5. Make a meaningful creative and commercial decision.
+6. Sample or produce the work, open the first store, and release the capsule.
+7. Confirm server-confirmed customer, buyer, Luxe, and Vex reactions explain
+   causes and the next action.
+8. Trigger one imperfection, select one recovery, and confirm the Archive
+   records the result.
+9. Force-close or retry at a server-confirmed boundary and confirm safe resume.
+10. Record device/build mode and distinguish runtime evidence from static or
+    automated results.
 ```
 
 ---
@@ -489,7 +468,7 @@ Short description of what changed.
 Explain server-authority, provider, route, or UI implications.
 
 ## GDD Alignment
-- GDD v7 §X — reason
+- GDD v8 §X — reason
 
 ## Manual Terminal Commands for Smiley
 ```bash
@@ -530,7 +509,7 @@ For small compile fixes, proceed surgically without broad refactors.
 
 ## 17. Final Rule
 
-Every code change must make *The Styliste* more like the staged GDD v7 game:
+Every code change must make *The Styliste* more like the staged GDD v8 game:
 
 ```text
 create fashion

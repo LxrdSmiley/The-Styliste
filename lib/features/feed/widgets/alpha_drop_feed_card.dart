@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/styliste_colors.dart';
 import '../../../domain/models/feed_post.dart';
 
 class AlphaDropFeedCard extends StatelessWidget {
@@ -23,10 +23,10 @@ class AlphaDropFeedCard extends StatelessWidget {
   final FeedPost post;
   final double displayHype;
   final int displayLikes;
-  final VoidCallback onHype;
-  final VoidCallback onLike;
-  final VoidCallback onComment;
-  final VoidCallback onSave;
+  final VoidCallback? onHype;
+  final VoidCallback? onLike;
+  final VoidCallback? onComment;
+  final VoidCallback? onSave;
   final VoidCallback? onInspiration;
   final String inspirationLabel;
 
@@ -46,79 +46,114 @@ class AlphaDropFeedCard extends StatelessWidget {
     final List<String> trendTags = _stringList(content['trend_tags']).isNotEmpty
         ? _stringList(content['trend_tags'])
         : _stringList(content['style_tags']);
-    final String vexQuote = _firstNonEmpty(<Object?>[
-      content['vex_quote'],
-      content['vex_caption'],
-      content['vex_headline'],
-      content['vex_verdict'],
-      _vexReviewValue(content['vex_review'], 'quotableLine'),
-      _vexReviewValue(content['vex_review'], 'body'),
-      _vexReviewValue(content['vex_review'], 'headline'),
-      _vexReviewValue(content['vex_review'], 'verdict'),
+    final String editorialNote = _firstNonEmpty(<Object?>[
+      content['result_explanation'],
+      content['editorial_note'],
+      content['caption'],
     ]);
 
     final bool highHype = hypeScore >= 80.0;
     final bool weakHype = hypeScore < 40.0;
-    final Color accent = weakHype ? AppColors.goldDark : AppColors.gold;
+    final Color accent =
+        weakHype ? StylisteColors.deepGold : StylisteColors.champagneGold;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.obsidian,
+        color: StylisteColors.obsidian,
         boxShadow: highHype
             ? <BoxShadow>[
                 BoxShadow(
-                  color: AppColors.gold.withValues(alpha: 0.16),
+                  color: StylisteColors.champagneGold.withValues(alpha: 0.16),
                   blurRadius: 44.0,
                   spreadRadius: 4.0,
                 ),
               ]
             : null,
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14.0, 10.0, 14.0, 18.0),
-        child: Stack(
-          children: <Widget>[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Expanded(
-                  flex: 7,
-                  child: _LookbookStage(
-                    fabricColor: fabricColor,
-                    accent: accent,
-                    highHype: highHype,
-                    weakHype: weakHype,
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final bool useAccessibleLayout =
+              MediaQuery.textScalerOf(context).scale(1.0) > 1.3 ||
+                  constraints.maxWidth < 340.0;
+          final Widget editorialPanel = _EditorialPanel(
+            accent: accent,
+            brandName: brandName,
+            designName: designName,
+            brandRank: brandRank,
+            hypeScore: hypeScore,
+            displayHype: displayHype,
+            editorialNote: editorialNote,
+            trendTags: trendTags,
+          );
+          final Widget actionRail = _ActionRail(
+            accent: accent,
+            displayLikes: displayLikes,
+            onHype: onHype,
+            onLike: onLike,
+            onComment: onComment,
+            onSave: onSave,
+            onInspiration: onInspiration,
+            inspirationLabel: inspirationLabel,
+          );
+
+          if (useAccessibleLayout) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(14.0, 10.0, 14.0, 18.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  SizedBox(
+                    height: 280.0,
+                    child: _LookbookStage(
+                      fabricColor: fabricColor,
+                      accent: accent,
+                      highHype: highHype,
+                      weakHype: weakHype,
+                    ),
                   ),
+                  const SizedBox(height: 12.0),
+                  editorialPanel,
+                  const SizedBox(height: 12.0),
+                  _AccessibleActionBar(
+                    accent: accent,
+                    displayLikes: displayLikes,
+                    onHype: onHype,
+                    onLike: onLike,
+                    onComment: onComment,
+                    onSave: onSave,
+                    onInspiration: onInspiration,
+                    inspirationLabel: inspirationLabel,
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(14.0, 10.0, 14.0, 18.0),
+            child: Stack(
+              children: <Widget>[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Expanded(
+                      flex: 7,
+                      child: _LookbookStage(
+                        fabricColor: fabricColor,
+                        accent: accent,
+                        highHype: highHype,
+                        weakHype: weakHype,
+                      ),
+                    ),
+                    const SizedBox(height: 12.0),
+                    editorialPanel,
+                  ],
                 ),
-                const SizedBox(height: 12.0),
-                _EditorialPanel(
-                  accent: accent,
-                  brandName: brandName,
-                  designName: designName,
-                  brandRank: brandRank,
-                  hypeScore: hypeScore,
-                  displayHype: displayHype,
-                  vexQuote: vexQuote,
-                  trendTags: trendTags,
-                ),
+                Positioned(right: 8.0, top: 42.0, child: actionRail),
               ],
             ),
-            Positioned(
-              right: 8.0,
-              top: 42.0,
-              child: _ActionRail(
-                accent: accent,
-                displayLikes: displayLikes,
-                onHype: onHype,
-                onLike: onLike,
-                onComment: onComment,
-                onSave: onSave,
-                onInspiration: onInspiration,
-                inspirationLabel: inspirationLabel,
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -142,16 +177,19 @@ class _LookbookStage extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: weakHype ? AppColors.grey900 : AppColors.obsidianSurface,
+        color: weakHype
+            ? StylisteColors.obsidianSurface
+            : StylisteColors.obsidianSurface,
         borderRadius: BorderRadius.circular(8.0),
         border: Border.all(color: accent.withValues(alpha: 0.28)),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: <Color>[
-            Color.lerp(fabricColor, AppColors.obsidian, 0.18) ?? fabricColor,
-            AppColors.obsidianSurface,
-            AppColors.obsidian,
+            Color.lerp(fabricColor, StylisteColors.obsidian, 0.18) ??
+                fabricColor,
+            StylisteColors.obsidianSurface,
+            StylisteColors.obsidian,
           ],
         ),
       ),
@@ -164,8 +202,8 @@ class _LookbookStage extends StatelessWidget {
                 gradient: RadialGradient(
                   radius: 0.82,
                   colors: <Color>[
-                    AppColors.gold.withValues(alpha: 0.28),
-                    AppColors.transparent,
+                    StylisteColors.champagneGold.withValues(alpha: 0.28),
+                    StylisteColors.transparent,
                   ],
                 ),
               ),
@@ -183,15 +221,15 @@ class _LookbookStage extends StatelessWidget {
           Positioned(
             left: 16.0,
             top: 16.0,
-            child: _LabelPill(label: 'ALPHA DROP', color: accent),
+            child: _LabelPill(label: 'DESIGN RECORD', color: accent),
           ),
           Positioned(
             left: 16.0,
             bottom: 16.0,
             child: Text(
-              'PUBLIC RUNWAY SIGNAL',
+              'HOUSE FEED RECORD',
               style: TextStyle(
-                color: AppColors.ivory.withValues(alpha: 0.5),
+                color: StylisteColors.ivory.withValues(alpha: 0.5),
                 fontSize: 9.0,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 2.0,
@@ -211,7 +249,7 @@ class _EditorialPanel extends StatelessWidget {
     required this.designName,
     required this.hypeScore,
     required this.displayHype,
-    required this.vexQuote,
+    required this.editorialNote,
     required this.trendTags,
     this.brandRank,
   });
@@ -222,7 +260,7 @@ class _EditorialPanel extends StatelessWidget {
   final int? brandRank;
   final double hypeScore;
   final double displayHype;
-  final String vexQuote;
+  final String editorialNote;
   final List<String> trendTags;
 
   @override
@@ -231,7 +269,7 @@ class _EditorialPanel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: AppColors.ivory,
+        color: StylisteColors.ivory,
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: Column(
@@ -247,7 +285,7 @@ class _EditorialPanel extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: AppColors.obsidian,
+                    color: StylisteColors.obsidian,
                     fontSize: 11.0,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1.8,
@@ -264,26 +302,26 @@ class _EditorialPanel extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: AppColors.obsidian,
+              color: StylisteColors.obsidian,
               fontSize: 26.0,
               fontWeight: FontWeight.w900,
               height: 0.96,
             ),
           ),
-          if (vexQuote.isNotEmpty) ...<Widget>[
+          if (editorialNote.isNotEmpty) ...<Widget>[
             const SizedBox(height: 10.0),
             Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 12.0, vertical: 9.0),
               decoration: BoxDecoration(
-                color: AppColors.obsidian,
+                color: StylisteColors.obsidian,
                 borderRadius: BorderRadius.circular(4.0),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    'VEX',
+                    'CAUSES',
                     style: TextStyle(
                       color: accent,
                       fontSize: 10.0,
@@ -294,11 +332,9 @@ class _EditorialPanel extends StatelessWidget {
                   const SizedBox(width: 10.0),
                   Expanded(
                     child: Text(
-                      vexQuote,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      editorialNote,
                       style: const TextStyle(
-                        color: AppColors.ivory,
+                        color: StylisteColors.ivory,
                         fontSize: 12.0,
                         fontWeight: FontWeight.w600,
                         height: 1.25,
@@ -323,7 +359,7 @@ class _EditorialPanel extends StatelessWidget {
           Text(
             '${displayHype.toStringAsFixed(0)} PUBLIC HYPE',
             style: TextStyle(
-              color: AppColors.obsidian.withValues(alpha: 0.56),
+              color: StylisteColors.obsidian.withValues(alpha: 0.56),
               fontSize: 10.0,
               fontWeight: FontWeight.w900,
               letterSpacing: 1.6,
@@ -354,9 +390,9 @@ class _HypeBadge extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
           const Text(
-            'HYPE SCORE',
+            'HOUSE SIGNAL',
             style: TextStyle(
-              color: AppColors.obsidian,
+              color: StylisteColors.obsidian,
               fontSize: 7.0,
               fontWeight: FontWeight.w900,
               letterSpacing: 1.0,
@@ -365,7 +401,7 @@ class _HypeBadge extends StatelessWidget {
           Text(
             score.toStringAsFixed(1),
             style: const TextStyle(
-              color: AppColors.obsidian,
+              color: StylisteColors.obsidian,
               fontSize: 18.0,
               fontWeight: FontWeight.w900,
               height: 1.0,
@@ -391,10 +427,10 @@ class _ActionRail extends StatelessWidget {
 
   final Color accent;
   final int displayLikes;
-  final VoidCallback onHype;
-  final VoidCallback onLike;
-  final VoidCallback onComment;
-  final VoidCallback onSave;
+  final VoidCallback? onHype;
+  final VoidCallback? onLike;
+  final VoidCallback? onComment;
+  final VoidCallback? onSave;
   final VoidCallback? onInspiration;
   final String inspirationLabel;
 
@@ -412,25 +448,88 @@ class _ActionRail extends StatelessWidget {
         _RailButton(
           icon: Icons.favorite_border,
           label: displayLikes.toString(),
-          color: AppColors.ivory,
+          color: StylisteColors.ivory,
           onTap: onLike,
         ),
         _RailButton(
           icon: Icons.mode_comment_outlined,
           label: 'COMMENT',
-          color: AppColors.ivory,
+          color: StylisteColors.ivory,
           onTap: onComment,
         ),
         _RailButton(
           icon: Icons.bookmark_border,
           label: 'SAVE',
-          color: AppColors.ivory,
+          color: StylisteColors.ivory,
           onTap: onSave,
         ),
         _RailButton(
           icon: Icons.palette_outlined,
           label: inspirationLabel,
-          color: AppColors.ivory,
+          color: StylisteColors.ivory,
+          onTap: onInspiration,
+        ),
+      ],
+    );
+  }
+}
+
+class _AccessibleActionBar extends StatelessWidget {
+  const _AccessibleActionBar({
+    required this.accent,
+    required this.displayLikes,
+    required this.onHype,
+    required this.onLike,
+    required this.onComment,
+    required this.onSave,
+    required this.onInspiration,
+    required this.inspirationLabel,
+  });
+
+  final Color accent;
+  final int displayLikes;
+  final VoidCallback? onHype;
+  final VoidCallback? onLike;
+  final VoidCallback? onComment;
+  final VoidCallback? onSave;
+  final VoidCallback? onInspiration;
+  final String inspirationLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 4.0,
+      runSpacing: 8.0,
+      children: <Widget>[
+        _RailButton(
+          icon: Icons.local_fire_department_outlined,
+          label: 'HYPE',
+          color: accent,
+          onTap: onHype,
+        ),
+        _RailButton(
+          icon: Icons.favorite_border,
+          label: displayLikes.toString(),
+          color: StylisteColors.ivory,
+          onTap: onLike,
+        ),
+        _RailButton(
+          icon: Icons.mode_comment_outlined,
+          label: 'COMMENT',
+          color: StylisteColors.ivory,
+          onTap: onComment,
+        ),
+        _RailButton(
+          icon: Icons.bookmark_border,
+          label: 'SAVE',
+          color: StylisteColors.ivory,
+          onTap: onSave,
+        ),
+        _RailButton(
+          icon: Icons.palette_outlined,
+          label: inspirationLabel,
+          color: StylisteColors.ivory,
           onTap: onInspiration,
         ),
       ],
@@ -456,27 +555,32 @@ class _RailButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color effectiveColor =
-        color ?? AppColors.ivory.withValues(alpha: 0.32);
+        color ?? StylisteColors.ivory.withValues(alpha: 0.32);
     return Padding(
       padding: const EdgeInsets.only(top: 9.0),
-      child: GestureDetector(
-        onTap: onTap,
+      child: Semantics(
+        button: true,
+        enabled: _enabled,
+        label: label,
         child: Opacity(
           opacity: _enabled ? 1.0 : 0.46,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Container(
-                width: 42.0,
-                height: 42.0,
-                decoration: BoxDecoration(
-                  color: AppColors.obsidian.withValues(alpha: 0.72),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: effectiveColor.withValues(alpha: 0.38),
+              SizedBox.square(
+                dimension: 48,
+                child: IconButton(
+                  tooltip: label,
+                  onPressed: onTap,
+                  style: IconButton.styleFrom(
+                    backgroundColor:
+                        StylisteColors.obsidian.withValues(alpha: 0.72),
+                    side: BorderSide(
+                      color: effectiveColor.withValues(alpha: 0.38),
+                    ),
                   ),
+                  icon: Icon(icon, color: effectiveColor, size: 20),
                 ),
-                child: Icon(icon, color: effectiveColor, size: 20.0),
               ),
               const SizedBox(height: 3.0),
               SizedBox(
@@ -520,7 +624,7 @@ class _TagChip extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: const TextStyle(
-          color: AppColors.obsidian,
+          color: StylisteColors.obsidian,
           fontSize: 8.0,
           fontWeight: FontWeight.w900,
           letterSpacing: 1.0,
@@ -541,7 +645,7 @@ class _LabelPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
       decoration: BoxDecoration(
-        color: AppColors.obsidian.withValues(alpha: 0.74),
+        color: StylisteColors.obsidian.withValues(alpha: 0.74),
         borderRadius: BorderRadius.circular(4.0),
         border: Border.all(color: color.withValues(alpha: 0.48)),
       ),
@@ -617,9 +721,10 @@ class _MannequinPainter extends CustomPainter {
         end: Alignment.bottomRight,
         colors: <Color>[
           weakHype
-              ? Color.lerp(fabricColor, AppColors.grey800, 0.56) ?? fabricColor
+              ? Color.lerp(fabricColor, StylisteColors.obsidianRaised, 0.56) ??
+                  fabricColor
               : fabricColor,
-          Color.lerp(fabricColor, AppColors.obsidian, 0.35) ?? fabricColor,
+          Color.lerp(fabricColor, StylisteColors.obsidian, 0.35) ?? fabricColor,
           accent.withValues(alpha: 0.72),
         ],
       ).createShader(bounds);
@@ -628,13 +733,13 @@ class _MannequinPainter extends CustomPainter {
     final Paint edge = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.35
-      ..color = AppColors.ivory.withValues(alpha: weakHype ? 0.28 : 0.56);
+      ..color = StylisteColors.ivory.withValues(alpha: weakHype ? 0.28 : 0.56);
     canvas.drawPath(dress, edge);
 
     final Paint stand = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
-      ..color = AppColors.ivory.withValues(alpha: 0.28);
+      ..color = StylisteColors.ivory.withValues(alpha: 0.28);
     canvas
       ..drawLine(
         Offset(center.dx, size.height * 0.92),
@@ -668,18 +773,6 @@ String _firstNonEmpty(List<Object?> values) {
   return '';
 }
 
-String? _vexReviewValue(Object? value, String key) {
-  if (value is Map<String, dynamic>) {
-    final Object? nested = value[key];
-    return nested is String ? nested : nested?.toString();
-  }
-  if (value is Map) {
-    final Object? nested = value[key];
-    return nested is String ? nested : nested?.toString();
-  }
-  return null;
-}
-
 double _doubleValue(Object? value, {required double fallback}) {
   if (value is num) return value.toDouble();
   if (value is String) return double.tryParse(value) ?? fallback;
@@ -706,6 +799,6 @@ Color _hexToColor(String hex) {
     final String clean = hex.replaceAll('#', '').padLeft(6, '0');
     return Color(int.parse('FF$clean', radix: 16));
   } catch (_) {
-    return AppColors.ivory;
+    return StylisteColors.ivory;
   }
 }

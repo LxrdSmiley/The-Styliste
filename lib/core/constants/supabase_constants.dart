@@ -70,6 +70,7 @@ abstract final class SupabaseConstants {
   // --- Edge Function Names ---
   static const String fnCalculateIdleIncome = 'calculate-idle-income';
   static const String fnFounderTrial = 'founder-trial';
+  static const String fnCapsuleFoundation = 'capsule-foundation';
   static const String fnMintDesign = 'drop-design';
   static const String fnDropDesign = 'drop-design';
   static const String fnFeedReact = 'feed-react';
@@ -95,7 +96,6 @@ abstract final class SupabaseConstants {
 
   // --- Directive H: Crisis Engine RPCs ---
   static const String fnApplyKintsugiRepair = 'apply_kintsugi_repair';
-  static const String fnApplyPublicApology = 'apply_public_apology';
   static const String fnTriggerScandal = 'trigger_scandal';
 
   // --- Directive I: Sovereign Talent RPCs ---

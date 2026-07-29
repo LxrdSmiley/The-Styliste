@@ -3,25 +3,30 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('first objectives describe real first-loop actions', () {
+  test('first objective is the shared Kingston capsule boundary', () {
     final String providerSource =
         File('lib/features/ftue/providers/first_objective_provider.dart')
             .readAsStringSync();
-    final String repositorySource =
-        File('lib/features/ftue/repositories/first_objective_repository.dart')
+    final String overlaySource =
+        File('lib/features/ftue/widgets/luxe_first_objective_overlay.dart')
             .readAsStringSync();
 
-    expect(providerSource, contains('Launch your first Alpha Drop'));
-    expect(providerSource, contains('drop it to Feed, then return HQ'));
-    expect(providerSource, contains('Open your first store'));
-    expect(providerSource, contains('launch a starter store, then return HQ'));
-    expect(providerSource, contains('hasServerConfirmedStarterStore'));
-    expect(providerSource, isNot(contains('Review your first empire move')));
-    expect(providerSource, isNot(contains('Check Feed')));
+    expect(providerSource, contains('Build your Kingston capsule'));
+    expect(providerSource, contains('Artisan path changes the framing'));
+    expect(providerSource, contains('Architect path changes the framing'));
+    expect(providerSource, contains('not the gameplay ceiling'));
+    expect(providerSource, contains('AppRouter.atelierCapsule'));
+    expect(providerSource, contains('samplingUnavailable'));
+    expect(providerSource, isNot(contains('Launch your first Alpha Drop')));
+    expect(providerSource, isNot(contains('Open your first store')));
+    expect(providerSource, isNot(contains('hasServerConfirmedStarterStore')));
 
-    expect(repositorySource, contains('hasServerConfirmedStarterStore'));
-    expect(repositorySource, contains(".from('store_summary')"));
-    expect(repositorySource, contains(".eq('type', 'ecommerce')"));
+    expect(overlaySource, contains('Hero Piece'));
+    expect(overlaySource, contains('Commercial Anchor'));
+    expect(overlaySource, contains('Experimental Piece'));
+    expect(overlaySource, contains('equal ceiling'));
+    expect(overlaySource, isNot(contains('Mint your first Alpha')));
+    expect(overlaySource, isNot(contains('Launch your first store')));
   });
 
   test('stale premium path-switching copy is removed', () {
@@ -33,9 +38,12 @@ void main() {
     expect(source, contains('Joint Venture'));
   });
 
-  test('first-session advanced systems are locked or hidden', () {
+  test('first-session navigation exposes only the five canonical destinations',
+      () {
     final String shellSource =
         File('lib/presentation/screens/main_shell.dart').readAsStringSync();
+    final String navigationSource =
+        File('lib/core/widgets/aurelian_navigation.dart').readAsStringSync();
     final String architectSource =
         File('lib/features/hq/widgets/hq_architect_view.dart')
             .readAsStringSync();
@@ -45,8 +53,17 @@ void main() {
         File('lib/features/maison/screens/district_map_screen.dart')
             .readAsStringSync();
 
-    expect(shellSource, contains("label: 'LOCKED'"));
-    expect(shellSource, contains('enabled: false'));
+    for (final String label in <String>[
+      'HQ',
+      'Atelier',
+      'Empire',
+      'Feed',
+      'House',
+    ]) {
+      expect(navigationSource, contains("label: '$label'"));
+    }
+    expect(shellSource, contains('AurelianBottomNavigation'));
+    expect(shellSource, isNot(contains("label: 'LOCKED'")));
     expect(architectSource, isNot(contains('onKintsugiRequest:')));
     expect(architectSource, isNot(contains('onApologyRequest:')));
     expect(architectSource, isNot(contains('execute_power_move')));

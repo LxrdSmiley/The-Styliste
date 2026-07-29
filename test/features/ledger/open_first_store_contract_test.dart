@@ -16,7 +16,7 @@ void main() {
     expect(providerSource, contains('FirstStoreNotifier'));
     expect(providerSource,
         isNot(contains('SupabaseConstants.fnProcessTransaction')));
-    expect(screenSource, contains('OPEN FIRST STORE'));
+    expect(screenSource, contains('Open first-store brief'));
     expect(screenSource, contains('firstStoreProvider'));
     expect(screenSource, contains('_showFirstStoreFlow'));
   });

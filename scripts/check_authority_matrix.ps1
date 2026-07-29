@@ -28,8 +28,8 @@ if (Compare-Object $folders $sourceInventory) {
 
 $apiRelations = @($catalog.api_relations) | Sort-Object -Unique
 $apiRpcs = @($catalog.api_rpcs) | Sort-Object -Unique
-if ($apiRelations.Count -ne 12 -or $apiRpcs.Count -ne 6) {
-  throw 'The exact Kingston API allowlist must contain 12 projections and 6 wrappers.'
+if ($apiRelations.Count -ne 12 -or $apiRpcs.Count -ne 7) {
+  throw 'The exact Kingston API allowlist must contain 12 projections and 7 wrappers.'
 }
 
 Write-Output 'Static pass: function folders, config sections, projections, wrappers, and catalog inventory agree.'

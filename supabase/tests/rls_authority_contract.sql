@@ -3,6 +3,8 @@
 --   supabase/tests/kingston_early_game_api_contract.test.sql
 BEGIN;
 
+SELECT plan(1);
+
 CREATE TEMP TABLE expected_api_surface(kind TEXT, name TEXT, PRIMARY KEY(kind, name))
 ON COMMIT DROP;
 INSERT INTO expected_api_surface(kind, name) VALUES
@@ -19,6 +21,7 @@ INSERT INTO expected_api_surface(kind, name) VALUES
   ('relation', 'progression_state'),
   ('relation', 'store_summary'),
   ('rpc', 'server_design_intent_v1'),
+  ('rpc', 'server_capsule_foundation_intent_v1'),
   ('rpc', 'server_founder_trial_intent_v1'),
   ('rpc', 'server_open_first_store_v1'),
   ('rpc', 'server_progression_event_v1'),
@@ -78,4 +81,6 @@ BEGIN
 END;
 $$;
 
+SELECT pass('RLS authority contract completed without a database violation');
+SELECT * FROM finish();
 ROLLBACK;

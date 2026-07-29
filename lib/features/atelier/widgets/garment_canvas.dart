@@ -15,7 +15,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
-import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/theme/styliste_colors.dart';
+import '../../../core/theme/styliste_typography.dart';
 
 class GarmentCanvas extends StatefulWidget {
   const GarmentCanvas({
@@ -209,7 +210,8 @@ class _GarmentCanvasState extends State<GarmentCanvas>
                         child: Text(
                           'GARMENT PREVIEW UNAVAILABLE',
                           style: TextStyle(
-                            color: AurelianPalette.textSecondary,
+                            fontFamily: StylisteText.displayFamily,
+                            color: StylisteColors.textSecondary,
                             fontSize: 10.0,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.6,

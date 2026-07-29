@@ -1,5 +1,9 @@
 # The Styliste Release Process
 
+> Active release authority is GDD v8 §§21–22 and
+> `docs/verification/authority_inventory.json`. Any v7 wording retained below
+> is historical release-process context only and must not govern a release.
+
 ## Purpose
 
 The repository uses the useful parts of the Street Food Empire workflow—clear
@@ -14,10 +18,10 @@ game release.
 | Application version | `pubspec.yaml` | `0.1.0-alpha.1+1` |
 | GitHub tag | Application version without build number | `v0.1.0-alpha.1` |
 | Android/iOS build number | Suffix after `+` | `1` |
-| GDD version | Product/design document only | `v7` |
+| GDD version | Product/design document only | `v8` |
 | Database version | Chronological Supabase migration | `202607...` |
 
-Do not call the application “v7.” GDD v7 and application releases are separate.
+Do not call the application “v8.” GDD v8 and application releases are separate.
 
 ## After each implementation
 
@@ -36,7 +40,7 @@ Do not call the application “v7.” GDD v7 and application releases are separa
 - `0.x.y-alpha.n`: internal or closed-test build with known blockers.
 - `0.x.y-beta.n`: controlled external test after applicable Beta gates pass.
 - `0.x.y-rc.n`: release candidate with no known release-blocking defect.
-- `1.0.0`: first public launch only after GDD v7 §§21–22 and the verification
+- `1.0.0`: first public launch only after GDD v8 §§21–22 and the verification
   protocol permit that claim.
 
 A feature commit does not automatically require a version bump. Bump the

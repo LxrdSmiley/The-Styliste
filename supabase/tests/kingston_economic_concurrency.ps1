@@ -6,6 +6,14 @@ $ErrorActionPreference = 'Stop'
 
 $designerId = '00000000-0000-4000-8000-00000000c201'
 $mogulId = '00000000-0000-4000-8000-00000000c202'
+$databaseContainer = @(
+  & docker ps --filter 'name=supabase_db_' --format '{{.Names}}' |
+    Select-Object -First 1
+).Trim()
+
+if ([string]::IsNullOrWhiteSpace($databaseContainer)) {
+  throw 'No local Supabase database container is running.'
+}
 
 function Invoke-LocalQuery {
   param([Parameter(Mandatory)][string]$Sql)
@@ -15,7 +23,7 @@ function Invoke-LocalQuery {
     [Text.UTF8Encoding]::new($false).GetBytes($Sql)
   )
   $containerCommand = "echo '$encodedSql' | base64 -d | psql -X -v ON_ERROR_STOP=1 -qAt -U postgres -d postgres"
-  $output = & docker exec supabase_db_The-Styliste sh -c $containerCommand 2>&1
+  $output = & docker exec $databaseContainer sh -c $containerCommand 2>&1
   $exitCode = $LASTEXITCODE
   $ErrorActionPreference = $oldPreference
   if ($exitCode -ne 0) { throw "Local query failed: $($output | Out-String)" }
@@ -33,7 +41,7 @@ function Invoke-TwentySessionReplay {
     [Text.UTF8Encoding]::new($false).GetBytes($Sql)
   )
   $containerCommand = "echo '$encodedSql' | base64 -d | pgbench -n -U postgres -d postgres -c 20 -j 20 -t 1 -f -"
-  $output = & docker exec supabase_db_The-Styliste sh -c $containerCommand 2>&1
+  $output = & docker exec $databaseContainer sh -c $containerCommand 2>&1
   $exitCode = $LASTEXITCODE
   $ErrorActionPreference = $oldPreference
   $summary = $output | Out-String
@@ -57,7 +65,7 @@ function Assert-DeterministicConflict {
     [Text.UTF8Encoding]::new($false).GetBytes($Sql)
   )
   $containerCommand = "echo '$encodedSql' | base64 -d | psql -X -v ON_ERROR_STOP=1 -qAt -U postgres -d postgres"
-  $output = & docker exec supabase_db_The-Styliste sh -c $containerCommand 2>&1
+  $output = & docker exec $databaseContainer sh -c $containerCommand 2>&1
   $exitCode = $LASTEXITCODE
   $ErrorActionPreference = $oldPreference
   if ($exitCode -eq 0 -or ($output | Out-String) -notmatch $Expected) {
@@ -89,7 +97,7 @@ WHERE id IN ('$designerId', '$mogulId');
   $founderSql = $servicePrefix + @"
 SELECT api.server_founder_trial_intent_v1(
   '$designerId', true, '$founderKey',
-  '{"action":"initialize","brand_name":"Concurrent Designer","career_path":"designer"}'::jsonb,
+  '{"action":"initialize","brand_name":"Concurrent Designer"}'::jsonb,
   'kingston-founder-trial.v1'
 );
 "@
@@ -97,7 +105,7 @@ SELECT api.server_founder_trial_intent_v1(
   Assert-DeterministicConflict -Mutation 'founder_trial' -Expected 'IDEMPOTENCY_KEY_CONFLICT' -Sql ($servicePrefix + @"
 SELECT api.server_founder_trial_intent_v1(
   '$designerId', true, '$founderKey',
-  '{"action":"initialize","brand_name":"Conflicting Designer","career_path":"designer"}'::jsonb,
+  '{"action":"initialize","brand_name":"Conflicting Designer"}'::jsonb,
   'kingston-founder-trial.v1'
 );
 "@)
@@ -132,7 +140,32 @@ SELECT api.server_design_intent_v1(
   Invoke-LocalQuery ($servicePrefix + @"
 SELECT api.server_founder_trial_intent_v1(
   '$mogulId', false, '00000000-0000-4000-8000-00000000f105',
-  '{"action":"initialize","brand_name":"Concurrent Mogul","career_path":"mogul"}'::jsonb,
+  '{"action":"initialize","brand_name":"Concurrent Mogul"}'::jsonb,
+  'kingston-founder-trial.v1'
+);
+SELECT api.server_founder_trial_intent_v1(
+  '$mogulId', false, '00000000-0000-4000-8000-00000000f106',
+  '{"action":"advance","next_stage":"complete_artisan_sample","artisan_choice":"draped_bodice"}'::jsonb,
+  'kingston-founder-trial.v1'
+);
+SELECT api.server_founder_trial_intent_v1(
+  '$mogulId', false, '00000000-0000-4000-8000-00000000f107',
+  '{"action":"advance","next_stage":"complete_architect_sample","architect_choice":"limited_run"}'::jsonb,
+  'kingston-founder-trial.v1'
+);
+SELECT api.server_founder_trial_intent_v1(
+  '$mogulId', false, '00000000-0000-4000-8000-00000000f108',
+  '{"action":"advance","next_stage":"reveal_shared_result"}'::jsonb,
+  'kingston-founder-trial.v1'
+);
+SELECT api.server_founder_trial_intent_v1(
+  '$mogulId', false, '00000000-0000-4000-8000-00000000f109',
+  '{"action":"advance","next_stage":"choose_revision_or_business_response","response_choice":"adjust_run_plan"}'::jsonb,
+  'kingston-founder-trial.v1'
+);
+SELECT api.server_founder_trial_intent_v1(
+  '$mogulId', false, '00000000-0000-4000-8000-00000000f10a',
+  '{"action":"advance","next_stage":"select_founder_path","specialization":"architect"}'::jsonb,
   'kingston-founder-trial.v1'
 );
 "@) | Out-Null

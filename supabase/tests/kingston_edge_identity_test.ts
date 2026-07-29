@@ -81,11 +81,12 @@ Deno.env.set("SUPABASE_URL", "http://supabase.local");
 Deno.env.set("SUPABASE_ANON_KEY", "local-anon-test-key");
 Deno.env.set("SUPABASE_SERVICE_ROLE_KEY", "local-service-test-key");
 
-Deno.test("all six routes reject malformed payloads and client actor fields", () => {
-  assertEquals(Object.keys(KINGSTON_ROUTES).length, 6);
+Deno.test("all seven routes reject malformed payloads and client actor fields", () => {
+  assertEquals(Object.keys(KINGSTON_ROUTES).length, 7);
   const malformed: Record<string, JsonRecord> = {
     "founder-trial": {
       action: "initialize",
+      brand_name: "Kingston House",
       player_id: OWNER_ID,
       idempotency_key: IDEMPOTENCY_KEY,
     },
@@ -110,10 +111,44 @@ Deno.test("all six routes reject malformed payloads and client actor fields", ()
       reporter_id: OWNER_ID,
       idempotency_key: IDEMPOTENCY_KEY,
     },
+    "capsule-foundation": {
+      action: "initialize",
+      player_id: OWNER_ID,
+      idempotency_key: IDEMPOTENCY_KEY,
+    },
   };
   for (const [endpoint, route] of Object.entries(KINGSTON_ROUTES)) {
     assertEquals(route.validate(malformed[endpoint]), null, endpoint);
   }
+});
+
+Deno.test("Founder Trial accepts only bounded interaction choices", () => {
+  const route = KINGSTON_ROUTES["founder-trial"];
+  assertEquals(route.validate({
+    action: "initialize",
+    brand_name: "Kingston House",
+    idempotency_key: IDEMPOTENCY_KEY,
+  }), {
+    action: "initialize",
+    brand_name: "Kingston House",
+  });
+  assertEquals(route.validate({
+    action: "advance",
+    next_stage: "complete_artisan_sample",
+    artisan_choice: "draped_bodice",
+    idempotency_key: IDEMPOTENCY_KEY,
+  }), {
+    action: "advance",
+    next_stage: "complete_artisan_sample",
+    artisan_choice: "draped_bodice",
+  });
+  assertEquals(route.validate({
+    action: "advance",
+    next_stage: "select_founder_path",
+    specialization: "artisan",
+    player_id: OWNER_ID,
+    idempotency_key: IDEMPOTENCY_KEY,
+  }), null);
 });
 
 Deno.test("shared boundary rejects a missing token before any database call", async () => {
@@ -289,7 +324,56 @@ Deno.test("database replay conflict maps to a deterministic 409", async () => {
   }
 });
 
-Deno.test("disabled endpoint source is not part of the six-route dispatcher", () => {
+Deno.test("capsule foundation accepts only bounded client intent", async () => {
+  const captured: JsonRecord[] = [];
+  const restore = installFetchMock(captured);
+  try {
+    const response = await handleKingstonRequest(
+      request({
+        action: "save_look",
+        role: "hero_piece",
+        grammar: {
+          silhouette: "draped",
+          material: "linen_blend",
+          palette: "kingston_blue_ivory",
+          construction: "soft_drape",
+        },
+        idempotency_key: IDEMPOTENCY_KEY,
+      }),
+      KINGSTON_ROUTES["capsule-foundation"],
+    );
+    assertEquals(response.status, 200);
+    assertEquals(captured[0].p_auth_user_id, OWNER_ID);
+    assertEquals(
+      captured[0].p_rule_version,
+      "kingston-capsule-foundation.v1",
+    );
+    assert(!(captured[0].p_request_payload as JsonRecord).player_id);
+  } finally {
+    restore();
+  }
+});
+
+Deno.test("capsule foundation rejects score, ownership, and unknown look fields", async () => {
+  const response = await handleKingstonRequest(
+    request({
+      action: "save_look",
+      role: "hero_piece",
+      grammar: {
+        silhouette: "draped",
+        material: "linen_blend",
+        palette: "kingston_blue_ivory",
+        construction: "soft_drape",
+        score: 999999,
+      },
+      idempotency_key: IDEMPOTENCY_KEY,
+    }),
+    KINGSTON_ROUTES["capsule-foundation"],
+  );
+  assertEquals(response.status, 400);
+});
+
+Deno.test("disabled endpoint source is not part of the seven-route dispatcher", () => {
   for (
     const disabled of [
       "feed-react",

@@ -31,23 +31,28 @@ void main() {
     expect(source, isNot(contains('Failed to drop:')));
   });
 
-  test('Atelier recovery and projection remain player-safe', () {
+  test('Atelier local study and capsule boundary remain player-safe', () {
     final String source =
         File('lib/features/atelier/screens/atelier_screen.dart')
             .readAsStringSync();
 
     expect(
       source,
-      contains('The Atelier lost the thread. Your choices are still here.'),
+      contains(
+        'This garment study stays local. Only the capsule submits bounded, authenticated intents.',
+      ),
     );
-    expect(source, contains('_previewMaterialQualityHeuristic = 65.0'));
-    expect(source, contains('_previewAestheticAlignmentHeuristic = 72.0'));
-    expect(source, contains('Non-authoritative UI projection only.'));
     expect(
       source,
-      contains('Final Hype is calculated by the server mint/drop path.'),
+      contains(
+        'Trend signal unavailable. Your local garment study is preserved.',
+      ),
     );
-    expect(source, contains('Projection only'));
+    expect(source, contains('Gate A stops at capsule readiness.'));
+    expect(source, contains('Open Kingston Capsule'));
+    expect(source, isNot(contains('mint')));
+    expect(source, isNot(contains('dropDesignProvider')));
+    expect(source, isNot(contains('hype_score')));
     expect(source, isNot(contains('Mint failed. Please try again.')));
     expect(source, isNot(contains('Atelier session unavailable')));
   });

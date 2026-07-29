@@ -44,40 +44,42 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: GDD and deferred-feature registry
+      - name: GDD, authority, and deferred-feature registry
         shell: pwsh
         run: |
           ./scripts/maintenance/check_repository_health.ps1 -DryRun
           ./scripts/check_gdd_registry.ps1
+          ./scripts/check_authority_inventory.ps1
+          ./scripts/check_migration_hash_manifest.ps1
           ./scripts/check_deferred_todos.ps1
           ./scripts/check_authority_matrix.ps1
           ./scripts/check_release_metadata.ps1
       - name: Type check Edge Functions
         run: |
           find supabase/functions -name index.ts -print0 | xargs -0 -n1 deno check --config supabase/functions/tsconfig.json
+          deno test --allow-env --allow-net supabase/tests/kingston_edge_identity_test.ts
           echo 'Static pass: Edge Function type checks completed.'
       - name: Start disposable database
-        # `supabase start` applies migrations before PostgREST loads the reviewed
-        # `api` schema. This is the supported fresh-project bootstrap path.
-        run: supabase start
-      - name: Apply and lint migrations
+        # A pristine database does not yet contain the reviewed `api` schema,
+        # so PostgREST can be unhealthy until the next, fail-closed reset
+        # applies migrations. The database test step still requires reset/lint/
+        # contracts to succeed; this flag does not turn those checks into a pass.
+        run: supabase start --ignore-health-check
+      - name: Apply, lint, and run database authority contracts
         run: |
           supabase db reset --local --no-seed
           supabase db lint --local
-          echo 'Passed: disposable migration lint completed.'
-      - name: Run RLS authority contract
-        run: |
-          db_container="$(docker ps --filter 'name=supabase_db_' --format '{{.Names}}' | head -n 1)"
-          test -n "$db_container"
-          docker exec -i "$db_container" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
-            < supabase/tests/rls_authority_contract.sql
-          echo 'Passed: RLS authority-contract catalog assertions completed.'
+          supabase test db
+          echo 'Passed: disposable migration lint and RLS authority-contract suite completed.'
+      - name: Exercise economic replay and lock contracts
+        shell: pwsh
+        run: ./supabase/tests/kingston_economic_concurrency.ps1
       - name: Detect generated API inventory drift
         run: |
           db_container="$(docker ps --filter 'name=supabase_db_' --format '{{.Names}}' | head -n 1)"
           test -n "$db_container"
           docker exec "$db_container" psql -U postgres -d postgres -At -F '|' -c "
-            SELECT 'relation', c.relname, CASE c.relkind WHEN 'v' THEN 'view' ELSE 'table' END
+            SELECT 'relation', c.relname::text, CASE c.relkind WHEN 'v' THEN 'view' ELSE 'table' END
             FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
             WHERE n.nspname = 'api' AND c.relkind IN ('r','v','m','p')
             UNION ALL
@@ -101,7 +103,7 @@ jobs:
       - name: Dependency audit
         run: |
           flutter pub get
-          dart pub outdated --no-dev
+          dart pub outdated --no-dev-dependencies
           echo 'Static pass: dependency audit command completed.'
       - name: Protect release signing material
         run: |

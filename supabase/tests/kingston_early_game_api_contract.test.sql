@@ -3,6 +3,8 @@
 -- the transaction rolls back so no fixture survives the test.
 BEGIN;
 
+SELECT plan(1);
+
 DO $$
 BEGIN
   IF has_function_privilege(
@@ -153,16 +155,14 @@ BEGIN
     '00000000-0000-4000-8000-000000001010', TRUE,
     '00000000-0000-4000-8000-00000000a010',
     jsonb_build_object(
-      'action', 'initialize', 'brand_name', 'Anonymous Founder',
-      'career_path', 'designer'
+      'action', 'initialize', 'brand_name', 'Anonymous Founder'
     ), 'kingston-founder-trial.v1'
   );
   v_replay := api.server_founder_trial_intent_v1(
     '00000000-0000-4000-8000-000000001010', TRUE,
     '00000000-0000-4000-8000-00000000a010',
     jsonb_build_object(
-      'action', 'initialize', 'brand_name', 'Anonymous Founder',
-      'career_path', 'designer'
+      'action', 'initialize', 'brand_name', 'Anonymous Founder'
     ), 'kingston-founder-trial.v1'
   );
   IF v_first IS DISTINCT FROM v_replay THEN RAISE EXCEPTION 'FOUNDER_REPLAY_CHANGED'; END IF;
@@ -171,8 +171,7 @@ BEGIN
       '00000000-0000-4000-8000-000000001010', TRUE,
       '00000000-0000-4000-8000-00000000a010',
       jsonb_build_object(
-        'action', 'initialize', 'brand_name', 'Conflicting Founder',
-        'career_path', 'designer'
+        'action', 'initialize', 'brand_name', 'Conflicting Founder'
       ), 'kingston-founder-trial.v1'
     );
     RAISE EXCEPTION 'CONFLICTING_FOUNDER_REPLAY_ACCEPTED';
@@ -378,4 +377,6 @@ BEGIN
 END;
 $$;
 
+SELECT pass('Kingston API authority contract completed without a database violation');
+SELECT * FROM finish();
 ROLLBACK;

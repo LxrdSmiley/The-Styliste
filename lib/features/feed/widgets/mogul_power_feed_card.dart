@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/styliste_colors.dart';
 import '../../../domain/models/feed_post.dart';
 
 class MogulPowerFeedCard extends StatelessWidget {
@@ -23,10 +23,10 @@ class MogulPowerFeedCard extends StatelessWidget {
   final FeedPost post;
   final double displayHype;
   final int displayLikes;
-  final VoidCallback onHype;
-  final VoidCallback onLike;
-  final VoidCallback onComment;
-  final VoidCallback onSave;
+  final VoidCallback? onHype;
+  final VoidCallback? onLike;
+  final VoidCallback? onComment;
+  final VoidCallback? onSave;
   final VoidCallback? onCollab;
   final String collabLabel;
 
@@ -34,7 +34,9 @@ class MogulPowerFeedCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final Map<String, dynamic> content = post.content;
     final bool isSystemEvent = post.type == 'system_eclipse';
-    final Color accent = isSystemEvent ? AppColors.gold : AppColors.lime;
+    final Color accent = isSystemEvent
+        ? StylisteColors.champagneGold
+        : StylisteColors.signalLime;
     final String brandName = _stringValue(
       content['brand_name'],
       fallback: isSystemEvent ? 'Global Market Desk' : 'Unknown Sovereign',
@@ -53,13 +55,13 @@ class MogulPowerFeedCard extends StatelessWidget {
         : _mogulMetrics(content, displayHype, displayLikes);
 
     return DecoratedBox(
-      decoration: const BoxDecoration(color: AppColors.obsidian),
+      decoration: const BoxDecoration(color: StylisteColors.obsidian),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14.0, 10.0, 14.0, 18.0),
         child: Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.obsidianSurface,
+            color: StylisteColors.obsidianSurface,
             borderRadius: BorderRadius.circular(8.0),
             border: Border.all(color: accent.withValues(alpha: 0.34)),
           ),
@@ -74,7 +76,7 @@ class MogulPowerFeedCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     _TypeLine(
-                      label: isSystemEvent ? 'BREAKING SIGNAL' : 'MOGUL FLEX',
+                      label: isSystemEvent ? 'MARKET NOTICE' : 'HOUSE NOTE',
                       color: accent,
                     ),
                     const Spacer(),
@@ -83,7 +85,7 @@ class MogulPowerFeedCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: AppColors.ivory.withValues(alpha: 0.64),
+                        color: StylisteColors.ivory.withValues(alpha: 0.64),
                         fontSize: 11.0,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 2.2,
@@ -95,7 +97,7 @@ class MogulPowerFeedCard extends StatelessWidget {
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: AppColors.ivory,
+                        color: StylisteColors.ivory,
                         fontSize: 34.0,
                         fontWeight: FontWeight.w900,
                         height: 0.95,
@@ -107,7 +109,7 @@ class MogulPowerFeedCard extends StatelessWidget {
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: AppColors.ivory.withValues(alpha: 0.72),
+                        color: StylisteColors.ivory.withValues(alpha: 0.72),
                         fontSize: 13.0,
                         fontWeight: FontWeight.w600,
                         height: 1.35,
@@ -190,7 +192,7 @@ class _MetricChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 7.0),
       decoration: BoxDecoration(
-        color: AppColors.obsidian.withValues(alpha: 0.74),
+        color: StylisteColors.obsidian.withValues(alpha: 0.74),
         borderRadius: BorderRadius.circular(4.0),
         border: Border.all(color: accent.withValues(alpha: 0.38)),
       ),
@@ -201,7 +203,7 @@ class _MetricChip extends StatelessWidget {
           Text(
             metric.label,
             style: TextStyle(
-              color: AppColors.ivory.withValues(alpha: 0.46),
+              color: StylisteColors.ivory.withValues(alpha: 0.46),
               fontSize: 7.0,
               fontWeight: FontWeight.w900,
               letterSpacing: 1.2,
@@ -241,7 +243,7 @@ class _TickerStrip extends StatelessWidget {
       child: Text(
         isSystemEvent
             ? 'LIVE MARKET TRANSMISSION'
-            : 'CAPITAL MOVES. DISTRICTS SHIFT. RIVALS NOTICE.',
+            : 'HOUSE RECORD • SERVER-OWNED RESULT • NO HIDDEN ACTION',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
@@ -269,8 +271,8 @@ class _TickerBackdrop extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: <Color>[
             accent.withValues(alpha: 0.12),
-            AppColors.obsidianSurface,
-            AppColors.obsidian,
+            StylisteColors.obsidianSurface,
+            StylisteColors.obsidian,
           ],
         ),
       ),
@@ -295,10 +297,10 @@ class _PowerActionRail extends StatelessWidget {
   final Color accent;
   final int displayLikes;
   final bool actionsEnabled;
-  final VoidCallback onHype;
-  final VoidCallback onLike;
-  final VoidCallback onComment;
-  final VoidCallback onSave;
+  final VoidCallback? onHype;
+  final VoidCallback? onLike;
+  final VoidCallback? onComment;
+  final VoidCallback? onSave;
   final VoidCallback? onCollab;
   final String collabLabel;
 
@@ -316,25 +318,25 @@ class _PowerActionRail extends StatelessWidget {
         _RailButton(
           icon: Icons.favorite_border,
           label: displayLikes.toString(),
-          color: AppColors.ivory,
+          color: StylisteColors.ivory,
           onTap: actionsEnabled ? onLike : null,
         ),
         _RailButton(
           icon: Icons.mode_comment_outlined,
           label: 'COMMENT',
-          color: AppColors.ivory,
+          color: StylisteColors.ivory,
           onTap: actionsEnabled ? onComment : null,
         ),
         _RailButton(
           icon: Icons.bookmark_border,
           label: 'SAVE',
-          color: AppColors.ivory,
+          color: StylisteColors.ivory,
           onTap: actionsEnabled ? onSave : null,
         ),
         _RailButton(
           icon: Icons.group_add,
           label: collabLabel,
-          color: AppColors.ivory,
+          color: StylisteColors.ivory,
           onTap: actionsEnabled ? onCollab : null,
         ),
       ],
@@ -360,27 +362,32 @@ class _RailButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color effectiveColor =
-        color ?? AppColors.ivory.withValues(alpha: 0.32);
+        color ?? StylisteColors.ivory.withValues(alpha: 0.32);
     return Padding(
       padding: const EdgeInsets.only(top: 10.0),
-      child: GestureDetector(
-        onTap: onTap,
+      child: Semantics(
+        button: true,
+        enabled: _enabled,
+        label: label,
         child: Opacity(
           opacity: _enabled ? 1.0 : 0.46,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Container(
-                width: 42.0,
-                height: 42.0,
-                decoration: BoxDecoration(
-                  color: AppColors.obsidian.withValues(alpha: 0.72),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: effectiveColor.withValues(alpha: 0.36),
+              SizedBox.square(
+                dimension: 48,
+                child: IconButton(
+                  tooltip: label,
+                  onPressed: onTap,
+                  style: IconButton.styleFrom(
+                    backgroundColor:
+                        StylisteColors.obsidian.withValues(alpha: 0.72),
+                    side: BorderSide(
+                      color: effectiveColor.withValues(alpha: 0.36),
+                    ),
                   ),
+                  icon: Icon(icon, color: effectiveColor, size: 20),
                 ),
-                child: Icon(icon, color: effectiveColor, size: 20.0),
               ),
               const SizedBox(height: 3.0),
               SizedBox(

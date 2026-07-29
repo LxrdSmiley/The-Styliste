@@ -144,8 +144,8 @@ class AvatarConfig {
 BrandNameValidationResult validateBrandName(String name) {
   final String trimmed = name.trim();
 
-  if (trimmed.length < 3) return BrandNameValidationResult.tooShort;
-  if (trimmed.length > 15) return BrandNameValidationResult.tooLong;
+  if (trimmed.length < 2) return BrandNameValidationResult.tooShort;
+  if (trimmed.length > 40) return BrandNameValidationResult.tooLong;
 
   // Alphanumeric + single internal spaces only — no special chars
   final RegExp validPattern =
@@ -166,9 +166,9 @@ String? brandNameError(String name) {
   return switch (validateBrandName(name)) {
     BrandNameValidationResult.valid => null,
     BrandNameValidationResult.tooShort =>
-      'Brand name must be at least 3 characters.',
+      'House name must be at least 2 characters.',
     BrandNameValidationResult.tooLong =>
-      'Brand name must be 15 characters or fewer.',
+      'House name must be 40 characters or fewer.',
     BrandNameValidationResult.invalidChars =>
       'Alphanumeric characters only. No special symbols.',
     BrandNameValidationResult.blocklisted =>

@@ -12,9 +12,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/router/app_router.dart';
 import '../../../core/services/supabase_service.dart';
-import '../../../core/theme/aurelian_theme.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
-import '../../../core/widgets/gold_primary_button.dart';
+import '../../../core/widgets/aurelian_components.dart';
+import '../../../core/widgets/styliste_buttons.dart';
 import '../../../core/widgets/styliste_scaffold.dart';
 import '../../../domain/models/player.dart';
 import '../../../domain/repositories/player_repository.dart';
@@ -43,9 +43,18 @@ class _HqScreenState extends ConsumerState<HqScreen> {
 
     return playerAsync.when(
       // --- Obsidian loading gate (directive §3 — pure black, no flash) ---
-      loading: () => const StylisteScaffold(
+      loading: () => AurelianScaffold(
         mode: StylisteVisualMode.noirCinematic,
-        body: SizedBox.expand(),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: const AurelianStatePanel(
+              kind: AurelianStateKind.loading,
+              title: 'Restoring your Kingston HQ',
+              message: 'Reading the authenticated House projection.',
+            ),
+          ),
+        ),
       ),
 
       // --- Error state ---
@@ -124,68 +133,41 @@ class _HqErrorView extends ConsumerWidget {
     final bool missingProfile = error is PlayerProfileMissingException;
     final String message = _profileErrorMessage(error);
 
-    return StylisteScaffold(
+    return AurelianScaffold(
       mode: StylisteVisualMode.noirCinematic,
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Text(
-                missingProfile ? 'CREATE YOUR HOUSE' : 'CANNOT LOAD HQ',
-                style: const TextStyle(
-                  fontFamily: 'SpaceGrotesk',
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.w700,
-                  color: AurelianPalette.champagneGold,
-                  letterSpacing: 2.0,
+              AurelianStatePanel(
+                kind: missingProfile
+                    ? AurelianStateKind.empty
+                    : AurelianStateKind.retryableError,
+                title: missingProfile
+                    ? 'Your House has not been confirmed'
+                    : 'HQ is temporarily unavailable',
+                message: message,
+                actionLabel: missingProfile ? 'Start onboarding' : 'Retry HQ',
+                onAction: () {
+                  if (missingProfile) {
+                    context.go(AppRouter.onboardingAurelianGate);
+                    return;
+                  }
+                  ref.invalidate(hqPlayerStreamProvider);
+                  ref.invalidate(hqBrandStreamProvider);
+                },
+              ),
+              if (!missingProfile) ...<Widget>[
+                const SizedBox(height: 8),
+                IvorySecondaryButton(
+                  label: 'Sign out securely',
+                  icon: Icons.logout,
+                  onPressed: () => unawaited(SupabaseService.signOut()),
                 ),
-              ),
-              const SizedBox(height: 16.0),
-              Text(
-                message,
-                style: const TextStyle(
-                  fontFamily: 'SpaceGrotesk',
-                  fontSize: 16.0,
-                  color: AurelianPalette.textSecondary,
-                  height: 1.4,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40.0),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  if (!missingProfile)
-                    OutlinedButton(
-                      onPressed: () => SupabaseService.signOut(),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AurelianPalette.textTertiary,
-                        side: const BorderSide(
-                          color: AurelianPalette.textTertiary,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24.0,
-                          vertical: 12.0,
-                        ),
-                      ),
-                      child: const Text('SIGN OUT'),
-                    ),
-                  if (!missingProfile) const SizedBox(width: 16.0),
-                  GoldPrimaryButton(
-                    label: missingProfile ? 'Start Onboarding' : 'Retry',
-                    onPressed: () {
-                      if (missingProfile) {
-                        context.go(AppRouter.onboardingAurelianGate);
-                        return;
-                      }
-                      ref.invalidate(hqPlayerStreamProvider);
-                      ref.invalidate(hqBrandStreamProvider);
-                    },
-                  ),
-                ],
-              ),
+              ],
             ],
           ),
         ),

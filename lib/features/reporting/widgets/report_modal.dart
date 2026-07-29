@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/supabase_constants.dart';
 import '../../../core/services/supabase_service.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/styliste_colors.dart';
 
 class ReportModal extends StatefulWidget {
   const ReportModal({required this.reportedPlayerId, super.key});
@@ -79,7 +79,7 @@ class _ReportModalState extends State<ReportModal> {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: AppColors.obsidianCard,
+      color: StylisteColors.obsidianRaised,
       child: SafeArea(
         top: false,
         child: Padding(
@@ -96,7 +96,7 @@ class _ReportModalState extends State<ReportModal> {
               const Text(
                 'Report Player',
                 style: TextStyle(
-                  color: AppColors.ivory,
+                  color: StylisteColors.ivory,
                   fontSize: 18.0,
                   fontWeight: FontWeight.w700,
                 ),
@@ -121,15 +121,16 @@ class _ReportModalState extends State<ReportModal> {
                 minLines: 2,
                 maxLines: 4,
                 maxLength: 1000,
-                style: const TextStyle(color: AppColors.ivory),
+                style: const TextStyle(color: StylisteColors.ivory),
                 decoration: const InputDecoration(
                   hintText: 'Add context',
-                  hintStyle: TextStyle(color: AppColors.grey400),
+                  hintStyle: TextStyle(color: StylisteColors.warmGrey),
                 ),
               ),
               if (_error != null) ...<Widget>[
                 const SizedBox(height: 12.0),
-                Text(_error!, style: const TextStyle(color: AppColors.danger)),
+                Text(_error!,
+                    style: const TextStyle(color: StylisteColors.rivalRed)),
               ],
               const SizedBox(height: 16.0),
               FilledButton(

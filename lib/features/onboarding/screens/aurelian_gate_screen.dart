@@ -1,32 +1,22 @@
-// GDD v6 §1.1 Screen 1 — Aurelian Gate
-// Biometric fingerprint scan with haptic heartbeat and liquid gold ripple
-// Replaces ObsidianGateScreen — Alabaster Standard onboarding entry point
-// PROJECT_RULES §1 — 60fps via Impeller FragmentShader; no CPU physics
+// GDD v8 §§18, 21, 22 — Opening Sanctuary and age gate.
 
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/aurelian_theme.dart';
-import '../painters/aurelian_gate_painter.dart';
-import '../widgets/verlet_ribbon_painter.dart';
+import '../../../core/theme/styliste_colors.dart';
+import '../../../core/theme/styliste_spacing.dart';
+import '../../../core/theme/styliste_typography.dart';
+import '../../../core/theme/styliste_visual_mode.dart';
+import '../../../core/widgets/aurelian_components.dart';
+import '../../../core/widgets/styliste_buttons.dart';
+import '../../../core/widgets/styliste_scaffold.dart';
 
-// -----------------------------------------------------------------------------
-// Phase State Machine
-// -----------------------------------------------------------------------------
-enum _GatePhase { idle, pressing, charging, complete }
-
-// -----------------------------------------------------------------------------
-// Aurelian Gate Screen
-// -----------------------------------------------------------------------------
+enum _GateState { checkingAge, ready, denied }
 
 class AurelianGateScreen extends ConsumerStatefulWidget {
   const AurelianGateScreen({super.key});
@@ -35,37 +25,12 @@ class AurelianGateScreen extends ConsumerStatefulWidget {
   ConsumerState<AurelianGateScreen> createState() => _AurelianGateScreenState();
 }
 
-class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
-    with TickerProviderStateMixin {
-  // Biometric scan timing
-  static const Duration _chargeDuration = Duration(milliseconds: 3000);
-  static const Duration _hapticInterval = Duration(milliseconds: 1000);
-
-  _GatePhase _phase = _GatePhase.idle;
-  ui.FragmentProgram? _shaderProgram;
-  late final AnimationController _chargeController;
-  late final AnimationController _fadeController;
-  late final VerletRibbon _ribbon;
-  Timer? _hapticTimer;
-
-  // Touch tracking for shader
-  Offset _touchPosition = const Offset(0.5, 0.5);
+class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen> {
+  _GateState _state = _GateState.checkingAge;
 
   @override
   void initState() {
     super.initState();
-    _chargeController = AnimationController(
-      vsync: this,
-      duration: _chargeDuration,
-    );
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-    _ribbon = VerletRibbon();
-    _loadShader();
-
-    // GDD §10.1 — Age-gate mechanism at onboarding
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_checkAgeGate());
     });
@@ -73,309 +38,128 @@ class _AurelianGateScreenState extends ConsumerState<AurelianGateScreen>
 
   Future<void> _checkAgeGate() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool('age_gate_passed') ?? false) return;
-
+    if (prefs.getBool('age_gate_passed') ?? false) {
+      if (mounted) setState(() => _state = _GateState.ready);
+      return;
+    }
     if (!mounted) return;
-    if (!mounted) return;
-
-    final bool? passed = await showDialog<bool>(
+    final bool? eligible = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext ctx) => const _AgeGateDialog(),
+      builder: (BuildContext context) => const _AgeGateDialog(),
     );
-
-    if (passed ?? false) {
-      await prefs.setBool('age_gate_passed', true);
-    } else {
-      // App exit for under-13
-      unawaited(SystemNavigator.pop());
-    }
-  }
-
-  Future<void> _loadShader() async {
-    final ui.FragmentProgram program = await loadLiquidGoldShader();
     if (!mounted) return;
-
-    setState(() {
-      _shaderProgram = program;
-    });
-
-    // Initialize ribbon after layout
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final Size size = MediaQuery.sizeOf(context);
-      _ribbon.initialize(
-        size.width * 0.1,
-        size.height * 0.2,
-        25.0,
-      );
-    });
-  }
-
-  // -----------------------------------------------------------------------------
-  // Haptic Heartbeat
-  // -----------------------------------------------------------------------------
-
-  void _startHapticHeartbeat() {
-    // Initial beat immediately
-    HapticFeedback.heavyImpact();
-
-    // Repeating heartbeat every 1000ms
-    _hapticTimer = Timer.periodic(_hapticInterval, (Timer timer) {
-      if (!mounted || _phase == _GatePhase.idle) {
-        timer.cancel();
-        return;
-      }
-      HapticFeedback.heavyImpact();
-    });
-  }
-
-  void _stopHapticHeartbeat() {
-    _hapticTimer?.cancel();
-    _hapticTimer = null;
-  }
-
-  // -----------------------------------------------------------------------------
-  // Biometric Interaction
-  // -----------------------------------------------------------------------------
-
-  void _onPressStart(LongPressStartDetails details) {
-    if (_phase != _GatePhase.idle || _shaderProgram == null) return;
-
-    final Size size = MediaQuery.sizeOf(context);
-    setState(() {
-      _phase = _GatePhase.pressing;
-      _touchPosition = Offset(
-        details.globalPosition.dx / size.width,
-        details.globalPosition.dy / size.height,
-      );
-    });
-
-    _startHapticHeartbeat();
-    unawaited(_chargeController.forward(from: 0.0));
-
-    // Monitor charge progress
-    _chargeController.addStatusListener(_onChargeStatusChanged);
-  }
-
-  void _onPressEnd(LongPressEndDetails details) {
-    if (_phase != _GatePhase.charging && _phase != _GatePhase.pressing) return;
-
-    _stopHapticHeartbeat();
-    _chargeController.removeStatusListener(_onChargeStatusChanged);
-
-    if (_phase != _GatePhase.complete) {
-      // Charge interrupted — animate back to idle
-      _chargeController.animateBack(
-        0.0,
-        duration: const Duration(milliseconds: 300),
-      );
-      setState(() => _phase = _GatePhase.idle);
+    if (eligible ?? false) {
+      await prefs.setBool('age_gate_passed', true);
+      if (mounted) setState(() => _state = _GateState.ready);
+    } else {
+      setState(() => _state = _GateState.denied);
     }
   }
-
-  void _onChargeStatusChanged(AnimationStatus status) {
-    if (status == AnimationStatus.completed && mounted) {
-      setState(() => _phase = _GatePhase.complete);
-      _stopHapticHeartbeat();
-      _performTransition();
-    } else if (status == AnimationStatus.forward &&
-        _phase == _GatePhase.pressing) {
-      setState(() => _phase = _GatePhase.charging);
-    }
-  }
-
-  void _performTransition() {
-    // Fade to white
-    unawaited(
-      _fadeController.forward().then((_) {
-        if (mounted) {
-          context.go(
-            AppRouter.onboardingOriginScript,
-          );
-        }
-      }),
-    );
-  }
-
-  // -----------------------------------------------------------------------------
-  // Ribbon Physics Tick
-  // -----------------------------------------------------------------------------
-
-  void _onRibbonTick(Duration elapsed) {
-    if (!mounted || _ribbon.points.isEmpty) return;
-
-    final Size size = MediaQuery.sizeOf(context);
-    const double dt = 1.0 / 60.0; // Fixed timestep for stable physics
-    _ribbon.update(dt, size);
-  }
-
-  @override
-  void dispose() {
-    _stopHapticHeartbeat();
-    _chargeController.dispose();
-    _fadeController.dispose();
-    super.dispose();
-  }
-
-  // -----------------------------------------------------------------------------
-  // Build
-  // -----------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.sizeOf(context);
-
-    return Scaffold(
-      backgroundColor: AurelianPalette.ivory,
-      body: TickerMode(
-        enabled: true,
-        child: Stack(
-          children: <Widget>[
-            // --- Layer 1: Verlet Ribbon (drifts behind everything) ---
-            if (_shaderProgram != null)
-              TickerBuilder(
-                onTick: _onRibbonTick,
-                child: CustomPaint(
-                  size: size,
-                  painter: VerletRibbonPainter(
-                    ribbon: _ribbon,
-                    animation: _chargeController,
-                  ),
-                ),
-              ),
-
-            // --- Layer 2: Liquid Gold Shader Background ---
-            if (_shaderProgram != null)
-              AnimatedBuilder(
-                animation: _chargeController,
-                builder: (BuildContext ctx, Widget? _) {
-                  return CustomPaint(
-                    size: size,
-                    painter: AurelianGatePainter(
-                      shader: _shaderProgram!.fragmentShader(),
-                      time: DateTime.now().millisecondsSinceEpoch / 1000.0,
-                      touchPosition: _touchPosition,
-                      charge: _chargeController.value,
-                    ),
-                  );
-                },
-              ),
-
-            // --- Layer 3: Fingerprint Interaction Zone ---
-            GestureDetector(
-              onLongPressStart: _onPressStart,
-              onLongPressEnd: _onPressEnd,
-              child: Container(
-                width: size.width,
-                height: size.height,
-                color: Colors.transparent,
-                child: Center(
-                  child: AnimatedBuilder(
-                    animation: _chargeController,
-                    builder: (BuildContext ctx, Widget? _) {
-                      final double scale = 1.0 + _chargeController.value * 0.2;
-                      final double opacity = _phase == _GatePhase.idle
-                          ? 0.6
-                          : 0.3 + _chargeController.value * 0.7;
-
-                      return Transform.scale(
-                        scale: scale,
-                        child: Icon(
-                          Icons.fingerprint,
-                          size: 80.0,
-                          color: AurelianPalette.champagneGold
-                              .withValues(alpha: opacity),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+    return AurelianScaffold(
+      mode: StylisteVisualMode.noirCinematic,
+      body: Stack(
+        children: <Widget>[
+          const Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(painter: _SanctuaryLinePainter()),
             ),
-
-            // --- Layer 4: Title (appears at full charge) ---
-            if (_phase == _GatePhase.complete)
-              Center(
-                child: const Text(
-                  'THE STYLISTE',
-                  style: TextStyle(
-                    color: AurelianPalette.champagneGold,
-                    fontSize: 32.0,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 8.0,
-                    fontFamily: 'SpaceGrotesk',
-                  ),
-                )
-                    .animate()
-                    .fadeIn(duration: const Duration(milliseconds: 400))
-                    .slideY(
-                      begin: 0.1,
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeOut,
-                    ),
-              ),
-
-            // --- Layer 5: White Fade Overlay (for transition) ---
-            IgnorePointer(
-              ignoring: _fadeController.value == 0.0,
-              child: AnimatedBuilder(
-                animation: _fadeController,
-                builder: (BuildContext ctx, Widget? _) {
-                  return Opacity(
-                    opacity: _fadeController.value,
-                    child: Container(
-                      width: size.width,
-                      height: size.height,
-                      color: Colors.white,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+          ),
+          AurelianResponsiveBody(
+            maxWidth: 520,
+            child: switch (_state) {
+              _GateState.checkingAge => const AurelianStatePanel(
+                  kind: AurelianStateKind.loading,
+                  title: 'Preparing the Sanctuary',
+                  message: 'Checking the local age-gate record.',
+                ),
+              _GateState.denied => const AurelianStatePanel(
+                  kind: AurelianStateKind.permissionDenied,
+                  title: 'The Sanctuary cannot open',
+                  message:
+                      'The Styliste is available only to players who meet the minimum age requirement.',
+                ),
+              _GateState.ready => const _SanctuaryInvitation(),
+            },
+          ),
+        ],
       ),
     );
   }
 }
 
-// -----------------------------------------------------------------------------
-// TickerBuilder Helper Widget
-// -----------------------------------------------------------------------------
-
-class TickerBuilder extends StatefulWidget {
-  const TickerBuilder({
-    required this.onTick,
-    required this.child,
-    super.key,
-  });
-
-  final void Function(Duration elapsed) onTick;
-  final Widget child;
+class _SanctuaryInvitation extends StatelessWidget {
+  const _SanctuaryInvitation();
 
   @override
-  State<TickerBuilder> createState() => _TickerBuilderState();
-}
-
-class _TickerBuilderState extends State<TickerBuilder>
-    with SingleTickerProviderStateMixin {
-  late final Ticker _ticker;
-
-  @override
-  void initState() {
-    super.initState();
-    _ticker = createTicker(widget.onTick);
-    _ticker.start();
+  Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      label:
+          'Opening Sanctuary. Your House begins in Kingston. Enter the Sanctuary.',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              width: 64,
+              height: 64,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: StylisteColors.champagneGold,
+                  width: 1.5,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                'S',
+                style: TextStyle(
+                  color: StylisteColors.champagneGold,
+                  fontFamily: StylisteText.displayFamily,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: StylisteSpacing.xl),
+          Text(
+            'THE OPENING\nSANCTUARY',
+            style: StylisteText.displayHero.copyWith(
+              color: StylisteColors.ivory,
+            ),
+          ),
+          const SizedBox(height: StylisteSpacing.md),
+          Text(
+            'Your House begins in Kingston: at the meeting point of tailoring, sound, streetwear, and global creative ambition.',
+            style: StylisteText.bodyLarge.copyWith(
+              color: StylisteColors.warmGrey,
+            ),
+          ),
+          const SizedBox(height: StylisteSpacing.xl),
+          GoldPrimaryButton(
+            label: 'Enter the Sanctuary',
+            icon: Icons.arrow_forward,
+            onPressed: () => context.go(AppRouter.onboardingOriginScript),
+          ),
+          const SizedBox(height: StylisteSpacing.sm),
+          Text(
+            'No purchase, reward, or progression is created on this screen.',
+            textAlign: TextAlign.center,
+            style: StylisteText.bodySmall.copyWith(
+              color: StylisteColors.warmGreyDark,
+            ),
+          ),
+        ],
+      ),
+    );
   }
-
-  @override
-  void dispose() {
-    _ticker.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.child;
 }
 
 class _AgeGateDialog extends StatelessWidget {
@@ -384,53 +168,59 @@ class _AgeGateDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AurelianPalette.ivory,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AurelianPalette.champagneGold),
-      ),
-      title: const Text(
-        'AGE VERIFICATION',
-        style: TextStyle(
-          color: AurelianPalette.textPrimary,
-          fontFamily: 'SpaceGrotesk',
-          fontWeight: FontWeight.w700,
-          letterSpacing: 2.0,
-        ),
-      ),
+      title: const Text('Before the Sanctuary opens'),
       content: const Text(
-        'The Styliste is designed for players aged 13 and older.\n\n'
-        'Are you 13 years of age or older?',
-        style: TextStyle(
-          color: AurelianPalette.textPrimary,
-          fontFamily: 'SpaceGrotesk',
-          height: 1.5,
-        ),
+        'Please confirm that you meet the minimum age requirement for The Styliste.',
       ),
+      actionsOverflowDirection: VerticalDirection.up,
+      actionsOverflowAlignment: OverflowBarAlignment.center,
       actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text(
-            'NO — EXIT',
-            style: TextStyle(
-              color: AurelianPalette.textTertiary,
-              fontFamily: 'SpaceGrotesk',
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+        IvorySecondaryButton(
+          label: 'I am under 13',
+          onPressed: () => Navigator.of(context).pop(false),
         ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text(
-            'YES — CONTINUE',
-            style: TextStyle(
-              color: AurelianPalette.champagneGold,
-              fontFamily: 'SpaceGrotesk',
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+        GoldPrimaryButton(
+          label: 'I am 13 or older',
+          onPressed: () => Navigator.of(context).pop(true),
         ),
       ],
     );
   }
+}
+
+class _SanctuaryLinePainter extends CustomPainter {
+  const _SanctuaryLinePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint line = Paint()
+      ..color = StylisteColors.champagneGold.withValues(alpha: 0.12)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    final Path path = Path()
+      ..moveTo(size.width * 0.67, 0)
+      ..cubicTo(
+        size.width * 0.56,
+        size.height * 0.25,
+        size.width * 0.92,
+        size.height * 0.42,
+        size.width * 0.72,
+        size.height,
+      );
+    canvas.drawPath(path, line);
+
+    final Paint measure = Paint()
+      ..color = StylisteColors.roseAccent.withValues(alpha: 0.08)
+      ..strokeWidth = 1;
+    for (double y = 80; y < size.height; y += 48) {
+      canvas.drawLine(
+        Offset(size.width - 36, y),
+        Offset(size.width - (y % 96 == 0 ? 56 : 44), y),
+        measure,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SanctuaryLinePainter oldDelegate) => false;
 }

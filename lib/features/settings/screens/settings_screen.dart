@@ -1,11 +1,15 @@
-// GDD §3.6 — Settings: Expert/Casual toggle, accessibility, legal
-// Expert Mode: shows live demand variables in Ledger (GDD §8.9.11)
-// Luxe acknowledges every mode switch with a personalised line
+// GDD v8 §§18, 21, 22 — accessibility, presentation, and legal controls.
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/theme/styliste_colors.dart';
+import '../../../core/theme/styliste_spacing.dart';
+import '../../../core/theme/styliste_typography.dart';
+import '../../../core/theme/styliste_visual_mode.dart';
+import '../../../core/widgets/aurelian_components.dart';
+import '../../../core/widgets/styliste_buttons.dart';
+import '../../../core/widgets/styliste_scaffold.dart';
 import '../../legal/legal_documents.dart';
 import '../../legal/screens/legal_document_screen.dart';
 
@@ -25,7 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _expertMode = false;
   bool _reducedMotion = false;
   bool _highContrast = false;
-  double _textScale = 1.0;
+  double _textScale = 1;
   bool _loading = true;
 
   @override
@@ -36,112 +40,62 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadPreferences() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
     setState(() {
       _expertMode = prefs.getBool(_kExpertModeKey) ?? false;
       _reducedMotion = prefs.getBool(_kReducedMotionKey) ?? false;
       _highContrast = prefs.getBool(_kHighContrastKey) ?? false;
-      _textScale = prefs.getDouble(_kTextScaleKey) ?? 1.0;
+      _textScale = prefs.getDouble(_kTextScaleKey) ?? 1;
       _loading = false;
     });
   }
 
-  Future<void> _setExpertMode({required bool value}) async {
+  Future<void> _saveBool(String key, bool value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kExpertModeKey, value);
-    setState(() => _expertMode = value);
+    await prefs.setBool(key, value);
   }
 
-  Future<void> _setReducedMotion({required bool value}) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kReducedMotionKey, value);
-    setState(() => _reducedMotion = value);
+  Future<void> _onExpertModeToggle(bool value) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(value ? 'Enable Expert Mode?' : 'Use guided presentation?'),
+        content: Text(
+          value
+              ? 'Expert Mode reveals more explanatory variables. It does not change outcomes, scoring ceilings, or rewards.'
+              : 'Guided presentation reduces information density. Server-owned rules remain identical.',
+        ),
+        actions: <Widget>[
+          IvorySecondaryButton(
+            label: 'Cancel',
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          GoldPrimaryButton(
+            label: 'Confirm presentation',
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (!(confirmed ?? false)) return;
+    await _saveBool(_kExpertModeKey, value);
+    if (mounted) setState(() => _expertMode = value);
   }
 
-  Future<void> _setHighContrast({required bool value}) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kHighContrastKey, value);
-    setState(() => _highContrast = value);
+  Future<void> _toggleReducedMotion(bool value) async {
+    await _saveBool(_kReducedMotionKey, value);
+    if (mounted) setState(() => _reducedMotion = value);
+  }
+
+  Future<void> _toggleHighContrast(bool value) async {
+    await _saveBool(_kHighContrastKey, value);
+    if (mounted) setState(() => _highContrast = value);
   }
 
   Future<void> _setTextScale(double value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(_kTextScaleKey, value);
-    setState(() => _textScale = value);
-  }
-
-  // GDD §3.6 — Luxe acknowledges the mode switch with a personalised line
-  Future<void> _onExpertModeToggle(bool newValue) async {
-    final String luxeLine = newValue
-        ? "The numbers don't lie, darling. Let's see what you're made of."
-        : 'Smart. The empire matters more than the spreadsheet.';
-
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext ctx) => AlertDialog(
-        backgroundColor: AurelianPalette.textPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AurelianPalette.champagneGold),
-        ),
-        title: Row(
-          children: <Widget>[
-            const Icon(
-              Icons.auto_awesome,
-              color: AurelianPalette.champagneGold,
-              size: 20,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              newValue ? 'EXPERT MODE' : 'CASUAL MODE',
-              style: const TextStyle(
-                color: AurelianPalette.champagneGold,
-                fontFamily: 'SpaceGrotesk',
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          '\u201C$luxeLine\u201D\n\n— Luxe',
-          style: const TextStyle(
-            color: AurelianPalette.ivory,
-            fontFamily: 'SpaceGrotesk',
-            fontStyle: FontStyle.italic,
-            fontSize: 14,
-            height: 1.5,
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
-              'CANCEL',
-              style: TextStyle(
-                color: AurelianPalette.textTertiary,
-                fontFamily: 'SpaceGrotesk',
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
-              'CONFIRM',
-              style: TextStyle(
-                color: AurelianPalette.champagneGold,
-                fontFamily: 'SpaceGrotesk',
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed ?? false) {
-      await _setExpertMode(value: newValue);
-    }
+    if (mounted) setState(() => _textScale = value);
   }
 
   void _openLegalDocument(LegalDocument document) {
@@ -155,331 +109,271 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AurelianPalette.textPrimary,
-      appBar: AppBar(
-        backgroundColor: AurelianPalette.textPrimary,
-        elevation: 0,
+    return AurelianScaffold(
+      mode: StylisteVisualMode.noirCinematic,
+      appBar: AurelianContextualAppBar(
+        eyebrow: 'House',
+        title: 'Settings & Legal',
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: AurelianPalette.champagneGold,
-            size: 20,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'SETTINGS',
-          style: TextStyle(
-            color: AurelianPalette.champagneGold,
-            fontFamily: 'SpaceGrotesk',
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 2,
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(
-            height: 1,
-            color: AurelianPalette.champagneGold.withValues(alpha: 0.2),
-          ),
+          tooltip: 'Return to House',
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.arrow_back),
         ),
       ),
       body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: AurelianPalette.champagneGold,
+          ? Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: const AurelianStatePanel(
+                  kind: AurelianStateKind.loading,
+                  title: 'Restoring your preferences',
+                  message:
+                      'Reading local presentation and accessibility choices.',
+                ),
               ),
             )
-          : ListView(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              children: <Widget>[
-                // ── EXPERIENCE ────────────────────────────────────────────
-                const _SectionHeader(label: 'EXPERIENCE'),
-                _SettingsTile(
-                  icon: Icons.analytics_outlined,
-                  title: 'Expert Mode',
-                  subtitle:
-                      'Shows live demand variables, market formulas, and advanced\neconomic indicators in the Ledger.',
-                  trailing: Switch(
-                    value: _expertMode,
-                    onChanged: _onExpertModeToggle,
-                    activeThumbColor: AurelianPalette.champagneGold,
-                    activeTrackColor:
-                        AurelianPalette.champagneGold.withValues(alpha: 0.3),
-                    inactiveThumbColor: AurelianPalette.textTertiary,
-                    inactiveTrackColor:
-                        AurelianPalette.textTertiary.withValues(alpha: 0.2),
+          : AurelianResponsiveBody(
+              maxWidth: 620,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  const AurelianSectionHeader(
+                    eyebrow: 'Presentation',
+                    title: 'Choose how much information you see',
+                    detail:
+                        'These controls change presentation only. They never change economic or progression authority.',
                   ),
-                ),
-                _ExpertModeChip(active: _expertMode),
-                const SizedBox(height: 24),
-
-                const _SectionHeader(label: 'ACCESSIBILITY'),
-                _SettingsTile(
-                  icon: Icons.motion_photos_off_outlined,
-                  title: 'Reduced Motion',
-                  subtitle:
-                      'Limits decorative motion and animated transitions.',
-                  trailing: Switch(
-                    value: _reducedMotion,
-                    onChanged: (bool v) => _setReducedMotion(value: v),
-                    activeThumbColor: AurelianPalette.champagneGold,
-                    activeTrackColor:
-                        AurelianPalette.champagneGold.withValues(alpha: 0.3),
-                    inactiveThumbColor: AurelianPalette.textTertiary,
-                    inactiveTrackColor:
-                        AurelianPalette.textTertiary.withValues(alpha: 0.2),
-                  ),
-                ),
-                _SettingsTile(
-                  icon: Icons.contrast_outlined,
-                  title: 'High Contrast',
-                  subtitle:
-                      'Strengthens borders, labels, and critical status colors.',
-                  trailing: Switch(
-                    value: _highContrast,
-                    onChanged: (bool v) => _setHighContrast(value: v),
-                    activeThumbColor: AurelianPalette.champagneGold,
-                    activeTrackColor:
-                        AurelianPalette.champagneGold.withValues(alpha: 0.3),
-                    inactiveThumbColor: AurelianPalette.textTertiary,
-                    inactiveTrackColor:
-                        AurelianPalette.textTertiary.withValues(alpha: 0.2),
-                  ),
-                ),
-                _SettingsTile(
-                  icon: Icons.text_fields_outlined,
-                  title: 'Text Scale',
-                  subtitle:
-                      'Adjusts in-app reading comfort from compact to large.',
-                  trailing: SizedBox(
-                    width: 150,
-                    child: Slider(
-                      value: _textScale,
-                      min: 0.9,
-                      max: 1.3,
-                      divisions: 4,
-                      label: '${(_textScale * 100).round()}%',
-                      activeColor: AurelianPalette.champagneGold,
-                      inactiveColor:
-                          AurelianPalette.textTertiary.withValues(alpha: 0.25),
-                      onChanged: _setTextScale,
+                  const SizedBox(height: StylisteSpacing.md),
+                  AurelianCard(
+                    child: Column(
+                      children: <Widget>[
+                        _SettingsSwitch(
+                          icon: Icons.analytics_outlined,
+                          title: 'Expert Mode',
+                          subtitle:
+                              'Reveal more explanatory variables without changing outcomes.',
+                          value: _expertMode,
+                          onChanged: _onExpertModeToggle,
+                        ),
+                        const Divider(height: StylisteSpacing.lg),
+                        _SettingsSwitch(
+                          icon: Icons.motion_photos_off_outlined,
+                          title: 'Reduced motion',
+                          subtitle:
+                              'Prefer restrained transitions and static visual fallbacks.',
+                          value: _reducedMotion,
+                          onChanged: _toggleReducedMotion,
+                        ),
+                        const Divider(height: StylisteSpacing.lg),
+                        _SettingsSwitch(
+                          icon: Icons.contrast_outlined,
+                          title: 'High contrast',
+                          subtitle:
+                              'Use stronger local contrast where supported.',
+                          value: _highContrast,
+                          onChanged: _toggleHighContrast,
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-
-                // ── NOTIFICATIONS ─────────────────────────────────────────
-                const _SectionHeader(label: 'NOTIFICATIONS'),
-                const _SettingsTile(
-                  icon: Icons.notifications_outlined,
-                  title: 'Push Notifications — Not Available',
-                  subtitle: 'Disabled in the current Early Game mobile build.',
-                  trailing: Icon(
-                    Icons.lock_outline,
-                    color: AurelianPalette.textTertiary,
+                  const SizedBox(height: StylisteSpacing.md),
+                  AurelianCard(
+                    semanticLabel:
+                        'Text scale. Current ${(_textScale * 100).round()} percent.',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const _SettingTitle(
+                          icon: Icons.text_fields,
+                          title: 'Text scale preview',
+                          subtitle:
+                              'System text scaling remains authoritative; this stores an in-game preference for supported surfaces.',
+                        ),
+                        Slider(
+                          value: _textScale,
+                          min: 1,
+                          max: 1.5,
+                          divisions: 5,
+                          label: '${(_textScale * 100).round()}%',
+                          onChanged: (double value) =>
+                              setState(() => _textScale = value),
+                          onChangeEnd: _setTextScale,
+                        ),
+                        Text(
+                          '${(_textScale * 100).round()}% preview',
+                          textScaler: TextScaler.linear(_textScale),
+                          style: StylisteText.body,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-
-                // ── LEGAL ──────────────────────────────────────────────────
-                const _SectionHeader(label: 'LEGAL'),
-                for (final LegalDocument document in LegalDocuments.all)
-                  _SettingsLinkTile(
-                    icon: document.icon,
-                    title: document.title,
-                    subtitle: document.summary,
-                    onTap: () => _openLegalDocument(document),
+                  const SizedBox(height: StylisteSpacing.lg),
+                  const AurelianSectionHeader(
+                    eyebrow: 'Legal',
+                    title: 'Alpha documents',
+                    detail:
+                        'Bundled review copies remain clearly separated from final counsel-approved launch text.',
                   ),
-                const SizedBox(height: 48),
-
-                // ── VERSION ────────────────────────────────────────────────
-                Center(
-                  child: Text(
-                    'THE STYLISTE  v0.1.0-alpha.1\nSkinTeethNerd Studios',
+                  const SizedBox(height: StylisteSpacing.md),
+                  ...LegalDocuments.all.map(
+                    (LegalDocument document) => Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: StylisteSpacing.sm,
+                      ),
+                      child: _LegalDocumentTile(
+                        document: document,
+                        onTap: () => _openLegalDocument(document),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: StylisteSpacing.md),
+                  Text(
+                    'THE STYLISTE  v0.1.0-alpha.1',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color:
-                          AurelianPalette.textTertiary.withValues(alpha: 0.5),
-                      fontFamily: 'SpaceGrotesk',
-                      fontSize: 11,
-                      height: 1.6,
-                      letterSpacing: 0.5,
+                    style: StylisteText.labelCaps.copyWith(
+                      color: StylisteColors.warmGrey,
                     ),
                   ),
-                ),
-                const SizedBox(height: 32),
-              ],
+                ],
+              ),
             ),
     );
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: AurelianPalette.champagneGold,
-          fontFamily: 'SpaceGrotesk',
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 2,
-        ),
-      ),
-    );
-  }
-}
-
-class _SettingsTile extends StatelessWidget {
-  const _SettingsTile({
+class _SettingsSwitch extends StatelessWidget {
+  const _SettingsSwitch({
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.trailing,
+    required this.value,
+    required this.onChanged,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
-  final Widget trailing;
+  final bool value;
+  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: AurelianPalette.ivory.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AurelianPalette.champagneGold.withValues(alpha: 0.15),
+    return Semantics(
+      toggled: value,
+      label: '$title. $subtitle',
+      child: SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        secondary: Icon(
+          icon,
+          color: StylisteColors.champagneGold,
+          semanticLabel: title,
         ),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Icon(icon, color: AurelianPalette.champagneGold, size: 22),
-        title: Text(
-          title,
-          style: const TextStyle(
-            color: AurelianPalette.ivory,
-            fontFamily: 'SpaceGrotesk',
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        title: Text(title, style: StylisteText.title),
         subtitle: Text(
           subtitle,
-          style: TextStyle(
-            color: AurelianPalette.textTertiary.withValues(alpha: 0.7),
-            fontFamily: 'SpaceGrotesk',
-            fontSize: 12,
-            height: 1.4,
+          style: StylisteText.bodySmall.copyWith(
+            color: StylisteColors.warmGrey,
           ),
         ),
-        trailing: trailing,
+        value: value,
+        onChanged: onChanged,
       ),
     );
   }
 }
 
-class _SettingsLinkTile extends StatelessWidget {
-  const _SettingsLinkTile({
+class _SettingTitle extends StatelessWidget {
+  const _SettingTitle({
     required this.icon,
     required this.title,
     required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Icon(
+          icon,
+          color: StylisteColors.champagneGold,
+          semanticLabel: title,
+        ),
+        const SizedBox(width: StylisteSpacing.sm),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(title, style: StylisteText.title),
+              Text(
+                subtitle,
+                style: StylisteText.bodySmall.copyWith(
+                  color: StylisteColors.warmGrey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LegalDocumentTile extends StatelessWidget {
+  const _LegalDocumentTile({
+    required this.document,
     required this.onTap,
   });
 
-  final IconData icon;
-  final String title;
-  final String subtitle;
+  final LegalDocument document;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: AurelianPalette.ivory.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AurelianPalette.champagneGold.withValues(alpha: 0.15),
-        ),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Icon(icon, color: AurelianPalette.champagneGold, size: 22),
-        title: Text(
-          title,
-          style: const TextStyle(
-            color: AurelianPalette.ivory,
-            fontFamily: 'SpaceGrotesk',
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            color: AurelianPalette.textTertiary.withValues(alpha: 0.66),
-            fontFamily: 'SpaceGrotesk',
-            fontSize: 11,
-            height: 1.35,
-          ),
-        ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          color: AurelianPalette.textTertiary,
-          size: 14,
-        ),
-      ),
-    );
-  }
-}
-
-class _ExpertModeChip extends StatelessWidget {
-  const _ExpertModeChip({required this.active});
-
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      child: Row(
-        children: <Widget>[
-          Icon(
-            active ? Icons.visibility : Icons.visibility_off,
-            size: 13,
-            color: active
-                ? AurelianPalette.champagneGold
-                : AurelianPalette.textTertiary.withValues(alpha: 0.5),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            active
-                ? 'Live demand variables visible in the Ledger'
-                : 'Simplified demand indicators active',
-            style: TextStyle(
-              color: active
-                  ? AurelianPalette.champagneGold.withValues(alpha: 0.7)
-                  : AurelianPalette.textTertiary.withValues(alpha: 0.4),
-              fontFamily: 'SpaceGrotesk',
-              fontSize: 11,
-              fontStyle: FontStyle.italic,
+    return Semantics(
+      button: true,
+      label: '${document.title}. ${document.summary}',
+      child: AurelianCard(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: StylisteSpacing.minTapTarget,
+            ),
+            child: Row(
+              children: <Widget>[
+                Icon(
+                  document.icon,
+                  color: StylisteColors.champagneGold,
+                  semanticLabel: document.shortTitle,
+                ),
+                const SizedBox(width: StylisteSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(document.title, style: StylisteText.title),
+                      const SizedBox(height: StylisteSpacing.xxs),
+                      Text(
+                        document.summary,
+                        style: StylisteText.bodySmall.copyWith(
+                          color: StylisteColors.warmGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: StylisteSpacing.xs),
+                const Icon(Icons.chevron_right),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

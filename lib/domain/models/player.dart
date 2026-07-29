@@ -36,6 +36,8 @@ extension CareerPathApi on CareerPath {
 
 /// Starting HQ city and market tier (GDD §1.1 Screen 4)
 enum HqCity {
+  @JsonValue('kingston')
+  kingston,
   @JsonValue('new_york')
   newYork,
   @JsonValue('paris')
@@ -56,6 +58,7 @@ enum HqCity {
 
 extension HqCityApi on HqCity {
   String get apiValue => switch (this) {
+        HqCity.kingston => 'kingston',
         HqCity.newYork => 'new_york',
         HqCity.paris => 'paris',
         HqCity.tokyo => 'tokyo',

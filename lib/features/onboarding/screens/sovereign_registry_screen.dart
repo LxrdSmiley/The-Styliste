@@ -1,17 +1,19 @@
-// GDD §1.1 Screen 3 — Sovereign Registry
-// Brand naming screen: minimalist input, animated gold underline on focus,
-// live validation (3–15 chars, alphanumeric, blocklist), feed name preview.
-// Stores brand_name in onboardingProvider and advances to Career Path.
+// GDD v8 §§18, 21, 22 — local House-name intent before Founder Trial.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/providers/onboarding_provider.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/styliste_colors.dart';
+import '../../../core/theme/styliste_spacing.dart';
+import '../../../core/theme/styliste_typography.dart';
+import '../../../core/theme/styliste_visual_mode.dart';
+import '../../../core/widgets/aurelian_components.dart';
+import '../../../core/widgets/styliste_buttons.dart';
+import '../../../core/widgets/styliste_scaffold.dart';
 
 class SovereignRegistryScreen extends ConsumerStatefulWidget {
   const SovereignRegistryScreen({super.key});
@@ -24,29 +26,14 @@ class SovereignRegistryScreen extends ConsumerStatefulWidget {
 class _SovereignRegistryScreenState
     extends ConsumerState<SovereignRegistryScreen> {
   final TextEditingController _controller = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  bool _focused = false;
   String? _liveError;
 
   @override
   void initState() {
     super.initState();
-    _focusNode.addListener(_onFocusChange);
-    // Restore any in-progress brand name from provider.
     final String saved = ref.read(onboardingProvider).brandName;
-    if (saved.isNotEmpty) {
-      _controller.text = saved;
-    }
-    // Auto-focus on next frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _focusNode.requestFocus();
-    });
-  }
-
-  void _onFocusChange() {
-    setState(() => _focused = _focusNode.hasFocus);
+    if (saved.isNotEmpty) _controller.text = saved;
   }
 
   void _onChanged(String value) {
@@ -56,15 +43,11 @@ class _SovereignRegistryScreenState
 
   void _onConfirm() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    HapticFeedback.mediumImpact();
-    // Directive G: Continue to Brand Footprint (Screen 4)
-    context.push(AppRouter.onboardingBrandSelection);
+    context.go(AppRouter.onboardingFounderTrial);
   }
 
   @override
   void dispose() {
-    _focusNode.removeListener(_onFocusChange);
-    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -72,186 +55,119 @@ class _SovereignRegistryScreenState
   @override
   Widget build(BuildContext context) {
     final String currentName = ref.watch(
-      onboardingProvider.select((OnboardingState s) => s.brandName),
+      onboardingProvider.select((OnboardingState state) => state.brandName),
     );
     final bool canProceed =
         validateBrandName(currentName) == BrandNameValidationResult.valid;
 
-    return Scaffold(
-      backgroundColor: AppColors.obsidian,
-      resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const SizedBox(height: 64.0),
-
-                // --- Header ---
-                const Text(
-                  'NAME YOUR\nEMPIRE.',
-                  style: TextStyle(
-                    color: AppColors.ivory,
-                    fontSize: 36.0,
-                    fontWeight: FontWeight.w700,
-                    height: 1.1,
-                    letterSpacing: 2.0,
-                  ),
-                )
-                    .animate()
-                    .fadeIn(duration: const Duration(milliseconds: 500))
-                    .slideY(begin: 0.08, curve: Curves.easeOut),
-
-                const SizedBox(height: 8.0),
-
-                const Text(
-                  'This is permanent. Choose wisely.',
-                  style: TextStyle(
-                    color: AppColors.grey400,
-                    fontSize: 13.0,
-                    letterSpacing: 0.5,
-                  ),
-                ).animate().fadeIn(
-                      delay: const Duration(milliseconds: 200),
-                      duration: const Duration(milliseconds: 400),
-                    ),
-
-                const SizedBox(height: 56.0),
-
-                // --- Brand name input with animated gold underline ---
-                TextFormField(
-                  controller: _controller,
-                  focusNode: _focusNode,
-                  onChanged: _onChanged,
-                  textCapitalization: TextCapitalization.characters,
-                  inputFormatters: <TextInputFormatter>[
-                    // Strip anything outside alphanumeric + space
-                    FilteringTextInputFormatter.allow(
-                      RegExp(r'[a-zA-Z0-9 ]'),
-                    ),
-                    LengthLimitingTextInputFormatter(15),
-                  ],
-                  style: const TextStyle(
-                    color: AppColors.ivory,
-                    fontSize: 28.0,
-                    fontWeight: FontWeight.w300,
-                    letterSpacing: 4.0,
-                  ),
-                  cursorColor: AppColors.gold,
-                  decoration: InputDecoration(
-                    hintText: 'BRAND NAME',
-                    hintStyle: const TextStyle(
-                      color: AppColors.grey600,
-                      fontSize: 28.0,
-                      fontWeight: FontWeight.w300,
-                      letterSpacing: 4.0,
-                    ),
-                    enabledBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: AppColors.grey700,
-                        width: 1.5,
-                      ),
-                    ),
-                    focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(
-                        color: AppColors.gold,
-                        width: 2.0,
-                      ),
-                    ),
-                    errorBorder: const UnderlineInputBorder(
-                      borderSide:
-                          BorderSide(color: AppColors.danger, width: 1.5),
-                    ),
-                    focusedErrorBorder: const UnderlineInputBorder(
-                      borderSide:
-                          BorderSide(color: AppColors.danger, width: 2.0),
-                    ),
-                    errorText: _liveError,
-                    errorStyle: const TextStyle(
-                      color: AppColors.danger,
-                      fontSize: 12.0,
-                    ),
-                    // Animated gold underline glow when focused
-                    suffixIcon: _focused
-                        ? const Icon(
-                            Icons.edit,
-                            color: AppColors.gold,
-                            size: 16.0,
-                          )
-                            .animate(
-                              onPlay: (AnimationController c) =>
-                                  c.repeat(reverse: true),
-                            )
-                            .fadeIn(duration: const Duration(milliseconds: 600))
-                        : null,
-                  ),
-                  validator: (String? value) => brandNameError(value ?? ''),
-                ),
-
-                const SizedBox(height: 24.0),
-
-                // --- Live feed preview ---
-                if (canProceed)
-                  AnimatedOpacity(
-                    opacity: canProceed ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 300),
-                    child: Row(
-                      children: <Widget>[
-                        const Icon(
-                          Icons.public,
-                          color: AppColors.grey400,
-                          size: 14.0,
-                        ),
-                        const SizedBox(width: 8.0),
-                        Text(
-                          'Global feed: @${currentName.trim().replaceAll(' ', '_').toLowerCase()}',
-                          style: const TextStyle(
-                            color: AppColors.grey400,
-                            fontSize: 12.0,
-                            letterSpacing: 0.3,
-                          ),
+    return AurelianScaffold(
+      mode: StylisteVisualMode.noirCinematic,
+      appBar: const AurelianContextualAppBar(
+        eyebrow: 'Kingston House',
+        title: 'House Identity',
+      ),
+      body: AurelianResponsiveBody(
+        maxWidth: 560,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              const AurelianSectionHeader(
+                eyebrow: 'Name the House',
+                title: 'Give the work a name it can grow into',
+                detail:
+                    'This is local draft intent until the authenticated Founder Trial confirms it server-side.',
+              ),
+              const SizedBox(height: StylisteSpacing.lg),
+              AurelianCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    TextFormField(
+                      controller: _controller,
+                      autofocus: true,
+                      onChanged: _onChanged,
+                      onFieldSubmitted: (_) {
+                        if (canProceed) _onConfirm();
+                      },
+                      textCapitalization: TextCapitalization.words,
+                      textInputAction: TextInputAction.done,
+                      maxLength: 40,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'[a-zA-Z0-9 ]'),
                         ),
                       ],
+                      style: StylisteText.headline.copyWith(
+                        color: StylisteColors.ivory,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: 'House name',
+                        hintText: 'House Meridian',
+                        helperText: '2–40 letters, numbers, or spaces',
+                        errorText: _liveError,
+                      ),
+                      validator: (String? value) => brandNameError(value ?? ''),
                     ),
-                  ),
-
-                const Spacer(),
-
-                // --- Confirm CTA ---
-                SizedBox(
-                  width: double.infinity,
-                  child: AnimatedOpacity(
-                    opacity: canProceed ? 1.0 : 0.3,
-                    duration: const Duration(milliseconds: 300),
-                    child: ElevatedButton(
-                      onPressed: canProceed ? _onConfirm : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gold,
-                        foregroundColor: AppColors.obsidian,
-                        disabledBackgroundColor: AppColors.grey700,
-                        padding: const EdgeInsets.symmetric(vertical: 18.0),
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                    if (canProceed) ...<Widget>[
+                      const SizedBox(height: StylisteSpacing.md),
+                      Semantics(
+                        label: 'House-name preview. $currentName.',
+                        child: Container(
+                          padding: const EdgeInsets.all(StylisteSpacing.md),
+                          decoration: BoxDecoration(
+                            color: StylisteColors.champagneGold.withValues(
+                              alpha: 0.1,
+                            ),
+                            border: Border.all(
+                              color: StylisteColors.champagneGold.withValues(
+                                alpha: 0.56,
+                              ),
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                'EDITORIAL PREVIEW',
+                                style: StylisteText.labelCaps.copyWith(
+                                  color: StylisteColors.champagneGold,
+                                ),
+                              ),
+                              const SizedBox(height: StylisteSpacing.xs),
+                              Text(
+                                currentName.trim(),
+                                style: StylisteText.displayEditorial.copyWith(
+                                  color: StylisteColors.ivory,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'CLAIM THIS NAME',
-                        style: TextStyle(
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 3.0,
-                        ),
-                      ),
-                    ),
-                  ),
+                    ],
+                  ],
                 ),
-
-                const SizedBox(height: 48.0),
-              ],
-            ),
+              ),
+              const SizedBox(height: StylisteSpacing.lg),
+              GoldPrimaryButton(
+                label: 'Continue to the Founder Trial',
+                icon: Icons.arrow_forward,
+                disabledReason:
+                    canProceed ? null : 'Enter a valid House name to continue.',
+                onPressed: canProceed ? _onConfirm : null,
+              ),
+              const SizedBox(height: StylisteSpacing.sm),
+              Text(
+                'No player ID, House ownership, progression, or reward value is chosen here.',
+                textAlign: TextAlign.center,
+                style: StylisteText.bodySmall.copyWith(
+                  color: StylisteColors.warmGrey,
+                ),
+              ),
+            ],
           ),
         ),
       ),

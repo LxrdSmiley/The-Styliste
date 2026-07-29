@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/theme/styliste_colors.dart';
+import '../../../core/theme/styliste_motion.dart';
+import '../../../core/theme/styliste_radii.dart';
+import '../../../core/theme/styliste_typography.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
 import '../../../core/widgets/pill_badge.dart';
 
@@ -19,10 +21,10 @@ class FabricSwatchPanel extends StatelessWidget {
 
   static const List<({Color color, String label, String note})> _swatches =
       <({Color color, String label, String note})>[
-    (color: AppColors.ivory, label: 'IVORY', note: 'clean cut'),
-    (color: AppColors.obsidianCard, label: 'NOIR', note: 'sharp trim'),
-    (color: AppColors.gold, label: 'GOLD', note: 'runway glow'),
-    (color: AppColors.lime, label: 'LIME', note: 'signal pop'),
+    (color: StylisteColors.ivory, label: 'IVORY', note: 'clean cut'),
+    (color: StylisteColors.obsidianRaised, label: 'NOIR', note: 'sharp trim'),
+    (color: StylisteColors.champagneGold, label: 'GOLD', note: 'runway glow'),
+    (color: StylisteColors.signalLime, label: 'LIME', note: 'signal pop'),
   ];
 
   @override
@@ -34,10 +36,10 @@ class FabricSwatchPanel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16.0, 14.0, 16.0, 14.0),
       decoration: BoxDecoration(
-        color: AurelianPalette.alabaster,
-        borderRadius: BorderRadius.circular(12.0),
+        color: StylisteColors.alabaster,
+        borderRadius: BorderRadius.circular(StylisteRadii.control),
         border: Border.all(
-          color: AurelianPalette.champagneGold.withValues(alpha: 0.64),
+          color: StylisteColors.champagneGold.withValues(alpha: 0.64),
         ),
       ),
       child: Column(
@@ -49,10 +51,11 @@ class FabricSwatchPanel extends StatelessWidget {
                 child: Text(
                   'FABRIC PALETTE',
                   style: TextStyle(
-                    color: AurelianPalette.textTertiary,
+                    fontFamily: StylisteText.displayFamily,
+                    color: StylisteColors.textTertiary,
                     fontSize: 10.0,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2.0,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.7,
                   ),
                 ),
               ),
@@ -111,87 +114,90 @@ class _FabricSwatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '${swatch.label} fabric, ${swatch.note}',
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
+        duration: StylisteMotion.resolve(context, StylisteMotion.micro),
+        curve: StylisteMotion.standardCurve,
         width: 98.0,
         padding: const EdgeInsets.all(7.0),
         decoration: BoxDecoration(
           color: selected
-              ? AurelianPalette.champagneGold.withValues(alpha: 0.28)
-              : AurelianPalette.ivory,
-          borderRadius: BorderRadius.circular(10.0),
+              ? StylisteColors.champagneGold.withValues(alpha: 0.28)
+              : StylisteColors.ivory,
+          borderRadius: BorderRadius.circular(StylisteRadii.control),
           border: Border.all(
             color: selected
-                ? AurelianPalette.champagneGoldDark
-                : AurelianPalette.champagneGold.withValues(alpha: 0.5),
+                ? StylisteColors.deepGold
+                : StylisteColors.champagneGold.withValues(alpha: 0.5),
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Container(
-                  width: 30.0,
-                  height: 30.0,
-                  decoration: BoxDecoration(
-                    color: swatch.color,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: selected
-                          ? AurelianPalette.textPrimary
-                          : AurelianPalette.champagneGoldDark.withValues(
-                              alpha: 0.45,
-                            ),
-                      width: selected ? 2.0 : 1.0,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(StylisteRadii.control),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Container(
+                    width: 30.0,
+                    height: 30.0,
+                    decoration: BoxDecoration(
+                      color: swatch.color,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: selected
+                            ? StylisteColors.textPrimary
+                            : StylisteColors.deepGold.withValues(alpha: 0.45),
+                        width: selected ? 2.0 : 1.0,
+                      ),
+                      boxShadow: selected
+                          ? <BoxShadow>[
+                              BoxShadow(
+                                color: swatch.color.withValues(alpha: 0.42),
+                                blurRadius: 12.0,
+                              ),
+                            ]
+                          : null,
                     ),
-                    boxShadow: selected
-                        ? <BoxShadow>[
-                            BoxShadow(
-                              color: swatch.color.withValues(alpha: 0.42),
-                              blurRadius: 12.0,
-                            ),
-                          ]
+                    child: selected
+                        ? Icon(
+                            Icons.check,
+                            color: _checkColor(swatch.color),
+                            size: 16.0,
+                          )
                         : null,
                   ),
-                  child: selected
-                      ? Icon(
-                          Icons.check,
-                          color: _checkColor(swatch.color),
-                          size: 16.0,
-                        )
-                      : null,
-                ),
-                const Spacer(),
-                if (selected)
-                  const Icon(
-                    Icons.auto_awesome,
-                    color: AurelianPalette.champagneGoldDark,
-                    size: 14.0,
-                  ),
-              ],
-            ),
-            const Spacer(),
-            PillBadge(
-              label: swatch.label,
-              mode: StylisteVisualMode.atelierWarmStudio,
-            ),
-            const SizedBox(height: 1.0),
-            Text(
-              swatch.note.toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AurelianPalette.textTertiary,
-                fontSize: 7.5,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.8,
+                  const Spacer(),
+                  if (selected)
+                    const Icon(
+                      Icons.auto_awesome,
+                      color: StylisteColors.deepGold,
+                      size: 14.0,
+                    ),
+                ],
               ),
-            ),
-          ],
+              const Spacer(),
+              PillBadge(
+                label: swatch.label,
+                mode: StylisteVisualMode.atelierWarmStudio,
+              ),
+              const SizedBox(height: 1.0),
+              Text(
+                swatch.note.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: StylisteText.labelCaps.copyWith(
+                  color: StylisteColors.textTertiary,
+                  fontSize: 7.5,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -199,7 +205,7 @@ class _FabricSwatch extends StatelessWidget {
 
   static Color _checkColor(Color color) {
     return color.computeLuminance() > 0.45
-        ? AppColors.obsidian
-        : AurelianPalette.ivory;
+        ? StylisteColors.obsidian
+        : StylisteColors.ivory;
   }
 }

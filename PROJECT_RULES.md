@@ -24,7 +24,8 @@ This project is a high-performance fashion simulation. All development must adhe
 
 Use Riverpod as the single reactive state-management framework. Do not add Bloc or another state-management framework.
 
-All "Mogul" path transactions must be server-authoritative to prevent local save-file manipulation.
+All gameplay transactions must be server-authoritative to prevent local
+save-file manipulation.
 
 Implement a "Source of Truth" hierarchy: Database > Edge Functions > Local State > UI.
 
@@ -40,11 +41,19 @@ Prioritize memory efficiency for portrait-mode mobile hardware.
 
 ## 5. Agent Interaction Protocol
 
-**Reference the GDD:** Always check `THE_STYLISTE_GDD_v7.md` for the product vision, mechanics, narrative, brand identity, and release scope. GDD v6 is historical context only and is not an active source of truth.
+**Reference the GDD:** Always check `THE_STYLISTE_GDD_v8.md` and the companion
+authorities named in `IDE_DIRECTIVES.md` for product vision, mechanics,
+narrative, brand identity, and release scope. GDD v6 and v7 are historical
+context only and are not active sources of truth.
 
 **Follow the Rules:** Always check this file for the "how" (technical stack, performance limits).
 
-**Repository memory:** Treat `THE_STYLISTE_GDD_v7.md`, this file, `VERIFICATION_PROTOCOL.md`, `DEVELOPMENT_STATE.md`, `BOTTLENECK_LOG.md`, `CHANGELOG.md`, and chronological Supabase migrations as the project memory. Chat transcripts are not authoritative. Update `DEVELOPMENT_STATE.md` after every Codex task.
+**Repository memory:** Treat `THE_STYLISTE_GDD_v8.md`, the companion
+authorities named in `IDE_DIRECTIVES.md`, this file,
+`VERIFICATION_PROTOCOL.md`, `DEVELOPMENT_STATE.md`, `BOTTLENECK_LOG.md`,
+`CHANGELOG.md`, and chronological Supabase migrations as the project memory.
+Chat transcripts are not authoritative. Update `DEVELOPMENT_STATE.md` after
+every Codex task.
 
 **UI/UX authority:** For UI/UX, accessibility, layout, motion, HUD, visual hierarchy, responsive behavior, or performance-sensitive visual work, load and follow the repository’s `frontend-design` skill while preserving the established Flutter design system, Aurelian identity, Riverpod patterns, portrait-first layout, and performance constraints. Do not read or use `ui_ux_design.md`.
 
@@ -72,7 +81,7 @@ After every implementation task:
 
 Version numbers are not bumped for every commit. Use Semantic Versioning while
 the game is pre-1.0: patch prereleases for fixes, minor prereleases for coherent
-playable slices, and `1.0.0` only after the first public-launch gates in GDD v7
+playable slices, and `1.0.0` only after the first public-launch gates in GDD v8
 §§21–22 have Passed evidence.
 
 Flutter Web and GitHub Pages are deferred and are not current build, CI,

@@ -1,5 +1,5 @@
-// GDD v6 section 2, 4, 4.1 - Aurelian Studio Atelier pass.
-// Visual/gameplay clarity only: mint and drop remain server-authoritative.
+// GDD v8 §§8.2, 18.5–18.7 — Kingston Atelier exploration.
+// Gate A ends at the server-authoritative capsule-readiness boundary.
 //
 // 5-second interaction gate:
 //   _interactionSeconds increments ONLY while _touchActive == true.
@@ -12,21 +12,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router/app_router.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/aurelian_theme.dart';
+import '../../../core/theme/styliste_colors.dart';
+import '../../../core/theme/styliste_motion.dart';
+import '../../../core/theme/styliste_spacing.dart';
+import '../../../core/theme/styliste_typography.dart';
 import '../../../core/theme/styliste_visual_mode.dart';
+import '../../../core/widgets/aurelian_components.dart';
 import '../../../core/widgets/glass_metric_card.dart';
-import '../../../core/widgets/gold_primary_button.dart';
 import '../../../core/widgets/pill_badge.dart';
+import '../../../core/widgets/styliste_buttons.dart';
 import '../../../core/widgets/styliste_scaffold.dart';
 import '../../../domain/models/design.dart';
-import '../../design/services/hype_calculator.dart';
 import '../../ftue/providers/first_objective_provider.dart';
-import '../../luxe/widgets/luxe_recovery_card.dart';
 import '../../trends/models/trend_tsunami.dart';
 import '../../trends/providers/trend_provider.dart';
 import '../constants/style_tags.dart';
-import '../providers/mint_design_provider.dart';
 import '../widgets/fabric_swatch_panel.dart';
 import '../widgets/garment_canvas.dart';
 
@@ -45,23 +45,13 @@ class AtelierScreen extends ConsumerStatefulWidget {
 }
 
 class _AtelierScreenState extends ConsumerState<AtelierScreen> {
-  Color _selectedDye = AppColors.ivory;
+  Color _selectedDye = StylisteColors.ivory;
   final Set<String> _selectedStyleTags = <String>{...kDefaultStyleTags};
   int _interactionSeconds = 0;
   bool _touchActive = false;
-  bool _isMinting = false;
-  String? _atelierSessionId;
-  bool _showSessionRecovery = false;
-  bool _showMintRecovery = false;
-  Future<String>? _atelierSessionFuture;
   Timer? _interactionTimer;
 
   static const int _gateSeconds = 5;
-  static const double _previewMaterialQualityHeuristic = 65.0;
-  static const double _previewAestheticAlignmentHeuristic = 72.0;
-  static const String _atelierRecoveryMessage =
-      'The Atelier lost the thread. Your choices are still here.';
-  static const HypeCalculator _hypeCalculator = HypeCalculator();
 
   @override
   void initState() {
@@ -83,54 +73,12 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(firstObjectiveActionsProvider.notifier).markAtelierOpened();
-      if (widget.prepareSessionOnStart) {
-        unawaited(_prepareAtelierSession());
-      }
     });
-  }
-
-  Future<void> _prepareAtelierSession() async {
-    if (_atelierSessionId != null || !mounted) return;
-    final Future<String>? existingFuture = _atelierSessionFuture;
-    if (existingFuture != null) {
-      try {
-        await existingFuture;
-      } catch (_) {
-        // The request owner presents the player-safe session error.
-      }
-      return;
-    }
-    final Future<String> sessionFuture = startAtelierSession(
-      fabricColorHex: _selectedFabricHex,
-      styleTags: _selectedStyleTags.toList(growable: false),
-    );
-    setState(() {
-      _atelierSessionFuture = sessionFuture;
-      _showSessionRecovery = false;
-    });
-    try {
-      final String sessionId = await sessionFuture;
-      if (mounted) {
-        setState(() {
-          _atelierSessionId = sessionId;
-          _showSessionRecovery = false;
-        });
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => _showSessionRecovery = true);
-      }
-    } finally {
-      if (identical(_atelierSessionFuture, sessionFuture)) {
-        _atelierSessionFuture = null;
-      }
-    }
   }
 
   void _onInteractionActive(bool active) {
     setState(() => _touchActive = active);
     if (active) {
-      unawaited(_prepareAtelierSession());
       _interactionTimer ??= Timer.periodic(
         const Duration(seconds: 1),
         (Timer _) {
@@ -147,9 +95,7 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
     }
   }
 
-  bool get _mintUnlocked => _interactionSeconds >= _gateSeconds;
-
-  String get _selectedFabricHex => _colorToHex(_selectedDye);
+  bool get _studyReady => _interactionSeconds >= _gateSeconds;
 
   void _onTagToggle(String tag) {
     setState(() {
@@ -163,47 +109,6 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
         _selectedStyleTags.add(tag);
       }
     });
-  }
-
-  Future<void> _onMintAlpha() async {
-    if (_isMinting || !_mintUnlocked) return;
-    setState(() {
-      _isMinting = true;
-      _showMintRecovery = false;
-    });
-
-    try {
-      await _prepareAtelierSession();
-      final String? sessionId = _atelierSessionId;
-      if (sessionId == null) {
-        throw StateError('atelier session missing');
-      }
-      final Design design = await ref.read(
-        mintDesignProvider(
-          MintDesignInput(
-            sessionId: sessionId,
-            fabricColorHex: _selectedFabricHex,
-            styleTags: _selectedStyleTags.toList(growable: false),
-          ),
-        ).future,
-      );
-      if (mounted) {
-        setState(() => _isMinting = false);
-        unawaited(
-          context.push(
-            AppRouter.atelierDropPreview,
-            extra: design,
-          ),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          _isMinting = false;
-          _showMintRecovery = true;
-        });
-      }
-    }
   }
 
   @override
@@ -220,17 +125,10 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
         (_interactionSeconds / _gateSeconds).clamp(0.0, 1.0).toDouble();
     final AsyncValue<List<TrendTsunami>> activeTsunamis =
         ref.watch(activeTsunamiProvider);
-    final _HypeProjection projection = _projectHype(
-      selectedTags: selectedTags,
-      activeTsunamis: activeTsunamis,
-    );
     final String draftName = _draftName(selectedTags);
     final bool reduceMotion =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final bool serverSyncPending =
-        _atelierSessionFuture != null && _atelierSessionId == null;
-
-    return StylisteScaffold(
+    return AurelianScaffold(
       mode: StylisteVisualMode.atelierWarmStudio,
       useSafeArea: false,
       body: SafeArea(
@@ -248,23 +146,9 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
                     children: <Widget>[
                       _AtelierStatePanel(
                         hasInspiration: widget.inspirationDesign != null,
-                        serverSyncPending: serverSyncPending,
-                        sessionRecoveryVisible: _showSessionRecovery,
                         reduceMotion: reduceMotion,
                       ),
                       const SizedBox(height: 12.0),
-                      if (_showSessionRecovery) ...<Widget>[
-                        LuxeRecoveryCard(
-                          title: 'Atelier Recovery',
-                          message: _atelierRecoveryMessage,
-                          primaryLabel: 'Retry Sync',
-                          onPrimary: () => unawaited(
-                            _prepareAtelierSession(),
-                          ),
-                          icon: Icons.wifi_off_outlined,
-                        ),
-                        const SizedBox(height: 12.0),
-                      ],
                       if (widget.inspirationDesign != null)
                         _InspirationBanner(design: widget.inspirationDesign!),
                       _StudioHeader(
@@ -278,7 +162,7 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
                         fabricLabel: _fabricLabel(_selectedDye),
                         draftName: draftName,
                         selectedTags: selectedTags,
-                        ready: _mintUnlocked,
+                        ready: _studyReady,
                         reduceMotion: reduceMotion,
                         onInteractionActive: _onInteractionActive,
                       ),
@@ -298,41 +182,29 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
                         activeTsunamis: activeTsunamis,
                       ),
                       const SizedBox(height: 16.0),
-                      _MintReadinessPanel(
+                      _AtelierReadinessPanel(
                         selectedTags: selectedTags,
                         fabricLabel: _fabricLabel(_selectedDye),
                         interactionSeconds: _interactionSeconds,
                         gateSeconds: _gateSeconds,
                         progress: progress,
-                        projection: projection,
-                        ready: _mintUnlocked,
+                        ready: _studyReady,
                       ),
-                      if (_showMintRecovery) ...<Widget>[
-                        const SizedBox(height: 14.0),
-                        LuxeRecoveryCard(
-                          title: 'Mint Recovery',
-                          message: _atelierRecoveryMessage,
-                          primaryLabel: 'Try Mint Again',
-                          onPrimary: _onMintAlpha,
-                          secondaryLabel: 'Keep Designing',
-                          onSecondary: () =>
-                              setState(() => _showMintRecovery = false),
-                          icon: Icons.auto_fix_high_outlined,
-                        ),
-                      ],
                       const SizedBox(height: 14.0),
                       AnimatedScale(
-                        duration: reduceMotion
-                            ? Duration.zero
-                            : const Duration(milliseconds: 180),
-                        scale: _mintUnlocked ? 1.0 : 0.985,
+                        duration:
+                            reduceMotion ? Duration.zero : StylisteMotion.micro,
+                        scale: _studyReady ? 1.0 : 0.985,
                         child: SizedBox(
                           width: double.infinity,
                           child: GoldPrimaryButton(
-                            label: _mintButtonLabel(serverSyncPending),
-                            isLoading: _isMinting,
-                            onPressed: (_mintUnlocked && !_isMinting)
-                                ? _onMintAlpha
+                            label: _studyButtonLabel(),
+                            icon: Icons.arrow_forward,
+                            disabledReason: _studyReady
+                                ? null
+                                : 'Shape the garment for five active seconds before opening the capsule.',
+                            onPressed: _studyReady
+                                ? () => context.push(AppRouter.atelierCapsule)
                                 : null,
                           ),
                         ),
@@ -348,11 +220,9 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
     );
   }
 
-  String _mintButtonLabel(bool serverSyncPending) {
-    if (_isMinting) return 'Minting Alpha';
-    if (serverSyncPending) return 'Syncing Atelier';
-    if (!_mintUnlocked) return 'Shape Fabric';
-    return 'Mint Alpha';
+  String _studyButtonLabel() {
+    if (!_studyReady) return 'Shape the Garment';
+    return 'Open Kingston Capsule';
   }
 
   String _draftName(List<String> selectedTags) {
@@ -365,41 +235,6 @@ class _AtelierScreenState extends ConsumerState<AtelierScreen> {
     final String leadTag =
         selectedTags.isEmpty ? 'atelier' : selectedTags.first;
     return '${_fabricLabel(_selectedDye)} $leadTag study';
-  }
-
-  _HypeProjection _projectHype({
-    required List<String> selectedTags,
-    required AsyncValue<List<TrendTsunami>> activeTsunamis,
-  }) {
-    final List<TrendTsunami> waves = activeTsunamis.maybeWhen(
-      data: (List<TrendTsunami> value) => value,
-      orElse: () => <TrendTsunami>[],
-    );
-    try {
-      final HypeCalculationResult result = _hypeCalculator.calculate(
-        input: HypeCalculationInput(
-          styleTags: selectedTags,
-          // Non-authoritative UI projection only.
-          // Final Hype is calculated by the server mint/drop path.
-          materialQuality: _previewMaterialQualityHeuristic,
-          aestheticAlignment: _previewAestheticAlignmentHeuristic,
-        ),
-        activeTsunamis: waves,
-      );
-
-      return _HypeProjection(
-        score: result.totalScore,
-        multiplier: result.tsunamiMultiplier,
-        matchingTag: result.matchingTsunamiTag,
-        trendLoading: activeTsunamis.isLoading,
-        trendUnavailable: activeTsunamis.hasError,
-      );
-    } catch (_) {
-      return _HypeProjection(
-        trendLoading: activeTsunamis.isLoading,
-        trendUnavailable: true,
-      );
-    }
   }
 }
 
@@ -414,42 +249,53 @@ class _StudioHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Widget titleBlock = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'AURELIAN STUDIO',
+          style: StylisteText.labelCaps.copyWith(
+            color: StylisteColors.textTertiary,
+            letterSpacing: 2.0,
+          ),
+        ),
+        const SizedBox(height: 5.0),
+        Text(
+          draftName.toUpperCase(),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: StylisteText.headline.copyWith(
+            color: StylisteColors.textPrimary,
+            fontSize: 24,
+          ),
+        ),
+      ],
+    );
     return Padding(
       padding: const EdgeInsets.fromLTRB(2.0, 8.0, 2.0, 0.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: <Widget>[
-          Expanded(
-            child: Column(
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final bool stacked = constraints.maxWidth < 360 ||
+              MediaQuery.textScalerOf(context).scale(1) > 1.3;
+          if (stacked) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Text(
-                  'AURELIAN STUDIO',
-                  style: TextStyle(
-                    color: AurelianPalette.textTertiary,
-                    fontSize: 10.0,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2.4,
-                  ),
-                ),
-                const SizedBox(height: 5.0),
-                Text(
-                  draftName.toUpperCase(),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AurelianPalette.textPrimary,
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.w900,
-                    height: 0.96,
-                  ),
-                ),
+                titleBlock,
+                const SizedBox(height: StylisteSpacing.sm),
+                _StudioCountPill(label: '${selectedTags.length}/3 SIGNALS'),
               ],
-            ),
-          ),
-          const SizedBox(width: 12.0),
-          _StudioCountPill(label: '${selectedTags.length}/3 SIGNALS'),
-        ],
+            );
+          }
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              Expanded(child: titleBlock),
+              const SizedBox(width: 12.0),
+              _StudioCountPill(label: '${selectedTags.length}/3 SIGNALS'),
+            ],
+          );
+        },
       ),
     );
   }
@@ -461,7 +307,12 @@ class _AtelierTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Padding(
-      padding: EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 8.0),
+      padding: EdgeInsets.fromLTRB(
+        StylisteSpacing.lg,
+        StylisteSpacing.sm,
+        StylisteSpacing.lg,
+        StylisteSpacing.xs,
+      ),
       child: Row(
         children: <Widget>[
           Expanded(
@@ -469,11 +320,11 @@ class _AtelierTopBar extends StatelessWidget {
               'ATELIER',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'SpaceGrotesk',
-                fontSize: 13.0,
+                fontFamily: StylisteText.displayFamily,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 4.0,
-                color: AurelianPalette.textPrimary,
+                letterSpacing: 4,
+                color: StylisteColors.textPrimary,
               ),
             ),
           ),
@@ -486,47 +337,48 @@ class _AtelierTopBar extends StatelessWidget {
 class _AtelierStatePanel extends StatelessWidget {
   const _AtelierStatePanel({
     required this.hasInspiration,
-    required this.serverSyncPending,
     required this.reduceMotion,
-    required this.sessionRecoveryVisible,
   });
 
   final bool hasInspiration;
-  final bool serverSyncPending;
   final bool reduceMotion;
-  final bool sessionRecoveryVisible;
 
   @override
   Widget build(BuildContext context) {
     return _StudioPanel(
-      child: Wrap(
-        spacing: 8.0,
-        runSpacing: 8.0,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          PillBadge(
-            label: hasInspiration ? 'Inspiration Loaded' : 'Base Silhouette',
-            icon: hasInspiration ? Icons.palette_outlined : Icons.checkroom,
-            mode: StylisteVisualMode.atelierWarmStudio,
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: <Widget>[
+              PillBadge(
+                label:
+                    hasInspiration ? 'Inspiration Loaded' : 'Base Silhouette',
+                icon: hasInspiration ? Icons.palette_outlined : Icons.checkroom,
+                mode: StylisteVisualMode.atelierWarmStudio,
+              ),
+              if (reduceMotion)
+                const PillBadge(
+                  label: 'Reduced Motion',
+                  icon: Icons.motion_photos_off_outlined,
+                  mode: StylisteVisualMode.atelierWarmStudio,
+                ),
+            ],
           ),
-          if (serverSyncPending)
-            const PillBadge(
-              label: 'Server Sync Pending',
-              icon: Icons.sync,
-              mode: StylisteVisualMode.atelierWarmStudio,
-            ),
-          if (sessionRecoveryVisible)
-            const PillBadge(
-              label: 'Recovery Ready',
-              icon: Icons.error_outline,
-              mode: StylisteVisualMode.atelierWarmStudio,
-            ),
-          if (reduceMotion)
-            const PillBadge(
-              label: 'Reduced Motion',
-              icon: Icons.motion_photos_off_outlined,
-              mode: StylisteVisualMode.atelierWarmStudio,
-            ),
+          const SizedBox(height: 12.0),
+          const Text(
+            'This garment study stays local. Only the capsule submits bounded, authenticated intents.',
+            style: StylisteText.bodySmall,
+          ),
+          const SizedBox(height: 12.0),
+          IvorySecondaryButton(
+            label: 'Open Kingston Capsule',
+            icon: Icons.auto_awesome_outlined,
+            onPressed: () => context.push(AppRouter.atelierCapsule),
+          ),
         ],
       ),
     );
@@ -539,27 +391,43 @@ class _LockedToolNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _StudioPanel(
-      child: Row(
-        children: <Widget>[
-          const PillBadge(
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final bool stacked = constraints.maxWidth < 360 ||
+              MediaQuery.textScalerOf(context).scale(1) > 1.3;
+          const Widget badge = PillBadge(
             label: 'Later Build',
             icon: Icons.lock_outline,
             mode: StylisteVisualMode.atelierWarmStudio,
-          ),
-          const SizedBox(width: 12.0),
-          Expanded(
-            child: Text(
-              'AR try-on, AI texture suggestions, and advanced cloth lab tools '
-              'remain locked. Current Alpha minting uses the server flow.',
-              style: TextStyle(
-                color: AurelianPalette.textSecondary.withValues(alpha: 0.84),
-                fontSize: 12.0,
-                fontWeight: FontWeight.w600,
-                height: 1.3,
-              ),
+          );
+          final Widget detail = Text(
+            'AR try-on, generative styling, launch, and advanced cloth tools '
+            'remain deliberately unavailable. Gate A stops at capsule readiness.',
+            style: TextStyle(
+              color: StylisteColors.textSecondary.withValues(alpha: 0.84),
+              fontSize: 12.0,
+              fontWeight: FontWeight.w600,
+              height: 1.3,
             ),
-          ),
-        ],
+          );
+          if (stacked) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                badge,
+                const SizedBox(height: StylisteSpacing.sm),
+                detail,
+              ],
+            );
+          }
+          return Row(
+            children: <Widget>[
+              badge,
+              const SizedBox(width: 12.0),
+              Expanded(child: detail),
+            ],
+          );
+        },
       ),
     );
   }
@@ -594,16 +462,16 @@ class _StudioStage extends StatelessWidget {
       curve: Curves.easeOutCubic,
       height: height,
       decoration: BoxDecoration(
-        color: AurelianPalette.alabaster,
+        color: StylisteColors.alabaster,
         borderRadius: BorderRadius.circular(14.0),
         border: Border.all(
           color: ready
-              ? AurelianPalette.champagneGoldDark
-              : AurelianPalette.champagneGold.withValues(alpha: 0.72),
+              ? StylisteColors.deepGold
+              : StylisteColors.champagneGold.withValues(alpha: 0.72),
         ),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: AurelianPalette.champagneGoldDark.withValues(alpha: 0.18),
+            color: StylisteColors.deepGold.withValues(alpha: 0.18),
             blurRadius: 28.0,
             offset: const Offset(0.0, 16.0),
           ),
@@ -620,9 +488,9 @@ class _StudioStage extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: <Color>[
-                    AurelianPalette.ivory,
-                    AurelianPalette.champagneGold.withValues(alpha: 0.48),
-                    AurelianPalette.alabaster,
+                    StylisteColors.ivory,
+                    StylisteColors.champagneGold.withValues(alpha: 0.48),
+                    StylisteColors.alabaster,
                   ],
                 ),
               ),
@@ -698,10 +566,10 @@ class _StageIdentity extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.obsidian.withValues(alpha: 0.78),
+        color: StylisteColors.obsidian.withValues(alpha: 0.78),
         borderRadius: BorderRadius.circular(8.0),
         border: Border.all(
-          color: AurelianPalette.champagneGold.withValues(alpha: 0.46),
+          color: StylisteColors.champagneGold.withValues(alpha: 0.46),
         ),
       ),
       child: Padding(
@@ -714,7 +582,7 @@ class _StageIdentity extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  color: AurelianPalette.ivory,
+                  color: StylisteColors.ivory,
                   fontSize: 12.0,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.6,
@@ -729,7 +597,7 @@ class _StageIdentity extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.right,
                 style: const TextStyle(
-                  color: AurelianPalette.champagneGoldDark,
+                  color: StylisteColors.champagneGold,
                   fontSize: 9.0,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.1,
@@ -765,15 +633,17 @@ class _StyleSignalPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
+          Wrap(
+            spacing: StylisteSpacing.sm,
+            runSpacing: StylisteSpacing.xs,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: <Widget>[
-              const Expanded(
-                child: _PanelTitle(label: 'STYLE SIGNALS'),
-              ),
+              const _PanelTitle(label: 'STYLE SIGNALS'),
               Text(
                 '${selectedTags.length}/3 SELECTED',
                 style: const TextStyle(
-                  color: AurelianPalette.textSecondary,
+                  color: StylisteColors.textSecondary,
                   fontSize: 10.0,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.3,
@@ -785,7 +655,7 @@ class _StyleSignalPanel extends StatelessWidget {
           Text(
             _trendLine(activeTsunamis, selectedTags, waves),
             style: TextStyle(
-              color: AurelianPalette.textSecondary.withValues(alpha: 0.84),
+              color: StylisteColors.textSecondary.withValues(alpha: 0.84),
               fontSize: 12.0,
               fontWeight: FontWeight.w600,
               height: 1.25,
@@ -820,7 +690,7 @@ class _StyleSignalPanel extends StatelessWidget {
       return 'Trend scan loading. Projection uses the current design brief.';
     }
     if (activeTsunamis.hasError) {
-      return 'Trend signal unavailable. Minting still uses the server flow.';
+      return 'Trend signal unavailable. Your local garment study is preserved.';
     }
 
     for (final String tag in selectedTags) {
@@ -857,14 +727,21 @@ class _StyleSignalChip extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(999.0),
           onTap: onTap,
-          child: PillBadge(
-            label: label,
-            icon: selected
-                ? Icons.check
-                : hasTrend
-                    ? Icons.auto_awesome
-                    : null,
-            mode: StylisteVisualMode.atelierWarmStudio,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: StylisteSpacing.minTapTarget,
+            ),
+            child: Center(
+              child: PillBadge(
+                label: label,
+                icon: selected
+                    ? Icons.check
+                    : hasTrend
+                        ? Icons.auto_awesome
+                        : null,
+                mode: StylisteVisualMode.atelierWarmStudio,
+              ),
+            ),
           ),
         ),
       ),
@@ -872,14 +749,13 @@ class _StyleSignalChip extends StatelessWidget {
   }
 }
 
-class _MintReadinessPanel extends StatelessWidget {
-  const _MintReadinessPanel({
+class _AtelierReadinessPanel extends StatelessWidget {
+  const _AtelierReadinessPanel({
     required this.selectedTags,
     required this.fabricLabel,
     required this.interactionSeconds,
     required this.gateSeconds,
     required this.progress,
-    required this.projection,
     required this.ready,
   });
 
@@ -888,7 +764,6 @@ class _MintReadinessPanel extends StatelessWidget {
   final int interactionSeconds;
   final int gateSeconds;
   final double progress;
-  final _HypeProjection projection;
   final bool ready;
 
   @override
@@ -897,14 +772,21 @@ class _MintReadinessPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
+          Wrap(
+            spacing: StylisteSpacing.sm,
+            runSpacing: StylisteSpacing.xs,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: <Widget>[
-              const Expanded(child: _PanelTitle(label: 'MINT READINESS')),
+              const _PanelTitle(label: 'GARMENT STUDY'),
               AnimatedOpacity(
-                duration: const Duration(milliseconds: 180),
+                duration: StylisteMotion.resolve(
+                  context,
+                  StylisteMotion.micro,
+                ),
                 opacity: ready ? 1.0 : 0.52,
                 child: PillBadge(
-                  label: ready ? 'Ready' : 'In Progress',
+                  label: ready ? 'Study Ready' : 'Shape in Progress',
                   icon: ready ? Icons.check : Icons.touch_app,
                   mode: StylisteVisualMode.atelierWarmStudio,
                 ),
@@ -912,32 +794,45 @@ class _MintReadinessPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14.0),
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: GlassMetricCard(
-                  label: 'Fabric',
-                  value: fabricLabel.toUpperCase(),
-                  mode: StylisteVisualMode.atelierWarmStudio,
-                ),
-              ),
-              const SizedBox(width: 8.0),
-              Expanded(
-                child: GlassMetricCard(
-                  label: 'Style',
-                  value: '${selectedTags.length}/3',
-                  mode: StylisteVisualMode.atelierWarmStudio,
-                ),
-              ),
-              const SizedBox(width: 8.0),
-              Expanded(
-                child: GlassMetricCard(
-                  label: 'Drape',
-                  value: '$interactionSeconds/$gateSeconds S',
-                  mode: StylisteVisualMode.atelierWarmStudio,
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final bool oneColumn =
+                  MediaQuery.textScalerOf(context).scale(1) > 1.3 ||
+                      constraints.maxWidth < 300;
+              final double width = oneColumn
+                  ? constraints.maxWidth
+                  : (constraints.maxWidth - 16) / 3;
+              return Wrap(
+                spacing: StylisteSpacing.sm,
+                runSpacing: StylisteSpacing.sm,
+                children: <Widget>[
+                  SizedBox(
+                    width: width,
+                    child: GlassMetricCard(
+                      label: 'Fabric',
+                      value: fabricLabel.toUpperCase(),
+                      mode: StylisteVisualMode.atelierWarmStudio,
+                    ),
+                  ),
+                  SizedBox(
+                    width: width,
+                    child: GlassMetricCard(
+                      label: 'Style',
+                      value: '${selectedTags.length}/3',
+                      mode: StylisteVisualMode.atelierWarmStudio,
+                    ),
+                  ),
+                  SizedBox(
+                    width: width,
+                    child: GlassMetricCard(
+                      label: 'Active drape',
+                      value: '$interactionSeconds/$gateSeconds S',
+                      mode: StylisteVisualMode.atelierWarmStudio,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 14.0),
           ClipRRect(
@@ -946,49 +841,24 @@ class _MintReadinessPanel extends StatelessWidget {
               value: progress,
               minHeight: 5.0,
               backgroundColor:
-                  AurelianPalette.champagneGold.withValues(alpha: 0.3),
+                  StylisteColors.champagneGold.withValues(alpha: 0.3),
               valueColor: AlwaysStoppedAnimation<Color>(
-                ready
-                    ? AurelianPalette.champagneGoldDark
-                    : AurelianPalette.softRose,
+                ready ? StylisteColors.deepGold : StylisteColors.roseAccent,
               ),
             ),
           ),
           const SizedBox(height: 16.0),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Expanded(
-                child: GlassMetricCard(
-                  label: 'Projected Hype',
-                  value: projection.displayScore,
-                  delta: 'Projection only',
-                  mode: StylisteVisualMode.atelierWarmStudio,
-                ),
-              ),
-              const SizedBox(width: 10.0),
-              Expanded(
-                child: GlassMetricCard(
-                  label: 'Trend Alignment',
-                  value: projection.trendDisplay,
-                  mode: StylisteVisualMode.atelierWarmStudio,
-                  isLoading: projection.trendLoading,
-                  error: projection.trendUnavailable
-                      ? 'Trend signal unavailable'
-                      : null,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8.0),
-          const Text(
-            'Final hype is minted by the server after MINT ALPHA.',
-            style: TextStyle(
-              color: AurelianPalette.textTertiary,
-              fontSize: 11.0,
-              fontWeight: FontWeight.w600,
-              height: 1.25,
-            ),
+          AurelianStatePanel(
+            kind: ready
+                ? AurelianStateKind.confirmed
+                : AurelianStateKind.disabled,
+            title: ready
+                ? 'Your visual study is ready'
+                : 'Keep shaping the garment',
+            message: ready
+                ? 'These choices remain a local study. The Kingston capsule uses its own validated brief and three canonical look roles.'
+                : 'Move across the garment to inspect its drape. No Hype, reward, or release result is calculated here.',
+            compact: true,
           ),
         ],
       ),
@@ -1011,17 +881,17 @@ class _InspirationBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
       decoration: BoxDecoration(
-        color: AurelianPalette.champagneGold.withValues(alpha: 0.34),
+        color: StylisteColors.champagneGold.withValues(alpha: 0.34),
         borderRadius: BorderRadius.circular(8.0),
         border: Border.all(
-          color: AurelianPalette.champagneGoldDark.withValues(alpha: 0.34),
+          color: StylisteColors.deepGold.withValues(alpha: 0.34),
         ),
       ),
       child: Row(
         children: <Widget>[
           const Icon(
             Icons.palette_outlined,
-            color: AurelianPalette.textPrimary,
+            color: StylisteColors.textPrimary,
             size: 16.0,
           ),
           const SizedBox(width: 10.0),
@@ -1031,7 +901,7 @@ class _InspirationBanner extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                color: AurelianPalette.textPrimary,
+                color: StylisteColors.textPrimary,
                 fontSize: 10.0,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 1.4,
@@ -1055,10 +925,10 @@ class _StudioPanel extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: AurelianPalette.alabaster,
+        color: StylisteColors.alabaster,
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(
-          color: AurelianPalette.champagneGold.withValues(alpha: 0.64),
+          color: StylisteColors.champagneGold.withValues(alpha: 0.64),
         ),
       ),
       child: child,
@@ -1076,7 +946,7 @@ class _PanelTitle extends StatelessWidget {
     return Text(
       label,
       style: const TextStyle(
-        color: AurelianPalette.textTertiary,
+        color: StylisteColors.textTertiary,
         fontSize: 10.0,
         fontWeight: FontWeight.w900,
         letterSpacing: 2.0,
@@ -1113,42 +983,13 @@ class _StagePill extends StatelessWidget {
   }
 }
 
-class _HypeProjection {
-  const _HypeProjection({
-    this.score,
-    this.multiplier = 1.0,
-    this.matchingTag,
-    this.trendLoading = false,
-    this.trendUnavailable = false,
-  });
-
-  final double? score;
-  final double multiplier;
-  final String? matchingTag;
-  final bool trendLoading;
-  final bool trendUnavailable;
-
-  String get displayScore {
-    final double? current = score;
-    return current == null ? 'UNAVAILABLE' : current.toStringAsFixed(1);
-  }
-
-  String get trendDisplay {
-    if (trendUnavailable) return 'UNAVAILABLE';
-    if (trendLoading) return 'SCANNING';
-    final String? tag = matchingTag;
-    if (tag == null || multiplier <= 1.0) return 'NO MATCH';
-    return '${tag.toUpperCase()} ${multiplier.toStringAsFixed(1)}X';
-  }
-}
-
 class _StudioDraftingPainter extends CustomPainter {
   const _StudioDraftingPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
     final Paint line = Paint()
-      ..color = AurelianPalette.champagneGoldDark.withValues(alpha: 0.16)
+      ..color = StylisteColors.deepGold.withValues(alpha: 0.16)
       ..strokeWidth = 1.0;
 
     for (double x = 42.0; x < size.width; x += 42.0) {
@@ -1159,7 +1000,7 @@ class _StudioDraftingPainter extends CustomPainter {
     }
 
     final Paint arc = Paint()
-      ..color = AurelianPalette.softRose.withValues(alpha: 0.18)
+      ..color = StylisteColors.roseAccent.withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.1;
     canvas.drawArc(
@@ -1194,8 +1035,10 @@ class _AtelierGarmentOverlayPainter extends CustomPainter {
     final Paint spotlight = Paint()
       ..shader = RadialGradient(
         colors: <Color>[
-          AurelianPalette.champagneGold.withValues(alpha: ready ? 0.42 : 0.26),
-          AurelianPalette.champagneGold.withValues(alpha: 0.0),
+          StylisteColors.champagneGold.withValues(
+            alpha: ready ? 0.42 : 0.26,
+          ),
+          StylisteColors.champagneGold.withValues(alpha: 0.0),
         ],
       ).createShader(
         Rect.fromCircle(center: center, radius: size.shortestSide * 0.48),
@@ -1236,21 +1079,22 @@ class _AtelierGarmentOverlayPainter extends CustomPainter {
         end: Alignment.bottomRight,
         colors: <Color>[
           fabricColor.withValues(alpha: 0.78),
-          (Color.lerp(fabricColor, AppColors.obsidian, 0.18) ?? fabricColor)
+          (Color.lerp(fabricColor, StylisteColors.obsidian, 0.18) ??
+                  fabricColor)
               .withValues(alpha: 0.72),
-          AurelianPalette.champagneGoldDark.withValues(alpha: 0.72),
+          StylisteColors.deepGold.withValues(alpha: 0.72),
         ],
       ).createShader(mannequin.getBounds());
     canvas.drawPath(mannequin, fabric);
 
     final Paint edge = Paint()
-      ..color = AurelianPalette.ivory.withValues(alpha: 0.76)
+      ..color = StylisteColors.ivory.withValues(alpha: 0.76)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.3;
     canvas.drawPath(mannequin, edge);
 
     final Paint stand = Paint()
-      ..color = AppColors.obsidian.withValues(alpha: 0.34)
+      ..color = StylisteColors.obsidian.withValues(alpha: 0.34)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
     canvas
@@ -1266,7 +1110,7 @@ class _AtelierGarmentOverlayPainter extends CustomPainter {
       );
 
     final Paint stitch = Paint()
-      ..color = AppColors.obsidian.withValues(alpha: 0.22)
+      ..color = StylisteColors.obsidian.withValues(alpha: 0.22)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.9;
     canvas
@@ -1305,7 +1149,7 @@ Color _hexToColor(String hex) {
     final String clean = hex.replaceAll('#', '').padLeft(6, '0');
     return Color(int.parse('FF$clean', radix: 16));
   } catch (_) {
-    return AppColors.ivory;
+    return StylisteColors.ivory;
   }
 }
 

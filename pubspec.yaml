@@ -81,6 +81,17 @@ flutter:
     - assets/images/
     - assets/audio/
 
+  fonts:
+    - family: SpaceGrotesk
+      fonts:
+        - asset: assets/fonts/SpaceGrotesk-Variable.ttf
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Variable.ttf
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMono-Variable.ttf
+
   shaders:
     - lib/shaders/cloth_physics.frag
     - lib/shaders/liquid_chrome.frag

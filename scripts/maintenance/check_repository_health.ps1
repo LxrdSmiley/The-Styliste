@@ -9,7 +9,14 @@ $ErrorActionPreference = 'Stop'
 $scriptsDirectory = Split-Path -Parent $PSScriptRoot
 $repositoryRoot = Split-Path -Parent $scriptsDirectory
 $requiredSources = @(
-    'THE_STYLISTE_GDD_v7.md',
+    'THE_STYLISTE_GDD_v8.md',
+    'PRODUCT_POSITIONING_BIBLE.md',
+    'ART_DIRECTION_BIBLE.md',
+    'EMOTIONAL_EXPERIENCE_BIBLE.md',
+    'AUDIO_DIRECTION_BIBLE.md',
+    'NARRATIVE_STYLE_GUIDE.md',
+    'COMMUNITY_TRUST_CHARTER.md',
+    'NON_FEATURE_COMPLETION_GATE.md',
     'PROJECT_RULES.md',
     'VERIFICATION_PROTOCOL.md',
     'DEVELOPMENT_STATE.md',
@@ -24,8 +31,9 @@ Write-Output "Repository: $repositoryRoot"
 if ($DryRun) {
     Write-Output 'Dry run: no command will mutate files, dependencies, migrations, or services.'
     Write-Output 'Would check required source-of-truth files and git whitespace.'
-    Write-Output 'Would run the GDD, deferred-TODO, and authority-matrix checks.'
-    Write-Output 'Would inspect dependency drift with flutter pub outdated --no-dev.'
+    Write-Output 'Would run the GDD, authority-inventory, deferred-TODO, and authority-matrix checks.'
+    Write-Output 'Would validate the complete migration SHA-256 manifest.'
+    Write-Output 'Would inspect dependency drift with dart pub outdated --no-dev-dependencies.'
     Write-Output 'Would compare local Supabase migration state and run database lint.'
     Write-Output 'Would scan full Git history with gitleaks using complete redaction.'
     exit 0
@@ -43,12 +51,16 @@ if ($LASTEXITCODE -ne 0) { throw 'git diff --check failed.' }
 
 & (Join-Path $repositoryRoot 'scripts/check_gdd_registry.ps1')
 if ($LASTEXITCODE -ne 0) { throw 'GDD registry check failed.' }
+& (Join-Path $repositoryRoot 'scripts/check_authority_inventory.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'Authority inventory check failed.' }
+& (Join-Path $repositoryRoot 'scripts/check_migration_hash_manifest.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'Migration hash manifest check failed.' }
 & (Join-Path $repositoryRoot 'scripts/check_deferred_todos.ps1')
 if ($LASTEXITCODE -ne 0) { throw 'Deferred TODO check failed.' }
 & (Join-Path $repositoryRoot 'scripts/check_authority_matrix.ps1')
 if ($LASTEXITCODE -ne 0) { throw 'Authority matrix check failed.' }
 
-& flutter pub outdated --no-dev
+& dart pub outdated --no-dev-dependencies
 if ($LASTEXITCODE -ne 0) { throw 'Flutter dependency audit failed.' }
 
 & supabase migration list --local

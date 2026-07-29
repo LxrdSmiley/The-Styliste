@@ -17,8 +17,8 @@ void main() {
     await tester.pumpWidget(_atelierHarness());
     await tester.pump();
 
-    final StylisteScaffold scaffold =
-        tester.widget<StylisteScaffold>(find.byType(StylisteScaffold));
+    final AurelianScaffold scaffold =
+        tester.widget<AurelianScaffold>(find.byType(AurelianScaffold));
     expect(scaffold.mode, StylisteVisualMode.atelierWarmStudio);
     expect(find.byType(PillBadge), findsWidgets);
     expect(find.text('BASE SILHOUETTE'), findsOneWidget);
@@ -60,6 +60,39 @@ void main() {
     await tester.pump();
 
     expect(find.text('REDUCED MOTION'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Atelier survives 320px portrait at large text', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: <Override>[
+          activeTsunamiProvider.overrideWith(
+            (Ref ref) => Stream<List<TrendTsunami>>.value(
+              const <TrendTsunami>[],
+            ),
+          ),
+        ],
+        child: const MaterialApp(
+          home: MediaQuery(
+            data: MediaQueryData(
+              size: Size(320, 700),
+              textScaler: TextScaler.linear(2),
+              disableAnimations: true,
+            ),
+            child: AtelierScreen(prepareSessionOnStart: false),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('BASE SILHOUETTE'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

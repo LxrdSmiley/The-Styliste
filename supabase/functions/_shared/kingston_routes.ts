@@ -19,33 +19,68 @@ export function validateFounderTrial(body: JsonRecord): JsonRecord | null {
       !hasExactKeys(body, [
         "action",
         "brand_name",
-        "career_path",
         "idempotency_key",
       ]) || typeof body.brand_name !== "string" ||
-      !["designer", "mogul"].includes(String(body.career_path))
+      body.brand_name.trim().length < 2 || body.brand_name.trim().length > 40
     ) return null;
     return {
       action: body.action,
-      brand_name: body.brand_name,
-      career_path: body.career_path,
+      brand_name: body.brand_name.trim(),
     };
   }
   if (body.action === "advance") {
-    const keys = body.specialization === undefined
-      ? ["action", "next_stage", "idempotency_key"]
-      : ["action", "next_stage", "specialization", "idempotency_key"];
-    if (
-      !hasExactKeys(body, keys) || typeof body.next_stage !== "string" ||
-      (body.specialization !== undefined &&
-        !["artisan", "architect"].includes(String(body.specialization)))
-    ) return null;
-    return body.specialization === undefined
-      ? { action: body.action, next_stage: body.next_stage }
-      : {
-        action: body.action,
-        next_stage: body.next_stage,
-        specialization: body.specialization,
-      };
+    switch (body.next_stage) {
+      case "complete_artisan_sample":
+        if (!hasExactKeys(body, [
+          "action", "next_stage", "artisan_choice", "idempotency_key",
+        ]) || !["draped_bodice", "structured_bodice"].includes(
+          String(body.artisan_choice),
+        )) return null;
+        return {
+          action: body.action,
+          next_stage: body.next_stage,
+          artisan_choice: body.artisan_choice,
+        };
+      case "complete_architect_sample":
+        if (!hasExactKeys(body, [
+          "action", "next_stage", "architect_choice", "idempotency_key",
+        ]) || !["limited_run", "neighborhood_run"].includes(
+          String(body.architect_choice),
+        )) return null;
+        return {
+          action: body.action,
+          next_stage: body.next_stage,
+          architect_choice: body.architect_choice,
+        };
+      case "reveal_shared_result":
+        return hasExactKeys(body, ["action", "next_stage", "idempotency_key"])
+          ? { action: body.action, next_stage: body.next_stage }
+          : null;
+      case "choose_revision_or_business_response":
+        if (!hasExactKeys(body, [
+          "action", "next_stage", "response_choice", "idempotency_key",
+        ]) || !["refine_silhouette", "adjust_run_plan"].includes(
+          String(body.response_choice),
+        )) return null;
+        return {
+          action: body.action,
+          next_stage: body.next_stage,
+          response_choice: body.response_choice,
+        };
+      case "select_founder_path":
+        if (!hasExactKeys(body, [
+          "action", "next_stage", "specialization", "idempotency_key",
+        ]) || !["artisan", "architect"].includes(
+          String(body.specialization),
+        )) return null;
+        return {
+          action: body.action,
+          next_stage: body.next_stage,
+          specialization: body.specialization,
+        };
+      default:
+        return null;
+    }
   }
   return null;
 }
@@ -179,6 +214,96 @@ export function validatePlayerReport(body: JsonRecord): JsonRecord | null {
   };
 }
 
+const CAPSULE_BRIEF_KEYS = [
+  "title",
+  "narrative",
+  "target_audience",
+  "house_code",
+  "palette_direction",
+  "material_direction",
+];
+const CAPSULE_GRAMMAR_KEYS = [
+  "silhouette",
+  "material",
+  "palette",
+  "construction",
+];
+
+export function validateCapsuleFoundation(body: JsonRecord): JsonRecord | null {
+  if (body.action === "initialize" || body.action === "evaluate_readiness") {
+    return hasExactKeys(body, ["action", "idempotency_key"])
+      ? { action: body.action }
+      : null;
+  }
+  if (body.action === "save_brief") {
+    if (
+      !hasExactKeys(body, ["action", "brief", "idempotency_key"]) ||
+      !isRecord(body.brief) || !hasExactKeys(body.brief, CAPSULE_BRIEF_KEYS) ||
+      typeof body.brief.title !== "string" ||
+      body.brief.title.trim().length < 2 || body.brief.title.trim().length > 48 ||
+      typeof body.brief.narrative !== "string" ||
+      body.brief.narrative.trim().length < 12 ||
+      body.brief.narrative.trim().length > 240 ||
+      !["kingston_creatives", "city_evenings"].includes(
+        String(body.brief.target_audience),
+      ) ||
+      !["tailored_radiance", "soft_structure"].includes(
+        String(body.brief.house_code),
+      ) ||
+      !["ivory_obsidian", "kingston_blue_ivory"].includes(
+        String(body.brief.palette_direction),
+      ) ||
+      !["cotton_twill", "linen_blend"].includes(
+        String(body.brief.material_direction),
+      )
+    ) return null;
+    return {
+      action: body.action,
+      brief: {
+        title: body.brief.title.trim(),
+        narrative: body.brief.narrative.trim(),
+        target_audience: body.brief.target_audience,
+        house_code: body.brief.house_code,
+        palette_direction: body.brief.palette_direction,
+        material_direction: body.brief.material_direction,
+      },
+    };
+  }
+  if (body.action === "save_look") {
+    if (
+      !hasExactKeys(body, ["action", "role", "grammar", "idempotency_key"]) ||
+      !["hero_piece", "commercial_anchor", "experimental_piece"].includes(
+        String(body.role),
+      ) ||
+      !isRecord(body.grammar) ||
+      !hasExactKeys(body.grammar, CAPSULE_GRAMMAR_KEYS) ||
+      !["column", "draped", "structured"].includes(
+        String(body.grammar.silhouette),
+      ) ||
+      !["cotton_twill", "linen_blend"].includes(
+        String(body.grammar.material),
+      ) ||
+      !["ivory_obsidian", "kingston_blue_ivory"].includes(
+        String(body.grammar.palette),
+      ) ||
+      !["straight_seam", "soft_drape", "sharp_panel"].includes(
+        String(body.grammar.construction),
+      )
+    ) return null;
+    return {
+      action: body.action,
+      role: body.role,
+      grammar: {
+        silhouette: body.grammar.silhouette,
+        material: body.grammar.material,
+        palette: body.grammar.palette,
+        construction: body.grammar.construction,
+      },
+    };
+  }
+  return null;
+}
+
 export const KINGSTON_ROUTES: Record<string, KingstonRoute> = {
   "founder-trial": {
     rpc: "server_founder_trial_intent_v1",
@@ -216,5 +341,11 @@ export const KINGSTON_ROUTES: Record<string, KingstonRoute> = {
     ruleVersion: "kingston-player-report.v1",
     failureCode: "PLAYER_REPORT_REJECTED",
     validate: validatePlayerReport,
+  },
+  "capsule-foundation": {
+    rpc: "server_capsule_foundation_intent_v1",
+    ruleVersion: "kingston-capsule-foundation.v1",
+    failureCode: "CAPSULE_FOUNDATION_REJECTED",
+    validate: validateCapsuleFoundation,
   },
 };

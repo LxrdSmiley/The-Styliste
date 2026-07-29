@@ -4,6 +4,8 @@ import '../../../core/providers/active_player_provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/services/supabase_service.dart';
 import '../../../domain/models/player.dart';
+import '../../capsule/models/kingston_capsule.dart';
+import '../../capsule/providers/capsule_foundation_provider.dart';
 import '../repositories/first_objective_repository.dart';
 
 class FirstObjectiveMarkers {
@@ -107,123 +109,35 @@ final FutureProviderFamily<FirstObjectiveState, Player> firstObjectiveProvider =
     FutureProvider.family<FirstObjectiveState, Player>(
   (Ref<AsyncValue<FirstObjectiveState>> ref, Player player) async {
     final String playerId = ref.watch(activeUidProvider);
-    final AsyncValue<List<FirstWeekObjective>> objectivesAsync =
-        ref.watch(firstWeekObjectivesStreamProvider(playerId));
-    final List<FirstWeekObjective> objectives =
-        objectivesAsync.valueOrNull ?? const <FirstWeekObjective>[];
-    final List<String> sequence = player.path == CareerPath.designer
-        ? <String>[
-            'designer_first_design',
-            'designer_first_drop',
-            'designer_react_to_result',
-            'shared_feed_participation',
-          ]
-        : <String>[
-            'mogul_first_store',
-            'mogul_first_store_decision',
-            'mogul_react_to_sales',
-            'shared_feed_participation',
-          ];
-    final List<FirstWeekObjective> ordered = sequence
-        .map(
-          (String key) => objectives.where(
-            (FirstWeekObjective objective) => objective.objectiveKey == key,
-          ),
-        )
-        .expand((Iterable<FirstWeekObjective> matches) => matches)
-        .toList(growable: false);
-    if (ordered.isEmpty) {
-      final FirstObjectiveMarkers markers =
-          ref.watch(firstObjectiveActionsProvider);
-      final FirstObjectiveRepository repository =
-          ref.watch(firstObjectiveRepositoryProvider);
-      final String effectivePlayerId = playerId.isEmpty ? player.id : playerId;
+    final CapsuleFoundationState capsuleState =
+        ref.watch(capsuleFoundationProvider);
+    final KingstonCapsule? capsule = capsuleState.capsule;
+    final int completedLooks = capsule?.looks
+            .where((KingstonCapsuleLook look) => look.isComplete)
+            .length ??
+        0;
+    final bool briefConfirmed =
+        capsule != null && capsule.stage != KingstonCapsuleStage.briefDraft;
+    final int completedSteps = (briefConfirmed ? 1 : 0) + completedLooks;
+    final bool complete = capsule?.samplingUnavailable ?? false;
+    final String framing = player.path == CareerPath.designer
+        ? 'Author the Collection Brief and shape all three garments. '
+            'Your Artisan path changes the framing, not the gameplay ceiling.'
+        : 'Position the Collection Brief and shape all three garments. '
+            'Your Architect path changes the framing, not the gameplay ceiling.';
 
-      if (player.path == CareerPath.designer) {
-        final bool hasServerConfirmedAlphaDrop =
-            await repository.hasServerConfirmedAlphaDrop(effectivePlayerId);
-        final bool complete =
-            hasServerConfirmedAlphaDrop && markers.returnedToHq;
-        final bool needsHqReturn =
-            hasServerConfirmedAlphaDrop && !markers.returnedToHq;
-        return FirstObjectiveState(
-          playerId: effectivePlayerId,
-          path: player.path,
-          title: 'Launch your first Alpha Drop',
-          description:
-              'Open Atelier, mint an Alpha, drop it to Feed, then return HQ.',
-          progressLabel: complete ? '1/1' : '0/1',
-          ctaLabel: needsHqReturn ? 'Return HQ' : 'Open Atelier',
-          ctaRoute: needsHqReturn ? AppRouter.hq : AppRouter.atelier,
-          isComplete: complete,
-        );
-      }
-
-      final bool hasServerConfirmedStarterStore =
-          await repository.hasServerConfirmedStarterStore(effectivePlayerId);
-      final bool complete =
-          hasServerConfirmedStarterStore && markers.returnedToHq;
-      final bool needsHqReturn =
-          hasServerConfirmedStarterStore && !markers.returnedToHq;
-      return FirstObjectiveState(
-        playerId: effectivePlayerId,
-        path: player.path,
-        title: 'Open your first store',
-        description: 'Open Ledger, launch a starter store, then return HQ.',
-        progressLabel: complete ? '1/1' : '0/1',
-        ctaLabel: needsHqReturn ? 'Return HQ' : 'Open Ledger',
-        ctaRoute: needsHqReturn ? AppRouter.hq : AppRouter.ledger,
-        isComplete: complete,
-      );
-    }
-    final int completed = ordered
-        .where((FirstWeekObjective objective) => objective.isComplete)
-        .length;
-    FirstWeekObjective? next;
-    for (final FirstWeekObjective objective in ordered) {
-      if (!objective.isComplete) {
-        next = objective;
-        break;
-      }
-    }
-    final FirstWeekObjective fallback = FirstWeekObjective(
-      playerId: playerId.isEmpty ? player.id : playerId,
-      objectiveKey: sequence.first,
-      path: player.path == CareerPath.designer ? 'designer' : 'mogul',
-      title: player.path == CareerPath.designer
-          ? 'Create your first design'
-          : 'Open your first store',
-      description: player.path == CareerPath.designer
-          ? 'Make a design decision in the Atelier.'
-          : 'Open in Kingston and choose a format and operating strategy.',
-      status: 'pending',
-    );
-    final FirstWeekObjective current = next ?? fallback;
-    final bool complete = ordered.isNotEmpty && completed == ordered.length;
-    final String route = switch (current.objectiveKey) {
-      'shared_feed_participation' ||
-      'designer_react_to_result' =>
-        AppRouter.feed,
-      'designer_first_design' || 'designer_first_drop' => AppRouter.atelier,
-      _ => AppRouter.ledger,
-    };
-    final String cta = switch (current.objectiveKey) {
-      'shared_feed_participation' || 'designer_react_to_result' => 'Open Feed',
-      'designer_first_design' => 'Open Atelier',
-      'designer_first_drop' => 'Release Drop',
-      'mogul_first_store' => 'Open Ledger',
-      'mogul_first_store_decision' => 'Set Strategy',
-      _ => 'Review Ledger',
-    };
     return FirstObjectiveState(
-      playerId: current.playerId,
+      playerId: playerId.isEmpty ? player.id : playerId,
       path: player.path,
-      title: current.title,
-      description: current.description,
-      progressLabel:
-          '$completed/${ordered.isEmpty ? sequence.length : ordered.length}',
-      ctaLabel: cta,
-      ctaRoute: route,
+      title: complete
+          ? 'Kingston capsule is ready for review'
+          : 'Build your Kingston capsule',
+      description: complete
+          ? 'Readiness is server-confirmed. Sampling remains deliberately unavailable in Gate A.'
+          : framing,
+      progressLabel: complete ? '4/4' : '$completedSteps/4',
+      ctaLabel: complete ? 'Review capsule' : 'Open capsule',
+      ctaRoute: AppRouter.atelierCapsule,
       isComplete: complete,
     );
   },

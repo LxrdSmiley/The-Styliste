@@ -509,3 +509,8 @@ entrypoint = "./functions/eclipse-event-tick/index.ts"
 enabled = true
 verify_jwt = true
 entrypoint = "./functions/founder-trial/index.ts"
+
+[functions.capsule-foundation]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/capsule-foundation/index.ts"

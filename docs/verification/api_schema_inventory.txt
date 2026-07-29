@@ -1,11 +1,19 @@
-function|server_record_progression_event(uuid, text, uuid)|function
-function|server_release_design(uuid, uuid, text, jsonb)|function
-function|server_settle_idle_income(uuid, uuid)|function
-function|server_submit_player_report(uuid, uuid, text, text)|function
+function|server_capsule_foundation_intent_v1(uuid, uuid, jsonb, text)|function
+function|server_design_intent_v1(uuid, uuid, jsonb, text)|function
+function|server_founder_trial_intent_v1(uuid, boolean, uuid, jsonb, text)|function
+function|server_open_first_store_v1(uuid, uuid, jsonb, text)|function
+function|server_progression_event_v1(uuid, uuid, jsonb, text)|function
+function|server_settle_idle_income_v1(uuid, uuid, jsonb, text)|function
+function|server_submit_player_report_v1(uuid, uuid, jsonb, text)|function
 relation|brand_summary|view
+relation|design_release_receipts|view
+relation|design_session_state|view
 relation|feed_projection|view
+relation|first_store_receipts|view
 relation|first_week_objectives|view
+relation|founder_trial_state|view
+relation|idle_settlement_receipts|view
 relation|owned_designs|view
 relation|player_summary|view
-relation|public_profiles|view
+relation|progression_state|view
 relation|store_summary|view

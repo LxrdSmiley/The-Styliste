@@ -122,6 +122,41 @@ class IvorySecondaryButton extends StatelessWidget {
   }
 }
 
+class DestructiveButton extends StatelessWidget {
+  const DestructiveButton({
+    required this.label,
+    required this.onPressed,
+    this.icon = Icons.delete_outline,
+    this.isLoading = false,
+    this.disabledReason,
+    super.key,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final IconData icon;
+  final bool isLoading;
+  final String? disabledReason;
+
+  @override
+  Widget build(BuildContext context) {
+    return _StylisteButton(
+      label: label,
+      onPressed: onPressed,
+      icon: icon,
+      isLoading: isLoading,
+      feedback: StylisteButtonFeedback.error,
+      disabledReason: disabledReason,
+      palette: _ButtonPalette.obsidian(),
+      radius: StylisteRadii.control,
+      padding: const EdgeInsets.symmetric(
+        horizontal: StylisteSpacing.gutter,
+        vertical: 14,
+      ),
+    );
+  }
+}
+
 class PillChoiceButton extends StatelessWidget {
   const PillChoiceButton({
     required this.label,

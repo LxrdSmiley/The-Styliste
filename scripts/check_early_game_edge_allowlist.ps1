@@ -23,4 +23,4 @@ if ($feedProvider -notmatch "\.schema\('api'\)\s*\.from\('feed_projection'\)") {
   throw 'The active Kingston Feed provider must read only the reviewed api.feed_projection relation.'
 }
 
-Write-Output 'Static pass: Early Game Edge allowlist is restricted to the six cataloged Kingston endpoints.'
+Write-Output 'Static pass: Early Game Edge allowlist is restricted to the seven cataloged Kingston endpoints.'

@@ -55,6 +55,7 @@ const _$CareerPathEnumMap = {
 };
 
 const _$HqCityEnumMap = {
+  HqCity.kingston: 'kingston',
   HqCity.newYork: 'new_york',
   HqCity.paris: 'paris',
   HqCity.tokyo: 'tokyo',

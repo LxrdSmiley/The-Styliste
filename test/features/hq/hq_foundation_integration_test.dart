@@ -25,8 +25,8 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    final StylisteScaffold scaffold =
-        tester.widget<StylisteScaffold>(find.byType(StylisteScaffold));
+    final AurelianScaffold scaffold =
+        tester.widget<AurelianScaffold>(find.byType(AurelianScaffold));
     expect(scaffold.mode, StylisteVisualMode.editorialLight);
     expect(find.byType(GlassMetricCard), findsWidgets);
     expect(find.text('FIRST OBJECTIVE'), findsOneWidget);
@@ -41,11 +41,40 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    final StylisteScaffold scaffold =
-        tester.widget<StylisteScaffold>(find.byType(StylisteScaffold));
+    final AurelianScaffold scaffold =
+        tester.widget<AurelianScaffold>(find.byType(AurelianScaffold));
     expect(scaffold.mode, StylisteVisualMode.executiveObsidian);
     expect(find.byType(GlassMetricCard), findsWidgets);
     expect(find.text('FIRST OBJECTIVE'), findsOneWidget);
+  });
+
+  testWidgets('both HQ lenses survive 320px portrait at large text', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(320, 700));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    for (final CareerPath path in CareerPath.values) {
+      final Widget view = path == CareerPath.designer
+          ? HqArtisanView(player: _player(path))
+          : HqArchitectView(player: _player(path));
+      await tester.pumpWidget(
+        _hqHarness(
+          child: MediaQuery(
+            data: const MediaQueryData(
+              size: Size(320, 700),
+              textScaler: TextScaler.linear(2),
+            ),
+            child: view,
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.textContaining('EQUAL GAMEPLAY CEILING'), findsWidgets);
+      expect(tester.takeException(), isNull, reason: path.name);
+    }
   });
 }
 
@@ -89,7 +118,7 @@ Player _player(CareerPath path) {
     id: 'player-1',
     brandName: 'Aurelian',
     path: path,
-    hqCity: HqCity.paris,
+    hqCity: HqCity.kingston,
     brandRank: 7,
     onboardingComplete: true,
   );

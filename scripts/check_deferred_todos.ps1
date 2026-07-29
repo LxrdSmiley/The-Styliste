@@ -1,6 +1,9 @@
 $ErrorActionPreference = 'Stop'
 $allowList = Get-Content -Raw -Encoding utf8 'docs/governance/deferred_feature_ids.md'
-$todoMatches = rg --no-heading --line-number 'TODO\(([A-Z]+-\d+)\)' lib test supabase
+$todoMatches = @(rg --no-heading --line-number 'TODO\(([A-Z]+-\d+)\)' lib test supabase)
+if ($LASTEXITCODE -gt 1) {
+  throw 'TODO Feature ID scan failed.'
+}
 foreach ($match in $todoMatches) {
   if ($match -match 'TODO\(([A-Z]+-\d+)\)') {
     if ($allowList -notmatch [regex]::Escape($Matches[1])) {
@@ -8,7 +11,13 @@ foreach ($match in $todoMatches) {
     }
   }
 }
-if (rg -P --no-heading --line-number 'TODO(?!\([A-Z]+-\d+\))' lib test supabase) {
+$untrackedTodos = @(rg -P --no-heading --line-number 'TODO(?!\([A-Z]+-\d+\))' lib test supabase)
+if ($LASTEXITCODE -gt 1) {
+  throw 'Untracked TODO scan failed.'
+}
+if ($untrackedTodos.Count -gt 0) {
+  $untrackedTodos | Write-Output
   throw 'Every TODO must include a tracked Feature ID.'
 }
 Write-Output 'Static pass: TODO Feature IDs are tracked.'
+exit 0

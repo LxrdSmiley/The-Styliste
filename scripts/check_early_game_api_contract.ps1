@@ -3,13 +3,19 @@ $ErrorActionPreference = 'Stop'
 $catalogPath = 'supabase/tests/authority_contract_matrix.json'
 $configPath = 'supabase/config.toml'
 $migrationPath = 'supabase/migrations/20260722151802_kingston_early_game_api_contract.sql'
-$correctionPath = 'supabase/migrations/20260722190000_gdd_v7_kingston_authority_corrections.sql'
+# Historical v7-named migration retained as implementation history; its
+# server-owned controls remain part of the v8 verification chain.
+$authorityCorrectionPath = 'supabase/migrations/20260722190000_gdd_v7_kingston_authority_corrections.sql'
+$correctionPath = 'supabase/migrations/20260726185809_kingston_founder_trial_state_machine.sql'
+$capsuleMigrationPath = 'supabase/migrations/20260726231214_kingston_capsule_foundation.sql'
 $catalog = Get-Content -Raw -Encoding utf8 $catalogPath | ConvertFrom-Json
 $config = Get-Content -Raw -Encoding utf8 $configPath
 $migration = Get-Content -Raw -Encoding utf8 $migrationPath
+$authorityCorrection = Get-Content -Raw -Encoding utf8 $authorityCorrectionPath
 $correction = Get-Content -Raw -Encoding utf8 $correctionPath
+$capsuleMigration = Get-Content -Raw -Encoding utf8 $capsuleMigrationPath
 $routes = Get-Content -Raw -Encoding utf8 'supabase/functions/_shared/kingston_routes.ts'
-$gdd = Get-Content -Raw -Encoding utf8 'THE_STYLISTE_GDD_v7.md'
+$gdd = Get-Content -Raw -Encoding utf8 'THE_STYLISTE_GDD_v8.md'
 
 if ($config -notmatch '(?m)^schemas\s*=\s*\["api"\][\t ]*\r?$' -or
     $config -match '(?m)^schemas\s*=.*"public"') {
@@ -39,9 +45,9 @@ $enabledNames = @($enabledCatalog.endpoint) | Sort-Object
 $enabledConfig = @($functionState.Keys | Where-Object { $functionState[$_].Enabled }) |
   Sort-Object
 if (Compare-Object $enabledNames $enabledConfig) {
-  throw 'Enabled config surface differs from the six cataloged Kingston endpoints.'
+  throw 'Enabled config surface differs from the seven cataloged Kingston endpoints.'
 }
-if ($enabledNames.Count -ne 6) { throw 'Exactly six Kingston endpoints must be enabled.' }
+if ($enabledNames.Count -ne 7) { throw 'Exactly seven Kingston endpoints must be enabled.' }
 
 $requiredFields = @(
   'endpoint', 'feature_id', 'implementation_wave', 'auth_mode',
@@ -62,7 +68,7 @@ foreach ($entry in $enabledCatalog) {
     throw "$($entry.endpoint) must set verify_jwt=true."
   }
   $wrapperName = ($entry.api_wrapper -split '\.')[-1]
-  if ($migration -notmatch "(?i)CREATE OR REPLACE FUNCTION\s+api\.$([regex]::Escape($wrapperName))\s*\(") {
+  if (($migration + $capsuleMigration) -notmatch "(?i)CREATE OR REPLACE FUNCTION\s+api\.$([regex]::Escape($wrapperName))\s*\(") {
     throw "Cataloged wrapper $($entry.api_wrapper) does not exist in the forward migration."
   }
   if ($gdd -notmatch [regex]::Escape($entry.feature_id)) {
@@ -98,6 +104,7 @@ $activeFlutterFiles = @(
   'lib/features/onboarding/providers/sovereign_genesis_provider.dart',
   'lib/features/atelier/providers/mint_design_provider.dart',
   'lib/features/atelier/providers/drop_design_provider.dart',
+  'lib/features/capsule/providers/capsule_foundation_provider.dart',
   'lib/features/ledger/providers/ledger_provider.dart',
   'lib/core/services/idle_engine_service.dart',
   'lib/features/ftue/repositories/first_objective_repository.dart',
@@ -122,7 +129,7 @@ if ($migration -notmatch 'IDEMPOTENCY_KEY_CONFLICT' -or
   throw 'The migration lacks replay conflict, locking, or append-only receipt controls.'
 }
 
-if ($routes -match 'market_tier|avatar_config' -or
+if ($routes -match 'market_tier|avatar_config|career_path' -or
     $routes -notmatch 'vex_opt_in') {
   throw 'The active Edge contract retains obsolete Founder authority or omits Vex consent.'
 }
@@ -130,8 +137,17 @@ foreach ($required in @(
   'house_funds', 'lifetime_gross_revenue', 'lifetime_costs',
   'lifetime_net_result', 'idle_base_revenue_per_hour',
   'idle_store_revenue_per_hour', 'idle_automation_revenue_per_hour',
-  'kingston_starter_design_catalog', 'release_design_v2',
-  'FOUNDER_TRIAL_ADVANCE_NOT_AVAILABLE'
+  'kingston_starter_design_catalog', 'release_design_v2'
+)) {
+  if ($authorityCorrection -notmatch [regex]::Escape($required)) {
+    throw "The authority correction migration is missing required Kingston marker $required."
+  }
+}
+foreach ($required in @(
+  'FOUNDER_TRIAL_ADVANCE_AVAILABLE',
+  'complete_artisan_sample',
+  'complete_architect_sample',
+  'select_founder_path'
 )) {
   if ($correction -notmatch [regex]::Escape($required)) {
     throw "The forward correction is missing required Kingston authority marker $required."
@@ -139,6 +155,17 @@ foreach ($required in @(
 }
 if ($correction -match 'v_zone_count\s*\*|v_material_count\s*\*|v_palette_count\s*\*|v_construction_count\s*\*') {
   throw 'The final Kingston design settlement contains count-based scoring.'
+}
+foreach ($required in @(
+  'authority_capsule_foundation_v1',
+  'server_capsule_foundation_intent_v1',
+  'FOUNDER_TRIAL_COMPLETION_REQUIRED',
+  'CAPSULE_LOOK_ORDER_INVALID',
+  'sampling_unavailable'
+)) {
+  if ($capsuleMigration -notmatch [regex]::Escape($required)) {
+    throw "The Wave 2A capsule migration is missing required authority marker $required."
+  }
 }
 
 Write-Output 'Static pass: Kingston allowlist, actor boundary, wrappers, catalog, grants, replay controls, and disable switches agree.'

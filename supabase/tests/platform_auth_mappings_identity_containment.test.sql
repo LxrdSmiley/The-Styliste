@@ -1,140 +1,77 @@
+-- GDD v8 §19: a client cannot use raw platform mappings to enumerate, link,
+-- or alter another player identity.
+
 BEGIN;
 
-SELECT plan(15);
+SELECT plan(9);
 
 SELECT ok(
-  has_table_privilege('authenticated', 'public.platform_auth_mappings', 'SELECT'),
-  'authenticated retains SELECT privilege'
+  NOT has_table_privilege('authenticated', 'public.platform_auth_mappings', 'SELECT'),
+  'authenticated retains no raw mapping read privilege'
 );
 SELECT ok(
   NOT has_table_privilege('authenticated', 'public.platform_auth_mappings', 'INSERT'),
-  'authenticated cannot INSERT mappings'
+  'authenticated cannot insert mappings'
 );
 SELECT ok(
   NOT has_table_privilege('authenticated', 'public.platform_auth_mappings', 'UPDATE'),
-  'authenticated cannot UPDATE mappings'
+  'authenticated cannot update mappings'
 );
 SELECT ok(
   NOT has_table_privilege('authenticated', 'public.platform_auth_mappings', 'DELETE'),
-  'authenticated cannot DELETE mappings'
+  'authenticated cannot delete mappings'
 );
 SELECT ok(
   NOT has_table_privilege('anon', 'public.platform_auth_mappings', 'SELECT'),
-  'anon cannot SELECT mappings'
+  'anonymous callers cannot select mappings'
 );
 SELECT ok(
   has_table_privilege('service_role', 'public.platform_auth_mappings', 'INSERT'),
-  'service_role retains INSERT privilege for server linking'
+  'service role retains server-side linking capability'
 );
-
-SELECT is(
-  (
-    SELECT count(*)::int
-    FROM pg_policies
-    WHERE schemaname = 'public'
-      AND tablename = 'platform_auth_mappings'
-      AND cmd = 'SELECT'
-      AND roles @> ARRAY['authenticated']::name[]
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1
+    FROM pg_class AS relation
+    JOIN pg_namespace AS schema ON schema.oid = relation.relnamespace
+    WHERE schema.nspname = 'api' AND relation.relname = 'platform_auth_mappings'
   ),
-  1,
-  'exactly one authenticated self-read policy exists'
-);
-SELECT is(
-  (
-    SELECT count(*)::int
-    FROM pg_policies
-    WHERE schemaname = 'public'
-      AND tablename = 'platform_auth_mappings'
-      AND cmd IN ('INSERT', 'UPDATE', 'DELETE', 'ALL')
-      AND (
-        roles @> ARRAY['anon']::name[] OR
-        roles @> ARRAY['authenticated']::name[] OR
-        roles @> ARRAY['public']::name[]
-      )
-  ),
-  0,
-  'no client write policies exist'
+  'API schema contains no platform identity relation'
 );
 
-SELECT set_config('request.jwt.claim.role', 'service_role', true);
-SELECT set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-0000000000a1', true);
-
-INSERT INTO public.players(id, brand_name, path, hq_city)
-VALUES
-  ('00000000-0000-4000-8000-0000000000a1', 'RLS Test A', 'designer', 'Paris'),
-  ('00000000-0000-4000-8000-0000000000b1', 'RLS Test B', 'mogul', 'London'),
-  ('00000000-0000-4000-8000-0000000000c1', 'RLS Test C', 'designer', 'Tokyo');
-
-SET LOCAL ROLE service_role;
-INSERT INTO public.platform_auth_mappings(player_id, platform, platform_user_id)
-VALUES
-  ('00000000-0000-4000-8000-0000000000a1', 'play_games', 'isolated-platform-a'),
-  ('00000000-0000-4000-8000-0000000000b1', 'play_games', 'isolated-platform-b'),
-  ('00000000-0000-4000-8000-0000000000c1', 'game_center', 'isolated-platform-c');
-
-SELECT is(
-  (SELECT count(*)::int FROM public.platform_auth_mappings),
-  3,
-  'service_role can create isolated fixtures'
-);
-RESET ROLE;
-
-SELECT set_config(
-  'request.jwt.claims',
-  '{"sub":"00000000-0000-4000-8000-0000000000a1","role":"authenticated","is_anonymous":false}',
-  true
-);
 SET LOCAL ROLE authenticated;
-
-SELECT is(
-  (SELECT count(*)::int FROM public.platform_auth_mappings),
-  1,
-  'authenticated self-read returns exactly one row'
-);
-SELECT is(
-  (
-    SELECT count(*)::int
-    FROM public.platform_auth_mappings
-    WHERE player_id = '00000000-0000-4000-8000-0000000000b1'
-  ),
-  0,
-  'authenticated cannot read another player mapping'
-);
-
-SELECT throws_ok(
-  $$INSERT INTO public.platform_auth_mappings(player_id, platform, platform_user_id)
-    VALUES ('00000000-0000-4000-8000-0000000000a1', 'game_center', 'client-insert')$$,
-  '42501',
-  NULL,
-  'authenticated INSERT is rejected'
-);
-SELECT throws_ok(
-  $$UPDATE public.platform_auth_mappings
+DO $$
+BEGIN
+  BEGIN
+    PERFORM 1 FROM public.platform_auth_mappings
+    WHERE player_id = '00000000-0000-4000-8000-0000000000a1';
+    RAISE EXCEPTION 'AUTHENTICATED_MAPPING_ENUMERATION_SUCCEEDED';
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
+  BEGIN
+    UPDATE public.platform_auth_mappings
     SET platform_user_id = 'client-update'
-    WHERE player_id = '00000000-0000-4000-8000-0000000000a1'$$,
-  '42501',
-  NULL,
-  'authenticated UPDATE is rejected'
-);
-SELECT throws_ok(
-  $$DELETE FROM public.platform_auth_mappings
-    WHERE player_id = '00000000-0000-4000-8000-0000000000a1'$$,
-  '42501',
-  NULL,
-  'authenticated DELETE is rejected'
-);
-
+    WHERE player_id = '00000000-0000-4000-8000-0000000000a1';
+    RAISE EXCEPTION 'AUTHENTICATED_MAPPING_UPDATE_SUCCEEDED';
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
+END;
+$$;
 RESET ROLE;
-SELECT set_config('request.jwt.claim.role', 'anon', true);
-SELECT set_config('request.jwt.claim.sub', '', true);
-SET LOCAL ROLE anon;
+SELECT pass('authenticated enumeration and ownership-change attempts are rejected');
 
-SELECT throws_ok(
-  $$SELECT * FROM public.platform_auth_mappings$$,
-  '42501',
-  NULL,
-  'anonymous SELECT is rejected'
-);
+SET LOCAL ROLE anon;
+DO $$
+BEGIN
+  BEGIN
+    PERFORM 1 FROM public.platform_auth_mappings;
+    RAISE EXCEPTION 'ANON_MAPPING_ENUMERATION_SUCCEEDED';
+  EXCEPTION WHEN insufficient_privilege THEN NULL;
+  END;
+END;
+$$;
+RESET ROLE;
+SELECT pass('anonymous enumeration attempt is rejected');
 
 SELECT * FROM finish();
 ROLLBACK;

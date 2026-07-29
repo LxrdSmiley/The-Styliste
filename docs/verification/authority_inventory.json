@@ -1,0 +1,18 @@
+{
+  "inventory_version": 1,
+  "validation_date": "2026-07-26",
+  "validation_command": "powershell -ExecutionPolicy Bypass -File scripts/check_authority_inventory.ps1",
+  "documents": [
+    {"path":"THE_STYLISTE_GDD_v8.md","purpose":"Canonical product, feature, staging, and acceptance specification.","authority_rank":1,"sha256":"3e881e1e5bb1a6fda52e13c39aae0e111776c93130f661fedb0adf7fb07aae25","status":"active"},
+    {"path":"PRODUCT_POSITIONING_BIBLE.md","purpose":"Product positioning and player promise authority.","authority_rank":2,"sha256":"f65d026c5d7179d678ca174a651163d57489dd0272dd719e5bb291bd7304ba89","status":"active"},
+    {"path":"ART_DIRECTION_BIBLE.md","purpose":"Art-direction authority.","authority_rank":3,"sha256":"d510d3669fa80d0065e78a1f4048235e18ba9668a9448cf5897df8094b2cad64","status":"active"},
+    {"path":"EMOTIONAL_EXPERIENCE_BIBLE.md","purpose":"Emotional-experience authority.","authority_rank":4,"sha256":"707652df3af2ebe49cafd3db18a7d2d7be6cec023dc9025c828942eea0f44a68","status":"active"},
+    {"path":"AUDIO_DIRECTION_BIBLE.md","purpose":"Audio and haptic direction authority.","authority_rank":5,"sha256":"7fe407acf09f57261905cf5dd507ace19e10c77c286e3f89fb4255cb2c78eb6d","status":"active"},
+    {"path":"NARRATIVE_STYLE_GUIDE.md","purpose":"Narrative voice and memory authority.","authority_rank":6,"sha256":"f9af437ed8d4abdf925b4525d8fd13e5a040e56382d406cb56364dc9605c433c","status":"active"},
+    {"path":"COMMUNITY_TRUST_CHARTER.md","purpose":"Community conduct, trust, moderation, and appeal authority.","authority_rank":7,"sha256":"0ab4ee735290286f0fb6fb575ba8a978dd2ee24444c86e834cce51bb62469b4a","status":"active"},
+    {"path":"NON_FEATURE_COMPLETION_GATE.md","purpose":"Non-feature quality and specialist validation authority.","authority_rank":8,"sha256":"1e68dad5f2ecd5e58ed9a505403f9f9019a73707bdddba0881bf39ca831220b0","status":"active"},
+    {"path":"PROJECT_RULES.md","purpose":"Technical development authority.","authority_rank":9,"sha256":"40d8914db55b9793cc1495090a27b1fcbc5a1c080263e60a755c3701b0f85487","status":"active"},
+    {"path":"VERIFICATION_PROTOCOL.md","purpose":"Evidence and readiness-status authority.","authority_rank":10,"sha256":"70b1b542d928f194aa4f4d1c4b237d8d3adf75aef743cf75e3c0367f80b97767","status":"active"},
+    {"path":"THE_STYLISTE_GDD_v7.md","purpose":"Superseded audit and migration-history reference only.","authority_rank":null,"sha256":"","status":"historical"}
+  ]
+}

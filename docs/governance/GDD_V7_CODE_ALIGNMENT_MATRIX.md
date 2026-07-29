@@ -1,4 +1,8 @@
-# GDD v7 Code Alignment Matrix
+# Historical GDD v7 Code Alignment Matrix
+
+> Historical archive only. This record must not be used as an active product,
+> Feature ID, release, or implementation authority. GDD v8 and the active
+> authority inventory govern current work.
 
 This matrix is the executable scope register for Directive 1X. It targets the
 Kingston Early Game milestone, not the complete future product. `KEEP`, `FIX`,

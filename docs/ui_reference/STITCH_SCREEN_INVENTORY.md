@@ -1,4 +1,8 @@
-# STITCH_SCREEN_INVENTORY.md
+# Historical GDD v7 — STITCH_SCREEN_INVENTORY.md
+
+> Historical archive only. This inventory preserves an earlier v7 screen
+> categorization and does not govern current UI implementation. GDD v8 and the
+> active authority inventory govern current work.
 
 ## Source
 
@@ -7,11 +11,10 @@ Inventory source: repository-root Stitch handoff material cataloged under
 
 This table includes every Stitch package folder containing `screen.png`.
 
-Active guidance uses GDD v7: design-system authority §18.1, surface evaluation
-§18.2, interaction and accessibility §18.3, performance §18.4, release scope
-§21, and acceptance evidence §22.
+The historical table below records its former GDD v7 section references. Active
+guidance uses the corresponding GDD v8 authority and companion bibles.
 
-| Folder | Type | Canonical Status | GDD v7 Section | Implementation Status |
+| Folder | Type | Historical v7 Section | Implementation Status |
 | --- | --- | --- | --- | --- |
 | `a_high_end_luxury_mobile_ui_screen_for_a_fashion_game._the_screen_shows_a` | Mood / Genre Reference | mood-reference | §18.2, §21 | deferred |
 | `a_luxury_mobile_ui_screen_for_a_fashion_game._the_screen_shows_a_locked_feature` | Locked Future Feature | future-locked | §18.2, §21 | deferred |

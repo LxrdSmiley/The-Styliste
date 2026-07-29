@@ -5,6 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
+import 'core/theme/aurelian_theme.dart';
+import 'core/theme/styliste_visual_mode.dart';
+import 'core/widgets/aurelian_components.dart';
+import 'core/widgets/styliste_scaffold.dart';
 
 const String _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
 const String _supabasePublishableKey =
@@ -54,11 +58,17 @@ class _StartupFailureApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
+      theme: AurelianTheme.darkTheme,
+      home: AurelianScaffold(
+        mode: StylisteVisualMode.noirCinematic,
         body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text(message, textAlign: TextAlign.center),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: AurelianStatePanel(
+              kind: AurelianStateKind.terminalError,
+              title: 'This build cannot start safely',
+              message: message,
+            ),
           ),
         ),
       ),
