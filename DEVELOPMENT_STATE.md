@@ -1,7 +1,7 @@
 # The Styliste development state
 
 Last updated: 2026-07-29
-Updated by: Codex publication handoff
+Updated by: Codex creator-approval record
 
 ## Authority and milestone
 
@@ -32,7 +32,7 @@ Updated by: Codex publication handoff
 | Performance evidence | `Blocked` | Not performed. |
 | Remote Supabase | `Not performed` | No remote project was accessed. |
 | Deployment | `Not performed` | No deployment occurred. |
-| Final visual approval by Smiley | `Pending` | Deterministic captures await creator review. |
+| Final visual approval by Smiley | `Approved` | Smiley explicitly approved the deterministic visual review on 2026-07-29. This is not physical-device or gameplay evidence. |
 | Release | `Blocked` | Remote, device, human, and release evidence remain required. |
 
 ## Completed work
@@ -55,16 +55,16 @@ Updated by: Codex publication handoff
   performance.
 - Staging/deployed Supabase Auth/RLS/Realtime/Storage/Edge verification,
   penetration testing, and CI execution on a release-eligible workflow.
-- Creator visual, legal/privacy, Jamaican/Caribbean cultural, fashion-industry,
-  art/audio, representative-player, retention, monetization, and release
-  approval.
+- Legal/privacy, Jamaican/Caribbean cultural, fashion-industry, art/audio,
+  representative-player, retention, monetization, and final release approval.
 
 ## Next safe action
 
-Smiley reviews the committed deterministic captures and records a visual
-decision in `MANUAL_TASKS.md`. Do not expand gameplay, enable sampling,
-production, launch, rewards, monetization, multiplayer, or later-city content
-without a separately approved authority and evidence plan.
+Preserve the approved branch and complete the remaining human, device, staging,
+and release evidence only under separately approved plans. Do not expand
+gameplay, enable sampling, production, launch, rewards, monetization,
+multiplayer, or later-city content without a separately approved authority and
+evidence plan.
 
 ## Prohibited scope
 

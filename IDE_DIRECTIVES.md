@@ -282,8 +282,11 @@ penetration testing are not performed.
 
 ## 45. Final visual-approval status
 
-`Pending`. Smiley retains final approval of luxury, Kingston, garment
-desirability, Luxe tone, and the visual rather than spreadsheet-driven feel.
+`Approved` by Smiley on 2026-07-29. The approval covers the committed
+deterministic source renders of luxury, Kingston, garment desirability, Luxe
+tone, and the visual rather than spreadsheet-driven feel. It is not a
+physical-device, performance, accessibility-device, gameplay, or release
+approval.
 
 ## 46. Release status
 
@@ -292,8 +295,8 @@ handoff.
 
 ## 47. Exact next authorized action
 
-Smiley reviews the committed deterministic captures and records `Approved`,
-`Approved with listed revisions`, or `Rejected with listed blocking revisions`.
+Preserve the approved branch while the remaining human, device, staging, and
+release gates are planned under separate authority.
 
 ## 48. Repository-safety statement
 

@@ -1,6 +1,6 @@
 # Aurelian reachable-surface inventory
 
-Status: **Redesign implemented; creator visual approval pending**
+Status: **Redesign implemented; creator visual approval approved for deterministic source renders only**
 
 | Route or surface | Widget | Feature ID | Reachability | Starting visual mode | State coverage at inventory | State owner | Redesign action | Before evidence | After evidence | Test |
 |---|---|---|---|---|---|---|---|---|---|---|

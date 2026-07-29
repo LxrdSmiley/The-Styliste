@@ -8,7 +8,7 @@ Implementation commit: `25b778d7cee6a2c973d5970aaa5440d287fdb61b` on
 scans are `Passed`; migration integrity is `Passed`; GitHub Actions are
 `Blocked/not triggered`; Android/device/performance evidence remains `Blocked`;
 remote Supabase and deployment were not performed; final Smiley visual approval
-is `Pending`; release is `Blocked`.
+is `Approved` for deterministic source renders only; release is `Blocked`.
 
 Status: **Implementation publication passed — deterministic source evidence only**
 
@@ -106,9 +106,10 @@ All review captures produced by this work are labelled:
 
 > Deterministic source render — not physical-device evidence
 
-Android builds, physical-device accessibility, TalkBack, profile-mode frame
-timing, and creator visual approval remain `Blocked` or pending as required by
-`VERIFICATION_PROTOCOL.md`.
+Android builds, physical-device accessibility, TalkBack, and profile-mode frame
+timing remain `Blocked` as required by `VERIFICATION_PROTOCOL.md`. Smiley's
+approval applies only to deterministic source-render review, not these device
+or gameplay gates.
 
 ## 2026-07-27 verification checkpoint
 
@@ -126,7 +127,7 @@ timing, and creator visual approval remain `Blocked` or pending as required by
 | Local Supabase execution | `Passed` | Restart, reset, lint, 12 pgTAP files / 108 assertions, four 20-session economic cases, and 19-entry API inventory comparison passed locally. |
 | Migration hash verification | `Passed` | Dedicated 61-entry raw-byte SHA-256 manifest, deterministic generator/validator, reset-order comparison, and nine-case tamper suite passed. |
 | Android/device/performance | `Blocked` | Creator-directed deferral |
-| Final visual approval | `Pending` | Smiley review is required. |
+| Final visual approval | `Approved` | Smiley approved the deterministic source-render review on 2026-07-29; device and gameplay evidence remain separate. |
 
 The Gitleaks findings were inspected only through fully redacted metadata.
 Fourteen point to examples or authority-matrix strings; six point to historical
