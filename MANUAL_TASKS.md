@@ -1,26 +1,33 @@
 # Human-only verification tasks
 
-## Immediate Galaxy A55 Founder Trial retry
+## Immediate Galaxy A55 House Pulse hot reload
 
-With the existing debug session still open, tap **Begin the Founder Trial** or
-**Retry the same step** once on the Founder Trial error panel. No rebuild is
-required because the missing remote Function, migrations, and reviewed Data
-API schema boundary are now active server-side.
+With the existing `flutter run` session still open, press:
 
-Confirm that:
+```text
+r
+```
 
-- the screen advances from step 0/6 to step 1/6;
-- the House name remains unchanged;
-- no raw backend error is shown; and
-- retrying does not create a duplicate House or duplicate receipt.
+That hot-reloads the local House Pulse projection fix. Return to **HQ** and
+confirm that:
+
+- the bright red Flutter error panel is gone;
+- House heat, Audience, and Hype render without a raw exception;
+- a temporary projection failure would show `Projection unavailable`; and
+- the House name and navigation remain unchanged.
 
 Current status:
 
 ```text
 Pre-deployment A55 attempts: Failed — remote Founder Trial endpoint returned 404
 First post-deployment retry: Failed — remote Data API rejected the api schema
-Post-Data-API-correction retry: Blocked — awaiting Smiley observation
+Post-Data-API-correction retry: Failed — legacy player has no Founder Trial state
+House Pulse source hotfix: Passed — analyzer clean and 138/138 Flutter tests
+A55 House Pulse hot-reload check: Blocked — awaiting Smiley observation
 ```
+
+Do not treat the legacy Founder Trial as repaired yet. Its forward-only
+compatibility migration requires separate approval.
 
 ## Smiley's expansion-pass visual review
 

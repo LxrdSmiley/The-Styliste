@@ -69,6 +69,9 @@ in `docs/verification/early_game_readiness.md`, not in release-marketing claims.
 
 ### Fixed
 
+- Prevented the HQ House Pulse from crashing when the reviewed owner projection
+  omits wallet and private-profile fields. The client now decodes only the
+  approved projection and contains failures inside player-safe metric states.
 - Deployed the missing server-authoritative Founder Trial endpoint and its
   complete reviewed migration history to the configured Supabase project, and
   activated the reviewed hosted `api` schema boundary required by that

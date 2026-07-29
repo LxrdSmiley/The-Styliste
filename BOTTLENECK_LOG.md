@@ -823,3 +823,71 @@ not unknown artifacts.
 - Latest result: `Failed` process control on 2026-07-29. The reviewed Data API
   correction and repository Auth settings were synchronized, no secret was
   printed, and no further configuration write or rollback was attempted.
+
+## B-042 — Brand domain decoder exceeded the reviewed API projection
+
+- Symptom: HQ rendered Flutter's bright red framework error inside House Pulse:
+  `type 'Null' is not a subtype of type 'num' in type cast`.
+- Root cause: `api.brand_summary` deliberately omits wallet and private-profile
+  fields, but the shared generated `Brand` decoder required `luxe_tokens` and
+  `prestige_tokens`. The first failure occurred at `brand.g.dart:28`.
+- Permanent prevention: decode reviewed Data API projections through
+  projection-specific constructors, test the exact field inventory, and never
+  expand an API projection merely to satisfy a broader domain model.
+- Automated check: an exact `brand_summary` fixture must decode with omitted
+  wallet/private fields, and an `AsyncError<Brand>` must render
+  `Projection unavailable` without a framework exception.
+- Affected files: `lib/domain/models/brand.dart`,
+  `lib/data/repositories/supabase_economy_repository.dart`,
+  `lib/features/hq/widgets/hq_foundation_view.dart`, and their focused tests.
+- Verification command: `flutter test
+  test/domain/models/brand_summary_projection_test.dart
+  test/features/hq/hq_foundation_integration_test.dart`, followed by
+  `flutter analyze` and `flutter test`.
+- Latest result: `Passed` locally on 2026-07-29 — focused tests 6/6, analysis
+  clean, and full Flutter tests 138/138. A55 hot-reload confirmation remains
+  `Blocked`.
+
+## B-043 — Legacy player identity has no Founder Trial state
+
+- Symptom: after the Function and Data API were available, authenticated
+  Founder Trial RPC calls still returned HTTP 400.
+- Root cause: the A55 identity maps to a legacy player with
+  `onboarding_complete = true`, but no `founder_trials` row and no Founder
+  Trial receipt. The authority function correctly raises
+  `FOUNDER_TRIAL_STATE_MISSING` rather than issuing a second founder grant.
+- Permanent prevention: introduce a reviewed forward-only compatibility
+  migration that creates deterministic, debt-free legacy state without
+  issuing currency or replaying rewards; test both completed and incomplete
+  legacy accounts.
+- Automated check: migration tests must prove one state row, zero duplicate
+  founder credits, stable resume behavior, and unchanged ownership.
+- Affected systems: `private.auth_player_identities`,
+  `public.founder_trials`, `ledger.kingston_operation_receipts`, and the
+  Founder Trial authority function.
+- Verification command: disposable reset, pgTAP legacy-account matrix, Edge
+  identity contracts, then one authenticated A55 retry.
+- Latest result: `Failed` remotely on 2026-07-29. Diagnosis is complete; no
+  remote row was changed. A forward-only migration requires explicit approval.
+
+## B-044 — Shared worktree changed and published during active verification
+
+- Symptom: during the full Flutter test run, HEAD and the matching origin
+  branch advanced to commit
+  `47b256041bcd56c4a2ac743a49fd0207ba7c4c98` without this Codex task staging,
+  committing, or pushing.
+- Root cause: another actor or process operated on the same shared worktree and
+  remote branch concurrently.
+- Permanent prevention: use one writer per worktree/branch, pause other IDE or
+  agent publication tasks during verification, and re-check HEAD, index, and
+  origin before every handoff or commit decision.
+- Automated check: capture HEAD and `git status --porcelain=v2` before and
+  after long-running checks; stop when HEAD changes unexpectedly.
+- Affected files and systems: the current Git worktree, branch
+  `codex/aurelian-ui-expansion-pass-2`, its origin tracking ref, the HQ hotfix,
+  governance files, and root `flutter_01.png` / `flutter_02.png`.
+- Verification command: `git rev-parse HEAD`, `git log -1 --format=fuller`,
+  `git show --stat --summary HEAD`, and `git status --porcelain=v2`.
+- Latest result: `Failed` process isolation on 2026-07-29. The external commit
+  was preserved; no reset, revert, force-push, or history rewrite was
+  attempted. Additional governance corrections remain unstaged.

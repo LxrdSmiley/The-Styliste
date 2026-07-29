@@ -31,7 +31,10 @@ Updated by: Codex Founder Trial remote-unblock task
 | Remote Data API boundary | `Passed` | The hosted service now exposes the reviewed `api` schema. A redacted probe no longer returns `PGRST106`; unauthenticated schema access reaches the database boundary and is denied with HTTP 401. |
 | Remote Auth configuration | `Static pass` | The CLI configuration command synchronized the repository Auth settings while applying the Data API correction. Anonymous sign-in is enabled and email sign-up is disabled, but remote Auth runtime scenarios were not executed. |
 | Remote database advisors | `Passed` | The linked advisor run exited 0 with 0 errors and 75 warnings (52 security, 23 performance); warnings remain non-release evidence requiring later review. |
-| Galaxy A55 Founder Trial | `Blocked` | Pre-deployment attempts returned HTTP 404. The first post-deployment attempts authenticated successfully but failed with HTTP 400 because PostgREST rejected the unexposed `api` schema with HTTP 406 / `PGRST106`. The post-correction device retry still requires Smiley observation. |
+| Galaxy A55 Founder Trial | `Failed` | After the endpoint and Data API corrections, authenticated RPC attempts still return HTTP 400. The legacy player has an active identity and completed onboarding but no `founder_trials` row and no Founder Trial receipt; the server fails closed. |
+| House Pulse projection hotfix | `Passed` | The owner-projection decoder and player-safe metric containment pass focused tests 6/6, formatting, clean analysis, and the full Flutter suite 138/138. |
+| Galaxy A55 House Pulse hotfix | `Blocked` | The fix requires a hot reload in the active debug session and a new screenshot/observation. |
+| Git process isolation | `Failed` | While verification was running, external activity created and pushed commit `47b256041bcd56c4a2ac743a49fd0207ba7c4c98`, including the hotfix, governance files, and two root screenshots. This Codex task did not stage, commit, or push it. |
 | Implementation branch publication | `Passed` | Normal upstream push of implementation SHA succeeded. |
 | GitHub Actions | `Blocked` | GitHub reported zero matching branch runs; no workflow was dispatched. |
 | Android/iOS builds | `Blocked` | Creator direction; not performed. |
@@ -95,6 +98,17 @@ Updated by: Codex Founder Trial remote-unblock task
 - Recorded that the CLI configuration command also synchronized repository
   Auth settings even though it was invoked with a piped negative response
   intended only to inspect the diff.
+- Diagnosed the bright red HQ panel at `brand.g.dart:28`: the reviewed
+  `api.brand_summary` projection omits `luxe_tokens`, `prestige_tokens`, and
+  private avatar data while the shared decoder required those values.
+- Added a projection-specific, null-safe Brand decoder and changed the
+  Supabase economy repository to use it without broadening Data API access.
+- Contained any future House Pulse projection error inside the existing
+  player-safe metric-card state rather than Flutter's framework error surface.
+- Added two exact projection tests and one HQ error-containment widget test;
+  focused tests pass 6/6 and the full Flutter suite passes 138/138.
+- Detected and preserved an externally created/pushed hotfix commit instead of
+  rewriting or force-updating shared repository history.
 
 ## Blocked work
 
@@ -102,8 +116,11 @@ Updated by: Codex Founder Trial remote-unblock task
 - Android/iOS compilation, installation, signing, physical accessibility, and
   Galaxy A55-class performance.
 - Flutter Web compilation/runtime unless separately reauthorized.
-- Authenticated A55 completion of the Founder Trial path after the hosted Data
-  API correction.
+- A forward-only compatibility migration for legacy players that have an
+  active identity and completed onboarding but no Founder Trial state.
+- Authenticated A55 completion of the Founder Trial after that compatibility
+  migration is separately approved, implemented, and deployed.
+- A55 hot-reload and screenshot confirmation of the House Pulse source fix.
 - Full deployed Supabase Auth/RLS/Realtime/Storage/Edge isolation,
   penetration testing, and release-eligible CI beyond this focused deployment.
 - Legal/privacy, Jamaican/Caribbean cultural, fashion-industry, final
@@ -112,10 +129,10 @@ Updated by: Codex Founder Trial remote-unblock task
 
 ## Next safe action
 
-Smiley taps **Begin the Founder Trial** or **Retry the same step** once on the
-existing Galaxy A55 screen and reports whether it advances from step 0/6 to
-step 1/6. After that focused runtime check, the visual-review task in
-`MANUAL_TASKS.md` remains.
+Smiley presses `r` in the active `flutter run` terminal, returns to HQ, and
+confirms the bright red House Pulse panel is gone. The legacy Founder Trial
+repair remains blocked until Smiley separately approves a forward-only
+compatibility migration.
 
 ## Prohibited scope
 

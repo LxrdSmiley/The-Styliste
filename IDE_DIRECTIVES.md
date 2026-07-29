@@ -28,7 +28,9 @@ Founder Trial Function deployment: Passed — ACTIVE with verify_jwt=true
 Unauthenticated Function boundary: Passed — HTTP 401
 First post-deployment A55 retry: Failed — hosted Data API rejected api schema
 Remote Data API boundary: Passed — api schema is now exposed
-Authenticated Galaxy A55 retry after Data API correction: Blocked — awaiting observation
+Authenticated Galaxy A55 retry after Data API correction: Failed — legacy trial state is missing
+House Pulse null-projection hotfix: Passed locally — 138 Flutter tests
+A55 hot-reload confirmation of House Pulse hotfix: Blocked — awaiting observation
 ```
 
 Remote logs explain the reported device failure: every captured Founder Trial
@@ -50,6 +52,28 @@ the broader-than-requested write is recorded in `BOTTLENECK_LOG.md`.
 This addendum supersedes only the original handoff's statements that no remote
 action had occurred. It does not promote staging, device, security,
 accessibility, performance, or release readiness.
+
+The next authenticated device attempts reached the RPC but returned HTTP 400.
+A read-only state check confirmed the A55 identity belongs to a legacy player
+with an active identity mapping and `onboarding_complete = true`, but no
+`founder_trials` row and no Founder Trial receipt. The server remains
+fail-closed. Repair requires a separately approved forward-only compatibility
+migration; no account data was changed during diagnosis.
+
+The subsequent HQ screenshot exposed a separate client defect:
+`api.brand_summary` deliberately omits wallet/private-profile fields while the
+shared `Brand` decoder still required `luxe_tokens`. The local hotfix now uses
+an explicit owner-projection decoder, leaves omitted private fields at
+non-authoritative defaults, and contains projection errors inside the
+player-safe metric state. Formatting, analysis, focused tests 6/6, and the
+full Flutter suite 138/138 pass. Device confirmation requires hot reload.
+
+While those checks were running, external repository activity created and
+pushed commit `47b256041bcd56c4a2ac743a49fd0207ba7c4c98`
+(`fix(hq): harden Founder Trial and projection handoff`). It includes the
+hotfix, governance files, and the two root screenshots. This Codex task did not
+stage, commit, or push that commit and did not rewrite the externally published
+history. Additional governance corrections remain unstaged.
 
 ## Repository position
 
