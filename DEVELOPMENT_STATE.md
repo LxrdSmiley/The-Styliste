@@ -1,73 +1,87 @@
 # The Styliste development state
 
 Last updated: 2026-07-29
-Updated by: Codex creator-approval record
+Updated by: Codex Aurelian UI Expansion Pass 2 handoff
 
 ## Authority and milestone
 
 - Canonical authority: `THE_STYLISTE_GDD_v8.md`, then the ranked companion
   authorities in `docs/verification/authority_inventory.json`, followed by
   `PROJECT_RULES.md` and `VERIFICATION_PROTOCOL.md`.
-- Milestone: Gate A Wave 2A — Kingston Capsule Foundation and repository-wide
-  Aurelian reachable-surface redesign.
-- Audited baseline: `15070969236177b354e3d360f0421ac65a4ec2ff`.
-- Implementation branch: `codex/gate-a-wave-2a-ui-redesign`.
-- Implementation commit:
-  `25b778d7cee6a2c973d5970aaa5440d287fdb61b`.
-- Active Feature ID: `LOOP-02`; no Feature ID has been promoted to a release
-  claim.
+- Current milestone: Gate A Wave 2A — Kingston Capsule Foundation with the
+  complete reachable Aurelian UI expansion.
+- Starting SHA: `c4405414195f5bcdff87b31848c3425a17e76e85`.
+- Implementation branch: `codex/aurelian-ui-expansion-pass-2`.
+- Implementation SHA: `717e41faecda9798b4a29eb01f8cba85ab7aac2f`.
+- Active Feature ID: `LOOP-02`.
+- Release promotion: `Blocked`.
 
 ## Current evidence status
 
 | Evidence | Status | Latest result |
 |---|---|---|
-| Local source verification | `Passed` | Formatting, analysis, 114 Flutter tests, 17 Edge checks, and 16 Edge contracts passed. |
-| Local security verification | `Passed` | Gitleaks 8.30.1 history (97 commits) and working-tree scans reported zero leaks. |
+| Local source verification | `Passed` | Formatting covers 229 files; analysis has no issues; 135 Flutter tests passed. |
+| Deterministic visual evidence | `Passed` | 24 before-renders, 44 after-renders, and four contact sheets are committed and indexed. |
+| Local security verification | `Passed` | Gitleaks 8.30.1 scanned 101 commits and the final 11.38 MB working tree with zero findings. |
 | Migration integrity | `Passed` | 61/61 raw-byte hashes and 9/9 tamper scenarios passed. |
-| Local database authority | `Passed` | 61-migration reset, lint with six inherited warnings, 12 files / 108 assertions, and four 20-session scenarios passed. |
-| Implementation branch publication | `Passed` | Normal push to the dedicated `origin` branch succeeded. |
-| GitHub Actions | `Blocked/not triggered` | The branch has no matching run; workflows are `master`-push-only or manual. |
-| Android build | `Blocked by creator direction` | Not performed. |
+| Local database authority | `Passed` | Reset, lint, 12 pgTAP files / 108 assertions, four 20-session economic cases, and 19-entry API inventory passed. |
+| Edge verification | `Passed` | 17 entry points type-check and 16 identity/contract tests pass. |
+| Implementation branch publication | `Passed` | Normal upstream push of implementation SHA succeeded. |
+| GitHub Actions | `Blocked` | GitHub reported zero matching branch runs; no workflow was dispatched. |
+| Android/iOS builds | `Blocked` | Creator direction; not performed. |
+| Flutter Web build/runtime | `Blocked` | Directive boundary; not performed. |
 | Physical-device accessibility | `Blocked` | Not performed. |
-| Performance evidence | `Blocked` | Not performed. |
-| Remote Supabase | `Not performed` | No remote project was accessed. |
-| Deployment | `Not performed` | No deployment occurred. |
-| Final visual approval by Smiley | `Approved` | Smiley explicitly approved the deterministic visual review on 2026-07-29. This is not physical-device or gameplay evidence. |
-| Release | `Blocked` | Remote, device, human, and release evidence remain required. |
+| Physical-device performance | `Blocked` | Not performed. |
+| Remote Supabase | `Blocked` | No remote project was accessed. |
+| Deployment | `Blocked` | No deployment occurred. |
+| Final visual approval | `Blocked` | Pending Smiley review of expansion-pass renders. |
+| Production release | `Blocked` | Device, staging, human, and release evidence remain required. |
 
 ## Completed work
 
-- Published the canonical Aurelian token/theme system, shared components,
-  five-destination navigation, accessibility/reliability states, fonts and
-  licenses, and deterministic source-render evidence.
-- Preserved Riverpod repository ownership and Supabase server authority while
-  adding the bounded Founder Trial and three-look Kingston capsule flow.
-- Added forward-only Founder Trial, legacy-authority quarantine, and capsule
-  migrations; no published migration was altered.
-- Completed redacted Firebase/GCP historical-key remediation. Current source
-  has zero Firebase runtime references; Supabase remains the identity boundary.
-- Added exact-fingerprint-only Gitleaks configuration, migration integrity,
-  authority, registry, API, and repository-health guards.
+- Expanded every currently reachable Gate A screen family with stronger
+  Aurelian hierarchy, editorial context, progress/consequence evidence,
+  progressive disclosure, and player-safe reliability states.
+- Preserved the exact shell order: HQ, Atelier, Empire, Feed, House.
+- Made Atelier and the three-look capsule visually garment-centered through
+  pattern-cutting linework, role-specific silhouettes, bounded inspectors, and
+  explainable readiness.
+- Kept Founder Trial Artisan/Architect presentation distinct with equal
+  gameplay ceilings and server-confirmed/restored receipts.
+- Added all 14 required shared reliability states with explicit authority,
+  preservation, retry safety, and next action.
+- Added 320–412 px, large-text, reduced-motion, semantics, route, overflow,
+  provider-state, and restoration coverage.
+- Installed and locked the four requested standalone accessibility,
+  responsive-layout, design-system, and visual-testing skills.
+- Preserved Riverpod ownership and Supabase authority; no database, migration,
+  RPC, Edge, policy, ledger, progression, or reward implementation changed.
+- Published implementation commit
+  `717e41faecda9798b4a29eb01f8cba85ab7aac2f` to the dedicated branch.
 
 ## Blocked work
 
-- Android/iOS builds, installation, physical accessibility, and Galaxy A55
-  performance.
+- Smiley's final review of the expansion-pass renders.
+- Android/iOS compilation, installation, signing, physical accessibility, and
+  Galaxy A55-class performance.
+- Flutter Web compilation/runtime unless separately reauthorized.
 - Staging/deployed Supabase Auth/RLS/Realtime/Storage/Edge verification,
-  penetration testing, and CI execution on a release-eligible workflow.
-- Legal/privacy, Jamaican/Caribbean cultural, fashion-industry, art/audio,
-  representative-player, retention, monetization, and final release approval.
+  penetration testing, and release-eligible CI.
+- Legal/privacy, Jamaican/Caribbean cultural, fashion-industry, final
+  art/audio, representative-player, retention, monetization, and release
+  review.
 
 ## Next safe action
 
-Preserve the approved branch and complete the remaining human, device, staging,
-and release evidence only under separately approved plans. Do not expand
-gameplay, enable sampling, production, launch, rewards, monetization,
-multiplayer, or later-city content without a separately approved authority and
-evidence plan.
+Smiley reviews the four contact sheets and individual after-renders listed in
+`MANUAL_TASKS.md`, then returns `Approved`, `Approved with revisions`, or
+`Rejected with blocking revisions`.
+
+Until that review, preserve the published branch and do not expand gameplay.
 
 ## Prohibited scope
 
-No direct push to `master`, force push, pull request, deployment, remote
-Supabase operation, tag, release, secret material, client-owned authority, or
-release-readiness claim is authorized by this state record.
+No direct push to `master`, force-push, pull request, workflow dispatch,
+deployment, remote Supabase operation, tag, release, secret material,
+client-owned authority, or release-readiness claim is authorized by this
+record.

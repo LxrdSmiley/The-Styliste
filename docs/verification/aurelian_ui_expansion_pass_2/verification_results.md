@@ -3,6 +3,7 @@
 Verification date: 2026-07-29
 Branch: `codex/aurelian-ui-expansion-pass-2`
 Starting SHA: `c4405414195f5bcdff87b31848c3425a17e76e85`
+Implementation SHA: `717e41faecda9798b4a29eb01f8cba85ab7aac2f`
 
 This record uses only the status vocabulary in `VERIFICATION_PROTOCOL.md`.
 It covers local source, widget/runtime, disposable-database, and deterministic
@@ -35,8 +36,8 @@ deployment, or release-readiness evidence.
 | Release metadata | `scripts/check_release_metadata.ps1` | `Static pass` — `v0.1.0-alpha.1` synchronized |
 | Dependency guard | `dart pub outdated --no-dev-dependencies` | `Static pass` — audit completed; inherited findings retained below |
 | Repository-health guard | `scripts/maintenance/check_repository_health.ps1` | `Passed` |
-| Gitleaks history | checksum-verified Gitleaks 8.30.1 `git` scan with complete redaction | `Passed` — 100 commits, 10.28 MB, zero findings |
-| Gitleaks working tree | checksum-verified Gitleaks 8.30.1 `dir` scan with complete redaction | `Passed` — 11.37 MB, zero findings |
+| Gitleaks history | checksum-verified Gitleaks 8.30.1 `git` scan with complete redaction | `Passed` — 101 commits, 10.49 MB, zero findings |
+| Gitleaks working tree | checksum-verified Gitleaks 8.30.1 `dir` scan with complete redaction | `Passed` — 11.38 MB, zero findings |
 | Whitespace | `git diff --check` | `Passed` |
 | Conflict markers | tracked `git grep` plus tracked/untracked `rg` scan | `Passed` — none found |
 

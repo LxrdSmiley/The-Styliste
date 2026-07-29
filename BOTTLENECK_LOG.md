@@ -7,6 +7,58 @@ Record a problem here when it recurs or when its failure mode can silently
 invalidate readiness evidence. Each entry must identify permanent prevention;
 chat history alone is not a prevention mechanism.
 
+## 2026-07-29 Aurelian UI Expansion Pass 2 outcome
+
+This checkpoint supersedes only matching local results. It does not promote a
+device, remote, staging, CI, visual-approval, or release gate.
+
+| Record | Current result | Prevention/evidence update |
+|---|---|---|
+| B-036 | `Passed` | Flutter formatting, analysis, the 135-test suite, and the 44-render capture suite ran sequentially. |
+| B-037 | `Passed` | The 320 px / 1.6× House fixture and 412 px reduced-motion Atelier fixture pass without an overflow warning. |
+| B-040 | `Passed` | A scan overlapping generated Flutter test caches was rejected. After `flutter clean`, Gitleaks 8.30.1 passed 101 commits and the final 11.38 MB working tree with zero findings and no new exception. |
+| B-041 | `Passed` | Package metadata is restored with `flutter pub get` after `flutter clean` and before formatting/analyzing; the final formatter covered 229 files with zero pending changes. |
+| B-039 | `Blocked` | GitHub reported zero workflow runs for `codex/aurelian-ui-expansion-pass-2`; no workflow was dispatched. |
+
+## B-041 — Formatting after cleanup lacked package lint metadata
+
+- Symptom: immediately after `flutter clean`, the no-output formatter could
+  not resolve `package:flutter_lints/flutter.yaml` and reported 173 files that
+  would differ under incomplete configuration.
+- Root cause: `flutter clean` correctly removed `.dart_tool`, including the
+  package configuration needed to resolve the repository's included lint and
+  formatting settings.
+- Permanent prevention: after any clean, run `flutter pub get` before Dart
+  formatting, analysis, or tests. Keep `--output=none --set-exit-if-changed`
+  for the gate so a configuration failure cannot silently rewrite source.
+- Automated check: dependency resolution followed by the formatting and
+  analysis jobs in `.github/workflows/flutter-ci.yml`.
+- Affected area: local generated package metadata; no source file was changed
+  by the failed no-output check.
+- Verification command: `flutter pub get`, then
+  `dart format --output=none --set-exit-if-changed lib test integration_test`.
+- Latest result: `Passed` on 2026-07-29 — 229 files, zero changes.
+
+## B-040 — Working-tree secret scan overlapped generated test caches
+
+- Symptom: an early Gitleaks `dir` scan reported 17 private-key strings inside
+  ignored `build/test_cache/*.dill` files while `flutter test` was running.
+- Root cause: dependency test fixtures were embedded in generated kernel
+  caches, and a directory scan intentionally examines ignored generated files
+  when they are present.
+- Permanent prevention: never overlap Flutter test generation with the final
+  source working-tree scan. Complete Flutter tests, run `flutter clean`, then
+  run both redacted Gitleaks scans. Do not add a broad path/rule exception for
+  this generated-output condition.
+- Automated check: publication-gate ordering and the repository-health history
+  scan; the final working-tree scan must report zero findings.
+- Affected area: ignored `build/test_cache/` output only.
+- Verification command: checksum-verified Gitleaks 8.30.1
+  `git . --redact=100 --no-banner --verbose`, followed by
+  `dir . --redact=100 --no-banner --verbose`.
+- Latest result: `Passed` on 2026-07-29 — 101 commits and the final 11.38 MB
+  working tree reported zero findings.
+
 ## 2026-07-29 implementation publication outcome
 
 This checkpoint supersedes only matching historical local results. It does not

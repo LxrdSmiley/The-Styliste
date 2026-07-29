@@ -4,9 +4,8 @@ Status: **Deterministic source render — not physical-device evidence**
 
 Capture date: 2026-07-29
 Baseline source commit: `c4405414195f5bcdff87b31848c3425a17e76e85`
-After-render source: expansion-pass working tree derived from the baseline above.
-The immutable implementation commit is recorded in the final handoff after
-publication because a commit cannot contain its own SHA.
+After-render source commit:
+`717e41faecda9798b4a29eb01f8cba85ab7aac2f`
 
 These renders are review fixtures, not Android, iOS, Web, device-accessibility,
 or performance evidence. Unless a row says otherwise, the fixture uses the

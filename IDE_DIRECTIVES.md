@@ -1,307 +1,377 @@
-# Repository-wide Aurelian UI redesign handoff
-
-## 1. Executive decision
-
-The Gate A repository-wide Aurelian redesign is locally verified and its
-implementation branch has been published. This is not an Alpha, Beta,
-production, device-performance, remote-security, or creator-visual approval.
-
-## 2. Starting branch and SHA
-
-- Starting branch: `remediation/waves-0-1`
-- Starting SHA: `15070969236177b354e3d360f0421ac65a4ec2ff`
-
-## 3. Final branch
-
-`codex/gate-a-wave-2a-ui-redesign`, tracking
-`origin/codex/gate-a-wave-2a-ui-redesign`.
-
-## 4. Implementation commit SHA
-
-`25b778d7cee6a2c973d5970aaa5440d287fdb61b`
-
-## 5. Push result
-
-`Passed`. A normal upstream push created the dedicated branch on `origin`.
-No force push, push to `master`, pull request, tag, release, deployment, or
-remote Supabase action occurred.
-
-## 6. Remote CI status
-
-`Blocked/not triggered`. GitHub's public Actions filter returned zero matching
-branch runs. The repository's checked-in workflow configuration limits the
-push workflow to `master`; the remaining workflows are manual. Nothing was
-dispatched, and no GitHub workflow is claimed as passed.
-
-## 7. Complete changed-file inventory
-
-The complete pre-stage, per-file inventory is
-`docs/verification/aurelian_ui_redesign/IMPLEMENTATION_COMMIT_INVENTORY.md`.
-It records 152 staged implementation files and five reserved documentation
-files, their tracked state, reason, generated-output status, personal-path
-status, credential status, and intended commit.
-
-## 8. Screen and route inventory
-
-Reachable Gate A navigation is exactly `HQ`, `Atelier`, `Empire`, `Feed`, and
-`House`. The audit covers session loading/failure, Sanctuary, age gate, Luxe,
-House naming, Founder Trial, HQ, Atelier, capsule brief and three looks,
-readiness/sampling boundary, Empire, first store, Feed sheets, House,
-settings, legal, and confirmations. Deferred drop routes resolve to the shared
-unavailable state without importing their prior implementations.
-
-## 9. Screen-by-screen redesign summary
-
-Every reachable surface now uses the Aurelian scaffold, clear status states,
-portrait constraints, and a single next action. No late-wave screen was made
-reachable or filled with fabricated gameplay.
-
-## 10. Aurelian token and theme consolidation
-
-`StylisteColors`, `StylisteText`, `StylisteSpacing`, `StylisteRadii`,
-`StylisteMotion`, and `StylisteVisualMode` are the independent token sources.
-`AurelianTheme` consumes them for Ivory and Obsidian presentation.
-
-## 11. Deprecated compatibility facades
-
-`AppColors`, `AurelianPalette`, and the inherited scaffold remain compatibility
-facades only; they contain no independent visual authority for reachable UI.
-
-## 12. Font and license integration
-
-Space Grotesk, Inter, and JetBrains Mono are bundled under `assets/fonts/`,
-declared in `pubspec.yaml`, and accompanied by their license files. No new UI,
-font, or animation package was added.
-
-## 13. Shared component consolidation
-
-The implementation adds Aurelian scaffolds, responsive bodies, state panels,
-actions, navigation, cards, fields, sheets, status chips, and receipt/metric
-presentation. Components receive display data and callbacks; Riverpod and
-Supabase remain the state and authority owners.
-
-## 14. UI/UX skills invoked
-
-`frontend-design`, `ui-ux-designer`, `flutter-expert`, `supabase`, and
-`ui-ux-pro-max` were invoked before player-facing source changes. The skill
-audit is preserved in `UI_REDESIGN_AUDIT.md`.
-
-## 15. Accepted and rejected skill guidance
-
-Accepted: semantic tokens, 48dp targets, 4/8dp rhythm, explicit reliability
-states, responsive constraints, focus, reduced motion, restrained feedback,
-and contrast review. Rejected: landing-page composition, Playfair/Source
-Serif, pink CTAs, zero-radius brutalism, GSAP, and generic monochrome fashion
-styling. GDD v8 and the approved Aurelian authorities controlled those choices.
-
-## 16. Opening Sanctuary and onboarding
-
-Session restoration and safe failure are explicit. Sanctuary, age gate, Luxe
-intro, and House naming are portrait-first and preserve a clear next step.
-
-## 17. Founder Trial and Artisan/Architect parity
-
-The server-confirmed Founder Trial leads to the capsule. Artisan authorship
-and Architect positioning differ in framing but retain equal gameplay ceilings;
-the UI does not issue rewards, Hype, currency, rank, or score.
-
-## 18. HQ
-
-HQ has distinct Artisan and Architect lenses, Kingston framing, a visible
-equal-ceiling statement, and a clear capsule objective.
-
-## 19. Five-destination navigation
-
-The shell order is `HQ`, `Atelier`, `Empire`, `Feed`, `House`, with semantics,
-stable branch retention, and back behavior that returns to HQ.
-
-## 20. Atelier
-
-Atelier keeps garment and pattern-cutting linework central. It records local
-study intent only and sends the player to the capsule boundary rather than a
-mint-to-drop path.
-
-## 21. Collection Brief
-
-The capsule workspace has one active Kingston capsule, a bounded Collection
-Brief, and explicit local editing, submission, retry, confirmed, restored,
-offline, and unavailable states.
-
-## 22. Three-look capsule workspace
-
-The canonical forward-only roles are Hero Piece, Commercial Anchor, and
-Experimental Piece. Their grammar, stage, ownership, readiness, timestamps,
-and receipts are server-authoritative.
-
-## 23. Readiness and sampling boundary
-
-Readiness explains outstanding causes without exposing a client-writable
-score. Sampling deliberately ends the Gate A slice and starts no production,
-launch, Vex, reward, or market outcome.
-
-## 24. Empire and Ledger
-
-Empire is visually presented as a bounded, read-only projection with the
-existing first-store dialog; no new operation or economic client authority was
-invented.
-
-## 25. Feed
-
-Feed uses editorial cards and read-only/held reaction, request, and comment
-states. It does not optimistically mutate Hype, likes, rewards, or ownership.
-
-## 26. House, settings, and legal surfaces
-
-House identity, Settings, and legal documents now share the Aurelian
-hierarchy, safety states, and portrait behavior without becoming a second
-design system.
-
-## 27. Deferred drop-route containment
-
-`/atelier/drop-preview` and `/atelier/drop-launch` render the shared
-unavailable state. They neither import deferred screens nor initialize
-providers, start data requests, or expose mutations.
-
-## 28. Reliability-state coverage
-
-The shared state panel supports loading, empty, offline, retryable error,
-terminal error, confirmed, restored, permission denied, session expired,
-maintenance, disabled, and unavailable states.
-
-## 29. Accessibility work
-
-Source-level semantics, state labels, 48dp targets, non-color status cues,
-focus behavior, and logical actions were added and covered by widget tests.
-Physical TalkBack evidence is still blocked.
-
-## 30. Responsive and text-scale work
-
-Changed surfaces have 320-412px portrait constraints and large-text tests.
-The former fixed-height Feed and state-surface overflow class is covered by
-scroll-safe layout tests.
-
-## 31. Reduced-motion behavior
-
-Motion uses the canonical 150-300ms token range and respects Flutter's
-reduced-motion setting. No motion carries gameplay authority.
-
-## 32. Riverpod ownership and rebuild containment
-
-Existing repositories and Supabase boundaries remain in place. Capsule and
-Founder Trial providers own retry/restoration state; UI selectors do not take
-ownership of server state or economic authority.
-
-## 33. Supabase authority preservation
-
-Flutter submits bounded authenticated intents. Existing Edge-to-`api`-RPC-to-
-private authority is retained; owner/stranger, idempotency, and replay behavior
-are verified in the local database and Edge suites.
-
-## 34. Migration and Edge inventory
-
-Three forward-only migrations add the Founder Trial state machine, quarantine
-legacy Power Move functions, and add the Kingston capsule foundation. The new
-`capsule-foundation` Edge route is included in the reviewed seven-endpoint
-allowlist. Published migrations were not rewritten.
-
-## 35. Security remediation
-
-Smiley provided redacted confirmation that the three historical Firebase/GCP
-credential groups are deleted and inactive. Seven unused local Firebase fields
-were removed. Current application source has zero Firebase runtime references
-and retains Supabase as its identity boundary.
-
-## 36. Gitleaks disposition summary
-
-Gitleaks 8.30.1 scanned 97 commits and the final working tree with zero
-unsuppressed findings. `.gitleaksignore` contains 45 unique exact reviewed
-fingerprints: 20 historical findings and 25 current false positives. It has no
-broad rule, path, commit-range, history, or scan-depth exclusion and contains
-no credential value.
-
-## 37. Migration-integrity implementation
-
-The raw-byte SHA-256 contract covers all 61 published migrations. The local
-validator passed, and all nine deterministic tamper scenarios gave the expected
-accept/reject result.
-
-## 38. Test and verification table
+# IDE_DIRECTIVES.md
+
+## Decision
+
+**The complete Aurelian UI Expansion Pass 2 is implemented, locally verified,
+and published to its dedicated branch. Final visual approval remains pending
+Smiley's review of the expansion-pass renders.**
+
+This is a source, widget/runtime, disposable-database, security, and
+deterministic-render handoff. It is not Android, iOS, Web, physical-device,
+staging, deployment, or release-readiness evidence.
+
+Authority: `THE_STYLISTE_GDD_v8.md` sections 4–8, 12, 18, 21–22;
+`ART_DIRECTION_BIBLE.md`; the ranked companion authorities;
+`PROJECT_RULES.md`; and `VERIFICATION_PROTOCOL.md`.
+
+## Repository position
+
+```text
+Starting branch: codex/gate-a-wave-2a-ui-redesign
+Starting SHA: c4405414195f5bcdff87b31848c3425a17e76e85
+Implementation branch: codex/aurelian-ui-expansion-pass-2
+Implementation SHA: 717e41faecda9798b4a29eb01f8cba85ab7aac2f
+Implementation commit: feat(ui): expand the Aurelian experience across all player screens
+Implementation push: Passed
+Pull request: Not created
+GitHub Actions matching this branch: 0
+```
+
+The implementation branch was pushed normally to `origin`. No direct
+`master` push, force-push, pull request, workflow dispatch, tag, release,
+deployment, or remote Supabase action occurred.
+
+## UI/UX skill audit
+
+The following skills were discovered and invoked before player-facing source
+changes:
+
+- `frontend-design`
+- `ui-ux-designer`
+- `ui-ux-pro-max`
+- `flutter-expert`
+- `supabase`
+- `accessibility-compliance`
+- `flutter-build-responsive-layout`
+- `flutter-design-system`
+- `visual-testing`
+
+Accepted recommendations:
+
+- semantic canonical design tokens;
+- 48 dp touch targets and 4/8 dp rhythm;
+- editorial hierarchy and meaningful negative space;
+- explicit async, preservation, authority, and retry states;
+- portrait-first responsive constraints;
+- large-text and reduced-motion variants;
+- visible non-color status cues and semantics;
+- restrained interaction feedback;
+- deterministic visual fixtures and manual comparison; and
+- Riverpod rebuild containment with immutable display data.
+
+Rejected recommendations:
+
+- app-store landing-page composition;
+- Playfair or Source Serif typography;
+- pink conversion CTAs;
+- zero-radius brutalism;
+- GSAP or Web-specific motion architecture;
+- generic monochrome fashion styling;
+- a second design system; and
+- UI-owned economic or progression authority.
+
+Rejection authority was GDD v8, the Aurelian creative authorities, existing
+typography and Flutter architecture, accessibility, performance, security,
+and Gate A scope.
+
+```text
+UI/UX Codex skills used: frontend-design, ui-ux-designer, ui-ux-pro-max,
+flutter-expert, supabase, accessibility-compliance,
+flutter-build-responsive-layout, flutter-design-system, visual-testing
+
+The skills were invoked before source changes: Yes
+Aurelian and GDD v8 compliance reviewed: Yes
+Accessibility states reviewed: Yes
+Final visual approval by Smiley: Pending Smiley review of expansion-pass renders
+```
+
+## Implemented player-facing expansion
+
+### Session and onboarding
+
+- Session loading now explains that no gameplay request starts before secure
+  identity resolution.
+- Authentication failure is player-safe, non-technical, retryable, and
+  explicit that no progression write occurred.
+- Opening Sanctuary introduces fashion authorship, Kingston creative
+  authority, House identity, and the Artisan/Architect duality without a
+  prolonged slideshow.
+- The age gate remains legally direct and owns no gameplay progress.
+- Luxe guidance is concise and avoids invented praise.
+- House naming distinguishes local draft intent from authenticated server
+  confirmation.
+- Founder Trial gives Artisan and Architect distinct visual authorship and
+  positioning treatments while preserving one gameplay ceiling, one House,
+  stable idempotent receipts, and confirmed/restored states.
+
+### HQ
+
+- HQ is organized around House identity, Kingston context, one primary
+  capsule action, current objective status, confirmed evidence, and secondary
+  indicators.
+- Artisan and Architect framing changes presentation and decision language,
+  never the authoritative ceiling.
+- Loading, error, and completion states remain visible and actionable.
+
+### Atelier and capsule
+
+- Atelier now uses garment silhouettes, pattern-cutting lines, tailoring
+  annotations, material/palette relationships, and compact inspectors.
+- Local garment study is visibly separated from bounded authenticated capsule
+  intent.
+- Collection Brief explains narrative and bounded grammar before submission.
+- Hero Piece, Commercial Anchor, and Experimental Piece have distinct visual
+  roles and forward-only stages.
+- Readiness causes are explicit and server-derived.
+- Confirmed and restored receipts show authority and preservation evidence.
+- Sampling is deliberately unavailable after readiness; no production,
+  launch, reward, Vex result, or Archive settlement was added.
+- `/atelier/drop-preview` and `/atelier/drop-launch` remain shared unavailable
+  boundaries with no deferred provider initialization or backend request.
+
+### Empire and Feed
+
+- Empire uses real read-only brand/store projections, operational hierarchy,
+  receipts, constraints, and deliberate unavailable boundaries without
+  inventing stores, customers, deliveries, suppliers, or staff.
+- The existing first-store dialog distinguishes local form state from the
+  authenticated server request.
+- Feed is presented as a House editorial record rather than a generic social
+  list.
+- Current record cards explain who, what happened, why it matters, what
+  changed, and the available next action.
+- Comment and request sheets are explicitly read-only/held and cannot simulate
+  a social mutation.
+
+### House, settings, legal, and shell
+
+- House presents verified House identity, Founder Path lens, Kingston,
+  current authority, and bounded House-code language without fabricated
+  Archive history or awards.
+- The 320 px / 1.6× text fixture uses a stacked identity layout.
+- Settings remain presentation-only and cannot change progression or economy.
+- Legal documents use Aurelian hierarchy while preserving readability and
+  their not-launch-approved status.
+- The shell keeps the exact order `HQ`, `Atelier`, `Empire`, `Feed`, `House`
+  with selected-state semantics, safe-area handling, and stable destination
+  ownership.
+
+## Shared system and reliability coverage
+
+The pass extends the existing canonical token sources only:
+
+```text
+StylisteColors
+StylisteText
+StylisteSpacing
+StylisteRadii
+StylisteMotion
+StylisteVisualMode
+AurelianTheme
+```
+
+No second token source, UI package, font package, animation package, state
+framework, or design system was introduced.
+
+Shared additions include:
+
+- editorial hero and evidence-band composition;
+- garment/pattern-cutting line frames;
+- consistent authority, preservation, and retry facts; and
+- `AurelianStatePanel` coverage for loading, empty, editing, submitting,
+  confirmed, restored, offline, retryable error, terminal error, permission
+  denied, session expired, maintenance, disabled, and unavailable.
+
+Player-facing state copy does not expose raw Supabase, PostgreSQL, Edge, RPC,
+or stack-trace errors.
+
+## Accessibility, responsive, and performance review
+
+The source and widget review covers:
+
+- 320–412 px portrait layouts;
+- 48 dp minimum controls;
+- text scale through the existing large-text tests and a deterministic
+  320 px / 1.6× House fixture;
+- screen-reader labels, state semantics, and selected navigation;
+- non-color status cues;
+- reduced-motion behavior and a 412 px Atelier fixture;
+- safe-area and keyboard-aware scrollable layouts;
+- overflow checks;
+- one clear next action; and
+- provider-state/restoration behavior.
+
+The pass preserves Riverpod repositories/controllers and uses existing
+provider ownership. Display components receive data and callbacks; they do not
+take ownership of progression or economic state. No migration, RPC, Edge
+Function, policy, ledger, reward, or game-authority implementation changed.
+
+The architecture was reviewed for excessive blur, opacity, animation, nested
+scrolling, broad provider watches, and fixed-height large-text failure.
+Physical-device 60 fps and accessibility remain `Blocked`.
+
+## Verification evidence
 
 | Evidence | Result |
 |---|---|
-| Dart formatting | `Passed` |
-| Flutter analysis | `Static pass` |
-| Flutter tests | `Passed` |
-| Edge type checks and contracts | `Passed` |
-| Local Supabase reset, lint, pgTAP, concurrency, API inventory | `Passed` |
-| Authority, registry, TODO, API, migration, health, diff/conflict guards | `Passed` or `Static pass` |
-| Gitleaks history and working tree | `Passed` |
-| Dedicated-branch publication | `Passed` |
-| GitHub Actions | `Blocked/not triggered` |
+| Dart formatting | `Passed` — 229 files, 0 changes |
+| Flutter analysis | `Static pass` — no issues |
+| Flutter tests | `Passed` — 135 tests |
+| Deterministic capture suite | `Passed` — 44 tests/renders |
+| Supabase reset | `Passed` — 61 migrations |
+| Supabase lint | `Passed` — exit 0 with six inherited warnings |
+| pgTAP | `Passed` — 12 files / 108 assertions |
+| Edge type checks | `Static pass` — 17/17 entry points |
+| Edge identity/contracts | `Passed` — 16/16 |
+| Economic concurrency | `Passed` — four mutations × 20 sessions |
+| API inventory | `Passed` — 19/19 entries |
+| Migration hashes | `Passed` — 61/61 |
+| Migration tamper scenarios | `Passed` — 9/9 |
+| GDD Feature IDs | `Static pass` — 160 unique IDs |
+| Authority/API/allowlist/TODO/metadata guards | `Static pass` |
+| Repository-health guard | `Passed` |
+| Gitleaks 8.30.1 history | `Passed` — 101 commits, zero findings |
+| Gitleaks 8.30.1 working tree | `Passed` — 11.38 MB, zero findings |
+| Whitespace and conflict markers | `Passed` |
+| Branch push | `Passed` |
+| Matching GitHub Actions run | `Blocked` — zero runs; not triggered |
 
-## 39. Exact test counts and exit codes
+The first working-tree secret scan overlapped Flutter test-cache generation and
+reported 17 private-key fixtures embedded in ignored dill output. No exception
+was added. Generated output was cleared and both final redacted scans passed
+with zero findings.
 
-All listed local commands exited `0`: formatter (229 files, zero changes),
-analysis (zero issues), Flutter tests (114), Edge entry checks (17), Edge
-contracts (16), local migrations (61), database suite (12 files / 108
-assertions), economic concurrency (four 20-session scenarios), API inventory
-(19/19), migration integrity (61/61), tamper scenarios (9/9), and Gitleaks
-history (97 commits) and working-tree scans (zero leaks).
+Detailed commands and status classifications are in
+`docs/verification/aurelian_ui_expansion_pass_2/verification_results.md`.
 
-## 40. Deterministic visual-evidence index
+## Deterministic visual evidence
 
-The capture index records eight inherited before-captures and 24 after-captures
-under `docs/verification/aurelian_ui_redesign/captures/`. Each is labelled
-“Deterministic source render — not physical-device evidence.”
+The committed evidence contains:
 
-## 41. Market-competitiveness interpretation
+- 24 before-renders;
+- 44 after-renders;
+- four after-render contact sheets;
+- one complete capture manifest;
+- the route/state surface inventory;
+- the skill audit; and
+- the approved design direction.
 
-The source now communicates a coherent luxury-fashion House loop with a
-distinct Kingston and Atelier signature rather than a generic dashboard. This
-is an implementation interpretation, not market research or player-validation
-evidence.
+Every after-render visibly states:
 
-## 42. Remaining P0-P4 findings
+```text
+Deterministic source render — not physical-device evidence
+```
 
-P0: remote Supabase/RLS and deployed Edge verification. P1: Android/iOS build
-and installation. P2: physical accessibility and Galaxy A55 performance. P3:
-creator, legal, cultural, fashion, art/audio, and player testing. P4:
-retention, monetization, and release authorization.
+All 44 after-renders were manually inspected. An initial review found and
+corrected dark-receipt readability, active-role framing, and 320 px large-text
+House layout. The final sheets show no Flutter overflow warning stripe.
 
-## 43. Inherited warnings
+Index:
+`docs/verification/aurelian_ui_expansion_pass_2/visual_evidence_index.md`.
 
-Local schema lint passed with six inherited non-fatal warnings in legacy public
-functions. Dependency audit remains visible; no dependency upgrade was made as
-part of this scope.
+## Complete implementation changed-file inventory
 
-## 44. Deferred evidence
+### Installed UI/UX skill sources
 
-Android build, device accessibility, performance, iOS verification, staging
-and remote Supabase checks, deployment rehearsal, public CI, purchase, and
-penetration testing are not performed.
+- `.agents/skills/accessibility-compliance/` — five files
+- `.agents/skills/flutter-build-responsive-layout/` — one file
+- `.agents/skills/flutter-design-system/` — five files
+- `.agents/skills/visual-testing/` — two files
+- `skills-lock.json`
 
-## 45. Final visual-approval status
+### Production source
 
-`Approved` by Smiley on 2026-07-29. The approval covers the committed
-deterministic source renders of luxury, Kingston, garment desirability, Luxe
-tone, and the visual rather than spreadsheet-driven feel. It is not a
-physical-device, performance, accessibility-device, gameplay, or release
-approval.
+- `lib/app.dart`
+- `lib/core/theme/styliste_colors.dart`
+- `lib/core/widgets/aurelian_components.dart`
+- `lib/features/atelier/screens/atelier_screen.dart`
+- `lib/features/capsule/screens/capsule_workspace_screen.dart`
+- `lib/features/feed/screens/feed_screen.dart`
+- `lib/features/ftue/widgets/first_objective_card.dart`
+- `lib/features/hq/screens/hq_screen.dart`
+- `lib/features/hq/widgets/hq_foundation_view.dart`
+- `lib/features/ledger/screens/ledger_screen.dart`
+- `lib/features/legal/screens/legal_document_screen.dart`
+- `lib/features/onboarding/screens/aurelian_gate_screen.dart`
+- `lib/features/onboarding/screens/founder_trial_screen.dart`
+- `lib/features/onboarding/screens/origin_script_screen.dart`
+- `lib/features/onboarding/screens/sovereign_registry_screen.dart`
+- `lib/features/profile/screens/profile_screen.dart`
+- `lib/features/settings/screens/settings_screen.dart`
+- `lib/presentation/screens/main_shell.dart`
 
-## 46. Release status
+### Tests
 
-`Blocked`. No Alpha/Beta/production readiness claim is authorized by this
-handoff.
+- `test/core/widgets/aurelian_accessibility_test.dart`
+- `test/features/capsule/capsule_workspace_screen_test.dart`
+- `test/features/feed/feed_screen_accessibility_test.dart`
+- `test/visual/aurelian_review_capture_test.dart`
 
-## 47. Exact next authorized action
+### Verification evidence
 
-Preserve the approved branch while the remaining human, device, staging, and
-release gates are planned under separate authority.
+- `docs/verification/aurelian_ui_expansion_pass_2/design_direction.md`
+- `docs/verification/aurelian_ui_expansion_pass_2/surface_inventory.md`
+- `docs/verification/aurelian_ui_expansion_pass_2/ui_ux_skill_audit.md`
+- `docs/verification/aurelian_ui_expansion_pass_2/verification_results.md`
+- `docs/verification/aurelian_ui_expansion_pass_2/visual_evidence_index.md`
+- `docs/verification/aurelian_ui_expansion_pass_2/captures/before/` — 24
+  indexed PNG files
+- `docs/verification/aurelian_ui_expansion_pass_2/captures/after/` — 44
+  indexed source-render PNG files and four contact sheets
 
-## 48. Repository-safety statement
+The immutable Git inventory is available with:
 
-No service-role key, database password, signing secret, webhook secret,
-purchase secret, private key, replacement credential, `.env` content,
-temporary workspace artifact, or generated cache is included in the published
-implementation commit. No remote Supabase action, deployment, release, tag,
-or pull request was created.
+```powershell
+git show --name-status --format=fuller 717e41faecda9798b4a29eb01f8cba85ab7aac2f
+```
+
+No Supabase migration, database function, RLS policy, Edge Function,
+repository DTO, route authority, reward, or progression implementation changed
+in this pass.
+
+## Inherited warnings and deferred evidence
+
+Inherited warnings:
+
+- five unmodified `OUT` variables in quarantined
+  `public.execute_casting_pull`;
+- one unread `v_brand` variable in
+  `public.edge_open_first_store_atomic`;
+- 31 packages locked below an upgradable version;
+- 14 direct constraints below a resolvable version;
+- discontinued transitive `build_resolvers` and `build_runner_core`;
+- Windows LF-to-CRLF working-copy notices; and
+- Supabase CLI 2.104.0's notice that 2.110.0 is available.
+
+Deferred and `Blocked`:
+
+- Android and iOS builds and installation;
+- Flutter Web compilation/runtime;
+- physical-device TalkBack and text scaling;
+- physical-device performance and 60 fps;
+- staging Supabase and deployment rehearsal;
+- legal/privacy review;
+- Jamaican/Caribbean cultural review;
+- fashion-industry review;
+- final art/audio review;
+- representative player testing;
+- retention and monetization validation; and
+- release authorization.
+
+## Scope and publication confirmation
+
+No new gameplay was added to populate the UI. Sampling, manufacturing,
+collection launch, Vex outcomes, recovery, Archive settlement, monetization,
+multiplayer, territories, and later cities remain outside this pass.
+
+The final status is:
+
+```text
+Local implementation gate: Passed
+Dedicated-branch implementation push: Passed
+GitHub Actions: Blocked — not triggered
+Android and Web builds: Blocked
+Remote Supabase and deployment: Blocked — not performed
+Final visual approval: Pending Smiley review of expansion-pass renders
+Production release: Blocked
+```

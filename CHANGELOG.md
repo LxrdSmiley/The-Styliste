@@ -7,6 +7,16 @@ in `docs/verification/early_game_readiness.md`, not in release-marketing claims.
 
 ### Added
 
+- Added editorial Aurelian hero, evidence-band, and garment/pattern-cutting
+  components across the reachable Gate A experience.
+- Added a shared 14-state reliability presentation covering loading, empty,
+  editing, submitting, confirmed, restored, offline, retryable error,
+  terminal error, permission denied, session expired, maintenance, disabled,
+  and unavailable conditions.
+- Added deterministic expansion-pass review evidence: 24 before-renders, 44
+  after-renders, four contact sheets, and an indexed 320 px large-text /
+  412 px reduced-motion review.
+
 - Added the Gate A Kingston Capsule Foundation: a Collection Brief and exactly
   three ordered Atelier looks—Hero Piece, Commercial Anchor, and Experimental
   Piece—with a visible server-confirmed readiness result.
@@ -14,6 +24,16 @@ in `docs/verification/early_game_readiness.md`, not in release-marketing claims.
   this slice creates no production, launch, score, reward, or Vex outcome.
 
 ### Changed
+
+- Expanded Opening Sanctuary, Founder Trial, HQ, Atelier, the three-look
+  capsule, Empire, Feed, House, Settings, Legal, and the five-tab shell with
+  clearer hierarchy, contextual authority/preservation evidence, and one
+  primary next action.
+- Strengthened Atelier's fashion-specific visual identity with role-specific
+  garment silhouettes, tailoring marks, bounded inspectors, explicit
+  readiness causes, and a deliberate sampling boundary.
+- Replaced technical backend terminology in player-facing reliability copy
+  with plain-language secure-service wording.
 
 - Founder Trial completion now leads into the Atelier capsule workspace. The
   Artisan and Architect lenses remain equal in gameplay ceiling.
@@ -25,6 +45,12 @@ in `docs/verification/early_game_readiness.md`, not in release-marketing claims.
   unavailable state.
 
 ### Repository
+
+- Installed and locked the requested standalone accessibility,
+  responsive-layout, Flutter design-system, and visual-testing skills.
+- Published the complete UI expansion on
+  `codex/aurelian-ui-expansion-pass-2` at implementation SHA
+  `717e41faecda9798b4a29eb01f8cba85ab7aac2f`.
 
 - Added Semantic Versioning and synchronized prerelease metadata for
   `0.1.0-alpha.1+1`.

@@ -1,37 +1,76 @@
 # Human-only verification tasks
 
-## Creator visual-review result
+## Smiley's expansion-pass visual review
 
-Smiley approved the repository-wide Aurelian redesign on 2026-07-29.
+Review the committed deterministic renders in:
 
-This approval applies to the committed deterministic source renders only. It
-does not prove Android/iOS behavior, physical-device accessibility, frame rate,
-animation, audio/haptics, or player comprehension.
+`docs/verification/aurelian_ui_expansion_pass_2/captures/after/`
 
-## Deferred verification
+Start with `contact_sheet_1.png` through `contact_sheet_4.png`, then open any
+individual source render that needs closer review.
 
-Still required before release:
+Confirm whether the complete reachable experience feels:
 
-- Android compilation and installation;
-- Galaxy A55 performance;
-- physical-device TalkBack and text scaling;
-- iOS build and signing;
-- staging Supabase verification;
-- deployment rehearsal;
-- legal and privacy review;
-- Jamaican/Caribbean cultural review;
-- fashion-industry review;
-- final commissioned art and audio review;
-- representative young-adult playtesting;
-- first-session comprehension testing;
-- retention and monetization validation; and
-- final release authorization.
+- luxurious, editorial, and distinctly Aurelian;
+- fashion-industry specific rather than a generic dashboard;
+- coherent across Ivory and Obsidian presentation;
+- clear at a glance with one meaningful next action;
+- respectful of Kingston's tailoring, sound, streetwear, community, and global
+  creative authority;
+- equally aspirational for Artisan and Architect;
+- visually centered on the garment/capsule in Atelier; and
+- honest about loading, preservation, authority, retry, and unavailable states.
 
-## Current status
+Pay particular attention to:
+
+- Opening Sanctuary and age gate;
+- Luxe introduction and House naming;
+- both Founder Trial paths and restored receipt;
+- Artisan and Architect HQ;
+- Atelier, Collection Brief, and all three look roles;
+- readiness and sampling-unavailable boundary;
+- Empire and first-store dialog;
+- Feed and read-only sheets;
+- House at 390 px and 320 px / 1.6× text;
+- Settings and legal documents;
+- five-tab selection; and
+- all 14 reliability states.
+
+Return one of:
 
 ```text
-Local publication gate: Passed
-Commit and dedicated-branch push: Passed
-Final visual approval: Approved (deterministic source review only)
-Production release: Blocked
+Approved
+
+Approved with revisions:
+1. ...
+2. ...
+
+Rejected with blocking revisions:
+1. ...
+2. ...
 ```
+
+Current status:
+
+```text
+Final visual approval: Pending Smiley review of expansion-pass renders
+```
+
+## Still required before release
+
+- Android and iOS compilation, signing, installation, and runtime review
+- Physical-device TalkBack, text scaling, reduced motion, and keyboard review
+- Galaxy A55-class performance and sustained-frame evidence
+- Flutter Web review if Web returns to an authorized milestone
+- Staging Supabase Auth/RLS/Realtime/Storage/Edge verification
+- Deployment rehearsal and CI on a release-eligible workflow
+- Legal and privacy review
+- Jamaican/Caribbean cultural review
+- Fashion-industry review
+- Final commissioned art and audio review
+- Representative young-adult playtesting and first-session comprehension
+- Retention and monetization validation
+- Final release authorization
+
+The committed images are deterministic source renders, not physical-device
+evidence.
